@@ -1,6 +1,6 @@
 Mcd
 ===
-V19.0
+V20.0
 
 Mcd (My Calculator for Desk) is a text oriented reverse polish calculator.
 

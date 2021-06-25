@@ -4,7 +4,7 @@ pragma Elaborate_All (Random);
 package body Mcd_Mng is
 
   -- Current version
-  Mcd_Version : constant String := "V19.0";
+  Mcd_Version : constant String := "V20.0";
 
   package Stack is
     -- What can we store in stack
@@ -1202,41 +1202,41 @@ package body Mcd_Mng is
       end case;
     end Do_String;
 
-    -- Handle Can be
+    -- Check if string can be...
     procedure Do_Can (Kind : Can_List) is
     begin
-      -- Check if string can be...
       Pop (A);
       if A.Kind /= Chrs then
+        -- Must be a string
         raise Invalid_Argument;
       end if;
       case Kind is
         when Canarbi =>
-          -- push True if A is empty
+          -- Push True if A is arbi
           Push (Mcd_Parser.Can_Arbi (A));
           S := A;
         when Canfrac =>
-          -- push True if A is empty
+          -- Push True if A is frac
           Push (Mcd_Parser.Can_Frac (A));
           S := A;
         when Caninte =>
-          -- push True if A is empty
+          -- Push True if A is inte
           Push (Mcd_Parser.Can_Inte (A));
           S := A;
         when Canreal =>
-          -- push True if A is empty
+          -- Push True if A is real
           Push (Mcd_Parser.Can_Real (A));
           S := A;
         when Canbool =>
-          -- push True if A is empty
+          -- Push True if A is bool
           Push (Mcd_Parser.Can_Bool (A));
           S := A;
         when Canreg =>
-          -- push True if A is empty
+          -- Push True if A is reg
           Push (Mcd_Parser.Can_Reg (A));
           S := A;
         when Canprog =>
-          -- push True if A is empty
+          -- Push True if A is prog
           Push (Mcd_Parser.Can_Prog (A));
           S := A;
       end case;

@@ -189,7 +189,7 @@ package body Ios is
     Res : Item_Rec(Real);
     Last : Positive;
   begin
-    if S.Kind /= Chrs then
+    if S.Kind /= Chrs or else not Mcd_Parser.Can_Real (S).Val_Bool then
       raise Invalid_Argument;
     end if;
     Real_Io.Get (S.Val_Text.Image, Res.Val_Real, Last);

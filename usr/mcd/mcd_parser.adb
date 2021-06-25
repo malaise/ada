@@ -596,6 +596,9 @@ package body Mcd_Parser is
     Dummy : My_Math.Real;
     L : Natural;
   begin
+    if Can_Inte (Item).Val_Bool then
+      return False_Item;
+    end if;
     Real_Io.Get (Item.Val_Text.Image, Dummy, L);
     if L = Item.Val_Text.Length then
       return True_Item;
@@ -634,8 +637,8 @@ package body Mcd_Parser is
 
   function Can_Prog (Item : in Mcd_Mng.Item_Rec) return Bool_Rec is
   begin
-    if       Item.Val_Text.Locate ("[") = 0
-    and then Item.Val_Text.Locate ("]") = 0 then
+    if       Item.Val_Text.Locate ("[ ") = 1
+    and then Item.Val_Text.Locate (" ]") = Item.Val_Text.Length then
       return True_Item;
     else
       return False_Item;

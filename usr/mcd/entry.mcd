@@ -39,7 +39,7 @@ true d popr
 # Check it appears after an entry
 e pushr ~ E pushr ifcall
 # Remove leading '~' and convert to real
-dup strlen 2 swap strsub strreal
+dup strlen 2 swap strsub dup caninte [ strinte ] [ strreal ] ifte call
 ] ifcall
 
 # Check time
