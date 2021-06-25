@@ -29,22 +29,22 @@ a popr
 # -> convert to hours (-1.0 if full)
 # Distance
 "^[0-9]{1,4}Nm$" c 1 popa
-  [ dup strlen dup 1 - swap strdel strreal s pushr /
+  [ dup strlen dup 1 - swap strdel strinte toreal s pushr /
     # Add climb overhead and will add extra
     c pushr u pushr + a popr
   ] e 1 popa
 # Liters
 "^[0-9]{1,4}l$" c 2 popa
-  [ dup strlen dup strdel strreal 0.72 * f pushr / 0.0 a popr ] e 2 popa
+  [ dup strlen dup strdel strinte toreal 0.72 * f pushr / 0.0 a popr ] e 2 popa
 # Kilograms
 "^[0-9]{1,4}kg$" c 3 popa
-  [ dup strlen dup 1 - swap strdel strreal f pushr / 0.0 a popr ]
+  [ dup strlen dup 1 - swap strdel strinte toreal f pushr / 0.0 a popr ]
   e 3 popa
 # Time
 "^[0-9]?[0-9]:[0-9][0-9]$" c 4 popa
   [ dup 1 ":" strloc dup isntnull [ "." strovw ] [ pop ] ifte call
     # Will add extra
-    strreal degfr u pushr a popr ] e 4 popa
+    strinte toreal degfr u pushr a popr ] e 4 popa
 # Full
 "^full$" c 5 popa
   [ pop -1.0 0.0 a popr ] e 5 popa

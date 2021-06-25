@@ -105,7 +105,7 @@ dup isstr ~ E pushr ifcall
 3 /= E pushr ifcall
 # Save unit and val
 a 3 pusha u popr
-a 1 pusha a 2 pusha strcat strreal
+a 1 pusha a 2 pusha strcat dup caninte [ strinte toreal ] [ strreal ] ifte call
 
 # Convert into hours depending on unit, then display table
 False r popr
