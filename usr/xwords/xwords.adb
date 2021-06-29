@@ -2,7 +2,7 @@
 -- Or search anagrams
 with As.U.Utils, Argument, Con_Io, Afpx, Basic_Proc, Language, Many_Strings,
      Str_Util, Lower_Str, Environ, Images, Event_Mng, Afpx_Xref,
-     Mutexes, Protected_Var, Trilean, Rounds, Normal;
+     Mutexes, Protected_Var, Trilean, Rounds, Normal, Reg_Exp;
 with Cmd, Analist, Icon;
 procedure Xwords is
 
@@ -39,6 +39,7 @@ procedure Xwords is
   Anagrams_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Anagrams;
   Ananouns_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Ananouns;
   Search_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Search;
+  In_Anagram_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.In_Anagram;
   Research_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Re_Search;
   Add_Word_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Add_Word;
   Add_Noun_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Add_Noun;
@@ -82,6 +83,15 @@ procedure Xwords is
     Rec.Str(1 .. Rec.Len) := Ustr(1 .. Rec.Len);
     return Rec;
   end Us2Afpx;
+
+  -- Put an error in the list
+  procedure Put_Error (Msg : in String) is
+  begin
+      Afpx.Line_List.Delete_List;
+      Afpx.Line_List.Insert (Us2Afpx (As.U.Tus ("ERROR: " & Msg & ".")));
+      List_Content := Error;
+      Status := Error;
+  end Put_Error;
 
   -- Purge trailing spaces
   function Strip (Str : String) return String is (Str_Util.Strip (Str));
@@ -218,6 +228,8 @@ procedure Xwords is
     (Afpx.Decode_Field (Ananouns_Fld, 0) /= " ");
 
   -- List anagrams of word
+  Analen_Prefix : constant String := "-- ";
+  Analen_Suffix : constant String := " --";
   procedure Do_Anagrams is
     Anagrams_List : As.U.Utils.Asu_Ua.Unb_Array;
     Word : As.U.Asu_Us;
@@ -258,7 +270,7 @@ procedure Xwords is
       if Anagrams_List.Element(I).Length /= Length then
         Length := Anagrams_List.Element(I).Length;
         Afpx.Line_List.Insert (Us2Afpx (As.U.Tus (
-             "-- " & Images.Integer_Image (Length) & " --")));
+             Analen_Prefix & Images.Integer_Image (Length) & Analen_Suffix)));
       end if;
       Afpx.Line_List.Insert (Us2Afpx (Anagrams_List.Element(I)));
     end loop;
@@ -266,7 +278,7 @@ procedure Xwords is
     Afpx.Update_List(Afpx.Top);
 
     -- Update Status
-    if Anagrams_List.Length = 1 then
+    if Anagrams_List.Is_Null then
       List_Content := Empty;
       Status := Ok;
     else
@@ -276,10 +288,7 @@ procedure Xwords is
 
   exception
     when Analist.Too_Long =>
-      Afpx.Line_List.Insert (Us2Afpx (
-          As.U.Tus ("ERROR: Word too long.")));
-      List_Content := Error;
-      Status := Error;
+      Put_Error ("ERROR: Word too long.");
   end Do_Anagrams;
 
   -- Build and launch a Words command
@@ -408,6 +417,74 @@ procedure Xwords is
       Afpx.Clear_Field (Get_Fld);
     end if;
   end Do_Command;
+
+  -- Search the content of Get_Fld in the list of anagrams
+  Len_Regex : Reg_Exp.Compiled_Pattern;
+  procedure Search_In_Anagrams (Is_Regex : in Boolean) is
+    In_Crit, Crit, Curr : As.U.Asu_Us;
+    Ok : Boolean;
+    Crit_Regex : Reg_Exp.Compiled_Pattern;
+    Matches : As.U.Utils.Asu_Ua.Unb_Array;
+  begin
+    -- Decode criteria
+    In_Crit := As.U.Tus (Lower_Str (Strip (
+              Afpx.Decode_Field (Get_Fld, 0, False))));
+    if In_Crit.Is_Null then
+      Put_Error ("Missing pattern to search");
+      return;
+    end if;
+    if Is_Regex then
+      Crit := In_Crit;
+    else
+      if not Reg_Exp.Match ("[:.a-z]+", In_Crit.Image, True) then
+      Put_Error ("Invalid pattern");
+      return;
+      end if;
+      Crit := As.U.Tus (Str_Util.Substit (In_Crit.Image, ":", "."));
+    end if;
+
+    -- Compile patterns
+    if Len_Regex.Is_Free then
+      Len_Regex.Compile (Ok, Analen_Prefix & "[0-9]+" & Analen_Suffix);
+    end if;
+    Crit_Regex.Compile (Ok, Crit.Image);
+    if not Ok then
+      Put_Error ("Invalid regular expression");
+      return;
+    end if;
+
+    -- Search matching in list
+    if Afpx.Line_List.Is_Empty then
+      return;
+    end if;
+    Afpx.Line_List.Rewind;
+    loop
+      -- Read words, skip Length indicators
+      Afpx.Line_List.Read (Afpx_Item, Moved => Moved);
+      Curr := As.U.Tus (Lower_Str (Language.Unicode_To_String (
+                               Afpx_Item.Str(1 .. Afpx_Item.Len))) );
+      if not Len_Regex.Match (Curr.Image, True)
+      and then Crit_Regex.Match (Curr.Image, True) then
+        -- A real word
+        Matches.Append (Curr);
+      end if;
+      exit when not Moved;
+    end loop;
+
+    -- Show result
+    History_List.Insert (In_Crit);
+    List_Content := Words;
+    Status := Found;
+    Afpx.Line_List.Delete_List;
+    for I in 1 .. Matches.Length loop
+      Afpx.Line_List.Insert (Us2Afpx (Matches.Element (I)));
+    end loop;
+
+    -- Ready
+    if not Afpx.Line_List.Is_Empty then
+      Afpx.Line_List.Rewind;
+    end if;
+  end Search_In_Anagrams;
 
   procedure Do_Recall is
   begin
@@ -578,6 +655,13 @@ begin
                   Background => Con_Io.Color_Of ("Red"));
     end case;
 
+    -- Words command when in anagrams
+    Afpx.Set_Field_Activation (In_Anagram_Fld, List_Content = Anagrams);
+    Afpx.Set_Field_Activation (Add_Word_Fld, List_Content /= Anagrams);
+    Afpx.Set_Field_Activation (Add_Noun_Fld, List_Content /= Anagrams);
+    Afpx.Set_Field_Activation (Del_Word_Fld, List_Content /= Anagrams);
+    Afpx.Set_Field_Activation (Del_Noun_Fld, List_Content /= Anagrams);
+
     -- Set cursor at last significant char of the Get field
     Get_Handle.Cursor_Col := Afpx.Last_Index (Afpx.Decode_Field (Get_Fld, 0),
                                               True);
@@ -590,7 +674,11 @@ begin
       when Afpx.Keyboard =>
         case Ptg_Result.Keyboard_Key is
           when Afpx.Return_Key =>
-            Do_Command (Search_Fld);
+            if  List_Content = Anagrams then
+              Search_In_Anagrams (False);
+            else
+              Do_Command (Search_Fld);
+            end if;
           when Afpx.Escape_Key =>
             Do_Recall;
           when Afpx.Break_Key =>
@@ -613,7 +701,6 @@ begin
           -- Clear get and error
           when Clear_Fld =>
             Afpx.Clear_Field (Get_Fld);
-            List_Content := Empty;
             if Status = Error then
               Afpx.Reset_Field (Afpx.List_Field_No, Reset_String => False);
               Afpx.Line_List.Delete_List (Deallocate => False);
@@ -636,9 +723,15 @@ begin
             Afpx.Encode_Field (Ananouns_Fld, (0, 0),
               (if Ananouns_Set then " " else "X"));
 
-          -- Words commands
           when Search_Fld .. Del_Noun_Fld =>
-            Do_Command (Ptg_Result.Field_No);
+            if  List_Content = Anagrams
+            and then (Ptg_Result.Field_No = Search_Fld
+              or else Ptg_Result.Field_No = Research_Fld) then
+              Search_In_Anagrams (Ptg_Result.Field_No = Research_Fld);
+            else
+              -- Words commands
+              Do_Command (Ptg_Result.Field_No);
+            end if;
 
           -- History
           when History_Fld =>
@@ -661,6 +754,7 @@ begin
           -- Clear list
           when Clear_List_Fld =>
             Afpx.Line_List.Delete_List (Deallocate => False);
+            List_Content := Empty;
             Status := Ok;
 
           -- List management
