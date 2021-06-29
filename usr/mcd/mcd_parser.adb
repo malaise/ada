@@ -638,7 +638,7 @@ package body Mcd_Parser is
   function Can_Prog (Item : in Mcd_Mng.Item_Rec) return Bool_Rec is
   begin
     if       Item.Val_Text.Locate ("[ ") = 1
-    and then Item.Val_Text.Locate (" ]") = Item.Val_Text.Length then
+    and then Item.Val_Text.Locate (" ]") = Item.Val_Text.Length  - 1 then
       return True_Item;
     else
       return False_Item;
