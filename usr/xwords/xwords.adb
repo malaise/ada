@@ -434,22 +434,33 @@ procedure Xwords is
       return;
     end if;
     if Is_Regex then
+      -- Check regex
+      if Reg_Exp.Match ("[A-Z]", In_Crit.Image, True) then
+        Put_Error ("Invalid regular expression");
+        return;
+      end if;
       Crit := In_Crit;
     else
-      if not Reg_Exp.Match ("[:.a-z]+", In_Crit.Image, True) then
-      Put_Error ("Invalid pattern");
-      return;
+      -- Check pattern
+      if not Reg_Exp.Match ("[a-z?*.]+", In_Crit.Image, True)
+      or else Reg_Exp.Match ("\*.+", In_Crit.Image, True) then
+        Put_Error ("Invalid pattern");
+        return;
       end if;
+      -- Convert to regex
       Crit := As.U.Tus (Str_Util.Substit (In_Crit.Image, ":", "."));
+      Crit := As.U.Tus (Str_Util.Substit (In_Crit.Image, "?", "."));
+      Crit := As.U.Tus (Str_Util.Substit (In_Crit.Image, "*", ".*"));
     end if;
 
     -- Compile patterns
     if Len_Regex.Is_Free then
+      -- Length delimieters are "-- xx --"
       Len_Regex.Compile (Ok, Analen_Prefix & "[0-9]+" & Analen_Suffix);
     end if;
     Crit_Regex.Compile (Ok, Crit.Image);
     if not Ok then
-      Put_Error ("Invalid regular expression");
+      Put_Error ("Invalid search criteria");
       return;
     end if;
 
