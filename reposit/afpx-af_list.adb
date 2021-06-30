@@ -229,6 +229,8 @@ package body Af_List is
     end loop;
 
   exception
+    when Not_Opened | Line_List_Mng.Not_In_List =>
+      raise;
     when others =>
       raise Afpx_Internal_Error;
   end Display;
