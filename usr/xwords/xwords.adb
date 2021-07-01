@@ -433,24 +433,24 @@ procedure Xwords is
       Put_Error ("Missing pattern to search");
       return;
     end if;
+    Crit := In_Crit;
     if Is_Regex then
       -- Check regex
-      if Reg_Exp.Match ("[A-Z]", In_Crit.Image, True) then
+      if Reg_Exp.Match ("[A-Z]", Crit.Image, True) then
         Put_Error ("Invalid regular expression");
         return;
       end if;
-      Crit := In_Crit;
     else
-      -- Check pattern
-      if not Reg_Exp.Match ("[a-z?*.]+", In_Crit.Image, True)
-      or else Reg_Exp.Match ("\*.+", In_Crit.Image, True) then
+      -- Check pattern. '*' must be the last character
+      if not Reg_Exp.Match ("[a-z?*.:]+", In_Crit.Image, True)
+      or else Reg_Exp.Match (".*\*.+", In_Crit.Image, True) then
         Put_Error ("Invalid pattern");
         return;
       end if;
       -- Convert to regex
-      Crit := As.U.Tus (Str_Util.Substit (In_Crit.Image, ":", "."));
-      Crit := As.U.Tus (Str_Util.Substit (In_Crit.Image, "?", "."));
-      Crit := As.U.Tus (Str_Util.Substit (In_Crit.Image, "*", ".*"));
+      Crit := As.U.Tus (Str_Util.Substit (Crit.Image, ":", "."));
+      Crit := As.U.Tus (Str_Util.Substit (Crit.Image, "?", "."));
+      Crit := As.U.Tus (Str_Util.Substit (Crit.Image, "*", ".*"));
     end if;
 
     -- Compile patterns
