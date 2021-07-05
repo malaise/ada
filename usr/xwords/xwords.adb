@@ -230,6 +230,9 @@ procedure Xwords is
   -- List anagrams of word
   Analen_Prefix : constant String := "-- ";
   Analen_Suffix : constant String := " --";
+  -- Previous list of anagrams
+  Prev_Word : As.U.Asu_Us;
+  Prev_Anagrams : Afpx.Line_List_Mng.List_Type;
   procedure Do_Anagrams is
     Anagrams_List : As.U.Utils.Asu_Ua.Unb_Array;
     Word : As.U.Asu_Us;
@@ -242,8 +245,16 @@ procedure Xwords is
     -- Get word and check it
     Word := As.U.Tus (Strip (Afpx.Decode_Field (Get_Fld, 0, False)));
     if Word.Is_Null then
-      List_Content := Empty;
-      Status := Ok;
+      Afpx.Line_List.Insert_Copy (Prev_Anagrams);
+      if Afpx.Line_List.Is_Empty then
+        List_Content := Empty;
+        Status := Ok;
+      else
+        Afpx.Encode_Field (Get_Fld, (0, 0), Prev_Word.Image);
+        Afpx.Line_List.Rewind;
+        List_Content := Anagrams;
+        Status := Found;
+      end if;
       return;
     end if;
     for I in 1 .. Word.Length loop
@@ -282,6 +293,9 @@ procedure Xwords is
       List_Content := Empty;
       Status := Ok;
     else
+      Prev_Word := Word;
+      Prev_Anagrams.Delete_List;
+      Prev_Anagrams.Insert_Copy (Afpx.Line_List);
       List_Content := Anagrams;
       Status := Found;
     end if;
