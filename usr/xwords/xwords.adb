@@ -506,6 +506,7 @@ procedure Xwords is
     end loop;
 
     -- Ready
+    Afpx.Update_List (Afpx.Top);
     if not Afpx.Line_List.Is_Empty then
       Afpx.Line_List.Rewind;
     end if;
@@ -560,6 +561,7 @@ procedure Xwords is
       exception
         when Analist.Init_Error =>
           Ok := False;
+          Basic_Proc.Put_Line_Error ("Cannot load anagrams");
       end;
       Cmd.Logger.Log_Debug ("Loaded");
       -- Report completion: Ok or failure
@@ -588,6 +590,7 @@ procedure Xwords is
 
   use type Afpx.Field_Range;
 begin
+  Cmd.Logger.Init ("Xwords");
   -- Parse option for Log
   if Argument.Get_Nbre_Arg > 1 then
     Error;
@@ -619,7 +622,8 @@ begin
     Loading_Anagrams := True;
   exception
     when Environ.Name_Error =>
-      -- No Env variable => no diction => no anagram, stop task
+      -- No Env variable => no dictio => no anagram, stop task
+      Basic_Proc.Put_Line_Error ("No dictio => no anagram");
       Load_Anagrams.Stop;
       Loading_Anagrams := False;
   end;
