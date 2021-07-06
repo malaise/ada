@@ -1,4 +1,4 @@
-with As.U, Normal;
+with As.U, Normal, Utf_8;
 package body Screen is
 
   -------------------------------
@@ -37,7 +37,8 @@ package body Screen is
   -- Color definitions
   Colors : array (Common.Color_Range) of Con_Io.Effective_Colors;
   Color_Names : constant array (Common.Color_Range) of As.U.Asu_Us :=
-      (0 => As.U.Tus ("Brown"),
+      -- (0 => As.U.Tus ("Brown"),
+      (0 => As.U.Tus ("Grey21"),
        1 => As.U.Tus ("Blue"),
        2 => As.U.Tus ("Dark_Green"),
        3 => As.U.Tus ("Cyan"),
@@ -60,7 +61,9 @@ package body Screen is
   Ok_Color  : Con_Io.Effective_Colors;
   Nok_Color : Con_Io.Effective_Colors;
 
-  Pin : constant Character := '!';
+  -- One character, ASCII or UTF-8 string
+  -- Pin : constant String := "@";
+  Pin : constant String := Utf_8.Encode (16#03A0#);
 
   -- Square, in Propal_Win for a propal & level
   function Propal_Square (Propal : Common.Propal_Range;
@@ -123,7 +126,7 @@ package body Screen is
 
     -- Store other colors
     Background_Color := Colors(0);
-    Background_Select := Con_Io.Color_Of ("Light_Grey");
+    Background_Select := Con_Io.Color_Of ("White");
     White := Con_Io.Color_Of ("White");
     Foreground_Color := Con_Io.Color_Of ("Dark_Grey");
     Try_Color := White;
