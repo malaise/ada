@@ -3,6 +3,7 @@ procedure T_Color is
   Console : aliased Con_Io.Console;
   Screen : Con_Io.Window;
   Colors : Con_Io.Colors_Definition;
+  X1, Y1, X2, Y2 : Natural;
   Ic : Con_Io.Effective_Colors;
   R : Con_Io.Get_Result;
   use type Con_Io.Curs_Mvt;
@@ -21,6 +22,7 @@ begin
   Con_Io.Set_Colors (Colors);
   Console.Open;
   Screen.Set_To_Screen (Console'Unrestricted_Access);
+  Console.Set_Y_Mode (Con_Io.X_Mng_Mode);
 
   loop
     Screen.Clear;
@@ -29,6 +31,12 @@ begin
       Screen.Put (Mixed_Str (Con_Io.Color_Name_Of (I) ));
       Screen.Move (Con_Io.Colors'Pos(I), 20);
       Screen.Put ("^!@#$%&€*é$ê", Foreground => I, Move => False); --## rule line off Char
+      Screen.Move (Con_Io.Colors'Pos(I), 35 + Con_Io.Colors'Pos(I));
+      Screen.Set_Foreground (I);
+      Console.To_Xy (Screen.Position, X1, Y1);
+      X2 := X1 + Console.Font_Width;
+      Y2 := Y1 + Console.Font_Height;
+      Console.Fill_Rectangle (X1, Y1, X2, Y2);
       Screen.New_Line;
     end loop;
 

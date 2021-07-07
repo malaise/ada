@@ -1682,7 +1682,7 @@ package body Con_Io is
   end Font_Offset;
 
   function To_Square (Con : Console;
-                      X : in X_Range; Y : in Y_Range) return Square is
+                      X : X_Range; Y : Y_Range) return Square is
     Acc : access Console_Data;
     Ly : Y_Range;
   begin
@@ -1695,6 +1695,19 @@ package body Con_Io is
     return (Row => Ly / Con.Get_Access.Font_Height,
             Col => X / Con.Get_Access.Font_Width);
   end To_Square;
+
+  procedure To_Xy (Con : in Console; Position : in Square;
+                   X : out X_Range; Y : out Y_Range) is
+    Acc : access Console_Data;
+  begin
+    Check_Con (Con);
+    Acc := Con.Get_Access;
+    X := Position.Col * Con.Get_Access.Font_Width;
+    Y := Position.Row * Con.Get_Access.Font_Height;
+    if Acc.Y_Mode = Con_Io_Mode then
+      Y := Acc.Y_Max - Y;
+    end if;
+  end To_Xy;
 
   -- Internal
   procedure Set_Screen_Attributes (Con : in Console) is
