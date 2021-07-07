@@ -1,4 +1,4 @@
-with As.U, Normal, Utf_8;
+with As.U, Normal;
 package body Screen is
 
   -------------------------------
@@ -38,9 +38,9 @@ package body Screen is
   Colors : array (Common.Color_Range) of Con_Io.Effective_Colors;
   Color_Names : constant array (Common.Color_Range) of As.U.Asu_Us :=
       -- (0 => As.U.Tus ("Brown"),
-      (0 => As.U.Tus ("Grey21"),
-       1 => As.U.Tus ("Blue"),
-       2 => As.U.Tus ("Dark_Green"),
+      (0 => As.U.Tus ("Grey33"),
+       1 => As.U.Tus ("Royal_Blue"),
+       2 => As.U.Tus ("Tomato"),
        3 => As.U.Tus ("Cyan"),
        4 => As.U.Tus ("Red"),
        5 => As.U.Tus ("Magenta"),
@@ -61,9 +61,28 @@ package body Screen is
   Ok_Color  : Con_Io.Effective_Colors;
   Nok_Color : Con_Io.Effective_Colors;
 
-  -- One character, ASCII or UTF-8 string
-  -- Pin : constant String := "@";
-  Pin : constant String := Utf_8.Encode (16#03A0#);
+  -- Put pin at current position of window and with the provided color
+  procedure Put_Pin (Win : in Con_Io.Window;
+                     Color : in Con_Io.Effective_Colors;
+                     Double : in Boolean := True) is
+    Position : constant Con_Io.Square
+             := Con_Io.To_Absolute (Win, Con_Io.Position (Win));
+    Factor : constant Positive := (if Double then 2 else 1);
+      X1  : Con_Io.X_Range;
+      Y1  : Con_Io.Y_Range;
+      X2  : Con_Io.X_Range;
+      Y2  : Con_Io.Y_Range;
+  begin
+    Screen_Win.Set_Foreground (Color);
+    Con_Io.To_Xy (Console, Position, X1, Y1);
+    -- One or two squares, minus 2 pixels
+    X1 := X1 + 1;
+    Y1 := Y1 + 1;
+    X2 := X1 + Factor * Console.Font_Width  - 2;
+    Y2 := Y1 + Console.Font_Height - 2;
+    Con_Io.Fill_Rectangle (Console, X1, Y1, X2, Y2);
+    Screen_Win.Set_Foreground (Con_Io.Get_Foreground (Win));
+  end Put_Pin;
 
   -- Square, in Propal_Win for a propal & level
   function Propal_Square (Propal : Common.Propal_Range;
@@ -74,7 +93,6 @@ package body Screen is
     return (Lower_Right.Row - (Con_Io.Row_Range(Propal)-1) * 2,
             (Con_Io.Col_Range(Level)-1) * (Propal_Col_Width+1) );
   end Propal_Square;
-
 
   -- Draw a frame (+---+) around a window
   procedure Frame (Name : in Con_Io.Window) is
@@ -136,6 +154,8 @@ package body Screen is
     Console.Open (Def_Fore => Foreground_Color,
                   Def_Back => Background_Color);
     Screen_Win.Set_To_Screen (Console'Access);
+    -- Graphic vertical axis from top to bottom (as rows)
+    Console.Set_Y_Mode (Con_Io.X_Mng_Mode);
 
   end Init;
 
@@ -264,9 +284,7 @@ package body Screen is
     -- Draw colors
     for I in Common.Eff_Color_Range loop
       Color_Win.Move ((Con_Io.Row_Range(I)-1) * 2, 0);
-      Color_Win.Put (Pin, Foreground => Colors(I));
-      Color_Win.Move ((Con_Io.Row_Range(I)-1) * 2, 1);
-      Color_Win.Put (Pin, Foreground => Colors(I));
+      Put_Pin (Color_Win, Colors(I));
       if I /= Common.Eff_Color_Range'Last then
         Color_Win.Move ((Con_Io.Row_Range(I)-1) * 2 + 1, 0);
         Color_Win.Put ('-');
@@ -395,21 +413,14 @@ package body Screen is
    Level  : in Common.Level_Range;
    Color  : in Common.Color_Range) is
     Square : Con_Io.Square;
-    use type Common.Level_Range, Common.Color_Range;
+    use type Common.Level_Range;
   begin
     if Level > Current_Level then
       raise Constraint_Error;
     end if;
     Square := Propal_Square (Propal, Level);
-    for I in 1 .. Propal_Col_Width loop
-      Propal_Win.Move (Square.Row, Square.Col+I-1);
-      if Color /= Common.Color_Range'First then
-        Propal_Win.Put (Pin, Foreground => Colors(Color));
-      else
-        Propal_Win.Put (' ', Foreground => Foreground_Color, Move => False);
-      end if;
-    end loop;
-
+    Propal_Win.Move (Square.Row, Square.Col);
+    Put_Pin (Propal_Win, Colors(Color));
   end Put_Color;
 
   procedure Put_Answer (
@@ -431,12 +442,12 @@ package body Screen is
     -- Put
     for I in 1 .. Placed_Ok loop
       Try_Win.Move (Square);
-      Try_Win.Put ('*', Foreground => Ok_Color);
+      Put_Pin (Try_Win, Ok_Color, False);
       Square.Col := Square.Col + 1;
     end loop;
     for I in 1 .. Colors_Ok loop
       Try_Win.Move (Square);
-      Try_Win.Put ('*', Foreground => Nok_Color);
+      Put_Pin (Try_Win, Nok_Color, False);
       Square.Col := Square.Col + 1;
     end loop;
 
@@ -452,11 +463,8 @@ package body Screen is
   begin
     Square.Row := 0;
     Square.Col := Propal_Square (1, Level).Col;
-    for I in 1 .. Propal_Col_Width loop
-      Secret_Win.Move (Square.Row, Square.Col+I-1);
-      Secret_Win.Put (Pin, Foreground => Colors(Color));
-    end loop;
-
+    Secret_Win.Move (Square.Row, Square.Col);
+    Put_Pin (Secret_Win, Colors(Color));
   end Put_Secret_Color;
 
   ----------
