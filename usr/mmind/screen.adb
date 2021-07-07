@@ -39,7 +39,7 @@ package body Screen is
   Color_Names : constant array (Common.Color_Range) of As.U.Asu_Us :=
       -- (0 => As.U.Tus ("Brown"),
       (0 => As.U.Tus ("Grey33"),
-       1 => As.U.Tus ("Royal_Blue"),
+       1 => As.U.Tus ("Blue"),
        2 => As.U.Tus ("Tomato"),
        3 => As.U.Tus ("Cyan"),
        4 => As.U.Tus ("Red"),
