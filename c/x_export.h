@@ -107,6 +107,13 @@ extern int x_draw_rectangle (void *line_id, int x1, int y1, int x2, int y2);
 
 extern int x_fill_rectangle (void *line_id, int x1, int y1, int x2, int y2);
 
+/* Angles in minutes of degree, trigo */
+extern int x_draw_arc (void *line_id, int x1, int y1, int x2, int y2,
+                       int a1, int a2);
+
+extern int x_fill_arc (void *line_id, int x1, int y1, int x2, int y2,
+                       int e1, int a2);
+
 extern int x_draw_points (void *line_id, int x1, int y1, int width, int height,
                           unsigned char points[]);
 

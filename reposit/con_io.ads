@@ -474,6 +474,9 @@ package Con_Io is
   subtype X_Range is Natural;
   subtype Y_Range is Natural;
 
+  -- Angles in minutes of degrees
+  subtype Minutes is Integer range -360 * 60 .. 360 * 60;
+
   -- The screen must be open (console.init)
   function X_Max (Con : Console) return X_Range;
   function Y_Max (Con : Console) return Y_Range;
@@ -540,6 +543,31 @@ package Con_Io is
                             Y1  : in Y_Range;
                             X2  : in X_Range;
                             Y2  : in Y_Range);
+
+  -- Draw an arc (only the border) with screen foreground and current
+  --  Xor mode
+  -- on screen background (only the border)
+  -- Within a rectangle, between two angles in minutes of degrees starting from
+  -- 3 o'clock position and in trigo wose (counter clockwise)
+  -- No window is affected
+  procedure Draw_Arc (Con : in Console;
+                      X1  : in X_Range;
+                      Y1  : in Y_Range;
+                      X2  : in X_Range;
+                      Y2  : in Y_Range;
+                      A1, A2 : in Minutes);
+
+  -- Fill an arc with screen foreground and current Xor mode
+  -- on screen background
+  -- Within a rectangle, between two angles in minutes of degrees starting from
+  -- 3 o'clock position and in trigo wose (counter clockwise)
+  -- No window is affected
+  procedure Fill_Arc (Con : in Console;
+                      X1  : in X_Range;
+                      Y1  : in Y_Range;
+                      X2  : in X_Range;
+                      Y2  : in Y_Range;
+                      A1, A2 : in Minutes);
 
   -- Draw points in a rectangle, starting at X1, Y1 and of width * height
   --  pixels

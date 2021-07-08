@@ -1834,6 +1834,48 @@ package body Con_Io is
     X_Mng.X_Fill_Rectangle (Acc.Id, X1, Ly1, X2, Ly2);
   end Fill_Rectangle;
 
+  procedure Draw_Arc (Con : in Console;
+                      X1  : in X_Range;
+                      Y1  : in Y_Range;
+                      X2  : in X_Range;
+                      Y2  : in Y_Range;
+                      A1, A2 : in Minutes) is
+    Acc : access Console_Data;
+    Ly1, Ly2 : Y_Range;
+  begin
+    Check_Con (Con);
+    Acc := Con.Get_Access;
+    Set_Screen_Attributes (Con);
+    Ly1 := Y1;
+    Ly2 := Y2;
+    if Acc.Y_Mode = Con_Io_Mode then
+      Ly1 := Acc.Y_Max - Ly1;
+      Ly2 := Acc.Y_Max - Ly2;
+    end if;
+    X_Mng.X_Draw_Arc (Acc.Id, X1, Ly1, X2, Ly2, A1, A2);
+  end Draw_Arc;
+
+  procedure Fill_Arc (Con : in Console;
+                      X1  : in X_Range;
+                      Y1  : in Y_Range;
+                      X2  : in X_Range;
+                      Y2  : in Y_Range;
+                      A1, A2 : in Minutes) is
+    Acc : access Console_Data;
+    Ly1, Ly2 : Y_Range;
+  begin
+    Check_Con (Con);
+    Acc := Con.Get_Access;
+    Set_Screen_Attributes (Con);
+    Ly1 := Y1;
+    Ly2 := Y2;
+    if Acc.Y_Mode = Con_Io_Mode then
+      Ly1 := Acc.Y_Max - Ly1;
+      Ly2 := Acc.Y_Max - Ly2;
+    end if;
+    X_Mng.X_Fill_Arc (Acc.Id, X1, Ly1, X2, Ly2, A1, A2);
+  end Fill_Arc;
+
   procedure Draw_Points(Con           : in Console;
                         X, Y          : in Natural;
                         Width, Height : in Natural;

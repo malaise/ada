@@ -236,6 +236,22 @@ package X_Mng is
   procedure X_Fill_Rectangle(Line_Id        : in Line;
                              X1, Y1, X2, Y2 : in Natural);
 
+  -- Draw an arc (border) with current characteristics
+  --  attributes and xor mode
+  -- The X and Y are coordinates of the 4 corners
+  -- The angles are in minutes of degrees, trigo
+  procedure X_Draw_Arc(Line_Id        : in Line;
+                       X1, Y1, X2, Y2 : in Natural;
+                       A1, A2         : in Integer);
+
+  -- Fill aan arc with current characteristics
+  --  attributes and xor mode
+  -- The X and Y are coordinates of the 4 corners
+  -- The angles are in minutes of degrees, trigo
+  procedure X_Fill_Arc(Line_Id        : in Line;
+                       X1, Y1, X2, Y2 : in Natural;
+                       A1, A2         : in Integer);
+
   -- Get current position of pointer (independant from events)
   -- The X and Y are coordinates of the pointer
   procedure X_Get_Current_Pointer_Position(Line_Id : in Line;

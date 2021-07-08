@@ -640,11 +640,36 @@ extern int x_draw_line (void *line_id, int x1, int y1, int x2, int y2) {
 
 }
 
+/* Compute X rectangle */
+static void rectangle_of (int x1, int y1, int x2, int y2,
+                         int *x, int *y, int *width, int *height) {
+    /* Set xy upper left, positive width and height */
+    if (x1 <= x2) {
+        *x = x1;
+        *width = x2 - x1;
+    } else {
+        *x = x2;
+        *width = x1 - x2;
+    }
+    if (y1 <= y2) {
+        *y = y1;
+        *height = y2 - y1;
+    } else {
+        *y = y2;
+        *height = y1 - y2;
+    }
+}
+
+/* Compute angle in 1/64 degrees */
+static int angle_of (int angle) {
+  return (int) (angle * 64.0 / 60.0);
+}
+
 /* Draw a rectangle at x1y1, x1y2, x2y2, x2y1 */
 extern int x_draw_rectangle (void *line_id, int x1, int y1, int x2, int y2) {
     t_window *win_id = (t_window*) line_id;
     int x, y;
-    unsigned int width, height;
+    int width, height;
 
 
     /* Check that window is open */
@@ -653,20 +678,7 @@ extern int x_draw_rectangle (void *line_id, int x1, int y1, int x2, int y2) {
     }
 
     /* Set xy upper left, positive width and height */
-    if (x1 <= x2) {
-        x = x1;
-        width = x2 - x1;
-    } else {
-        x = x2;
-        width = x1 - x2;
-    }
-    if (y1 <= y2) {
-        y = y1;
-        height = y2 - y1;
-    } else {
-        y = y2;
-        height = y1 - y2;
-    }
+    rectangle_of (x1, y1, x2, y2, &x, &y, &width, &height);
 
     /* Draw */
     XDrawRectangle (win_id->server->x_server,
@@ -682,7 +694,7 @@ extern int x_draw_rectangle (void *line_id, int x1, int y1, int x2, int y2) {
 extern int x_fill_rectangle (void *line_id, int x1, int y1, int x2, int y2) {
     t_window *win_id = (t_window*) line_id;
     int x, y;
-    unsigned int width, height;
+    int width, height;
 
 
     /* Check that window is open */
@@ -691,20 +703,7 @@ extern int x_fill_rectangle (void *line_id, int x1, int y1, int x2, int y2) {
     }
 
     /* Set xy upper left, positive width and height */
-    if (x1 <= x2) {
-        x = x1;
-        width = x2 - x1;
-    } else {
-        x = x2;
-        width = x1 - x2;
-    }
-    if (y1 <= y2) {
-        y = y1;
-        height = y2 - y1;
-    } else {
-        y = y2;
-        height = y1 - y2;
-    }
+    rectangle_of (x1, y1, x2, y2, &x, &y, &width, &height);
 
     /* Fill */
     XFillRectangle (win_id->server->x_server,
@@ -714,6 +713,58 @@ extern int x_fill_rectangle (void *line_id, int x1, int y1, int x2, int y2) {
     local_server.modified = TRUE;
     return (WAIT_OK);
 
+}
+
+/* Draw an arc within a regtangle at x1y1, x1y2, x2y2, x2y1 */
+extern int x_draw_arc (void *line_id, int x1, int y1, int x2, int y2,
+                       int a1, int a2) {
+    t_window *win_id = (t_window*) line_id;
+    int x, y;
+    int width, height;
+
+    /* Check that window is open */
+    if (! lin_check(win_id)) {
+        return (WAIT_ERR);
+    }
+
+    /* Set xy upper left, positive width and height */
+    rectangle_of (x1, y1, x2, y2, &x, &y, &width, &height);
+
+    /* Draw */
+    XDrawArc (win_id->server->x_server,
+      win_id->x_window,
+      win_id->x_graphic_context,
+      x, y, width, height,
+      angle_of (a1), angle_of (a2));
+
+    local_server.modified = TRUE;
+    return (WAIT_OK);
+}
+
+/* Fill an arc within a regtangle at x1y1, x1y2, x2y2, x2y1 */
+extern int x_fill_arc (void *line_id, int x1, int y1, int x2, int y2,
+                       int a1, int a2) {
+    t_window *win_id = (t_window*) line_id;
+    int x, y;
+    int width, height;
+
+    /* Check that window is open */
+    if (! lin_check(win_id)) {
+        return (WAIT_ERR);
+    }
+
+    /* Set xy upper left, positive width and height */
+    rectangle_of (x1, y1, x2, y2, &x, &y, &width, &height);
+
+    /* Draw */
+    XFillArc (win_id->server->x_server,
+      win_id->x_window,
+      win_id->x_graphic_context,
+      x, y, width, height,
+      angle_of (a1), angle_of (a2));
+
+    local_server.modified = TRUE;
+    return (WAIT_OK);
 }
 
 /* Draw points in a rectangle, starting at x1, y1 and of width * height pixels */

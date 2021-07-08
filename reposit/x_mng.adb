@@ -266,6 +266,24 @@ package body X_Mng is
     with Import => True, Convention => C, External_Name => "x_fill_rectangle";
 
   ------------------------------------------------------------------
+  -- Draw an arc with current characteristics
+  -- int x_draw_arc (void *line_id, int x1, int y1, int x2, int y2,
+  --                 int a1, int a2);
+  ------------------------------------------------------------------
+  function X_Draw_Arc(Line_Id : Line_For_C;
+                            X1, Y1, X2, Y2, A1, A2 : Natural) return Result
+    with Import => True, Convention => C, External_Name => "x_draw_arc";
+
+  ------------------------------------------------------------------
+  -- Fill an arc with current characteristics
+  -- int x_fill_arc (void *line_id, int x1, int y1, int x2, int y2,
+  --                 int a1, int a2);
+  ------------------------------------------------------------------
+  function X_Fill_Arc(Line_Id : Line_For_C;
+                            X1, Y1, X2, Y2, A1, A2 : Natural) return Result
+    with Import => True, Convention => C, External_Name => "x_fill_arc";
+
+  ------------------------------------------------------------------
   -- Draw points in a rectangle, starting at x1, y1 and of width * height pixels
   -- int x_draw_points (void *line_id, int x1, int y1, int width, int height,
   --                      unsigned char points[]);
@@ -1046,7 +1064,7 @@ package body X_Mng is
   end X_Draw_Point;
 
   ------------------------------------------------------------------
-  procedure X_Draw_Line(Line_Id       : in Line;
+  procedure X_Draw_Line(Line_Id        : in Line;
                         X1, Y1, X2, Y2 : in Natural) is
     Line_For_C_Id : Line_For_C;
     Res : Boolean;
@@ -1061,7 +1079,7 @@ package body X_Mng is
   end X_Draw_Line;
 
   ------------------------------------------------------------------
-  procedure X_Draw_Rectangle(Line_Id       : in Line;
+  procedure X_Draw_Rectangle(Line_Id        : in Line;
                              X1, Y1, X2, Y2 : in Natural) is
     Line_For_C_Id : Line_For_C;
     Res : Boolean;
@@ -1076,7 +1094,7 @@ package body X_Mng is
   end X_Draw_Rectangle;
 
   ------------------------------------------------------------------
-  procedure X_Fill_Rectangle(Line_Id       : in Line;
+  procedure X_Fill_Rectangle(Line_Id        : in Line;
                              X1, Y1, X2, Y2 : in Natural) is
     Line_For_C_Id : Line_For_C;
     Res : Boolean;
@@ -1089,6 +1107,38 @@ package body X_Mng is
       raise X_Failure;
     end if;
   end X_Fill_Rectangle;
+
+  ------------------------------------------------------------------
+  procedure X_Draw_Arc(Line_Id        : in Line;
+                       X1, Y1, X2, Y2 : in Natural;
+                       A1, A2         : in Integer) is
+    Line_For_C_Id : Line_For_C;
+    Res : Boolean;
+  begin
+    Check (Line_Id);
+    Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
+    Res := X_Draw_Arc(Line_For_C_Id, X1, Y1, X2, Y2, A1, A2) = Ok;
+    Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
+    if not Res then
+      raise X_Failure;
+    end if;
+  end X_Draw_Arc;
+
+  ------------------------------------------------------------------
+  procedure X_Fill_Arc(Line_Id        : in Line;
+                       X1, Y1, X2, Y2 : in Natural;
+                       A1, A2         : in Integer) is
+    Line_For_C_Id : Line_For_C;
+    Res : Boolean;
+  begin
+    Check (Line_Id);
+    Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
+    Res := X_Fill_Arc(Line_For_C_Id, X1, Y1, X2, Y2, A1, A2) = Ok;
+    Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
+    if not Res then
+      raise X_Failure;
+    end if;
+  end X_Fill_Arc;
 
   ------------------------------------------------------------------
   procedure X_Draw_Points(Line_Id       : in Line;

@@ -193,6 +193,8 @@ boolean read;
       x_fill_rectangle (line, 0, 0, 9, 14);
       x_draw_rectangle (line, 10, 0, 19, 14);
       x_draw_points (line, 20, 1, 7, 8, draw);
+      x_fill_arc (line, 30, 1, 44, 15, 0.0, 5400);
+      x_draw_arc (line, 50, 1, 64, 15, 0.0, 21600);
 
       /* Text display  : show attributes */
       strcpy (stra, "(s)uperbright:");
@@ -208,9 +210,7 @@ boolean read;
       x_set_attributes (line, back, 13, 0, 0, 0);
       put (line, CLL, EVENT_LNE, 10);
       put (line, stre, EVENT_LNE, 10);
-
     }
-
 
     /* Wait for events */
     delta.tv_sec = 2;
