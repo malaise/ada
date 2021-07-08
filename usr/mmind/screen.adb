@@ -67,7 +67,6 @@ package body Screen is
                      Double : in Boolean := True) is
     Position : constant Con_Io.Square
              := Con_Io.To_Absolute (Win, Con_Io.Position (Win));
-    Factor : constant Positive := (if Double then 2 else 1);
       X1  : Con_Io.X_Range;
       Y1  : Con_Io.Y_Range;
       X2  : Con_Io.X_Range;
@@ -76,11 +75,20 @@ package body Screen is
     Screen_Win.Set_Foreground (Color);
     Con_Io.To_Xy (Console, Position, X1, Y1);
     -- One or two squares, minus 2 pixels
-    X1 := X1 + 1;
-    Y1 := Y1 + 1;
-    X2 := X1 + Factor * Console.Font_Width  - 2;
-    Y2 := Y1 + Console.Font_Height - 2;
-    Con_Io.Fill_Rectangle (Console, X1, Y1, X2, Y2);
+    if Double then
+      -- A circle of diameter height - 2 pixels
+      X1 := X1 + 1;
+      Y1 := Y1 + 1;
+      X2 := X1 + Console.Font_Height - 2;
+      Y2 := Y1 + Console.Font_Height - 2;
+      Con_Io.Fill_Arc (Console, X1, Y1, X2, Y2, 0, 360 * 60);
+    else
+      -- A vertical rectangle of width cell-4 width and height cell-2 pixels
+      X1 := X1 + 2;
+      X2 := X1 + Console.Font_Width  - 4;
+      Y2 := Y1 + Console.Font_Height;
+      Con_Io.Fill_Rectangle (Console, X1, Y1, X2, Y2);
+    end if;
     Screen_Win.Set_Foreground (Con_Io.Get_Foreground (Win));
   end Put_Pin;
 
