@@ -94,6 +94,7 @@ package body Screen is
     Nb_Selected : Natural;
     Row_Selected : Common.Row_Range;
     Row_Col : Common.Row_Col_Rec;
+    Bars : Common.Bar_Status_Array;
     type Selected_Array is array (Common.Index_Range) of Boolean;
     Selected : Selected_Array := (others => False);
 
@@ -129,7 +130,21 @@ package body Screen is
 
             -- Take selection / unselect
             if Row_Col.Row = Row_Selected then
-              if Selected(Selection_Index) then
+              if Result.Double_Click then
+                -- Select all remaining bars of the row
+                Bars := Common.Get_Bars (Row_Selected);
+                Nb_Selected := 0;
+                for I in Bars'Range loop
+                  if Bars(I) then
+                    Selection_Index := Common.Row_Col2Index (
+                        (Row_Col.Row, I - Bars'First + 1) );
+                    Selected(Selection_Index) := True;
+                    Afpx.Set_Field_Colors (Selection_Index,
+                                           Background => Sel_Color);
+                    Nb_Selected := Nb_Selected + 1;
+                  end if;
+                end loop;
+              elsif Selected(Selection_Index) then
                 Selected(Selection_Index) := False;
                 Afpx.Set_Field_Colors (Result.Field_No,
                                        Background => Stick_Color);

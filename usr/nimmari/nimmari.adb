@@ -7,7 +7,7 @@ procedure Nimmari is
   Logger : Trace.Loggers.Logger;
   Graphic_Mode : Boolean := False;
 
-  -- Result of computation
+  -- Result of computation or play
   Row    : Common.Row_Range;
   Remove : Common.Bar_Status_Array;
   Result : Common.Result_List;
