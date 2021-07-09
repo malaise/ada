@@ -37,15 +37,15 @@ begin
       X2 := X1 + Console.Font_Width;
       Y2 := Y1 + Console.Font_Height;
       case Con_Io.Colors'Pos (I) rem 4 is
-        when 0 => 
+        when 0 =>
           Console.Fill_Rectangle (X1, Y1, X2, Y2);
-        when 1 => 
+        when 1 =>
           Console.Draw_Rectangle (X1, Y1, X2, Y2);
-        when 2 => 
+        when 2 =>
           Console.Fill_Arc (X1, Y1, X2, Y2, 0, 60 * 360);
-        when 3 => 
+        when 3 =>
           Console.Draw_Arc (X1, Y1, X2, Y2, 0, 60 * 360);
-        when others => 
+        when others =>
           null;
       end case;
       Screen.New_Line;
