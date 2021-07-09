@@ -92,6 +92,7 @@ procedure T_Afpx is
      & ", Id_Selected Right: " & Status.Ids_Selected(Afpx.List_Right)'Img);
   end List_Change_Cb;
 
+  use type Afpx.Absolute_Field_Range;
 begin
   Afpx.Get_Screen_Size (Height, Width);
   Basic_Proc.Put_Line_Output ("Screen geometry is "
@@ -189,9 +190,12 @@ begin
           when 4 =>
             exit;
           when 5 | Afpx.List_Field_No =>
-            Afpx.Line_List.Read (Afpx_Item, Afpx.Line_List_Mng.Current);
-            Afpx.Clear_Field (2);
-            Encode_Status (U => Afpx_Item.Str (1 .. Afpx_Item.Len));
+            if Ptg_Result.Field_No = Afpx.List_Field_No
+            or else Ptg_Result.Double_Click then
+              Afpx.Line_List.Read (Afpx_Item, Afpx.Line_List_Mng.Current);
+              Afpx.Clear_Field (2);
+              Encode_Status (U => Afpx_Item.Str (1 .. Afpx_Item.Len));
+            end if;
           when 8 =>
             Afpx.Update_List(Afpx.Up);
           when 9 =>
@@ -213,6 +217,9 @@ begin
           when others =>
             null;
         end case;
+        if Ptg_Result.Double_Click then
+          Basic_Proc.Put_Line_Output ("Double click");
+        end if;
       when Afpx.Fd_Event =>
         Afpx.Clear_Field (2);
         Encode_Status ("> Fd Event <");

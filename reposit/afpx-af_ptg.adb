@@ -15,6 +15,7 @@ package body Af_Ptg is
         -- Click and release in a Button field
         But_Field_No : Absolute_Field_Range;
         But_Click_Square, But_Release_Square : Con_Io.Square;
+        Double_Click : Boolean;
       when Get_Field =>
         -- Click and release in a Get field
         Get_Field_No : Field_Range;
@@ -29,9 +30,10 @@ package body Af_Ptg is
   Last_But : Button_List;
   Last_Pos : Con_Io.Square;
 
-  -- Time and list Id of first click
-  Last_Selected_Id : Line_List_Mng.Ll_Natural;
+  -- Time, field and list Id of first click
   Last_Selection_Time : Ada.Calendar.Time;
+  Last_Selected_Field : Absolute_Field_Range;
+  Last_Selected_Id : Line_List_Mng.Ll_Natural;
   Double_Click_Delay : Double_Click_Delay_Range
                      := Default_Double_Click_Delay;
   Show_Click_Delay  : constant Ada.Calendar.Day_Duration := 0.03;
@@ -263,8 +265,10 @@ package body Af_Ptg is
     Field : Afpx_Typ.Field_Rec;
     List_Status : List_Status_Rec;
     Click_Time : Ada.Calendar.Time;
+    Loc_Last_Selected_Field : Absolute_Field_Range;
     Loc_Last_Selected_Id : Line_List_Mng.Ll_Natural;
     Selection_Modified : Boolean;
+    Double_Click : Boolean;
 
     List_Pos : Line_List_Mng.Ll_Positive;
     List_Mod : Boolean;
@@ -289,8 +293,10 @@ package body Af_Ptg is
     use type Button_List, Absolute_Field_Range, Field_Kind_List,
              Line_List_Mng.Ll_Natural;
   begin
-    -- Save and reset last selected id
+    -- Save and reset last selected field and id
+    Loc_Last_Selected_Field := Last_Selected_Field;
     Loc_Last_Selected_Id := Last_Selected_Id;
+    Last_Selected_Field := Lfn;
     Last_Selected_Id := 0;
 
     -- Result event discarded
@@ -416,17 +422,20 @@ package body Af_Ptg is
           end if;
           Restore_Pos;
         elsif Click_But = Con_Io.Left
+        and then Loc_Last_Selected_Field = Lfn
         and then Af_List.To_Id (Click_Row_List) = Loc_Last_Selected_Id
         and then Last_Selection_Time >= Click_Time - Double_Click_Delay then
           -- Double Left click
           Af_List.Put (Click_Row_List, Selected, False);
           Result := (Kind => Button_Field, But_Field_No => Click_Field,
                      But_Click_Square => Get_Relative (Click_Pos),
-                     But_Release_Square => Get_Relative (Release_Pos));
+                     But_Release_Square => Get_Relative (Release_Pos),
+                     Double_Click => True);
         elsif Click_But = Con_Io.Left then
           -- Valid Left click. Store for next click to check double click
           Af_List.Put (Click_Row_List, Selected, False);
           List_Status := Af_List.Get_Status;
+          Last_Selected_Field := Lfn;
           Last_Selected_Id := List_Status.Ids_Selected(List_Left);
           Last_Selection_Time := Click_Time;
           if List_Change_Cb /= null then
@@ -542,9 +551,14 @@ package body Af_Ptg is
       -- If field is button: restore color
       Put_Fld (Click_Field, Normal);
       if Valid_Field then
+        Double_Click := Loc_Last_Selected_Field = Click_Field
+            and then Last_Selection_Time >= Click_Time - Double_Click_Delay;
         Result := (Kind => Button_Field, But_Field_No => Click_Field,
                    But_Click_Square => Get_Relative (Click_Pos),
-                   But_Release_Square => Get_Relative (Release_Pos));
+                   But_Release_Square => Get_Relative (Release_Pos),
+                   Double_Click => Double_Click);
+        Last_Selected_Field := Click_Field;
+        Last_Selection_Time := Click_Time;
       end if;
     end if;
 
@@ -1287,7 +1301,8 @@ package body Af_Ptg is
                            Event        => Mouse_Button,
                            Field_No     => Click_Result.But_Field_No,
                            Click_Pos    => Click_Result.But_Click_Square,
-                           Release_Pos  => Click_Result.But_Release_Square);
+                           Release_Pos  => Click_Result.But_Release_Square,
+                           Double_Click => Click_Result.Double_Click);
                 Get_Handle.Insert := False;
                 Done := True;
             end case;

@@ -343,6 +343,7 @@ package Afpx is
         -- Field click and relative square of click and release
         Field_No : Absolute_Field_Range;
         Click_Pos, Release_Pos : Con_Io.Square;
+        Double_Click : Boolean;
       when Fd_Event | Timer_Event | Signal_Event | Refresh =>
         null;
     end case;
@@ -439,6 +440,9 @@ package Afpx is
   procedure Reset (Handle : in out Get_Handle_Rec);
 
   -- Set double-click delay for Put_Then_Get
+  -- Double click in the list terminates Put_Then_Get
+  -- Double click in a Button field is reported (but the first click already
+  --  terminated Put_Then8get)
   -- Can also be defined by ENV variable AFPX_DOUBLE_CLICK_DELAY (in ms)
   subtype Double_Click_Delay_Range is Duration range 0.100 .. 0.900;
   procedure Set_Double_Click_Delay (
@@ -447,9 +451,9 @@ package Afpx is
   -- Print the fields and the list (if Redisplay has been called or is needed),
   --  then gets.
   -- In List: See above section on "User actions on the list".
-  --   mouse click changes current list element (or Id_Selected_Right),
+  --   Mouse click changes current list element (or Id_Selected_Right),
   --   Up/Down arrow, Page Up/Down, Ctrl Page Up/Down scrolls the list,
-  --   double click terminates Put_Then_Get (Mouse_Button, List_Field_No).
+  --   Double click terminates Put_Then_Get (Mouse_Button, List_Field_No).
   -- In Put fields: nothing.
   -- In Get fields:
   --   Home and End move to the boundaries of the get area (see Con_Io), while
@@ -474,7 +478,9 @@ package Afpx is
   --    position before pasting.
   --    This operation does not expand to next get field, even if Move_Next is
   --    set for current field.
-  -- In Button fields: mouse click then release terminates Put_Then_Get.
+  -- In Button fields: mouse click then release terminates Put_Then_Get
+  --  Double_Click indicates if the same field has been selceted within
+  --   Double_Click_Delay.
   -- This call affects the content of Get fields, the cursor field and col,
   --  and the current element of the list, it calls Modification_Ack on the
   --  Line_List (see Long_Long_Limited_List).
