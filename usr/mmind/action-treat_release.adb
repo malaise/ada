@@ -86,7 +86,7 @@ procedure Treat_Release (Go_On, Exit_Game, Color_Move : out Boolean) is
            Screen.Selection_List, Screen.Selection_Rec;
 
 begin
-  -- Release in same value as clicked
+  -- Valid if release in same item as clicked
   case History(Prev_Status).Selection_Kind is
     when Screen.Menu | Screen.Exit_Game =>
       Valid := History(Curr_Status).Selection_Kind
@@ -121,29 +121,24 @@ begin
                       Try_State => Screen.Can_Try);
     when Screen.Color =>
       if not Valid then
-        -- The cancel is handled below
         Screen.Put_Selected_Color (Color => History(Prev_Status).Color_No,
                                    Selected => False);
       end if;
     when Screen.Propal =>
       if not Valid then
-        -- The cancel is handled below
         Screen.Put_Default_Pos (History(Prev_Status).Propal_No,
                                 History(Prev_Status).Column_No,
                                 Show => False);
       end if;
-    when others =>
-      null;
+    when Screen.Nothing =>
+      -- Discard invalid click
+      Go_On := True;
+      -- Keep selection
+      Color_Move := Curr_Status = Release_Dest;
+      return;
   end case;
 
-  -- Discard invalid release and invalid click
-  if not Valid or else History(Prev_Status).Selection_Kind = Screen.Nothing then
-    Go_On := True;
-    Color_Move := Curr_Status = Release_Dest;
-    return;
-  end if;
-
-  -- Also cancel selected origin color in colors or propal
+  -- Valid or not: Cancel selected origin color in colors or propal
   if Curr_Status = Release_Dest then
     if History(Release_Orig).Selection_Kind = Screen.Color then
       Screen.Put_Selected_Color (Color => History(Release_Orig).Color_No,
@@ -153,6 +148,22 @@ begin
                               History(Release_Orig).Column_No,
                               Show => False);
     end if;
+  end if;
+
+  -- Invalid release
+  if not Valid then
+    -- Discard
+    if History(Prev_Status).Selection_Kind = Screen.Color then
+      Screen.Put_Selected_Color (Color => History(Prev_Status).Color_No,
+                                 Selected => False);
+    elsif History(Prev_Status).Selection_Kind = Screen.Propal then
+      Screen.Put_Default_Pos (History(Prev_Status).Propal_No,
+                              History(Prev_Status).Column_No,
+                              Show => False);
+    end if;
+    Go_On := True;
+    Color_Move := False;
+    return;
   end if;
 
   -- Treat release
@@ -254,7 +265,7 @@ begin
                           History(Release_Orig).Column_No);
         begin
           if History(Curr_Status) = History(Release_Orig) then
-            -- Same propal => unselect. Clear if not answered
+            -- Same propal cell => unselect. Clear if not answered
             Screen.Put_Default_Pos (History(Curr_Status).Propal_No,
                                     History(Curr_Status).Column_No,
                                     Show => False);
@@ -281,7 +292,17 @@ begin
             History(Release_Orig) := History(Curr_Status);
             Color_Move := True;
           else
-            -- Dest is free: copy color
+            -- Dest is free: copy if source is answered, otherwise move color
+            if not Common.Is_Answered (History(Release_Orig).Propal_No) then
+              -- Move
+              Common.Set_Color (History(Release_Orig).Propal_No,
+                                History(Release_Orig).Column_No,
+                                Common.No_Color);
+              Screen.Put_Color(History(Release_Orig).Propal_No,
+                               History(Release_Orig).Column_No,
+                               Common.No_Color);
+              Update_Try (History(Release_Orig).Propal_No);
+            end if;
             Screen.Put_Default_Pos (History(Curr_Status).Propal_No,
                                     History(Curr_Status).Column_No,
                                     Show => False);
