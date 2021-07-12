@@ -425,7 +425,7 @@ package body Af_Ptg is
         and then Loc_Last_Selected_Field = Lfn
         and then Af_List.To_Id (Click_Row_List) = Loc_Last_Selected_Id
         and then Last_Selection_Time >= Click_Time - Double_Click_Delay then
-          -- Double Left click
+          -- Double Left click on same line of the list
           Af_List.Put (Click_Row_List, Selected, False);
           Result := (Kind => Button_Field, But_Field_No => Click_Field,
                      But_Click_Square => Get_Relative (Click_Pos),
@@ -551,6 +551,7 @@ package body Af_Ptg is
       -- If field is button: restore color
       Put_Fld (Click_Field, Normal);
       if Valid_Field then
+        -- Double left click in same button field
         Double_Click := Loc_Last_Selected_Field = Click_Field
             and then Last_Selection_Time >= Click_Time - Double_Click_Delay;
         Result := (Kind => Button_Field, But_Field_No => Click_Field,
