@@ -76,17 +76,17 @@ package body Screen is
     Con_Io.To_Xy (Console, Position, X1, Y1);
     -- One or two squares, minus 2 pixels
     if Double then
-      -- A circle of diameter height - 2 pixels
+      -- An ellipse of diameters size-2 pixel, twice width and once height
+      X2 := X1 + (2 * Console.Font_Width) - 2;
       X1 := X1 + 1;
-      Y1 := Y1 + 1;
-      X2 := X1 + Console.Font_Height - 2;
       Y2 := Y1 + Console.Font_Height - 2;
+      Y1 := Y1 + 1;
       Con_Io.Fill_Arc (Console, X1, Y1, X2, Y2, 0, 360 * 60);
     else
-      -- A vertical rectangle of width cell-4 width and height cell-2 pixels
+      -- A vertical rectangle of width cell-4 width and height pixels
+      X2 := X1 + Console.Font_Width - 3;
       X1 := X1 + 2;
-      X2 := X1 + Console.Font_Width  - 4;
-      Y2 := Y1 + Console.Font_Height;
+      Y2 := Y1 + Console.Font_Height - 1;
       Con_Io.Fill_Rectangle (Console, X1, Y1, X2, Y2);
     end if;
     Screen_Win.Set_Foreground (Con_Io.Get_Foreground (Win));
