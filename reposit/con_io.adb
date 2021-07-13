@@ -159,7 +159,7 @@ package body Con_Io is
          Font_No + Font_No_Offset
        else Font_No),
       Font_Width, Font_Height, Font_Offset);
-    Logger.Log_Debug ("Font geometry of" & Font_No'Img
+    Logger.Log_Debug ("Getting font geometry of" & Font_No'Img
                     & ": " & Font_Width'Img & " x" & Font_Height'Img
                     & " +" & Font_Offset'Img);
   end Get_Font_Geometry;
@@ -197,10 +197,6 @@ package body Con_Io is
     Line : X_Mng.Line_Definition_Rec := Line_Def;
     Con_Data : Console_Data;
     Screen : Window;
-    -- For logging font No and geometry
-    Font_Width  : Natural;
-    Font_Height : Natural;
-    Font_Offset : Natural;
   begin
     Logger.Init ("Con_Io");
     Logger.Log_Debug ("Console opening with font" & Font_No'Img);
@@ -220,14 +216,17 @@ package body Con_Io is
     Line.Width  := Col_Last - Col_Range_First + 1;
     X_Mng.X_Open_Line (Line, Con_Data.Id);
     Logger.Log_Debug ("Console opened");
-    Get_Font_Geometry (Line.No_Font, Font_Width, Font_Height, Font_Offset);
     X_Mng.X_Set_Name (Con_Data.Id, Argument.Get_Program_Name);
     Logger.Log_Debug ("Console name set");
     Con_Data.Mouse_Status := Mouse_Discard;
     X_Mng.X_Get_Graphic_Characteristics(Con_Data.Id,
           Con_Data.X_Max, Con_Data.Y_Max,
           Con_Data.Font_Width, Con_Data.Font_Height, Con_Data.Font_Offset);
-    Logger.Log_Debug ("Console characteristics retrieved");
+    Logger.Log_Debug ("Console characteristics retrieved, Size: "
+                    & Con_Data.X_Max'Img & " x " & Con_Data.Y_Max'Img
+                    & "    Font: " & Con_Data.Font_Width'Img
+                    & " x" & Con_Data.Font_Height'Img
+                    & " +" & Con_Data.Font_Offset'Img);
     -- Max is width - 1 so that range is 0 .. max
     Con_Data.X_Max := Con_Data.X_Max - 1;
     Con_Data.Y_Max := Con_Data.Y_Max - 1;
