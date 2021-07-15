@@ -11,7 +11,7 @@ ssize popn 1 setexit retall
 "reserve   (3&4)" n 4 popa 329.2 w 4 popa
 
 # Cruising speed in Kt
-290.0 s popr
+300.0 s popr
 
 # Fuel flow in kg/h
 190.0 f popr
