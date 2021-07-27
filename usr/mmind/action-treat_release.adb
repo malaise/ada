@@ -80,9 +80,12 @@ procedure Treat_Release (Go_On, Exit_Game, Color_Move : out Boolean) is
     end if;
   end Answer;
 
+  Propal : Common.Propal_State_Rec(Level);
   Valid : Boolean;
 
-  use type Common.Propal_Range, Common.Color_Range, Common.Level_Range,
+  use type Ada.Calendar.Time,
+           Common.Propal_Range, Common.Color_Range, Common.Level_Range,
+           Common.Try_List,
            Screen.Selection_List, Screen.Selection_Rec;
 
 begin
@@ -197,7 +200,21 @@ begin
     when Screen.Try =>
       if History(Prev_Status).Try_No = History(Curr_Status).Try_No then
         -- Valid try (already tested on click)
-        Answer;
+        if Common.Get_Propal_State (History(Curr_Status).Try_No).Try
+           = Common.Can_Try then
+          Answer;
+        elsif Ada.Calendar.Clock - Release_Orig_Date
+                     <= Double_Click_Delay then
+          -- Copy previous propal
+          Propal := Common.Get_Propal_State (History(Curr_Status).Try_No - 1);
+          Common.Set_Propal_State (History(Curr_Status).Try_No, Propal);
+          for I in 1 .. Level loop
+            Screen.Put_Color (History(Curr_Status).Try_No, I,
+                              Propal.Propal_Color(I));
+          end loop;
+          Common.Set_Try_State (History(Curr_Status).Try_No, Common.Can_Try);
+          Screen.Put_Try (History(Curr_Status).Try_No, Screen.Can_Try);
+        end if;
       end if;
       Go_On := True;
       Color_Move := False;
@@ -263,7 +280,6 @@ begin
           Moved_Color : constant Common.Eff_Color_Range
                       := Orig_State.Propal_Color(
                           History(Release_Orig).Column_No);
-          use type Ada.Calendar.Time;
         begin
           if History(Curr_Status) = History(Release_Orig) then
             -- Same propal cell => unselect.

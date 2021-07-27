@@ -40,6 +40,20 @@ package body Action is
     null;
   end End_Action;
 
+  -- Criteria for a Try area to allow copy from previous propal:
+  -- Empty and first Unanswered
+  function Can_Copy_Propal (Propal : in Common.Propal_Range) return Boolean is
+    State : constant Common.Propal_State_Rec
+          := Common.Get_Propal_State (Propal);
+    No_Colors : constant Common.Propal_Color_Array(1 .. Level)
+              := (others => Common.No_Color);
+    use type Common.Try_List, Common.Propal_Range, Common.Propal_Color_Array;
+  begin
+    return   Propal /= Common.Propal_Range'First
+    and then State.Propal_Color = No_Colors
+    and then Common.Get_Propal_State (Propal - 1).Try = Common.Answered;
+  end Can_Copy_Propal;
+
   -- Check and update wether current propal is complete and can be tried
   procedure Update_Try (Propal : in Common.Propal_Range) is
     Prop_State : constant Common.Propal_State_Rec
