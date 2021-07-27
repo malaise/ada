@@ -80,6 +80,33 @@ procedure Treat_Release (Go_On, Exit_Game, Color_Move : out Boolean) is
     end if;
   end Answer;
 
+  -- Find a proper reference for copy into a given Prop
+  -- Valid  only if Propal is empty
+  -- Last filled (Can_Try or Answered) before Prop, or No_Propal
+  No_Propal : constant Common.Full_Propal_Range
+            := Common.Full_Propal_Range'First;
+  function Find_Reference (Prop : in Common.Propal_Range)
+           return Common.Full_Propal_Range is
+    Result : Common.Full_Propal_Range := No_Propal;
+    No_Color : constant Common.Propal_Color_Array(1 .. Level)
+             := (others => Common.No_Color);
+    use type Common.Full_Propal_Range, Common.Propal_Color_Array,
+             Common.Try_List;
+  begin
+    if Common.Get_Propal_State(Prop).Propal_Color /= No_Color then
+      return No_Propal;
+    end if;
+    for I in 1 .. Prop - 1 loop
+      if Common.Get_Propal_State (I).Try /= Common.Not_Set then
+        -- Valid (and before target), keep last
+        Result := I;
+      end if;
+    end loop;
+    -- On target
+    return Result;
+  end Find_Reference;
+  Reference : Common.Full_Propal_Range;
+
   use type Ada.Calendar.Time;
   function Double_Click return Boolean is
     (Ada.Calendar.Clock - Release_Orig_Date <= Double_Click_Delay);
@@ -207,11 +234,13 @@ begin
             = Common.Can_Try then
           Answer;
         elsif Double_Click then
-          if Can_Copy_Propal (History(Curr_Status).Try_No) then
+          Reference := Find_Reference (History(Curr_Status).Try_No);
+          if Reference /= No_Propal then
             -- Copy previous propal
-            Propal := Common.Get_Propal_State (History(Curr_Status).Try_No - 1);
+            Propal := Common.Get_Propal_State (Reference);
             Common.Set_Propal_State (History(Curr_Status).Try_No, Propal);
             Common.Set_Try_State (History(Curr_Status).Try_No, Common.Can_Try);
+            Screen.Put_Try (History(Curr_Status).Try_No, Screen.Can_Try);
           else
             -- Clear current propal
             Common.Set_Propal_State (
@@ -221,13 +250,13 @@ begin
                     Propal_Color => (others => Common.No_Color),
                     Try => Common.Not_Set));
             Common.Set_Try_State (History(Curr_Status).Try_No, Common.Not_Set);
+            Screen.Put_Try (History(Curr_Status).Try_No, Screen.Cannot_Try);
           end if;
           -- Update screen
           for I in 1 .. Level loop
             Screen.Put_Color (History(Curr_Status).Try_No, I,
                               Propal.Propal_Color(I));
           end loop;
-          Screen.Put_Try (History(Curr_Status).Try_No, Screen.Can_Try);
         end if;
       end if;
       Go_On := True;

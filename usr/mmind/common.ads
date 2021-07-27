@@ -5,7 +5,8 @@ package Common is
   ----------------
 
   -- Maximum number of propal
-  type Propal_Range is new Positive range 1 .. 10;
+  type Full_Propal_Range is new Natural range 0 .. 10;
+  subtype Propal_Range is Full_Propal_Range range 1 .. Full_Propal_Range'Last;
   Max_Number_Propal : constant Propal_Range := Propal_Range'Last;
 
   -- Minimum and maximum level
