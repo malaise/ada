@@ -77,7 +77,7 @@ package body Screen is
     -- One or two squares, minus 2 pixels
     if Double then
       -- An ellipse of diameters size-2 pixel, twice width and once height
-      X2 := X1 + (2 * Console.Font_Width) - 2;
+      X2 := X1 + 2 * Console.Font_Width - 2;
       X1 := X1 + 1;
       Y2 := Y1 + Console.Font_Height - 2;
       Y1 := Y1 + 1;
@@ -167,7 +167,7 @@ package body Screen is
 
   end Init;
 
-  procedure Init (Level : in Common.Last_Level_Range) is
+  procedure Init (Start : in Boolean; Level : in Common.Last_Level_Range) is
     Square : Con_Io.Square;
     use type Common.Level_Range, Common.Color_Range, Common.Propal_Range;
   begin
@@ -184,25 +184,27 @@ package body Screen is
                                       (Menu_Row,  Level_Last_Col) );
       Exit_Win.Open (Console'Access, (Menu_Row,  Exit_First_Col),
                                      (Menu_Row,  Exit_Last_Col) );
-    else
+    elsif Start then
       Secret_Win.Close;
       Propal_Win.Close;
       Try_Win.Close;
     end if;
 
-    -- Compute level dependant geometry
-    Current_Level := Level;
-    Propal_First_Col := Propal_Last_Col
-     - (Con_Io.Col_Range(Current_Level)-1) * (Propal_Col_Width+1)
-     - (Propal_Col_Width-1);
-    Try_Last_Col := Try_First_Col + (Con_Io.Col_Range(Current_Level)-1);
+    if Start then
+      -- Compute level dependant geometry
+      Current_Level := Level;
+      Propal_First_Col := Propal_Last_Col
+       - (Con_Io.Col_Range(Current_Level)-1) * (Propal_Col_Width+1)
+       - (Propal_Col_Width-1);
+      Try_Last_Col := Try_First_Col + (Con_Io.Col_Range(Current_Level)-1);
 
-    Secret_Win.Open (Console'Access, (1, Propal_First_Col),
-                                     (1, Propal_Last_Col) );
-    Propal_Win.Open (Console'Access, (Propal_First_Row, Propal_First_Col),
-                                     (Propal_Last_Row,  Propal_Last_Col) );
-    Try_Win.Open (Console'Access, (Propal_First_Row, Try_First_Col),
-                                  (Propal_Last_Row,  Try_Last_Col) );
+      Secret_Win.Open (Console'Access, (1, Propal_First_Col),
+                                       (1, Propal_Last_Col) );
+      Propal_Win.Open (Console'Access, (Propal_First_Row, Propal_First_Col),
+                                       (Propal_Last_Row,  Propal_Last_Col) );
+      Try_Win.Open (Console'Access, (Propal_First_Row, Try_First_Col),
+                                    (Propal_Last_Row,  Try_Last_Col) );
+    end if;
 
     -- Redraw and frames
     Screen_Win.Clear;

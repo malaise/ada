@@ -8,8 +8,8 @@ package Screen is
   Console : aliased Con_Io.Console;
   -- Global init (of colors)
   procedure Init;
-  -- Init the screen
-  procedure Init (Level  : in Common.Last_Level_Range);
+  -- (Re) init the screen or just refresh
+  procedure Init (Start : in Boolean; Level  : in Common.Last_Level_Range);
 
   -- Clear and reset
   procedure Clear;
