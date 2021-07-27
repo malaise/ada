@@ -80,11 +80,14 @@ procedure Treat_Release (Go_On, Exit_Game, Color_Move : out Boolean) is
     end if;
   end Answer;
 
+  use type Ada.Calendar.Time;
+  function Double_Click return Boolean is
+    (Ada.Calendar.Clock - Release_Orig_Date <= Double_Click_Delay);
+
   Propal : Common.Propal_State_Rec(Level);
   Valid : Boolean;
 
-  use type Ada.Calendar.Time,
-           Common.Propal_Range, Common.Color_Range, Common.Level_Range,
+  use type Common.Propal_Range, Common.Color_Range, Common.Level_Range,
            Common.Try_List,
            Screen.Selection_List, Screen.Selection_Rec;
 
@@ -199,20 +202,31 @@ begin
 
     when Screen.Try =>
       if History(Prev_Status).Try_No = History(Curr_Status).Try_No then
-        -- Valid try (already tested on click)
+        -- Handle double click, or answer
         if Common.Get_Propal_State (History(Curr_Status).Try_No).Try
-           = Common.Can_Try then
+            = Common.Can_Try then
           Answer;
-        elsif Ada.Calendar.Clock - Release_Orig_Date
-                     <= Double_Click_Delay then
-          -- Copy previous propal
-          Propal := Common.Get_Propal_State (History(Curr_Status).Try_No - 1);
-          Common.Set_Propal_State (History(Curr_Status).Try_No, Propal);
+        elsif Double_Click then
+          if Can_Copy_Propal (History(Curr_Status).Try_No) then
+            -- Copy previous propal
+            Propal := Common.Get_Propal_State (History(Curr_Status).Try_No - 1);
+            Common.Set_Propal_State (History(Curr_Status).Try_No, Propal);
+            Common.Set_Try_State (History(Curr_Status).Try_No, Common.Can_Try);
+          else
+            -- Clear current propal
+            Common.Set_Propal_State (
+                Propal => History(Curr_Status).Try_No,
+                State => (
+                    Level => Level,
+                    Propal_Color => (others => Common.No_Color),
+                    Try => Common.Not_Set));
+            Common.Set_Try_State (History(Curr_Status).Try_No, Common.Not_Set);
+          end if;
+          -- Update screen
           for I in 1 .. Level loop
             Screen.Put_Color (History(Curr_Status).Try_No, I,
                               Propal.Propal_Color(I));
           end loop;
-          Common.Set_Try_State (History(Curr_Status).Try_No, Common.Can_Try);
           Screen.Put_Try (History(Curr_Status).Try_No, Screen.Can_Try);
         end if;
       end if;
@@ -288,8 +302,7 @@ begin
                                     History(Curr_Status).Column_No,
                                     Show => False);
             if not Common.Is_Answered (History(Curr_Status).Propal_No)
-            and then Ada.Calendar.Clock - Release_Orig_Date
-                     <= Double_Click_Delay then
+            and then Double_Click then
               -- Clear
               Common.Set_Color (History(Curr_Status).Propal_No,
                                 History(Curr_Status).Column_No,

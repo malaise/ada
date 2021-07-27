@@ -40,10 +40,9 @@ begin
             := Common.Get_Propal_State (History(Curr_Status).Try_No).Try;
         use type Common.Try_List;
       begin
-        -- Check that this propal is completed and not already answered
-        --  or that we can copy previous propal
-        if Try_State = Common.Can_Try
-        or else Can_Copy_Propal (History(Curr_Status).Try_No) then
+        -- Check that this propal is not answered
+        -- If OK we can either copy or clear on double click, or maybe answer
+        if Try_State /= Common.Answered then
           -- Highlight try
           Screen.Put_Try (Propal => History(Curr_Status).Try_No,
                           Try_State => Screen.Selected);
