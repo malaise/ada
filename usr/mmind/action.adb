@@ -1,3 +1,4 @@
+with Ada.Calendar;
 with Rnd, Con_Io;
 with Common, Screen, Response;
 package body Action is
@@ -19,6 +20,8 @@ package body Action is
               Selection => Screen.Nothing);
   History : array (Status_List) of Screen.Selection_Rec
           := (others => Discard);
+  Release_Orig_Date : Ada.Calendar.Time;
+  Double_Click_Delay : constant Duration := 0.500;
 
   -- The first row not answered (for next propal and answer)
   First_Free : Common.Propal_Range;
@@ -104,7 +107,7 @@ package body Action is
       Code : Response.Color_Rec(Level);
       use type Common.Try_List, Screen.Selection_List;
     begin
-      Screen.Init (Level);
+      Screen.Init (False, Level);
       -- Put colors
       for I in Common.Propal_Range loop
         Propal := Common.Get_Propal_State(I);
@@ -159,7 +162,7 @@ package body Action is
     Common.Reset_State;
     Curr_Status := Default_Status;
     Prev_Status := Default_Status;
-    Screen.Init (Level);
+    Screen.Init (True, Level);
 
     First_Free := Common.Propal_Range'First;
     Response.New_Code;

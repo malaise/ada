@@ -254,7 +254,7 @@ begin
           Color_Move := False;
         end if;
       else
-        -- Move color within propal
+        -- Moving color within propal
         declare
           -- Move what, where
           Orig_State : constant Common.Propal_State_Rec
@@ -263,13 +263,17 @@ begin
           Moved_Color : constant Common.Eff_Color_Range
                       := Orig_State.Propal_Color(
                           History(Release_Orig).Column_No);
+          use type Ada.Calendar.Time;
         begin
           if History(Curr_Status) = History(Release_Orig) then
-            -- Same propal cell => unselect. Clear if not answered
+            -- Same propal cell => unselect.
+            -- Clear if not answered and double click
             Screen.Put_Default_Pos (History(Curr_Status).Propal_No,
                                     History(Curr_Status).Column_No,
                                     Show => False);
-            if not Common.Is_Answered (History(Curr_Status).Propal_No) then
+            if not Common.Is_Answered (History(Curr_Status).Propal_No)
+            and then Ada.Calendar.Clock - Release_Orig_Date
+                     <= Double_Click_Delay then
               -- Clear
               Common.Set_Color (History(Curr_Status).Propal_No,
                                 History(Curr_Status).Column_No,
@@ -322,6 +326,11 @@ begin
       Go_On := True;
       Color_Move := False;
   end case;
+
+  -- Valid release => Store release orig date
+  if Curr_Status = Release_Orig then
+    Release_Orig_Date := Ada.Calendar.Clock;
+  end if;
 
 end Treat_Release;
 
