@@ -11,7 +11,7 @@ package body Af_Ptg is
         -- no action put
         null;
       when Button_Field =>
-        -- Double click in list
+        -- Double click in list or button
         -- Click and release in a Button field
         But_Field_No : Absolute_Field_Range;
         But_Click_Square, But_Release_Square : Con_Io.Square;
@@ -27,15 +27,15 @@ package body Af_Ptg is
 
   -- Button and Position of last click
   subtype Button_List is Con_Io.Mouse_Pointing_List;
-  Last_But : Button_List;
-  Last_Pos : Con_Io.Square;
+  Last_Button : Button_List;
+  Last_Position : Con_Io.Square;
+  Last_Double : Boolean;
 
-  -- Time, field and list Id of first click
-  Last_Selection_Time : Ada.Calendar.Time;
+  -- Field and list Id of first click (for double click)
   Last_Selected_Field : Absolute_Field_Range;
   Last_Selected_Id : Line_List_Mng.Ll_Natural;
-  Double_Click_Delay : Double_Click_Delay_Range
-                     := Default_Double_Click_Delay;
+
+  -- Shor delay to show effect of click
   Show_Click_Delay  : constant Ada.Calendar.Day_Duration := 0.03;
 
   -- Cursor field at end of prev Ptg
@@ -63,14 +63,6 @@ package body Af_Ptg is
         Background := Field.Colors.Selected;
     end case;
   end Set_Colors;
-
-  -- Set double-click delay
-  procedure Set_Double_Click_Delay (
-      Double_Click_Delay : in Double_Click_Delay_Range) is
-  begin
-    Af_Ptg.Double_Click_Delay := Double_Click_Delay;
-  end Set_Double_Click_Delay;
-
 
   -- Put a whole field
   procedure Put_Fld (Field_No : in Field_Range;
@@ -197,8 +189,9 @@ package body Af_Ptg is
         Valid := False;
     end case;
     if Valid then
-      Last_But := Mouse_Status.Button;
-      Last_Pos := Click_Pos;
+      Last_Button := Mouse_Status.Button;
+      Last_Position := Click_Pos;
+      Last_Double := Mouse_Status.Double_Click;
     end if;
     if Scroll and then List_Change_Cb /= null then
       List_Change_Cb (Afpx.Scroll, Af_List.Get_Status);
@@ -264,11 +257,9 @@ package body Af_Ptg is
     Click_On_Selected : Boolean;
     Field : Afpx_Typ.Field_Rec;
     List_Status : List_Status_Rec;
-    Click_Time : Ada.Calendar.Time;
     Loc_Last_Selected_Field : Absolute_Field_Range;
     Loc_Last_Selected_Id : Line_List_Mng.Ll_Natural;
     Selection_Modified : Boolean;
-    Double_Click : Boolean;
 
     List_Pos : Line_List_Mng.Ll_Positive;
     List_Mod : Boolean;
@@ -289,7 +280,6 @@ package body Af_Ptg is
       ((Row => Pos.Row - Field.Upper_Left.Row,
         Col => Pos.Col - Field.Upper_Left.Col));
 
-    use type Ada.Calendar.Time;
     use type Button_List, Absolute_Field_Range, Field_Kind_List,
              Line_List_Mng.Ll_Natural;
   begin
@@ -308,9 +298,8 @@ package body Af_Ptg is
     Valid_Field := True;
     Request_Selection := False;
     -- Get button and pos, find field
-    Click_But := Last_But;
-    Click_Pos := Last_Pos;
-    Click_Time := Ada.Calendar.Clock;
+    Click_But := Last_Button;
+    Click_Pos := Last_Position;
     if List_Present and then In_Field_Absolute(Lfn, Click_Pos)
     and then not Af_Dscr.Fields(Lfn).Isprotected
     and then Click_But /= Con_Io.Middle then
@@ -424,7 +413,7 @@ package body Af_Ptg is
         elsif Click_But = Con_Io.Left
         and then Loc_Last_Selected_Field = Lfn
         and then Af_List.To_Id (Click_Row_List) = Loc_Last_Selected_Id
-        and then Last_Selection_Time >= Click_Time - Double_Click_Delay then
+        and then Last_Double then
           -- Double Left click on same line of the list
           Af_List.Put (Click_Row_List, Selected, False);
           Result := (Kind => Button_Field, But_Field_No => Click_Field,
@@ -437,7 +426,6 @@ package body Af_Ptg is
           List_Status := Af_List.Get_Status;
           Last_Selected_Field := Lfn;
           Last_Selected_Id := List_Status.Ids_Selected(List_Left);
-          Last_Selection_Time := Click_Time;
           if List_Change_Cb /= null then
             List_Change_Cb (Left_Selection, Af_List.Get_Status);
           end if;
@@ -525,7 +513,6 @@ package body Af_Ptg is
           -- Valid Left click. Store for next click to check double click
           List_Status := Af_List.Get_Status;
           Last_Selected_Id := List_Status.Ids_Selected (List_Left);
-          Last_Selection_Time := Click_Time;
         end if;
       end if;
       -- Result is Put
@@ -551,15 +538,13 @@ package body Af_Ptg is
       -- If field is button: restore color
       Put_Fld (Click_Field, Normal);
       if Valid_Field then
-        -- Double left click in same button field
-        Double_Click := Loc_Last_Selected_Field = Click_Field
-            and then Last_Selection_Time >= Click_Time - Double_Click_Delay;
         Result := (Kind => Button_Field, But_Field_No => Click_Field,
                    But_Click_Square => Get_Relative (Click_Pos),
                    But_Release_Square => Get_Relative (Release_Pos),
-                   Double_Click => Double_Click);
+                   -- Double left click in same button field
+                   Double_Click => Loc_Last_Selected_Field = Click_Field
+                                   and then Last_Double);
         Last_Selected_Field := Click_Field;
-        Last_Selection_Time := Click_Time;
       end if;
     end if;
 

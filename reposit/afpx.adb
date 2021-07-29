@@ -65,6 +65,7 @@ package body Afpx is
   package body Af_Dscr is separate;
 
 
+  -- Local navigation in Get fields
   function Next_Field (Field_No : Absolute_Field_Range)
                       return Absolute_Field_Range is
     Ret_No : Absolute_Field_Range;
@@ -148,11 +149,6 @@ package body Afpx is
                           State : in State_List;
                           Foreground : out Con_Io.Effective_Colors;
                           Background : out Con_Io.Effective_Colors);
-
-    -- Set double-click delay
-    Default_Double_Click_Delay : constant Double_Click_Delay_Range := 0.500;
-    procedure Set_Double_Click_Delay (
-      Double_Click_Delay : in Double_Click_Delay_Range);
 
     -- Put a whole field in attribute
     procedure Put_Fld (Field_No : in Field_Range;
@@ -254,14 +250,14 @@ package body Afpx is
     Width := Size.Col + 1;
   end Get_Screen_Size;
 
-  -- Local procedure to init double click dlay from ENV
+  -- Local procedure to init double click delay from ENV
   procedure Init_Double_Click_Delay_From_Env is
     Ms : Positive;
     Double_Click_Delay : Double_Click_Delay_Range;
   begin
     Ms := Positive'Value (Environ.Getenv ("AFPX_DOUBLE_CLICK_DELAY"));
     Double_Click_Delay := Duration (Ms) / 1000.0;
-    Af_Ptg.Set_Double_Click_Delay (Double_Click_Delay);
+    Console.Set_Double_Click_Delay (Double_Click_Delay);
   exception
     when others =>
       -- Invalid ENV value => discard
@@ -361,6 +357,14 @@ package body Afpx is
     Af_Dscr.Check;
     return Console.Is_Suspended;
   end Is_Suspended;
+
+  -- Set double-click delay
+  procedure Set_Double_Click_Delay (
+      Double_Click_Delay : in Double_Click_Delay_Range) is
+  begin
+    Af_Dscr.Check;
+    Console.Set_Double_Click_Delay (Double_Click_Delay);
+  end Set_Double_Click_Delay;
 
   --Get descriptor background color
   function Get_Descriptor_Background return Con_Io.Effective_Colors is
@@ -1001,11 +1005,6 @@ package body Afpx is
    -- Get position in list corresponding to Percent
   function Get_List_Index (Percent : Percent_Range)
            return Line_List_Mng.Ll_Natural renames Af_List.Get_Index;
-
-  procedure Set_Double_Click_Delay (
-    Double_Click_Delay : in Double_Click_Delay_Range)
-    renames Af_Ptg.Set_Double_Click_Delay;
-
 
   -- Force redisplay at next Put_Then_Get
   procedure Redisplay is

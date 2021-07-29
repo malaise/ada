@@ -444,7 +444,9 @@ package Afpx is
   -- Double click in a Button field is reported (but the first click already
   --  terminated Put_Then8get)
   -- Can also be defined by ENV variable AFPX_DOUBLE_CLICK_DELAY (in ms)
-  subtype Double_Click_Delay_Range is Duration range 0.100 .. 0.900;
+  subtype Double_Click_Delay_Range is Con_Io.Double_Click_Delay_Range;
+  Default_Double_Click_Delay : constant Double_Click_Delay_Range
+                             := Con_Io.Default_Double_Click_Delay;
   procedure Set_Double_Click_Delay (
     Double_Click_Delay : in Double_Click_Delay_Range);
 

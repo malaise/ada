@@ -1,3 +1,4 @@
+private with Ada.Calendar;
 private with Smart_Reference, Dynamic_List;
 with As.U, X_Mng, Timers, Unicode, Aski.Unicode;
 package Con_Io is
@@ -607,6 +608,13 @@ package Con_Io is
   procedure Grab_Pointer (Con  : in Console;
                           Grab : in Boolean);
 
+  -- Set delay criteria for double-click of the Left, Middle or Right button
+  subtype Double_Click_Delay_Range is Duration range 0.100 .. 0.900;
+  Default_Double_Click_Delay : constant Double_Click_Delay_Range := 0.500;
+  procedure Set_Double_Click_Delay (
+      Con                : in Console;
+      Double_Click_Delay : in Double_Click_Delay_Range);
+
   -- We want mouse position in row_col or x_y
   type Coordinate_Mode_List is (Row_Col, X_Y);
 
@@ -627,6 +635,7 @@ package Con_Io is
     Valid : Boolean;
     Button : Mouse_Button_List;
     Status : Mouse_Button_Status_List;
+    Double_Click : Boolean;
     Xref : X_Mng.External_Reference;
     case Coordinate_Mode is
       when Row_Col =>
@@ -705,6 +714,11 @@ private
     Line_Foreground : Effective_Colors := Default_Foreground;
     Line_Background : Effective_Colors := Default_Background;
     Line_Xor_Mode   : Effective_Xor_Modes := Default_Xor_Mode;
+    -- Management of for double click
+    Double_Click_Delay : Double_Click_Delay_Range
+                       := Default_Double_Click_Delay;
+    Last_Click_Time : Ada.Calendar.Time := Ada.Calendar.Clock;
+    Last_Click_Button : Mouse_Button_List := Motion;
   end record;
   procedure Set (Dest : out Console_Data; Val : in Console_Data);
   procedure Finalize (Con : in out Console_Data);

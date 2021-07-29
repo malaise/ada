@@ -1,4 +1,4 @@
-with Ada.Calendar, Ada.Exceptions;
+with Ada.Exceptions;
 with Argument, C_Types, Environ, Lower_Str, Str_Util, Trace.Loggers, Language;
 package body Con_Io is
 
@@ -1975,6 +1975,15 @@ package body Con_Io is
     X_Mng.X_Grab_Pointer(Con.Get_Access.Id, Grab);
   end Grab_Pointer;
 
+  -- Set delay criteria for double-click
+  procedure Set_Double_Click_Delay (
+      Con                : in Console;
+      Double_Click_Delay : in Double_Click_Delay_Range) is
+  begin
+    Check_Con (Con);
+    Con.Get_Access.Double_Click_Delay := Double_Click_Delay;
+  end Set_Double_Click_Delay;
+
   -- Get a mouse event. If valid is False, it means that a release
   -- has occured outside the screen, then only Button and status
   -- are significant
@@ -1985,9 +1994,10 @@ package body Con_Io is
     Loc_Event : Mouse_Event_Rec(Coordinate_Mode);
     Button : X_Mng.Button_List;
     Row, Col, Sub_Row, Sub_Col : Integer;
+    Now : Ada.Calendar.Time;
     use type X_Mng.Event_Kind, X_Mng.Button_List;
     Acc : access Console_Data;
-    use type X_Mng.External_Reference;
+    use type Ada.Calendar.Time, X_Mng.External_Reference;
   begin
     Check_Con (Con);
     Acc := Con.Get_Access;
@@ -2149,6 +2159,22 @@ package body Con_Io is
         Loc_Event.Sub_Y := Acc.Y_Max - Loc_Event.Sub_Y;
       end if;
     end if;
+
+    -- Double click
+    Loc_Event.Double_Click := False;
+    if Acc.Mouse_Status = X_Mng.Tid_Press
+    and then Loc_Event.Button <= Right then
+      Now := Ada.Calendar.Clock;
+      if Acc.Last_Click_Button = Loc_Event.Button
+      and then Now - Acc.Last_Click_Time < Acc.Double_Click_Delay then
+        Loc_Event.Double_Click := True;
+      end if;
+      -- For next time
+      Acc.Last_Click_Button := Loc_Event.Button;
+      Acc.Last_Click_Time := Now;
+    end if;
+
+    -- Done
     Mouse_Event := Loc_Event;
     Acc.Mouse_Status := Mouse_Discard;
     Acc.Mouse_Xref := X_Mng.Null_Reference;
