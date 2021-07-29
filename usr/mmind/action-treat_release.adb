@@ -107,10 +107,6 @@ procedure Treat_Release (Go_On, Exit_Game, Color_Move : out Boolean) is
   end Find_Reference;
   Reference : Common.Full_Propal_Range;
 
-  use type Ada.Calendar.Time;
-  function Double_Click return Boolean is
-    (Ada.Calendar.Clock - Release_Orig_Date <= Double_Click_Delay);
-
   Propal : Common.Propal_State_Rec(Level);
   Valid : Boolean;
 
@@ -384,11 +380,6 @@ begin
       Go_On := True;
       Color_Move := False;
   end case;
-
-  -- Valid release => Store release orig date
-  if Curr_Status = Release_Orig then
-    Release_Orig_Date := Ada.Calendar.Clock;
-  end if;
 
 end Treat_Release;
 

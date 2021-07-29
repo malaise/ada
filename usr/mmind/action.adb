@@ -1,4 +1,3 @@
-with Ada.Calendar;
 with Rnd, Con_Io;
 with Common, Screen, Response;
 package body Action is
@@ -20,8 +19,7 @@ package body Action is
               Selection => Screen.Nothing);
   History : array (Status_List) of Screen.Selection_Rec
           := (others => Discard);
-  Release_Orig_Date : Ada.Calendar.Time;
-  Double_Click_Delay : constant Duration := 0.500;
+  Double_Click : Boolean;
 
   -- The first row not answered (for next propal and answer)
   First_Free : Common.Propal_Range;
@@ -209,6 +207,9 @@ package body Action is
         History (Curr_Status) := Screen.Get_Selected (
            (Row => Mouse_Status.Row,
             Col => Mouse_Status.Col));
+        if Clicked then
+          Double_Click := Mouse_Status.Double_Click;
+        end if;
       end;
 
       -- Handle click or release
