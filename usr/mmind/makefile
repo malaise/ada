@@ -10,5 +10,9 @@ CLIBS_mmind := $(X11_SLIBS)
 
 LARGS_mmind.stat := $(PCRE_ALIBS) $(X11_ALIBS)
 
+TXT := Mmind
+DOCOPTS_Mmind := -a toc
+
+
 include $(TEMPLATES)/ada.mk
 
