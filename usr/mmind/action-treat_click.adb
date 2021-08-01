@@ -38,17 +38,22 @@ begin
       declare
         Try_State : constant Common.Try_List
             := Common.Get_Propal_State (History(Curr_Status).Try_No).Try;
-        use type Common.Try_List;
       begin
         -- Check that this propal is not answered
         -- If OK we can either copy or clear on double click, or maybe answer
-        if Try_State /= Common.Answered then
-          -- Highlight try
-          Screen.Put_Try (Propal => History(Curr_Status).Try_No,
-                          Try_State => Screen.Selected);
-        else
-          History(Curr_Status) := Discard;
-        end if;
+        case Try_State is
+          when Common.Not_Set =>
+            Screen.Put_Try (Propal => History(Curr_Status).Try_No,
+                            Try_State => Screen.Cannot_Try,
+                            Selected => True);
+          when Common.Can_Try =>
+            -- Highlight try
+            Screen.Put_Try (Propal => History(Curr_Status).Try_No,
+                            Try_State => Screen.Can_Try,
+                            Selected => True);
+          when Common.Answered =>
+            History(Curr_Status) := Discard;
+        end case;
       end;
 
     when Screen.Color =>

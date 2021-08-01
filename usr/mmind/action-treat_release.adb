@@ -41,11 +41,13 @@ procedure Treat_Release (Go_On, Exit_Game, Color_Move : out Boolean) is
            Level => I,
            Color => Free_State.Propal_Color(I) );
         end loop;
-        -- Answered impossible because of Next_Free
+        -- Update try status
         if Prop_State.Try = Common.Can_Try then
-          Screen.Put_Try (History(Curr_Status).Try_No, Screen.Can_Try);
+          Screen.Put_Try (History(Curr_Status).Try_No,
+                          Screen.Can_Try, False);
         else
-          Screen.Put_Try (History(Curr_Status).Try_No, Screen.Cannot_Try);
+          Screen.Put_Try (History(Curr_Status).Try_No,
+                          Screen.Cannot_Try, False);
         end if;
       end;
     else
@@ -141,7 +143,6 @@ procedure Treat_Release (Go_On, Exit_Game, Color_Move : out Boolean) is
   Valid : Boolean;
 
   use type Common.Propal_Range, Common.Color_Range, Common.Level_Range,
-           Common.Try_List,
            Screen.Selection_List, Screen.Selection_Rec;
 
 begin
@@ -176,8 +177,19 @@ begin
     when Screen.Exit_Game =>
       Screen.Put_Exit (Selected => False);
     when Screen.Try =>
-      Screen.Put_Try (Propal => History(Prev_Status).Try_No,
-                      Try_State => Screen.Can_Try);
+      case Common.Get_Propal_State (History(Curr_Status).Try_No).Try is
+        when Common.Not_Set =>
+          Screen.Put_Try (Propal => History(Curr_Status).Try_No,
+                          Try_State => Screen.Cannot_Try,
+                          Selected => False);
+        when Common.Can_Try =>
+          Screen.Put_Try (Propal => History(Curr_Status).Try_No,
+                          Try_State => Screen.Can_Try,
+                          Selected => False);
+        when Common.Answered =>
+          -- Will answer below
+          null;
+      end case;
     when Screen.Color =>
       if not Valid then
         Screen.Put_Selected_Color (Color => History(Prev_Status).Color_No,
@@ -265,7 +277,7 @@ begin
             Propal := Common.Get_Propal_State (Reference);
             Common.Set_Propal_State (History(Curr_Status).Try_No, Propal);
             Common.Set_Try_State (History(Curr_Status).Try_No, Common.Can_Try);
-            Screen.Put_Try (History(Curr_Status).Try_No, Screen.Can_Try);
+            Screen.Put_Try (History(Curr_Status).Try_No, Screen.Can_Try, False);
           else
             -- Clear current propal
             Common.Set_Propal_State (
@@ -275,7 +287,8 @@ begin
                     Propal_Color => (others => Common.No_Color),
                     Try => Common.Not_Set));
             Common.Set_Try_State (History(Curr_Status).Try_No, Common.Not_Set);
-            Screen.Put_Try (History(Curr_Status).Try_No, Screen.Cannot_Try);
+            Screen.Put_Try (History(Curr_Status).Try_No, Screen.Cannot_Try,
+                            False);
           end if;
           -- Update screen
           for I in 1 .. Level loop

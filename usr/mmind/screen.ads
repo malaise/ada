@@ -22,10 +22,11 @@ package Screen is
    Level  : in Common.Level_Range;
    Show   : in Boolean);
 
-  type Put_Try_List is (Cannot_Try, Can_Try, Selected);
+  type Put_Try_List is (Cannot_Try, Can_Try);
   procedure Put_Try (
    Propal    : in Common.Propal_Range;
-   Try_State : in Put_Try_List);
+   Try_State : in Put_Try_List;
+   Selected  : in Boolean);
 
   procedure Put_Color (
    Propal : in Common.Propal_Range;

@@ -327,7 +327,7 @@ package body Screen is
 
     -- No try
     for I in Common.Propal_Range loop
-      Put_Try (I, Cannot_Try);
+      Put_Try (I, Cannot_Try, False);
     end loop;
 
   end Init;
@@ -398,26 +398,28 @@ package body Screen is
   end Put_Default_Pos;
 
   procedure Put_Try (
-   Propal   : in Common.Propal_Range;
-   Try_State : in Put_Try_List) is
+   Propal    : in Common.Propal_Range;
+   Try_State : in Put_Try_List;
+   Selected  : in Boolean) is
     Square : Con_Io.Square;
+    Foreground, Background : Con_Io.Colors;
   begin
     Square.Row := Propal_Square (Propal, Common.Level_Range'First).Row;
     Square.Col := 0;
+
+    if Selected then
+      Foreground := Background_Color;
+      Background := Background_Select;
+    else
+      Foreground := (if Try_State = Can_Try then Try_Color else Con_Io.Current);
+      Background := Con_Io.Current;
+    end if;
+
     for I in Common.Level_Range'First .. Current_Level loop
       Try_Win.Move (Square.Row, Square.Col+Con_Io.Col_Range(I)-1);
-      case Try_State is
-        when Cannot_Try =>
-          Try_Win.Put ('X', Move => False);
-        when Can_Try =>
-          Try_Win.Put ('?', Foreground => Try_Color, Move => False);
-        when Selected =>
-          Try_Win.Put ('?', Foreground => Background_Color,
-                           Background => Background_Select,
-                           Move => False);
-      end case;
+      Try_Win.Put ((if Try_State = Cannot_Try then 'X' else '?'),
+                   Foreground, Background, False);
     end loop;
-
   end Put_Try;
 
   procedure Put_Color (

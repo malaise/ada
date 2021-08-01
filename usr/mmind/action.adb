@@ -45,15 +45,15 @@ package body Action is
     use type Common.Color_Range;
   begin
     for I in Common.Level_Range
-     range Common.Level_Range'First .. Level loop
+    range Common.Level_Range'First .. Level loop
       if Prop_State.Propal_Color(I) = 0 then
         Common.Set_Try_State (Propal, Common.Not_Set);
-        Screen.Put_Try (Propal, Screen.Cannot_Try);
+        Screen.Put_Try (Propal, Screen.Cannot_Try, False);
         return;
       end if;
     end loop;
     Common.Set_Try_State (Propal, Common.Can_Try);
-    Screen.Put_Try (Propal, Screen.Can_Try);
+    Screen.Put_Try (Propal, Screen.Can_Try, False);
   end Update_Try;
 
   -- Put accurate help
@@ -113,7 +113,7 @@ package body Action is
           Screen.Put_Color (I, J, Propal.Propal_Color(J));
         end loop;
         if Propal.Try = Common.Can_Try then
-          Screen.Put_Try (I, Screen.Can_Try);
+          Screen.Put_Try (I, Screen.Can_Try, False);
         elsif Propal.Try = Common.Answered then
           Common.Get_Answer (I, Placed_Ok, Colors_Ok);
           Screen.Put_Answer (I, Placed_Ok, Colors_Ok);
