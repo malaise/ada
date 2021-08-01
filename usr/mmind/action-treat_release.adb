@@ -107,6 +107,36 @@ procedure Treat_Release (Go_On, Exit_Game, Color_Move : out Boolean) is
   end Find_Reference;
   Reference : Common.Full_Propal_Range;
 
+  -- We can answer a propal: if complete and not already answered
+  function Can_Answer (Try_No : in Common.Propal_Range) return Boolean is
+    Curr_State, Tmp_State : Common.Propal_State_Rec(Level);
+    use type Common.Full_Propal_Range, Common.Try_List,
+             Common.Propal_Color_Array;
+  begin
+    Curr_State := Common.Get_Propal_State (Try_No);
+    if Curr_State.Try /= Common.Can_Try then
+      return False;
+    end if;
+    if Try_No = Common.Propal_Range'First then
+       return True;
+    end if;
+    -- Compare to answered
+    for I in 1 .. Try_No - 1 loop
+      Tmp_State := Common.Get_Propal_State (I);
+      if Tmp_State.Try = Common.Answered then
+        if Tmp_State.Propal_Color = Curr_State.Propal_Color then
+          -- This answer exists
+          return False;
+        end if;
+      else
+        -- No more answer
+        return True;
+      end if;
+    end loop;
+    -- This propal is new
+    return True;
+  end Can_Answer;
+
   Propal : Common.Propal_State_Rec(Level);
   Valid : Boolean;
 
@@ -226,8 +256,7 @@ begin
     when Screen.Try =>
       if History(Prev_Status).Try_No = History(Curr_Status).Try_No then
         -- Handle double click, or answer
-        if Common.Get_Propal_State (History(Curr_Status).Try_No).Try
-            = Common.Can_Try then
+        if Can_Answer (History(Curr_Status).Try_No) then
           Answer;
         elsif Double_Click then
           Reference := Find_Reference (History(Curr_Status).Try_No);
