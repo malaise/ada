@@ -8,20 +8,21 @@ package body Screen is
    Color_Win, Help_Win, Menu_Win, Level_Win, Exit_Win : Con_Io.Window;
 
   -- Fixed geometry
+  Console_Height   : constant Con_Io.Row_Range := 28;
   Propal_Col_Width : constant Con_Io.Col_Range :=  2;
-  Propal_Last_Row  : constant Con_Io.Row_Range := 22;
+  Propal_Last_Row  : constant Con_Io.Row_Range := 26;
   Propal_First_Row : constant Con_Io.Row_Range :=
    Propal_Last_Row - (Con_Io.Row_Range(Common.Max_Number_Propal)-1) * 2;
   Propal_Last_Col  : constant Con_Io.Col_Range := 15;
   Try_First_Col    : constant Con_Io.Col_Range := 22;
   Color_Col_Width  : constant Con_Io.Col_Range :=  2;
-  Color_First_Row  : constant Con_Io.Row_Range :=  7;
+  Color_First_Row  : constant Con_Io.Row_Range := 11;
   Color_Last_Row   : constant Con_Io.Row_Range :=
    Color_First_Row + (Con_Io.Row_Range(Common.Max_Number_Color)-1) * 2;
   Color_First_Col  : constant Con_Io.Col_Range := 36;
   Color_Last_Col   : constant Con_Io.Col_Range :=
    Color_First_Col + Color_Col_Width - 1;
-  Menu_Row : constant Con_Io.Row_Range := 22;
+  Menu_Row : constant Con_Io.Row_Range := 26;
   Menu_First_Col : constant Con_Io.Col_Range := 46;
   Menu_Last_Col : constant Con_Io.Col_Range := 56;
   Level_First_Col : constant Con_Io.Col_Range := 58;
@@ -159,7 +160,8 @@ package body Screen is
     Ok_Color  := Con_Io.Color_Of ("Black");
     Nok_Color := White;
     -- Open console
-    Console.Open (Def_Fore => Foreground_Color,
+    Console.Open (Row_Last => Console_Height,
+                  Def_Fore => Foreground_Color,
                   Def_Back => Background_Color);
     Screen_Win.Set_To_Screen (Console'Access);
     -- Graphic vertical axis from top to bottom (as rows)
@@ -174,7 +176,7 @@ package body Screen is
 
     if not Global_Win.Is_Open then
       -- Open windows
-      Global_Win.Open (Console'Access, (1, 1), (23, 78));
+      Global_Win.Open (Console'Access, (1, 1), (Console_Height - 1, 78));
       Color_Win.Open (Console'Access, (Color_First_Row,  Color_First_Col),
                                       (Color_Last_Row,   Color_Last_Col) );
       Help_Win.Open (Console'Access, (4, Menu_First_Col),(Menu_Row-3, 76) );
