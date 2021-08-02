@@ -1984,6 +1984,14 @@ package body Con_Io is
     Con.Get_Access.Double_Click_Delay := Double_Click_Delay;
   end Set_Double_Click_Delay;
 
+  -- After the validation of a simple click it may be wise sometimes to prevent
+  --  the detection of the associated double-click
+  procedure Cancel_Double_Click (Con  : in Console) is
+  begin
+    Check_Con (Con);
+    Con.Get_Access.Last_Click_Time := Perpet.Origin;
+  end Cancel_Double_Click;
+
   -- Get a mouse event. If valid is False, it means that a release
   -- has occured outside the screen, then only Button and status
   -- are significant
@@ -2168,10 +2176,13 @@ package body Con_Io is
       if Acc.Last_Click_Button = Loc_Event.Button
       and then Now - Acc.Last_Click_Time < Acc.Double_Click_Delay then
         Loc_Event.Double_Click := True;
+        Acc.Last_Click_Time := Perpet.Origin;
+      else
+        -- Reset, to void triple click to be detected as double
+        Acc.Last_Click_Time := Now;
       end if;
       -- For next time
       Acc.Last_Click_Button := Loc_Event.Button;
-      Acc.Last_Click_Time := Now;
     end if;
 
     -- Done

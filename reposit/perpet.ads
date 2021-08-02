@@ -2,6 +2,9 @@
 with Ada.Calendar;
 package Perpet is
 
+  -- Orignit of time
+  Origin : constant Ada.Calendar.Time;
+
   -- Number of days of a month
   function Nb_Days_Month (
    Year  : Ada.Calendar.Year_Number;
@@ -105,5 +108,11 @@ package Perpet is
   -- On overflow of year range or when obtaining a negative Delta_Rec
   Time_Error : exception renames Ada.Calendar.Time_Error;
 
+  private
+    Origin : constant Ada.Calendar.Time
+           := Ada.Calendar.Time_Of (Ada.Calendar.Year_Number'First,
+                                    Ada.Calendar.Month_Number'First,
+                                    Ada.Calendar.Day_Number'First,
+                                    0.0);
 end Perpet;
 

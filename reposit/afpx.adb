@@ -366,6 +366,14 @@ package body Afpx is
     Console.Set_Double_Click_Delay (Double_Click_Delay);
   end Set_Double_Click_Delay;
 
+  -- After the validation of a simple click it may be wise sometimes to prevent
+  --  the detection of the associated double-click
+  procedure Cancel_Double_Click is
+  begin
+    Af_Dscr.Check;
+    Console.Cancel_Double_Click;
+  end Cancel_Double_Click;
+
   --Get descriptor background color
   function Get_Descriptor_Background return Con_Io.Effective_Colors is
   begin

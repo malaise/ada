@@ -1,5 +1,5 @@
 private with Ada.Calendar;
-private with Smart_Reference, Dynamic_List;
+private with Smart_Reference, Dynamic_List, Perpet;
 with As.U, X_Mng, Timers, Unicode, Aski.Unicode;
 package Con_Io is
 
@@ -615,6 +615,10 @@ package Con_Io is
       Con                : in Console;
       Double_Click_Delay : in Double_Click_Delay_Range);
 
+  -- After the validation of a simple click it may be wise sometimes to prevent
+  --  the detection of the associated double-click
+  procedure Cancel_Double_Click (Con  : in Console);
+
   -- We want mouse position in row_col or x_y
   type Coordinate_Mode_List is (Row_Col, X_Y);
 
@@ -717,7 +721,7 @@ private
     -- Management of for double click
     Double_Click_Delay : Double_Click_Delay_Range
                        := Default_Double_Click_Delay;
-    Last_Click_Time : Ada.Calendar.Time := Ada.Calendar.Clock;
+    Last_Click_Time : Ada.Calendar.Time := Perpet.Origin;
     Last_Click_Button : Mouse_Button_List := Motion;
   end record;
   procedure Set (Dest : out Console_Data; Val : in Console_Data);

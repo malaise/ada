@@ -140,11 +140,12 @@ package body Af_Ptg is
   begin
     -- Check if mouse button is clicked
     Console.Get_Mouse_Event (Mouse_Status);
-    Click_Pos := (Mouse_Status.Row, Mouse_Status.Col);
     -- We expect a click
-    if Mouse_Status.Status /= Con_Io.Pressed then
+    if not Mouse_Status.Valid
+    or else Mouse_Status.Status /= Con_Io.Pressed then
       return False;
     end if;
+    Click_Pos := (Mouse_Status.Row, Mouse_Status.Col);
     -- Scroll condition
     Scroll := List_Present and then In_Field_Absolute(Lfn, Click_Pos);
     case Mouse_Status.Button is

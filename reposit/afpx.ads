@@ -449,6 +449,9 @@ package Afpx is
                              := Con_Io.Default_Double_Click_Delay;
   procedure Set_Double_Click_Delay (
     Double_Click_Delay : in Double_Click_Delay_Range);
+  -- After the validation of a simple click it may be wise sometimes to prevent
+  --  the detection of the associated double-click
+  procedure Cancel_Double_Click;
 
   -- Print the fields and the list (if Redisplay has been called or is needed),
   --  then gets.
