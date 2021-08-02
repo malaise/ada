@@ -52,7 +52,9 @@ begin
                             Try_State => Screen.Can_Try,
                             Selected => True);
           when Common.Answered =>
-            History(Curr_Status) := Discard;
+            -- Select answer
+            Screen.Put_Answer (History(Curr_Status).Try_No,
+                               Natural (Level), 0, True);
         end case;
       end;
 

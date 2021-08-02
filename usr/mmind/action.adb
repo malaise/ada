@@ -116,7 +116,7 @@ package body Action is
           Screen.Put_Try (I, Screen.Can_Try, False);
         elsif Propal.Try = Common.Answered then
           Common.Get_Answer (I, Placed_Ok, Colors_Ok);
-          Screen.Put_Answer (I, Placed_Ok, Colors_Ok);
+          Screen.Put_Answer (I, Placed_Ok, Colors_Ok, False);
         end if;
       end loop;
       if Playing then
@@ -189,7 +189,8 @@ package body Action is
           Scr.Get (Str, Last, Stat, Pos, Ins, Echo => False);
           if Stat = Con_Io.Mouse_Button then
             Screen.Console.Get_Mouse_Event (Mouse_Status);
-            if Mouse_Status.Button = Con_Io.Left then
+            if Mouse_Status.Valid
+            and then Mouse_Status.Button = Con_Io.Left then
               -- Exit on new event
               exit Wait_Event when Clicked
                  xor Mouse_Status.Status = Con_Io.Pressed;
@@ -222,6 +223,7 @@ package body Action is
         Treat_Release (Go_On, Exit_Game, Color_Move);
         Prev_Status := Curr_Status;
         Curr_Status := (if Color_Move then Click_Dest else Default_Status);
+        Double_Click := False;
       end if;
       Update_Help;
       exit Main when not Go_On;

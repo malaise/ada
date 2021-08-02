@@ -34,8 +34,9 @@ package Screen is
    Color  : in Common.Color_Range);
 
   procedure Put_Answer (
-   Propal : in Common.Propal_Range;
-   Placed_Ok, Colors_Ok : in Natural);
+   Propal               : in Common.Propal_Range;
+   Placed_Ok, Colors_Ok : in Natural;
+   Selected             : in Boolean);
 
   ------------
   -- SECRET --

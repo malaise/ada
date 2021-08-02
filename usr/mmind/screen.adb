@@ -438,8 +438,9 @@ package body Screen is
   end Put_Color;
 
   procedure Put_Answer (
-   Propal : in Common.Propal_Range;
-   Placed_Ok, Colors_Ok : in Natural) is
+      Propal : in Common.Propal_Range;
+      Placed_Ok, Colors_Ok : in Natural;
+      Selected : in Boolean) is
     Square : Con_Io.Square;
   begin
     if Colors_Ok + Placed_Ok > Natural(Current_Level) then
@@ -453,17 +454,26 @@ package body Screen is
       Try_Win.Move (Square.Row, Square.Col+Con_Io.Col_Range(I)-1);
       Try_Win.Put (' ', Move => False);
     end loop;
-    -- Put
-    for I in 1 .. Placed_Ok loop
-      Try_Win.Move (Square);
-      Put_Pin (Try_Win, Ok_Color, False);
-      Square.Col := Square.Col + 1;
-    end loop;
-    for I in 1 .. Colors_Ok loop
-      Try_Win.Move (Square);
-      Put_Pin (Try_Win, Nok_Color, False);
-      Square.Col := Square.Col + 1;
-    end loop;
+    if Selected then
+      -- Put N pins in default color
+      for I in 1 .. Placed_Ok loop
+        Try_Win.Move (Square);
+        Put_Pin (Try_Win, Foreground_Color , False);
+        Square.Col := Square.Col + 1;
+      end loop;
+    else
+      -- Put pins of answer
+      for I in 1 .. Placed_Ok loop
+        Try_Win.Move (Square);
+        Put_Pin (Try_Win, Ok_Color, False);
+        Square.Col := Square.Col + 1;
+      end loop;
+      for I in 1 .. Colors_Ok loop
+        Try_Win.Move (Square);
+        Put_Pin (Try_Win, Nok_Color, False);
+        Square.Col := Square.Col + 1;
+      end loop;
+  end if;
 
   end Put_Answer;
 
@@ -471,8 +481,8 @@ package body Screen is
   -- SECRET --
   ------------
   procedure Put_Secret_Color (
-   Level  : in Common.Level_Range;
-   Color  : in Common.Color_Range) is
+      Level  : in Common.Level_Range;
+      Color  : in Common.Color_Range) is
     Square : Con_Io.Square;
   begin
     Square.Row := 0;

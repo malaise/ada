@@ -62,10 +62,10 @@ procedure Treat_Release (Go_On, Exit_Game, Color_Move : out Boolean) is
 
     -- Respond
     Resp := Response.Respond (Color);
-    Screen.Put_Answer (
-     Propal => First_Free,
-     Placed_Ok => Resp.Placed_Ok,
-     Colors_Ok => Resp.Colors_Ok);
+    Screen.Put_Answer (Propal    => First_Free,
+                       Placed_Ok => Resp.Placed_Ok,
+                       Colors_Ok => Resp.Colors_Ok,
+                       Selected  => False);
 
     -- Answered
     Common.Set_Try_State (First_Free, Common.Answered);
@@ -73,7 +73,7 @@ procedure Treat_Release (Go_On, Exit_Game, Color_Move : out Boolean) is
 
     -- Check end of game
     if First_Free = Common.Max_Number_Propal or else
-       Resp.Placed_Ok = Natural (Level) then
+        Resp.Placed_Ok = Natural (Level) then
       Playing := False;
       Screen.Put_Start_Giveup (Start => True, Selected => False);
       Put_Secret;
@@ -82,32 +82,21 @@ procedure Treat_Release (Go_On, Exit_Game, Color_Move : out Boolean) is
     end if;
   end Answer;
 
-  -- Find a proper reference for copy into a given Prop
-  -- Valid  only if Propal is empty
-  -- Last filled (Can_Try or Answered) before Prop, or No_Propal
+  -- Find an available (firt empty) propal to copy current
   No_Propal : constant Common.Full_Propal_Range
             := Common.Full_Propal_Range'First;
-  function Find_Reference (Prop : in Common.Propal_Range)
-           return Common.Full_Propal_Range is
-    Result : Common.Full_Propal_Range := No_Propal;
-    No_Color : constant Common.Propal_Color_Array(1 .. Level)
-             := (others => Common.No_Color);
-    use type Common.Full_Propal_Range, Common.Propal_Color_Array,
-             Common.Try_List;
+  Available : Common.Full_Propal_Range;
+  procedure Find_Available is
+    use type Common.Try_List;
   begin
-    if Common.Get_Propal_State(Prop).Propal_Color /= No_Color then
-      return No_Propal;
-    end if;
-    for I in 1 .. Prop - 1 loop
-      if Common.Get_Propal_State (I).Try /= Common.Not_Set then
-        -- Valid (and before target), keep last
-        Result := I;
+    for I in Common.Propal_Range loop
+      if Common.Get_Propal_State (I).Try = Common.Not_Set then
+        Available := I;
+        return;
       end if;
     end loop;
-    -- On target
-    return Result;
-  end Find_Reference;
-  Reference : Common.Full_Propal_Range;
+    Available := No_Propal;
+  end Find_Available;
 
   -- We can answer a propal: if complete and not already answered
   function Can_Answer (Try_No : in Common.Propal_Range) return Boolean is
@@ -142,8 +131,8 @@ procedure Treat_Release (Go_On, Exit_Game, Color_Move : out Boolean) is
   Propal : Common.Propal_State_Rec(Level);
   Valid : Boolean;
 
-  use type Common.Propal_Range, Common.Color_Range, Common.Level_Range,
-           Screen.Selection_List, Screen.Selection_Rec;
+  use type Common.Full_Propal_Range, Common.Color_Range, Common.Level_Range,
+           Common.Try_List, Screen.Selection_List, Screen.Selection_Rec;
 
 begin
   -- Valid if release in same item as clicked
@@ -177,18 +166,24 @@ begin
     when Screen.Exit_Game =>
       Screen.Put_Exit (Selected => False);
     when Screen.Try =>
-      case Common.Get_Propal_State (History(Curr_Status).Try_No).Try is
+      case Common.Get_Propal_State (History(Prev_Status).Try_No).Try is
         when Common.Not_Set =>
-          Screen.Put_Try (Propal => History(Curr_Status).Try_No,
+          Screen.Put_Try (Propal => History(Prev_Status).Try_No,
                           Try_State => Screen.Cannot_Try,
                           Selected => False);
         when Common.Can_Try =>
-          Screen.Put_Try (Propal => History(Curr_Status).Try_No,
+          Screen.Put_Try (Propal => History(Prev_Status).Try_No,
                           Try_State => Screen.Can_Try,
                           Selected => False);
         when Common.Answered =>
-          -- Will answer below
-          null;
+          -- Restore answer
+          declare
+            Try : constant Common.Propal_Range := History(Prev_Status).Try_No;
+            Placed_Ok, Colors_Ok : Natural;
+          begin
+            Common.Get_Answer (Try, Placed_Ok, Colors_Ok);
+            Screen.Put_Answer (Try, Placed_Ok, Colors_Ok, False);
+          end;
       end case;
     when Screen.Color =>
       if not Valid then
@@ -266,36 +261,40 @@ begin
       Playing := not Playing;
 
     when Screen.Try =>
-      if History(Prev_Status).Try_No = History(Curr_Status).Try_No then
-        -- Handle double click, or answer
-        if Can_Answer (History(Curr_Status).Try_No) then
-          Answer;
-        elsif Double_Click then
-          Reference := Find_Reference (History(Curr_Status).Try_No);
-          if Reference /= No_Propal then
+      -- Handle double click, or answer
+      if Can_Answer (History(Curr_Status).Try_No) then
+        Answer;
+        Screen.Console.Cancel_Double_Click;
+      elsif Double_Click then
+        if Common.Get_Propal_State (History(Curr_Status).Try_No).Try
+            = Common.Answered then
+          -- Current is answered, we can copy it
+          Find_Available;
+          if Available /= No_Propal then
             -- Copy previous propal
-            Propal := Common.Get_Propal_State (Reference);
-            Common.Set_Propal_State (History(Curr_Status).Try_No, Propal);
-            Common.Set_Try_State (History(Curr_Status).Try_No, Common.Can_Try);
-            Screen.Put_Try (History(Curr_Status).Try_No, Screen.Can_Try, False);
-          else
-            -- Clear current propal
-            Common.Set_Propal_State (
-                Propal => History(Curr_Status).Try_No,
-                State => (
-                    Level => Level,
-                    Propal_Color => (others => Common.No_Color),
-                    Try => Common.Not_Set));
-            Common.Set_Try_State (History(Curr_Status).Try_No, Common.Not_Set);
-            Screen.Put_Try (History(Curr_Status).Try_No, Screen.Cannot_Try,
-                            False);
+            Propal := Common.Get_Propal_State (History(Curr_Status).Try_No);
+            Propal.Try := Common.Can_Try;
+            Common.Set_Propal_State (Available, Propal);
+            Screen.Put_Try (Available, Screen.Can_Try, False);
+            History(Curr_Status).Try_No := Available;
           end if;
-          -- Update screen
-          for I in 1 .. Level loop
-            Screen.Put_Color (History(Curr_Status).Try_No, I,
-                              Propal.Propal_Color(I));
-          end loop;
+        else
+          -- Clear current propal
+          Common.Set_Propal_State (
+              Propal => History(Curr_Status).Try_No,
+              State => (
+                  Level => Level,
+                  Propal_Color => (others => Common.No_Color),
+                  Try => Common.Not_Set));
+          Common.Set_Try_State (History(Curr_Status).Try_No, Common.Not_Set);
+          Screen.Put_Try (History(Curr_Status).Try_No, Screen.Cannot_Try,
+                          False);
         end if;
+        -- Update screen
+        for I in 1 .. Level loop
+          Screen.Put_Color (History(Curr_Status).Try_No, I,
+                            Propal.Propal_Color(I));
+        end loop;
       end if;
       Go_On := True;
       Color_Move := False;
@@ -364,13 +363,13 @@ begin
         begin
           if History(Curr_Status) = History(Release_Orig) then
             -- Same propal cell => unselect.
-            -- Clear if not answered and double click
+            -- Clear pin if not answered and double click
             Screen.Put_Default_Pos (History(Curr_Status).Propal_No,
                                     History(Curr_Status).Column_No,
                                     Show => False);
             if not Common.Is_Answered (History(Curr_Status).Propal_No)
             and then Double_Click then
-              -- Clear
+              -- Clear pin
               Common.Set_Color (History(Curr_Status).Propal_No,
                                 History(Curr_Status).Column_No,
                                 Common.No_Color);
@@ -390,6 +389,7 @@ begin
                                     History(Curr_Status).Column_No,
                                     Show => True);
             History(Release_Orig) := History(Curr_Status);
+            Screen.Console.Cancel_Double_Click;
             Color_Move := True;
           else
             -- Dest is free: copy if source is answered, otherwise move color
@@ -413,6 +413,7 @@ begin
                               History(Curr_Status).Column_No,
                               Moved_Color);
             Update_Try (History(Curr_Status).Propal_No);
+            Screen.Console.Cancel_Double_Click;
             Color_Move := False;
           end if;
         end;

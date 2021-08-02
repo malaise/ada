@@ -18,11 +18,11 @@ begin
   begin
 
     Play:
-    for I in 1 .. 10 loop
+    for I in Common.Propal_Range loop
 
       Get:
       loop
-        Async_Stdin.Put_Out (Normal (I, 2) & "? ");
+        Async_Stdin.Put_Out (Normal (Natural (I), 2) & "? ");
         Async_Stdin.Overwrite;
         declare
           -- Allow up to 80 of input line
