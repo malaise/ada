@@ -416,7 +416,7 @@ package body Screen is
     end if;
 
     for I in Common.Level_Range'First .. Current_Level loop
-      Try_Win.Move (Square.Row, Square.Col+Con_Io.Col_Range(I)-1);
+      Try_Win.Move (Square.Row, Square.Col + Con_Io.Col_Range(I) - 1);
       Try_Win.Put ((if Try_State = Cannot_Try then 'X' else '?'),
                    Foreground, Background, False);
     end loop;
@@ -455,10 +455,14 @@ package body Screen is
       Try_Win.Put (' ', Move => False);
     end loop;
     if Selected then
-      -- Put N pins in default color
-      for I in 1 .. Placed_Ok loop
+      -- Put N pins in default color, selected background
+      for I in 1 .. Placed_Ok + Colors_Ok loop
+        Try_Win.Move (Square.Row, Square.Col + Con_Io.Col_Range(I) - 1);
+        Try_Win.Put (' ', Foreground_Color, Background_Select, False);
+      end loop;
+      for I in 1 .. Placed_Ok + Colors_Ok loop
         Try_Win.Move (Square);
-        Put_Pin (Try_Win, Foreground_Color , False);
+        Put_Pin (Try_Win, Foreground_Color, False);
         Square.Col := Square.Col + 1;
       end loop;
     else

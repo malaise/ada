@@ -38,6 +38,7 @@ begin
       declare
         Try_State : constant Common.Try_List
             := Common.Get_Propal_State (History(Curr_Status).Try_No).Try;
+        Placed_Ok, Colors_Ok : Natural;
       begin
         -- Check that this propal is not answered
         -- If OK we can either copy or clear on double click, or maybe answer
@@ -53,8 +54,10 @@ begin
                             Selected => True);
           when Common.Answered =>
             -- Select answer
+            Common.Get_Answer (History(Curr_Status).Try_No,
+                               Placed_Ok, Colors_Ok);
             Screen.Put_Answer (History(Curr_Status).Try_No,
-                               Natural (Level), 0, True);
+                               Placed_Ok, Colors_Ok, True);
         end case;
       end;
 

@@ -39,21 +39,45 @@ package body Action is
   end End_Action;
 
   -- Check and update wether current propal is complete and can be tried
-  procedure Update_Try (Propal : in Common.Propal_Range) is
+  --  (not already answered)
+  procedure Update_Try (Prop_No : in Common.Propal_Range) is
     Prop_State : constant Common.Propal_State_Rec
-               := Common.Get_Propal_State (Propal);
-    use type Common.Color_Range;
+               := Common.Get_Propal_State (Prop_No);
+    Tmp_State : Common.Propal_State_Rec(Level);
+    procedure Set_No is
+    begin
+      Common.Set_Try_State (Prop_No, Common.Not_Set);
+      Screen.Put_Try (Prop_No, Screen.Cannot_Try, False);
+    end Set_No;
+    use type Common.Propal_Range, Common.Try_List, Common.Color_Range,
+             Common.Propal_Color_Array;
+
   begin
+    -- If not complete => Cannot try
     for I in Common.Level_Range
-    range Common.Level_Range'First .. Level loop
+             range Common.Level_Range'First .. Level loop
       if Prop_State.Propal_Color(I) = 0 then
-        Common.Set_Try_State (Propal, Common.Not_Set);
-        Screen.Put_Try (Propal, Screen.Cannot_Try, False);
+        Set_No;
         return;
       end if;
     end loop;
-    Common.Set_Try_State (Propal, Common.Can_Try);
-    Screen.Put_Try (Propal, Screen.Can_Try, False);
+    -- Compare to answered
+    for I in 1 .. Prop_No - 1 loop
+      Tmp_State := Common.Get_Propal_State (I);
+      if Tmp_State.Try = Common.Answered then
+        if Tmp_State.Propal_Color = Prop_State.Propal_Color then
+          -- This answer exists
+          Set_No;
+          return;
+        end if;
+      else
+        -- No more answer
+        exit;
+      end if;
+    end loop;
+    -- This propal is new
+    Common.Set_Try_State (Prop_No, Common.Can_Try);
+    Screen.Put_Try (Prop_No, Screen.Can_Try, False);
   end Update_Try;
 
   -- Put accurate help
