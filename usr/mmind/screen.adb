@@ -313,7 +313,7 @@ package body Screen is
     end loop;
 
     -- Draw title
-    Global_Win.Move (1, Try_Last_Col + 2);
+    Global_Win.Move (0, Try_Last_Col + 2);
     Global_Win.Put ("M A S T E R   M I N D");
 
     -- Draw level
