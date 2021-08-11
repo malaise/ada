@@ -81,7 +81,6 @@ package Screen is
   -- kind of selection
   type Selection_List is (Nothing, Color, Propal, Try, Menu, Level, Exit_Game);
 
-
   -- Selection data
   type Selection_Rec(Selection_Kind : Selection_List := Nothing) is record
     case Selection_Kind is
@@ -101,8 +100,11 @@ package Screen is
     end case;
   end record;
 
-
   function Get_Selected (Where : Con_Io.Square) return Selection_Rec;
+
+  -- Color mapping from letters (YGWMRCTB)
+  -- Cosntraint_Error if invalid letter
+  function Color_Of (C : Character) return Common.Eff_Color_Range;
 
 end Screen;
 

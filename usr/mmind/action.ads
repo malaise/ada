@@ -5,8 +5,9 @@ package Action is
 
   procedure End_Action;
 
-  -- True if start again, False if exit
-  function Play return Boolean;
+  -- Show code or not (for first run)
+  -- Return True if start again, False if exit
+  function Play (Show_Code : Boolean) return Boolean;
 
 end Action;
 

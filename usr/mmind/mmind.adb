@@ -1,60 +1,144 @@
 -- Master mind (graphic or text mode)
-with Basic_Proc, Argument;
-with Common, Action, Mmind_Asc;
+with Basic_Proc, Argument, Argument_Parser, As.U, Images, Rnd;
+with Common, Action, Mmind_Asc, Screen, Response;
 
 procedure Mmind is
-   Is_Ascii : Boolean;
+  -- Options
+  Text_Mode : Boolean;
+  Default_Level : constant Common.Last_Level_Range
+                := Common.Last_Level_Range'Succ (Common.Last_Level_Range'First);
+  Level : Common.Last_Level_Range := Default_Level;
+  Code_Txt : As.U.Asu_Us;
+
+  -- Arguments
+  procedure Put_Help is
+  begin
+    Basic_Proc.Put_Line_Error (
+      "Usage: " & Argument.Get_Program_Name
+      & " [ <text_mode> ] [ <init_level> ] [ <init_code> ]");
+    Basic_Proc.Put_Line_Error (
+      "  <text_mode>    ::= -t | --text");
+    Basic_Proc.Put_Line_Error (
+      "  <init_level>   ::= [ -l <level> | --level=<level> ]");
+    Basic_Proc.Put_Line_Error (
+      "  <level>        ::= 3 | 4 | 5      // Default "
+      & Images.Integer_Image (Integer (Default_Level)));
+    Basic_Proc.Put_Line_Error (
+      "  <init_code>    ::= [ -c <code> | --code=<code> ]");
+    Basic_Proc.Put_Line_Error (
+      "  <code>         ::= { <color_letter> } | { <color_number> }");
+    Basic_Proc.Put_Line_Error (
+      "  <color_letter> ::=  { B | T | C | R | M | W | G | Y }");
+    Basic_Proc.Put_Line_Error (
+      "  <color_number> ::= 1 .. 8         // For text mode");
+  end Put_Help;
+
+  procedure Error (Msg : in String) is
+  begin
+    Basic_Proc.Put_Line_Error (Argument.Get_Program_Name
+                             & " ERROR: " & Msg & ".");
+    Basic_Proc.Set_Error_Exit_Code;
+    Put_Help;
+  end Error;
+
+  Keys : constant Argument_Parser.The_Keys_Type := (
+   01 => (False, 't', As.U.Tus ("text"),  False),
+   02 => (True,  'l', As.U.Tus ("level"), False, True, As.U.Tus ("level")),
+   03 => (True,  'c', As.U.Tus ("code"),  False, True, As.U.Tus ("code")),
+   04 => (False, 'h', As.U.Tus ("help"),  False) );
+   Arg_Dscr : Argument_Parser.Parsed_Dscr;
+
+  use type Common.Full_Level_Range;
 begin
   -- Parse arguments
-  declare
-    Level : Common.Last_Level_Range;
-    Default_Level : constant Common.Last_Level_Range
-                  := Common.Last_Level_Range'Succ
-                           (Common.Last_Level_Range'First);
-  begin
-    case Argument.Get_Nbre_Arg is
-      when 0 =>
-        -- Second level => 4
-        Is_Ascii := False;
-        Level := Default_Level;
-      when 1 =>
-        if Argument.Get_Parameter = "-t" then
-          Is_Ascii := True;
-          Level := Default_Level;
-        else
-          Is_Ascii := False;
-          Level := Common.Last_Level_Range'Value (Argument.Get_Parameter);
-        end if;
-      when 2 =>
-        if Argument.Get_Parameter (Occurence => 1) /= "-t" then
-          raise Constraint_Error;
-        end if;
-        Is_Ascii := True;
-        Level := Common.Last_Level_Range'Value
-                     (Argument.Get_Parameter (Occurence => 2));
+  Arg_Dscr := Argument_Parser.Parse (Keys);
+  if not Arg_Dscr.Is_Ok then
+    Error (Arg_Dscr.Get_Error);
+    return;
+  end if;
+
+  -- Help
+  if Arg_Dscr.Is_Set (04) then
+    Put_Help;
+    return;
+  end if;
+
+  -- Text mode
+  Text_Mode := Arg_Dscr.Is_Set (01);
+
+  -- Level
+  if Arg_Dscr.Is_Set (02) then
+    begin
+      Level := Common.Last_Level_Range'Value (Arg_Dscr.Get_Option (02));
+    exception
       when others =>
-        raise Constraint_Error;
-    end case;
+        Error ("Invalid level " & Arg_Dscr.Get_Option (02));
+        return;
+    end;
+  end if;
 
-    Common.Store_Level (Level);
-  exception
-    when Constraint_Error =>
-      Basic_Proc.Put_Line_Error (
-       "Syntax ERROR. Usage: " & Argument.Get_Program_Name
-       & " [ -t ] [ <level> ] (level from 3 to 5, default 4).");
+  -- Code
+  if Arg_Dscr.Is_Set (03) then
+    Code_Txt := As.U.Tus (Arg_Dscr.Get_Option (03));
+    declare
+      Unused_Length : Common.Last_Level_Range;
+    begin
+      -- Level is maybe not set yet, but still, the code lenght must be in 3..5
+      Unused_Length := Common.Last_Level_Range (Code_Txt.Length);
+    exception
+      when others =>
+        Error ("Invalid code length for " & Code_Txt.Image);
+        return;
+    end;
+  end if;
+
+  -- Prepare
+  Common.Store_Level (Level);
+  Common.Set_Level_To_Stored;
+  Rnd.Gen.Randomize;
+
+  -- Check code and process the option to set code
+  if not Code_Txt.Is_Null then
+    if Common.Last_Level_Range (Code_Txt.Length) /= Level then
+      Error ("Invalid code length for " & Code_Txt.Image);
       return;
-  end;
+    end if;
+    declare
+      Code : Response.Color_Array (1 .. Level);
+      C : Character;
+    begin
+      for I in 1 .. Level loop
+        C := Code_Txt.Element (Integer(I));
+        Code(I) := (
+          if Text_Mode then Common.Eff_Color_Range'Value (C & "")
+          else Screen.Color_Of (C) );
+      end loop;
+      Response.New_Code (Code);
+    exception
+      when others =>
+        Error ("Invalid "
+          & (if Text_Mode then "text" else "graphic")
+          & " code " & Code_Txt.Image);
+        return;
+    end;
+  else
+    Response.New_Code;
+  end if;
 
-  if Is_Ascii then
+  -- Run
+  if Text_Mode then
     -- Ascii Mode
     Mmind_Asc;
   else
-    -- X Mode
-    Common.Set_Level_To_Stored;
+    -- Graphic Mode
     Action.Init;
 
     loop --## rule line off Loop_While
-      exit when not Action.Play;
+      exit when not Action.Play (not Code_Txt.Is_Null);
+      -- For next Play
+      Code_Txt.Set_Null;
+      Common.Set_Level_To_Stored;
+      Response.New_Code;
     end loop;
   end if;
 

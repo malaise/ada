@@ -8,10 +8,14 @@ The secret is made of 3 to 5 pins among 8 colors. At each try you propose a
 combination, and you get an answer of how many pins are correcty placed (same
 color at the same location) and how many pins are misplaced.
 
-You have up to 12 tries to guess the secret. The official game existed in two
-variants: 'Clasicr' with 4 columns and 10 rows, and 'Super' with 5 columns and
-12 rows. Here you can choose from 3 to 5 columns and, if you want, you have to
-apply the limit to 10 tries by yourself.
+The official game exists in two variants: 
+
+- 'Clasic' with 4 columns and 10 rows
+- 'Super' with 5 columns and 12 rows.
+
+In this came you can choose from 3 to 5 columns and you have up to 12 tries to
+guess the secret (If you want, you have to apply the limit to 10 tries by
+yourself).
 
 Presentation of the screen
 --------------------------
@@ -27,21 +31,65 @@ game.
 
 .The colors,
 the column in the middle of the screen, is a read-only area allowing to pick a
-pin of a color and to put it in a proposal.
+color pin and to put it in a proposal.
 
 .The proposals,
 on the left, is made of 12 rows, each filled progressively with color pins.
-Once a row is complete it is possible to submit the combination.
+Once a row is complete, it is possible to submit the combination.
 
 .The answers,
 between the proposals and the colors, contains the answers to submitted
 combinations. It can be either:
 
-- "XXXX": The proposal is not complete (and cannot be answered),
+- "XXXX": The proposal is not complete or already answered previously, and it 
+cannot be answered),
 
 - "????": The proposal is complete and can be answered,
 
 - An answer: Some black and white pins, including no pin at all.
+
+Command line arguments
+----------------------
+  Usage: mmind [ <text_mode> ] [ <init_level> ] [ <init_code> ]
+    <text_mode>    ::= -t | --text
+    <init_level>   ::= [ -l <level> | --level=<level> ]
+    <level>        ::= 3 | 4 | 5      // Default 4
+    <init_code>    ::= [ -c <code> | --code=<code> ]
+    <code>         ::= { <color_letter> } | { <color_number> }
+    <color_letter> ::=  { B | T | C | R | M | W | G | Y }
+    <color_number> ::= 1 .. 8         // For text mode
+
+.Text mode
+Text mode is a variant that plays one game with no graphics. The colors are
+replaced by digits from 1 to 8 and the answers are made of two numbers: number
+of "colors" correctly placed and number of "colors" misplaced. 
+
+.Level
+This options allows setting the level (from 3 to 5) of the first game in
+graphic mode (or the level of the text game).
+
+.Init code
+Useful for testing the game, this option allows pre-setting the secret
+code
+
+- in text mode, this is the secret sequence of digits (from 1 to 8) to find.
+- in graphic mode, this is the sequence of colors to find in the first game.
+This code is then shown during the first game, and then hidden and secret again
+in subsequent games. +
+Each color is denoted by one letter:
+  * Y for Yellow
+  * G for Green
+  * W for White (light grey)
+  * M for Magenta
+  * R for Red
+  * C for Cyan
+  * T for Tomato
+  * B for Blue
+
+.Examples
+
+  mmind -l 3 -c TCM
+  mmind -t -c 1247
 
 How to play
 -----------
@@ -58,20 +106,20 @@ In order to fill a proposal you can:
 .Pick a color, from either:
 - The colors area. Select a color here, then select a cell in an available (not
 answered) proposal. The selected color will be copied into the destination
-cell, possibly overwriting its content.
+cell, overwriting its content if any.
 
 - An answered proposal. Like from the colors area, the color will be copied
 into the target cell.
 
 - A not-answered proposal, including the one of the target cell. In this case
-the pin is moved from the selected cell into the target cell. +
+the pin is *moved* from the selected cell into the target cell. +
 
 .Remove a pin (clearing the cell)
 by double clicking on it.
 
 .Clear a full proposal (row)
 by double clicking in the corresponding answer area. If the proposal is not
-complete, or if it is complete and already answered, then it will be cleared.
+complete, or if has already been answered previously, then it will be cleared.
 
 NOTE: Beware that if the proposal is complete and not already answered, then it
 will be answered (at first click).
@@ -99,6 +147,6 @@ you submit a proposal and it matches.
 you submit all the 12 possible proposals without finding the secret.
 
 .you give up
-you click in "GIVE UP" area of the main menu.
+you click in "GIVE UP" menu.
 
 

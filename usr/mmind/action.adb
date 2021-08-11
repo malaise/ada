@@ -1,4 +1,4 @@
-with Rnd, Con_Io;
+with Con_Io;
 with Common, Screen, Response;
 package body Action is
 
@@ -28,7 +28,6 @@ package body Action is
   procedure Init is
   begin
     Screen.Init;
-    Rnd.Gen.Randomize;
     Level := Common.Get_Level;
   end Init;
 
@@ -118,15 +117,24 @@ package body Action is
             is separate;
 
   -- True if start again, False if exit
-  function Play return Boolean is
+  function Play (Show_Code : Boolean) return Boolean is
 
     Clicked : Boolean := False;
+
+    -- Put secret
+    procedure Put_Secret is
+      Code : Response.Color_Rec(Level);
+    begin
+      Code := Response.Get_Code;
+      for J in 1 .. Level loop
+        Screen.Put_Secret_Color(J, Code.Color(J));
+      end loop;
+    end Put_Secret;
 
     -- Redraw
     procedure Handle_Refresh is
       Propal : Common.Propal_State_Rec(Level);
       Placed_Ok, Colors_Ok : Natural;
-      Code : Response.Color_Rec(Level);
       use type Common.Try_List, Screen.Selection_List;
     begin
       Screen.Init (False, Level);
@@ -161,12 +169,12 @@ package body Action is
                                     Show => True);
           end if;
         end if;
+        if Show_Code then
+          Put_Secret;
+        end if;
       else
         -- Not playing
-        Code := Response.Get_Code;
-        for J in 1 .. Level loop
-          Screen.Put_Secret_Color(J, Code.Color(J));
-        end loop;
+        Put_Secret;
         Screen.Put_Start_Giveup (Start => True, Selected => False);
         Screen.Put_Current_Level (Common.Get_Stored_Level);
       end if;
@@ -179,21 +187,24 @@ package body Action is
 
   begin
 
-    -- Start new game - playing
+    -- Init state - playing
     Level := Common.Get_Level;
     Common.Reset_State;
+    First_Free := Common.Propal_Range'First;
+    Playing := True;
     Curr_Status := Default_Status;
     Prev_Status := Default_Status;
+
+    -- Init screen
     Screen.Init (True, Level);
-
-    First_Free := Common.Propal_Range'First;
-    Response.New_Code;
-
-    Playing := True;
     Screen.Put_Start_Giveup (Start => False, Selected => False);
     Update_Help;
     Screen.Put_Current_Level (Level);
+    if Show_Code then
+      Put_Secret;
+    end if;
 
+    -- Start new game - playing
     Main:
     loop
 

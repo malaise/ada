@@ -50,6 +50,9 @@ package body Screen is
        7 => As.U.Tus ("Chartreuse"),
        8 => As.U.Tus ("Yellow"));
   White : Con_Io.Effective_Colors;
+  Color_Letters : constant array (Common.Eff_Color_Range) of Character :=
+      (1 => 'B', 2 => 'T', 3 => 'C', 4 => 'R',
+       5 => 'M', 6 => 'W', 7 => 'G', 8 => 'Y');
 
   -- Screen foreground and backgound
   Foreground_Color  : Con_Io.Effective_Colors;
@@ -765,5 +768,16 @@ package body Screen is
 
   end Get_Selected;
 
+  -- Color mapping from letters (YGWMRCTB)
+  -- Cosntraint_Error if invalid letter
+  function Color_Of (C : Character) return Common.Eff_Color_Range is
+  begin
+    for I in Common.Eff_Color_Range loop
+      if Color_Letters(I) = C then
+        return I;
+      end if;
+    end loop;
+    raise Constraint_Error;
+  end Color_Of;
 end Screen;
 

@@ -1,26 +1,32 @@
 with Rnd;
 package body Response is
 
-
+  -- The secret
   Secret : Color_Rec;
+  function  Get_Code return Color_Rec is (Secret);
 
+  -- Random new code
   function Color_Random is new Rnd.Discr_Random (Common.Eff_Color_Range);
 
-  procedure New_Code is
+  procedure New_Code (Init : in Color_Array := Empty) is
     Current_Level : constant Common.Last_Level_Range := Common.Get_Level;
   begin
     Secret := (Level => Current_Level,
               Color => (others => Common.Eff_Color_Range'First) );
 
-    for I in Common.Level_Range
-     range Common.Level_Range'First .. Current_Level loop
-      Secret.Color(I) := Color_Random (Rnd.Gen.all);
-    end loop;
+    if Init = Empty then
+      -- Random
+      for I in Common.Level_Range
+       range Common.Level_Range'First .. Current_Level loop
+        Secret.Color(I) := Color_Random (Rnd.Gen.all);
+      end loop;
+    else
+      Secret.Color := Init;
+    end if;
   end New_Code;
 
-
+  -- Answer
   function Respond (Propal : Color_Rec) return Response_Rec is
-
     subtype Column_Range is Common.Level_Range range
      Common.Level_Range'First .. Secret.Level;
     Seen_Code, Seen_Propal : array (Column_Range) of Boolean
@@ -55,8 +61,6 @@ package body Response is
 
     return Response;
   end Respond;
-
-  function  Get_Code return Color_Rec is (Secret);
 
 end Response;
 

@@ -1,15 +1,11 @@
-with Aski, Normal, Rnd, Async_Stdin;
+with Aski, Normal, Async_Stdin;
 with Common, Response;
 procedure Mmind_Asc is
 begin
-  Common.Set_Level_To_Stored;
 
   Async_Stdin.Put_Line_Out ("Find "
     & Normal(Integer(Common.Get_Stored_Level), 1)
     & " digits from 1 to 8.");
-
-  Rnd.Gen.Randomize;
-  Response.New_Code;
 
   declare
     Len : constant Integer := Integer(Common.Get_Stored_Level);
@@ -72,6 +68,10 @@ begin
   end;
 
 exception
+  when Async_Stdin.Io_Error =>
+    -- Ctrl C?
+    Async_Stdin.New_Line_Out;
+    Async_Stdin.Put_Line_Out ("Aborted.");
   when others =>
     Async_Stdin.Set_Async;
     raise;
