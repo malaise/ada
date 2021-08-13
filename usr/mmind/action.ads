@@ -1,13 +1,14 @@
 package Action is
   No_Mouse : exception;
 
-  procedure Init;
+  -- Show code or not (all games)
+  procedure Init (Show_Codes : in Boolean);
+
 
   procedure End_Action;
 
-  -- Show code or not (for first run)
   -- Return True if start again, False if exit
-  function Play (Show_Code : Boolean) return Boolean;
+  function Play return Boolean;
 
 end Action;
 

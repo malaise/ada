@@ -9,28 +9,31 @@ procedure Mmind is
                 := Common.Last_Level_Range'Succ (Common.Last_Level_Range'First);
   Level : Common.Last_Level_Range := Default_Level;
   Code_Txt : As.U.Asu_Us;
+  Show_Codes : Boolean;
 
   -- Arguments
   procedure Put_Help is
   begin
     Basic_Proc.Put_Line_Error (
       "Usage: " & Argument.Get_Program_Name
-      & " [ <text_mode> ] [ <init_level> ] [ <init_code> ]");
+      & " [ <text_mode> ] [ <init_level> ] [ <init_code> ] [ <show_codes> ]");
     Basic_Proc.Put_Line_Error (
       "  <text_mode>    ::= -t | --text");
     Basic_Proc.Put_Line_Error (
-      "  <init_level>   ::= [ -l <level> | --level=<level> ]");
+      "  <init_level>   ::= -l <level> | --level=<level>");
     Basic_Proc.Put_Line_Error (
       "  <level>        ::= 3 | 4 | 5      // Default "
       & Images.Integer_Image (Integer (Default_Level)));
     Basic_Proc.Put_Line_Error (
-      "  <init_code>    ::= [ -c <code> | --code=<code> ]");
+      "  <init_code>    ::= -c <code> | --code=<code>");
     Basic_Proc.Put_Line_Error (
       "  <code>         ::= { <color_letter> } | { <color_number> }");
     Basic_Proc.Put_Line_Error (
-      "  <color_letter> ::=  { B | T | C | R | M | W | G | Y }");
+      "  <color_letter> ::= { B | T | C | R | M | W | G | Y }");
     Basic_Proc.Put_Line_Error (
       "  <color_number> ::= 1 .. 8         // For text mode");
+    Basic_Proc.Put_Line_Error (
+      "  <show_codes>   ::= -s | --show");
   end Put_Help;
 
   procedure Error (Msg : in String) is
@@ -45,7 +48,8 @@ procedure Mmind is
    01 => (False, 't', As.U.Tus ("text"),  False),
    02 => (True,  'l', As.U.Tus ("level"), False, True, As.U.Tus ("level")),
    03 => (True,  'c', As.U.Tus ("code"),  False, True, As.U.Tus ("code")),
-   04 => (False, 'h', As.U.Tus ("help"),  False) );
+   04 => (False, 's', As.U.Tus ("show"),  False),
+   05 => (False, 'h', As.U.Tus ("help"),  False) );
    Arg_Dscr : Argument_Parser.Parsed_Dscr;
 
   use type Common.Full_Level_Range;
@@ -58,7 +62,7 @@ begin
   end if;
 
   -- Help
-  if Arg_Dscr.Is_Set (04) then
+  if Arg_Dscr.Is_Set (05) then
     Put_Help;
     return;
   end if;
@@ -90,6 +94,15 @@ begin
         Error ("Invalid code length for " & Code_Txt.Image);
         return;
     end;
+  end if;
+
+  -- Show codes
+  Show_Codes := Arg_Dscr.Is_Set (04);
+
+  -- Check compatibility
+  if Show_Codes and then Text_Mode then
+    Error ("Incompatible options -t and -s");
+    return;
   end if;
 
   -- Prepare
@@ -131,10 +144,9 @@ begin
     Mmind_Asc;
   else
     -- Graphic Mode
-    Action.Init;
+    Action.Init (Show_Codes);
 
-    loop --## rule line off Loop_While
-      exit when not Action.Play (not Code_Txt.Is_Null);
+    while Action.Play loop
       -- For next Play
       Code_Txt.Set_Null;
       Common.Set_Level_To_Stored;

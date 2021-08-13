@@ -8,6 +8,9 @@ package body Action is
   -- True as long as not end of game
   Playing : Boolean;
 
+  -- Do we show the codes
+  Show_Codes : Boolean;
+
   -- Current and previous status
   type Status_List is (Click_Orig, Release_Orig,
                        Click_Dest, Release_Dest);
@@ -25,10 +28,11 @@ package body Action is
   First_Free : Common.Propal_Range;
 
   -- Init the game
-  procedure Init is
+  procedure Init (Show_Codes : in Boolean) is
   begin
     Screen.Init;
     Level := Common.Get_Level;
+    Action.Show_Codes := Show_Codes;
   end Init;
 
   -- Terminate the game
@@ -117,7 +121,7 @@ package body Action is
             is separate;
 
   -- True if start again, False if exit
-  function Play (Show_Code : Boolean) return Boolean is
+  function Play return Boolean is
 
     Clicked : Boolean := False;
 
@@ -169,7 +173,7 @@ package body Action is
                                     Show => True);
           end if;
         end if;
-        if Show_Code then
+        if Show_Codes then
           Put_Secret;
         end if;
       else
@@ -200,7 +204,7 @@ package body Action is
     Screen.Put_Start_Giveup (Start => False, Selected => False);
     Update_Help;
     Screen.Put_Current_Level (Level);
-    if Show_Code then
+    if Show_Codes then
       Put_Secret;
     end if;
 

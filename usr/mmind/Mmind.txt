@@ -50,14 +50,16 @@ cannot be answered),
 
 Command line arguments
 ----------------------
-  Usage: mmind [ <text_mode> ] [ <init_level> ] [ <init_code> ]
+  Usage: mmind [ <text_mode> ] [ <init_level> ] [ <init_code> ] [ <show_codes> ]
     <text_mode>    ::= -t | --text
-    <init_level>   ::= [ -l <level> | --level=<level> ]
+    <init_level>   ::= -l <level> | --level=<level>
     <level>        ::= 3 | 4 | 5      // Default 4
-    <init_code>    ::= [ -c <code> | --code=<code> ]
+    <init_code>    ::= c <code> | --code=<code>
     <code>         ::= { <color_letter> } | { <color_number> }
-    <color_letter> ::=  { B | T | C | R | M | W | G | Y }
+    <color_letter> ::= { B | T | C | R | M | W | G | Y }
     <color_number> ::= 1 .. 8         // For text mode
+    <show_codes>   ::= -s | --show
+
 
 .Text mode
 Text mode is a variant that plays one game with no graphics. The colors are
@@ -69,13 +71,10 @@ This options allows setting the level (from 3 to 5) of the first game in
 graphic mode (or the level of the text game).
 
 .Init code
-Useful for testing the game, this option allows pre-setting the secret
-code
+Useful for testing the game, this option allows pre-setting the secret code
 
 - in text mode, this is the secret sequence of digits (from 1 to 8) to find.
-- in graphic mode, this is the sequence of colors to find in the first game.
-This code is then shown during the first game, and then hidden and secret again
-in subsequent games. +
+- in graphic mode, this is the sequence of colors to find in the first game. +
 Each color is denoted by one letter:
   * Y for Yellow
   * G for Green
@@ -86,9 +85,16 @@ Each color is denoted by one letter:
   * T for Tomato
   * B for Blue
 
++
+A new random code will be generated for subsequent games.
+
+.Show codes
+In graphic mode, this options leads to display the code of all the games
+(either preset or random). Useful for testing the game.
+
 .Examples
 
-  mmind -l 3 -c TCM
+  mmind -l 3 -c TCM -s
   mmind -t -c 1247
 
 How to play
