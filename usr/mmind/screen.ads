@@ -75,6 +75,10 @@ package Screen is
   -- Can_Clear is meaningfull when released on a proposal
   procedure Put_Help (Help : in Help_State; Can_Clear : in Boolean := False);
 
+  -- Put Hh:Mmn:Ss
+  subtype Clock_Str is String (1 .. 8);
+  procedure Put_Clock (Clock : in Clock_Str);
+
   ---------------
   -- SELECTION --
   ---------------

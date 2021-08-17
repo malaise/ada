@@ -6,16 +6,16 @@ combination of colors, by successive tries and answers.
 
 The secret is made of 3 to 5 pins among 8 colors. At each try you propose a
 combination, and you get an answer of how many pins are correcty placed (same
-color at the same location) and how many pins are misplaced.
+color at the same location) and how many other pins are misplaced.
 
 The official game exists in two variants: 
 
-- 'Clasic' with 4 columns and 10 rows
+- 'Clasic' with 4 columns and 10 rows (up to 10 tries),
 - 'Super' with 5 columns and 12 rows.
 
-In this came you can choose from 3 to 5 columns and you have up to 12 tries to
-guess the secret (If you want, you have to apply the limit to 10 tries by
-yourself).
+In the present came you can choose from 3 to 5 columns and you have up to 12
+tries to guess the secret. (If you want to limit to 10 tries you need to
+apply it by yourself).
 
 Presentation of the screen
 --------------------------
@@ -28,6 +28,11 @@ There are four areas:
 on the bottom right, allows aborting the current game, starting a new game,
 changing the level (number of columns - when not playing -), and exiting the
 game.
+
+Above the menu is displayed a 'help' message on the possible actions in the
+current context.
+
+Above the help is a clock indicating the duration of the current game.
 
 .The colors,
 the column in the middle of the screen, is a read-only area allowing to pick a
@@ -46,7 +51,8 @@ cannot be answered),
 
 - "????": The proposal is complete and can be answered,
 
-- An answer: Some black and white pins, including no pin at all.
+- An answer: Some black and white pins, including no pin at all. It cannot be
+modified.
 
 Command line arguments
 ----------------------
@@ -95,7 +101,7 @@ In graphic mode, this options leads to display the code of all the games
 .Examples
 
   mmind -l 3 -c TCM -s
-  mmind -t -c 1247
+  mmind --text -c 1247
 
 How to play
 -----------

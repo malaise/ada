@@ -27,6 +27,17 @@ package body Action is
   -- The first row not answered (for next propal and answer)
   First_Free : Common.Propal_Range;
 
+  -- Handle the clock
+  package Clock is
+    -- Reset  and restart the clock
+    procedure Start;
+    -- Stop (freeze)
+    procedure Stop;
+    -- Timer expiration
+    procedure Expire;
+  end Clock;
+  package body Clock is separate;
+
   -- Init the game
   procedure Init (Show_Codes : in Boolean) is
   begin
@@ -38,7 +49,7 @@ package body Action is
   -- Terminate the game
   procedure End_Action is
   begin
-    null;
+    Screen.Clear;
   end End_Action;
 
   -- Check and update wether current propal is complete and can be tried
@@ -209,6 +220,7 @@ package body Action is
     end if;
 
     -- Start new game - playing
+    Clock.Start;
     Main:
     loop
 
@@ -234,8 +246,11 @@ package body Action is
               exit Wait_Event when Clicked
                  xor Mouse_Status.Status = Con_Io.Pressed;
             end if;
+          elsif Stat = Con_Io.Timer_Event then
+            Clock.Expire;
           elsif Stat = Con_Io.Refresh then
             Handle_Refresh;
+            Clock.Expire;
           elsif Stat = Con_Io.Break then
             Screen.Clear;
             return False;
@@ -269,16 +284,7 @@ package body Action is
 
     end loop Main;
 
-    -- End?
-    if Exit_Game then
-      Screen.Clear;
-    end if;
-
     return not Exit_Game;
-  exception
-    when others =>
-      Scr.Move;
-      return Exit_Game;
   end Play;
 
 end Action;

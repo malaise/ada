@@ -72,11 +72,12 @@ procedure Treat_Release (Go_On, Exit_Game, Color_Move : out Boolean) is
     Common.Set_Answer (First_Free, Resp.Placed_Ok, Resp.Colors_Ok);
 
     -- Check end of game
-    if First_Free = Common.Max_Number_Propal or else
-        Resp.Placed_Ok = Natural (Level) then
+    if First_Free = Common.Max_Number_Propal
+    or else Resp.Placed_Ok = Natural (Level) then
       Playing := False;
       Screen.Put_Start_Giveup (Start => True, Selected => False);
       Put_Secret;
+      Clock.Stop;
     else
       First_Free := Common.Propal_Range'Succ(First_Free);
     end if;
@@ -217,14 +218,16 @@ begin
     when Screen.Menu =>
       if Playing then
         -- Give up
-        Put_Secret;
         Screen.Put_Start_Giveup (Start => True, Selected => False);
+        Put_Secret;
+        Clock.Stop;
         Go_On := True;
         Color_Move := False;
       else
         -- Restart
         Common.Set_Level_To_Stored;
         Screen.Put_Start_Giveup (Start => False, Selected => False);
+        Clock.Start;
         Go_On := False;
         Exit_Game := False;
       end if;

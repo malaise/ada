@@ -4,14 +4,16 @@ package body Screen is
   -------------------------------
   -- GLOBAL SCREEN DEFINITIONS --
   -------------------------------
-  Screen_Win, Global_Win, Secret_Win, Propal_Win, Try_Win,
+  Screen_Win, Secret_Win, Propal_Win, Try_Win,
    Color_Win, Help_Win, Menu_Win, Level_Win, Exit_Win : Con_Io.Window;
 
   -- Fixed geometry
-  Console_Height   : constant Con_Io.Row_Range := 29;
+  -- These are sizes (ranges are from 0 to size - 1)
+  Console_Height   : constant Con_Io.Row_Range := 28;
   Console_Width    : constant Con_Io.Row_Range := 74;
   Propal_Col_Width : constant Con_Io.Col_Range :=  2;
-  Propal_Last_Row  : constant Con_Io.Row_Range := 27;
+  -- Ranges
+  Propal_Last_Row  : constant Con_Io.Row_Range := Console_Height - 2;
   Propal_First_Row : constant Con_Io.Row_Range :=
    Propal_Last_Row - (Con_Io.Row_Range(Common.Max_Number_Propal)-1) * 2;
   Propal_Last_Col  : constant Con_Io.Col_Range := 15;
@@ -164,8 +166,8 @@ package body Screen is
     Ok_Color  := Con_Io.Color_Of ("Black");
     Nok_Color := White;
     -- Open console
-    Console.Open (Row_Last => Console_Height,
-                  Col_Last => Console_Width,
+    Console.Open (Row_Last => Console_Height - 1,
+                  Col_Last => Console_Width - 1,
                   Def_Fore => Foreground_Color,
                   Def_Back => Background_Color);
     Screen_Win.Set_To_Screen (Console'Access);
@@ -179,12 +181,12 @@ package body Screen is
     use type Common.Level_Range, Common.Color_Range, Common.Propal_Range;
   begin
 
-    if not Global_Win.Is_Open then
+    if not Color_Win.Is_Open then
       -- Open windows
-      Global_Win.Open (Console'Access, (1, 1), (Console_Height - 1, 78));
       Color_Win.Open (Console'Access, (Color_First_Row,  Color_First_Col),
                                       (Color_Last_Row,   Color_Last_Col) );
-      Help_Win.Open (Console'Access, (5, Menu_First_Col),(Menu_Row-3, 71) );
+      Help_Win.Open (Console'Access, (5, Menu_First_Col),
+                                     (Menu_Row-3, Exit_Last_Col) );
       Menu_Win.Open (Console'Access, (Menu_Row,  Menu_First_Col),
                                      (Menu_Row,  Menu_Last_Col) );
       Level_Win.Open (Console'Access, (Menu_Row,  Level_First_Col),
@@ -205,8 +207,8 @@ package body Screen is
        - (Propal_Col_Width-1);
       Try_Last_Col := Try_First_Col + (Con_Io.Col_Range(Current_Level)-1);
 
-      Secret_Win.Open (Console'Access, (2, Propal_First_Col),
-                                       (2, Propal_Last_Col) );
+      Secret_Win.Open (Console'Access, (1, Propal_First_Col),
+                                       (1, Propal_Last_Col) );
       Propal_Win.Open (Console'Access, (Propal_First_Row, Propal_First_Col),
                                        (Propal_Last_Row,  Propal_Last_Col) );
       Try_Win.Open (Console'Access, (Propal_First_Row, Try_First_Col),
@@ -215,8 +217,6 @@ package body Screen is
 
     -- Redraw and frames
     Screen_Win.Clear;
-    Global_Win.Clear;
-    -- Frame (Name => Global_Win);
     Frame (Name => Secret_Win);
     Frame (Name => Propal_Win);
     Frame (Name => Try_Win);
@@ -290,7 +290,6 @@ package body Screen is
       Screen_Win.Put ('+');
     end loop;
 
-
     -- Draw propal numbers
     for I in Common.Propal_Range loop
       Screen_Win.Move (Propal_Last_Row - (Con_Io.Row_Range(I)-1) * 2,
@@ -318,8 +317,8 @@ package body Screen is
     end loop;
 
     -- Draw title
-    Global_Win.Move (0, Try_Last_Col + 2);
-    Global_Win.Put ("M A S T E R   M I N D");
+    Screen_Win.Move (1, Try_Last_Col + 2);
+    Screen_Win.Put ("M A S T E R   M I N D");
 
     -- Draw level
     for I in Common.Last_Level_Range loop
@@ -376,28 +375,28 @@ package body Screen is
 
     Square := Propal_Square (Propal, Level);
     Square := Propal_Win.To_Absolute (Square);
-    Square := Global_Win.To_Relative (Square);
+    Square := Screen_Win.To_Relative (Square);
 
     -- Draw frame of square
-    Global_Win.Move (Square.Row - 1, Square.Col - 1);
-    Global_Win.Put (Chars(3), Foreground => Color);
-    Global_Win.Move (Square.Row - 1, Square.Col + Propal_Col_Width);
-    Global_Win.Put (Chars(3), Foreground => Color);
-    Global_Win.Move (Square.Row + 1, Square.Col - 1);
-    Global_Win.Put (Chars(3), Foreground => Color);
-    Global_Win.Move (Square.Row + 1, Square.Col + Propal_Col_Width);
-    Global_Win.Put (Chars(3), Foreground => Color);
+    Screen_Win.Move (Square.Row - 1, Square.Col - 1);
+    Screen_Win.Put (Chars(3), Foreground => Color);
+    Screen_Win.Move (Square.Row - 1, Square.Col + Propal_Col_Width);
+    Screen_Win.Put (Chars(3), Foreground => Color);
+    Screen_Win.Move (Square.Row + 1, Square.Col - 1);
+    Screen_Win.Put (Chars(3), Foreground => Color);
+    Screen_Win.Move (Square.Row + 1, Square.Col + Propal_Col_Width);
+    Screen_Win.Put (Chars(3), Foreground => Color);
 
-    Global_Win.Move (Square.Row, Square.Col - 1);
-    Global_Win.Put (Chars(2), Foreground => Color);
-    Global_Win.Move (Square.Row, Square.Col + Propal_Col_Width);
-    Global_Win.Put (Chars(2), Foreground => Color);
+    Screen_Win.Move (Square.Row, Square.Col - 1);
+    Screen_Win.Put (Chars(2), Foreground => Color);
+    Screen_Win.Move (Square.Row, Square.Col + Propal_Col_Width);
+    Screen_Win.Put (Chars(2), Foreground => Color);
 
     for K in 1 .. Propal_Col_Width loop
-      Global_Win.Move (Square.Row - 1, Square.Col + K - 1);
-      Global_Win.Put (Chars(1), Foreground => Color);
-      Global_Win.Move (Square.Row + 1, Square.Col + K - 1);
-      Global_Win.Put (Chars(1), Foreground => Color);
+      Screen_Win.Move (Square.Row - 1, Square.Col + K - 1);
+      Screen_Win.Put (Chars(1), Foreground => Color);
+      Screen_Win.Move (Square.Row + 1, Square.Col + K - 1);
+      Screen_Win.Put (Chars(1), Foreground => Color);
     end loop;
 
   end Put_Default_Pos;
@@ -560,10 +559,10 @@ package body Screen is
      Con_Io.Row_Range (Common.Last_Level_Range'First);
   begin
     Frame (Name => Level_Win);
-    Global_Win.Move (Menu_Row - 2, Level_First_Col + 2 * Col + 1);
-    Global_Win.Put ('|');
-    Global_Win.Move (Menu_Row,     Level_First_Col + 2 * Col + 1);
-    Global_Win.Put ('|');
+    Screen_Win.Move (Menu_Row - 1, Level_First_Col + 2 * Col + 2);
+    Screen_Win.Put ('|');
+    Screen_Win.Move (Menu_Row + 1, Level_First_Col + 2 * Col + 2);
+    Screen_Win.Put ('|');
   end Put_Current_Level;
 
 
@@ -654,6 +653,12 @@ package body Screen is
 
   end Put_Help;
 
+  procedure Put_Clock (Clock : in Clock_Str) is
+  begin
+    Screen_Win.Move (1, Screen_Win.Col_Range_Last - Clock_Str'Length);
+    Screen_Win.Put (Clock, Move => False);
+  end Put_Clock;
+
   -----------
   -- COLOR --
   -----------
@@ -681,19 +686,19 @@ package body Screen is
     Color_Win.Move ((Con_Io.Row_Range(Color) - 1) * 2, 0);
     Square := Color_Win.Position;
     Square := Color_Win.To_Absolute (Square);
-    Square := Global_Win.To_Relative (Square);
+    Square := Screen_Win.To_Relative (Square);
 
     -- Draw frame of square
-    Global_Win.Move (Square.Row - 1, Square.Col - 1);
-    Global_Win.Put (Chars(3) & Chars (1) & Chars (1) & Chars(3),
+    Screen_Win.Move (Square.Row - 1, Square.Col - 1);
+    Screen_Win.Put (Chars(3) & Chars (1) & Chars (1) & Chars(3),
                 Foreground => Fore);
-    Global_Win.Move (Square.Row + 1, Square.Col - 1);
-    Global_Win.Put (Chars(3) & Chars (1) & Chars (1) & Chars(3),
+    Screen_Win.Move (Square.Row + 1, Square.Col - 1);
+    Screen_Win.Put (Chars(3) & Chars (1) & Chars (1) & Chars(3),
                 Foreground => Fore);
-    Global_Win.Move (Square.Row, Square.Col - 1);
-    Global_Win.Put (Chars(2), Foreground => Fore);
-    Global_Win.Move (Square.Row, Square.Col + 2);
-    Global_Win.Put (Chars(2), Foreground => Fore);
+    Screen_Win.Move (Square.Row, Square.Col - 1);
+    Screen_Win.Put (Chars(2), Foreground => Fore);
+    Screen_Win.Move (Square.Row, Square.Col + 2);
+    Screen_Win.Put (Chars(2), Foreground => Fore);
 
   end Put_Selected_Color;
 
@@ -751,13 +756,15 @@ package body Screen is
     elsif Level_Win.In_Window (Where) then
       Square := Level_Win.To_Relative (Where);
       Result.Selection := Level;
-      if Square.Col mod 2 /= 0 then
-        return Result;
-      end if;
-      Result := (
-       Selection_Kind => Level,
-       Level_No => Common.Last_Level_Range (
-        (Square.Col - 2) / 2 + Integer (Common.Last_Level_Range'First)) );
+      case Square.Col is
+        when 2 | 4 | 6 =>
+          Result := (
+           Selection_Kind => Level,
+           Level_No => Common.Last_Level_Range (
+            (Square.Col - 2) / 2 + Integer (Common.Last_Level_Range'First)) );
+         when others =>
+           null;
+       end case;
       return Result;
     elsif Exit_Win.In_Window (Where) then
       Square := Exit_Win.To_Relative (Where);
