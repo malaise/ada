@@ -429,6 +429,10 @@ package body Con_Io is
        Upper_Left.Col > Lower_Right.Col then
       raise Invalid_Square;
     end if;
+    if Lower_Right.Row > Acc.Row_Range_Last or else
+       Lower_Right.Col > Acc.Col_Range_Last then
+      raise Invalid_Square;
+    end if;
     Win_Data.Con := Con.all;
     Win_Data.Open := True;
     Win_Data.Upper_Left := Upper_Left;
