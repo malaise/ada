@@ -8,7 +8,7 @@ The secret is made of 3 to 5 pins among 8 colors. At each try you propose a
 combination, and you get an answer of how many pins are correcty placed (same
 color at the same location) and how many other pins are misplaced.
 
-The official game exists in two variants: 
+The official game exists in two variants:
 
 - 'Clasic' with 4 columns and 10 rows (up to 10 tries),
 - 'Super' with 5 columns and 12 rows.
@@ -46,7 +46,7 @@ Once a row is complete, it is possible to submit the combination.
 between the proposals and the colors, contains the answers to submitted
 combinations. It can be either:
 
-- "XXXX": The proposal is not complete or already answered previously, and it 
+- "XXXX": The proposal is not complete or already answered previously, and it
 cannot be answered),
 
 - "????": The proposal is complete and can be answered,
@@ -70,7 +70,7 @@ Command line arguments
 .Text mode
 Text mode is a variant that plays one game with no graphics. The colors are
 replaced by digits from 1 to 8 and the answers are made of two numbers: number
-of "colors" correctly placed and number of "colors" misplaced. 
+of "colors" correctly placed and number of "colors" misplaced.
 
 .Level
 This options allows setting the level (from 3 to 5) of the first game in

@@ -50,7 +50,7 @@ package body Clock is
   -- Stop (freeze)
   procedure Stop is
   begin
-    Timer.Delete;
+    Timer.Delete_If_Exists;
     Chrono.Stop;
   end Stop;
 
