@@ -88,10 +88,13 @@ procedure Treat_Release (Go_On, Exit_Game, Color_Move : out Boolean) is
             := Common.Full_Propal_Range'First;
   Available : Common.Full_Propal_Range;
   procedure Find_Available is
-    use type Common.Try_List;
+    Empty : constant Common.Propal_State_Rec (Level)
+          := (Level => Level, others => <>);
+    use type Common.Propal_State_Rec;
   begin
     for I in Common.Propal_Range loop
-      if Common.Get_Propal_State (I).Try = Common.Not_Set then
+      -- State is Not_Set and no colors are set
+      if Common.Get_Propal_State (I) = Empty then
         Available := I;
         return;
       end if;
@@ -227,7 +230,6 @@ begin
         -- Restart
         Common.Set_Level_To_Stored;
         Screen.Put_Start_Giveup (Start => False, Selected => False);
-        Clock.Start;
         Go_On := False;
         Exit_Game := False;
       end if;
@@ -323,6 +325,11 @@ begin
                                   Show => False);
           Update_Try (History(Curr_Status).Propal_No);
           Color_Move := False;
+          -- First move from Colors to Propal starts the chrono
+          if not Moved then
+            Clock.Start;
+            Moved := True;
+          end if;
         end if;
       else
         -- Moving color within propal

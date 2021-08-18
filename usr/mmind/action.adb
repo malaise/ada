@@ -24,6 +24,9 @@ package body Action is
           := (others => Discard);
   Double_Click : Boolean;
 
+  -- False as long as no move has been done
+  Moved : Boolean;
+
   -- The first row not answered (for next propal and answer)
   First_Free : Common.Propal_Range;
 
@@ -33,7 +36,9 @@ package body Action is
     procedure Start;
     -- Stop (freeze)
     procedure Stop;
-    -- Timer expiration
+    -- Reset
+    procedure Reset;
+    -- Timer expiration (show current clock)
     procedure Expire;
   end Clock;
   package body Clock is separate;
@@ -209,18 +214,20 @@ package body Action is
     Playing := True;
     Curr_Status := Default_Status;
     Prev_Status := Default_Status;
+    Moved := False;
 
     -- Init screen
     Screen.Init (True, Level);
     Screen.Put_Start_Giveup (Start => False, Selected => False);
     Update_Help;
     Screen.Put_Current_Level (Level);
+    Clock.Reset;
+    Clock.Expire;
     if Show_Codes then
       Put_Secret;
     end if;
 
     -- Start new game - playing
-    Clock.Start;
     Main:
     loop
 

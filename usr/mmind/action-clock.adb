@@ -41,6 +41,12 @@ package body Clock is
     Expire;
   end Start;
 
+  -- Reset
+  procedure Reset is
+  begin
+    Chrono.Reset;
+  end Reset;
+
   -- Stop (freeze)
   procedure Stop is
   begin
