@@ -2182,7 +2182,7 @@ package body Con_Io is
         Loc_Event.Double_Click := True;
         Acc.Last_Click_Time := Perpet.Origin;
       else
-        -- Reset, to void triple click to be detected as double
+        -- Reset, to avoid triple click to be detected as double
         Acc.Last_Click_Time := Now;
       end if;
       -- For next time
