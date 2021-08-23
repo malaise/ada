@@ -515,7 +515,7 @@ package body Screen is
     end if;
     Menu_Win.Move;
     if Start then
-      Menu_Win.Put (" S T A R T ",
+      Menu_Win.Put (" START NEW",
        Foreground => Fore,
        Background => Back,
        Move => False);
