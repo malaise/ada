@@ -68,36 +68,69 @@ package body Pers_Lis is
 
     -- Check a field
     procedure Check_Field (Current_Field : in out Afpx.Absolute_Field_Range;
-                           Ok : out Boolean) is
+                           Ok : out Boolean; Expand : in Boolean) is
       Locok : Boolean;
+      Pos_Pers : Integer;
       Tz_S  : Str_Mng.Bpm_Str;
       Tz    : Pers_Def.Bpm_Range;
       use type Pers_Def.Bpm_Range;
     begin
       case Current_Field is
 
-        when 11 =>
-          -- In name : not empty
-          Person.Name := Upper_Str (
-              Afpx.Decode_Field (Afpx_Xref.Activity.Person, 00));
-          Str_Mng.Parse (Person.Name);
-          Locok := not Str_Mng.Is_Spaces (Person.Name);
-          if Locok then
-            Afpx.Encode_Field (
-                Afpx_Xref.Activity.Person, (00, 00), Person.Name);
-            Current_Field := Afpx_Xref.Activity.Activity;
-          end if;
+        when Afpx_Xref.Activity.Person | Afpx_Xref.Activity.Activity =>
+          -- In name or activity
+          Person.Name     := Afpx.Decode_Field (Afpx_Xref.Activity.Person, 00);
+          Person.Activity := Afpx.Decode_Field (Afpx_Xref.Activity.Activity, 00);
 
-        when Afpx_Xref.Activity.Activity =>
-          -- In activity : not empty
-          Person.Activity := Upper_Str (
-              Afpx.Decode_Field (Afpx_Xref.Activity.Activity, 00));
-          Str_Mng.Parse (Person.Activity);
-          Locok := not Str_Mng.Is_Spaces (Person.Activity);
-          if Locok then
-            Afpx.Encode_Field (Afpx_Xref.Activity.Activity, (00, 00),
-                Person.Activity);
-            Current_Field := Afpx_Xref.Activity.Tz1;
+          if Str_Mng.Is_Spaces (Person.Name) then
+            if Str_Mng.Is_Spaces (Person.Activity) then
+              -- Name & activity empty : KO, remain in current field
+              Locok := False;
+            else
+              -- Name emtpy but activity set : err name
+              Current_Field := Afpx_Xref.Activity.Person;
+              Locok := False;
+            end if;
+          elsif Expand then
+            -- Name not empty => Expand
+            Pers_Mng.Expand (Pers_Def.The_Persons,
+                             Person.Name, Person.Activity, Pos_Pers);
+
+            if Pos_Pers = 0 then
+              -- One person found (no activity), already expanded
+              Afpx.Encode_Field (Afpx_Xref.Activity.Person, (00, 00),
+                                 Person.Name);
+              Current_Field := Afpx_Xref.Activity.Activity;
+              Locok := True;
+            elsif Pos_Pers > 0 then
+              -- One person and activity found, already expanded, show all
+              Pers_Def.The_Persons.Read (Person,
+                                         Pers_Def.Person_List_Mng.Current);
+              Encode_Person;
+              -- Activity will need to be modified
+              Current_Field := Afpx_Xref.Activity.Activity;
+              Locok := True;
+            else
+              -- Error in name or activity, remain in current field
+              Locok := False;
+            end if;
+          elsif Current_Field = Afpx_Xref.Activity.Person then
+            -- Just for check
+            Locok := not Str_Mng.Is_Spaces (Person.Name);
+            if Locok then
+              Afpx.Encode_Field (
+                  Afpx_Xref.Activity.Person, (00, 00), Upper_Str (Person.Name));
+              Current_Field := Afpx_Xref.Activity.Activity;
+            end if;
+          elsif Current_Field = Afpx_Xref.Activity.Activity then
+            -- Just for check
+            Str_Mng.Parse (Person.Activity);
+            Locok := not Str_Mng.Is_Spaces (Person.Activity);
+            if Locok then
+              Afpx.Encode_Field (Afpx_Xref.Activity.Activity, (00, 00),
+                  Upper_Str (Person.Activity));
+              Current_Field := Afpx_Xref.Activity.Tz1;
+            end if;
           end if;
 
         when Afpx_Xref.Activity.Tz1 .. Afpx_Xref.Activity.Tz6 =>
@@ -245,7 +278,7 @@ package body Pers_Lis is
           case Ptg_Result.Keyboard_Key is
             when Afpx.Return_Key =>
               -- Check field and go to next if Ok
-              Check_Field (Get_Handle.Cursor_Field, Ok);
+              Check_Field (Get_Handle.Cursor_Field, Ok, True);
             when Afpx.Escape_Key =>
               -- Clear current field
               if Get_Handle.Cursor_Field = Afpx_Xref.Activity.Person  then
@@ -304,12 +337,12 @@ package body Pers_Lis is
               Ok := Compute;
               if Ok then
                 -- Decode name & activity, then rencode all
-                Get_Handle.Cursor_Field := 11;
-                Check_Field (Get_Handle.Cursor_Field, Ok);
-                Get_Handle.Cursor_Field := 13;
-                Check_Field (Get_Handle.Cursor_Field, Ok);
+                Get_Handle.Cursor_Field := Afpx_Xref.Activity.Person;
+                Check_Field (Get_Handle.Cursor_Field, Ok, False);
+                Get_Handle.Cursor_Field := Afpx_Xref.Activity.Activity;
+                Check_Field (Get_Handle.Cursor_Field, Ok, False);
                 Encode_Person;
-                Get_Handle.Cursor_Field := 17;
+                Get_Handle.Cursor_Field := Afpx_Xref.Activity.Tz1;
                 Get_Handle.Cursor_Col := 0;
                 Get_Handle.Insert := False;
               end if;
@@ -318,7 +351,7 @@ package body Pers_Lis is
               if State /= In_Delete then
                 Get_Handle.Cursor_Field := First_Field;
                 loop
-                  Check_Field (Get_Handle.Cursor_Field, Ok);
+                  Check_Field (Get_Handle.Cursor_Field, Ok, False);
                   exit when not Ok
                   or else Get_Handle.Cursor_Field = First_Field;
                 end loop;

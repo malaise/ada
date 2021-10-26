@@ -74,7 +74,7 @@ package body Mesu_Mng is
               -- not for valid
               if Pos_Pers > 0 then
                 -- one person found
-                Current_Field := 09;
+                Current_Field := Afpx_Xref.Main.Day_After;
                 Locok := True;
               elsif Pos_Pers = 0 then
                 -- Several persons found : next field
