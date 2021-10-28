@@ -545,8 +545,7 @@ package Con_Io is
                             X2  : in X_Range;
                             Y2  : in Y_Range);
 
-  -- Draw an arc (only the border) with screen foreground and current
-  --  Xor mode
+  -- Draw an arc (only the border) with screen foreground and current Xor mode
   -- on screen background (only the border)
   -- Within a rectangle, between two angles in minutes of degrees starting from
   -- 3 o'clock position and in trigo wose (counter clockwise)
