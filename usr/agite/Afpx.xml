@@ -114,7 +114,7 @@
       <Geometry Up="${Field_15.Up}" Left="${Field_15.Right}+2" Height="1"
                 Right="${List.Right}"/>
       <Get_Tuning Data_Len="255"/>
-      <Colors Foreground="Black" Background="Light_Grey" Selected="White"/>
+      <Colors Foreground="Black" Background="White" Selected="White"/>
     </Field>
     <Field Num="17" Kind="Button" Name="Reread">
       <Geometry Up="${Field_16.Low}+2" Left="1" Height="1" Width="8"/>
@@ -351,7 +351,7 @@
       <Geometry Up="${Field_10.Low}+2" Left="${Field_11.Right}+2" Height="1"
                 Right="${LmLeft}-2"/>
       <Get_Tuning Data_Len="255"/>
-      <Colors Foreground="Black" Background="Light_Grey" Selected="White"/>
+      <Colors Foreground="Black" Background="White" Selected="White"/>
     </Field>
 
     <!-- Add, Goto, Move, Del, Back -->
@@ -527,7 +527,7 @@
       <Geometry Up="${Field_16.Up}" Left="${Field_16.Right}+2" Height="1"
                 Width="40"/>
       <Get_Tuning Data_Len="128"/>
-      <Colors Foreground="Black" Background="Light_Grey" Selected="White"/>
+      <Colors Foreground="Black" Background="White" Selected="White"/>
     </Field>
 
     <!-- List status xxx%  LeftSel: yyyyy  RightSel: zzzzz-->
@@ -1097,7 +1097,7 @@
     <Field Num="14" Kind="Get" Name="Template">
       <Geometry Up="${Field_13.Up}" Left="${Field_13.Right}+2" Height="1"
                 Right="${List.Right}"/>
-      <Colors Foreground="Black" Background="Light_Grey" Selected="White"/>
+      <Colors Foreground="Black" Background="White" Selected="White"/>
     </Field>
     <!-- Details, Checkout, Delete, Back -->
     <Field Num="15" Kind="Button" Name="Create">
@@ -1212,7 +1212,7 @@
     <Field Num="10" Kind="Get" Name="Into_Branch">
       <Geometry Up="${Field_9.Up}" Left="${Field_9.Right}+2" Height="1"
                 Right="${Screen.Right}-1"/>
-      <Colors Foreground="Black" Background="Light_Grey" Selected="White"/>
+      <Colors Foreground="Black" Background="White" Selected="White"/>
     </Field>
 
     <Field Num="11" Kind="Button" Name="Checkout">
@@ -1356,7 +1356,7 @@
     <Field Num="20" Kind="Get" Name="Tag_Name">
       <Geometry Up="${Field_19.Low}" Left="${Field_19.Right}+2" Height="1"
                 Right="${Screen.Width}-2"/>
-      <Colors Foreground="Black" Background="White" Selected="White"/>
+      <Colors Foreground="Black" Background="White" Selected="Lime_Green"/>
     </Field>
     <Field Num="21" Kind="Put">
       <Geometry Up="${Field_19.Low}+2" Left="1" Height="1" Width="8"/>
@@ -1367,7 +1367,7 @@
       <Geometry Up="${Field_21.Low}" Left="${Field_21.Right}+2" Height="1"
                 Right="${Screen.Width}-2"/>
       <Get_Tuning Data_Len="75"/>
-      <Colors Foreground="Black" Background="White" Selected="White"/>
+      <Colors Foreground="Black" Background="White" Selected="Lime_Green"/>
     </Field>
     <Field Num="23" Kind="Button" Name="Tag_Annotated">
       <Geometry Up="${Field_22.Low}+2" Left="1" Height="3" Width="15"/>
@@ -1893,7 +1893,7 @@
     <Field Num="14" Kind="Get" Name="Name">
       <Geometry Up="${Field_13.Up}" Left="${Field_13.Right}+2" Height="1"
                 Right="${Screen.Width}-2"/>
-      <Colors Foreground="Black" Background="Light_Grey" Selected="White"/>
+      <Colors Foreground="Black" Background="White" Selected="White"/>
     </Field>
 
     <!-- Actions on list -->
@@ -2462,7 +2462,7 @@
     <Field Num="13" Kind="Get" Name="Name">
       <Geometry Up="${Field_12.Up}" Left="${Field_12.Right}+2" Height="1"
                 Right="${List.Right}"/>
-      <Colors Foreground="Black" Background="Light_Grey" Selected="White"/>
+      <Colors Foreground="Black" Background="White" Selected="White"/>
     </Field>
 
     <Field Num="14" Kind="Button" Name="Delete">
