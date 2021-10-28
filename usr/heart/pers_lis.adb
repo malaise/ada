@@ -28,8 +28,9 @@ package body Pers_Lis is
   begin
     Afpx.Set_Field_Protection (Field, Protect);
     if Protect then
-      Afpx.Set_Field_Colors (Field, Foreground => Con_Io.Color_Of ("Cyan"),
-                                    Background => Con_Io.Color_Of ("Black"));
+      Afpx.Set_Field_Colors (Field,
+                             Foreground => Con_Io.Color_Of ("Black"),
+                             Background => Con_Io.Color_Of ("Light_Grey"));
     else
       Afpx.Reset_Field(Field, Reset_Colors=>True, Reset_String=>False);
     end if;
