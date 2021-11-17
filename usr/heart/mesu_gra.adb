@@ -164,8 +164,8 @@ package body Mesu_Gra is
 
   -- Graphic layout (help, scales, Tz)
   procedure Draw_Layout is
-    Help_Color  : constant Con_Io.Effective_Colors := Con_Io.Color_Of ("Brown");
-    Scale_Color : constant Con_Io.Effective_Colors := Con_Io.Color_Of ("Blue");
+    Help_Color  : constant Con_Io.Effective_Colors := Con_Io.Color_Of ("Black");
+    Scale_Color : constant Con_Io.Effective_Colors := Con_Io.Color_Of ("Black");
     -- Scale step on X in seconds
     Secs_Scale_Step : constant := 600;
     Secs : Natural;
@@ -214,7 +214,7 @@ package body Mesu_Gra is
   end Draw_Layout;
 
   procedure Draw_Tz (Show : in Boolean) is
-    Tz_Color    : constant Con_Io.Effective_Colors := Con_Io.Color_Of ("Red");
+    Tz_Color    : constant Con_Io.Effective_Colors := Con_Io.Color_Of ("White");
     Y : Con_Io.Y_Range;
     Mesure_Index : Mesure_Range;
   begin
@@ -248,7 +248,7 @@ package body Mesu_Gra is
   -- Draw one record
   procedure Draw_Mesure (No : in Mesure_Range) is
     Colors : constant array (1 .. Max_Nb_Mesure) of Con_Io.Effective_Colors
-           := (1 => Con_Io.Color_Of ("Light_Grey"),
+           := (1 => Con_Io.Color_Of ("Dark_Grey"),
                2 => Con_Io.Color_Of ("Cyan"),
                3 => Con_Io.Color_Of ("Light_Blue"),
                4 => Con_Io.Color_Of ("Lime_Green"),
@@ -459,12 +459,12 @@ package body Mesu_Gra is
     X_Factor := Float(Xs_First - Xs_Last) / Float(X_First - X_Last);
 
     -- Graphic mode for current screen
-    Screen.Set_Xor_Mode (Con_Io.Xor_On);
     Screen.Clear;
 
     Draw_Layout;
     Tz_Drown := False;
 
+    Screen.Set_Xor_Mode (Con_Io.Xor_On);
     -- Draw all mesures
     for I in 1 .. Nb_Mesure loop
       Mesure_Array(I).Drown := True;
@@ -485,6 +485,9 @@ package body Mesu_Gra is
       -- Exit when Escape
       if Get_Res.Mvt = Con_Io.Esc then
         Exit_Program := False;
+        exit Main_Loop;
+      elsif Get_Res.Mvt = Con_Io.Break then
+        Exit_Program := True;
         exit Main_Loop;
       elsif Char = 'T' or else Char = 't' then
         if Tz_Drown then
@@ -532,7 +535,9 @@ package body Mesu_Gra is
       elsif Get_Res.Mvt = Con_Io.Refresh then
         -- Refresh
         Screen.Clear;
+        Screen.Set_Xor_Mode (Con_Io.Xor_Off);
         Draw_Layout;
+        Screen.Set_Xor_Mode (Con_Io.Xor_On);
         -- Redraw mesures
         for I in 1 .. Nb_Mesure loop
           if Mesure_Array(I).Drown then
