@@ -1,8 +1,7 @@
-with Aski, Normal, Afpx, Sys_Calls, Text_Line;
+with Aski, Normal, Afpx, Sys_Calls, Text_Line, As.U, Temp_File;
 with Str_Mng, Mesu_Fil, Pers_Def, Mesu_Def, Mesu_Nam, Pers_Mng, Afpx_Xref;
 package body Mesu_Prt is
 
-  Printer_Name : constant String := "";
   Printer_Command : constant String := "heart_print";
   Printer      : Text_Line.File_Type;
 
@@ -11,9 +10,6 @@ package body Mesu_Prt is
     Last_Of_Line : Boolean;
     use type Pers_Def.Bpm_Range;
   begin
-    if not Printer.Is_Open then
-      Printer.Create_All (Printer_Name);
-    end if;
     Printer.Put_Line ("Person: " & Person.Name & "    " & Person.Activity
                       & "    Date: " & Str_Mng.To_Printed_Str(Mesure.Date));
     Printer.Put ("Comment: " & Mesure.Comment
@@ -53,6 +49,7 @@ package body Mesu_Prt is
   end Close;
 
   procedure Print is
+    Printer_Name : As.U.Asu_Us;
     Saved_Pos : Afpx.Line_List_Mng.Ll_Natural;
     Line      : Afpx.Line_Rec;
     File_Name : Mesu_Nam.File_Name_Str;
@@ -65,6 +62,8 @@ package body Mesu_Prt is
     Dummy     : Integer;
 
   begin
+    Printer_Name.Set (Temp_File.Create (".", "prt"));
+    Printer.Create_All (Printer_Name.Image);
     -- List is not empty
     Saved_Pos := Afpx.Line_List.Get_Position;
 
@@ -100,11 +99,12 @@ package body Mesu_Prt is
     Close;
 
     -- Print
-    Dummy := Sys_Calls.Call_System(Printer_Command & " " & Printer_Name);
+    Dummy := Sys_Calls.Call_System(Printer_Command & " " & Printer_Name.Image);
 
     -- Restore pos
     Afpx.Line_List.Move_At (Saved_Pos);
 
+    Sys_Calls.Unlink (Printer_Name.Image);
   exception
     when others =>
       Afpx.Line_List.Move_At (Saved_Pos);
