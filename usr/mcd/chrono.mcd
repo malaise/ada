@@ -1,0 +1,30 @@
+# Display Chrono at format DdTHh:Mm:Ss.Mil each second
+# T0
+clock t popr
+
+# Function: Display current chrono value
+# If ToS is true then remove millisecs
+[ clock t pushr - daysof
+swap [ 1 14 strsub ] ifcall
+putl ] P popr
+
+# Function on break: Display chrono and exit
+[ newl false P pushr call ssize retall ] callbrk
+
+# No arg expected
+ssize isntnull [ "ERROR. No argument expected" putl 1 setexit ssize retall ] ifcall
+
+# Loop
+0 i popr
+[
+# Compute next appointment
+t pushr i pushr 1000 * + clock - toreal 1000.0 / sleep
+# Display chrono precision second
+true P pushr call
+# Next loop
+i pushr 1 + i popr
+# Loop
+pushle copye retacal
+] copye
+call
+
