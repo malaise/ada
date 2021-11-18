@@ -1,4 +1,4 @@
-# Display Clock at format Mm/Dd-Hh:Mm:Ss.Mil
+# Display Clock at format Mm/DdTHh:Mm:Ss.Mil
 # With no arg:  display current time then at each round minute
 # With arg 's': display current time then at each round second
 
