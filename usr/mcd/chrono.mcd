@@ -4,8 +4,10 @@ clock t popr
 
 # Function: Display current chrono value
 # If ToS is true then remove millisecs
-[ clock t pushr - daysof
-swap [ 1 14 strsub ] ifcall
+[ clock t pushr -
+swap
+[ toreal 3 roundat round daysof 1 14 strsub ]
+[ daysof ] ifte call
 putl ] P popr
 
 # Function on break: Display chrono and exit
