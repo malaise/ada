@@ -1,4 +1,4 @@
-with Aski, As.U.Utils, Argument, Event_Mng, Sys_Calls, Async_Stdin, Text_Line,
+with As.U.Utils, Argument, Event_Mng, Sys_Calls, Async_Stdin, Text_Line,
      Socket, Socket_Util, Tcp_Util, Ip_Addr, Autobus;
 with Io_Data, Debug;
 package body Io_Flow is
@@ -383,18 +383,21 @@ package body Io_Flow is
     return True;
   end Get_Stdin_Cb;
 
-  -- Wait for Stdin data
-  procedure Wait_Stdin is
+  -- Wait for Stdin data during a timeout
+  Timeout_Error : exception;
+  procedure Wait_Stdin (Wait_Delay : in Integer := Event_Mng.Infinite_Ms) is
     Evt : Event_Mng.Out_Event_List;
+    Timeout : Boolean;
     use type Event_Mng.Out_Event_List;
   begin
     Async_Stdin.Activate (True);
     Async_Stdin.Clear_Pending;
     Async_Stdin.Clear_History;
+    Timeout := False;
     loop
       Stdin_Data.Set_Null;
       Debug.Log (Debug.Flow, "Waiting on stdin");
-      Evt := Event_Mng.Wait (Event_Mng.Infinite_Ms);
+      Evt := Event_Mng.Wait (Wait_Delay);
 
       if Evt = Event_Mng.Fd_Event
       and then not Stdin_Data.Is_Null then
@@ -405,6 +408,10 @@ package body Io_Flow is
         Stdin_Data.Set_Null;
         Debug.Log (Debug.Flow, "Got signal");
         exit;
+      elsif Evt = Event_Mng.Timeout then
+        Debug.Log (Debug.Flow, "Got timeout");
+        Timeout := True;
+        exit;
       else
         Debug.Log (Debug.Flow, "Got event " & Evt'Img);
       end if;
@@ -412,8 +419,13 @@ package body Io_Flow is
     -- Restore default behaviour for stdin
     Async_Stdin.Activate (True);
     if Stdin_Data.Is_Null then
-      -- Signal event
-      raise End_Error;
+      if Timeout then
+        -- Possible only if Wait_Delay was not Infinite_Ms
+        raise Timeout_Error;
+      else
+        -- Signal event
+        raise End_Error;
+      end if;
     end if;
   end Wait_Stdin;
 
@@ -427,17 +439,22 @@ package body Io_Flow is
     Async_Stdin.Set_Async (Get_Stdin_Cb'Access, 0, 1, Get_Echo);
   end Set_Echo;
 
-  function Get_Key return Character is
+  function Get_Key return Character is (Get_Key_Time (Event_Mng.Infinite_Ms));
+
+  function Get_Key_Time (Timeout : Integer) return Character is
     Char : Character;
   begin
     if Is_Stdio then
       raise In_Stdin;
     end if;
     Async_Stdin.Set_Async (Get_Stdin_Cb'Access, 1, 1, Get_Echo);
-    Wait_Stdin;
+    Wait_Stdin (Timeout);
     Char := Stdin_Data.Element (1);
     return Char;
-  end Get_Key;
+  exception
+    when Timeout_Error =>
+      return Timeout_Char;
+  end Get_Key_Time;
 
   function Get_Str return String is
   begin

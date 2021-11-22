@@ -143,6 +143,7 @@ package Mcd_Mng is
    Getenv,
    Inecho,
    Inkey,
+   Inkeytim,
    Instr,
    Isstdio,
    Readfile,

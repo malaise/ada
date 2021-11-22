@@ -1,4 +1,4 @@
-with As.U;
+with Aski, As.U;
 package Io_Flow is
 
   -- Init or Next_Line can raise Comm_Error if error (re)opening communication
@@ -26,9 +26,13 @@ package Io_Flow is
 
   -- Data to input from stdin (echo or not), when stdin is not the flow
   In_Stdin : exception;
+  -- If call interrupted by signal
   End_Error :exception;
+  -- Get_Key_Time timeout
+  Timeout_Char : constant Character := Aski.Nul;
   procedure Set_Echo (Echo : in Boolean);
   function Get_Key return Character;
+  function Get_Key_Time (Timeout : Integer) return Character;
   function Get_Str return String;
 
   -- Input data from flow

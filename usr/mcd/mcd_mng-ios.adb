@@ -109,6 +109,40 @@ package body Ios is
     return Res;
   end Get_Key;
 
+  function Get_Key_Time (Timeout : Item_Rec) return Item_Rec is
+    Delay_Ms : Integer;
+    Char : Character;
+    Char_Res : Item_Rec(Chrs);
+    False_Res : constant Item_Rec(Bool) := (Bool, Val_Bool => False);
+  begin
+    -- Check in timeout
+    if Timeout.Kind = Inte then
+      Delay_Ms := Integer(Timeout.Val_Inte) * 1000;
+    elsif Timeout.Kind = Real then
+      Delay_Ms := Integer (My_Math.Round (Timeout.Val_Real * 1000.0));
+    else
+      raise Invalid_Argument;
+    end if;
+    if Delay_Ms < 0 then
+      Delay_Ms := 0;
+    end if;
+    -- Get key
+    Char := Io_Flow.Get_Key_Time (Delay_Ms);
+    -- Check out timeout
+    if Char = Io_Flow.Timeout_Char then
+      return False_Res;
+    else
+      Char_Res.Val_Text.Set (Char);
+      return Char_Res;
+    end if;
+  exception
+    when Io_Flow.End_Error =>
+      raise;
+    when others =>
+      -- E.g. too large
+      raise Invalid_Argument;
+  end Get_Key_Time;
+
   function Get_Str return Item_Rec  is
     Res : Item_Rec(Chrs);
   begin

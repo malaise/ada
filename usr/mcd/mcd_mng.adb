@@ -217,6 +217,7 @@ package body Mcd_Mng is
 
     procedure Set_Echo (Item : in Item_Rec);
     function Get_Key return Item_Rec;
+    function Get_Key_Time (Timeout : Item_Rec) return Item_Rec;
     function Get_Str return Item_Rec;
     function Is_Stdio return Item_Rec;
 
@@ -1074,6 +1075,10 @@ package body Mcd_Mng is
         when Inkey =>
           -- push Get_Key
           Push (Ios.Get_Key);
+        when Inkeytim =>
+          -- push Get_Key_Time (A)
+          Pop(A); Push (Ios.Get_Key_Time (A));
+          S := A;
         when Instr =>
           -- push Get_Str
           Push (Ios.Get_Str);

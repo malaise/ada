@@ -10,18 +10,27 @@ swap
 [ daysof ] ifte call
 putl ] P popr
 
-# Function on break: Display chrono and exit
-[ newl false P pushr call ssize retall ] callbrk
+# Function on input key or break: Display chrono and exit
+[ false P pushr call isstdio ~ [ true inecho ] ifcall retall ] B popr
+[ newl B pushr call ] callbrk
 
 # No arg expected
-ssize isntnull [ "ERROR. No argument expected" putl 1 setexit ssize retall ] ifcall
+ssize isntnull [ "ERROR. No argument expected" putl 1 setexit retall ]
+ifcall
+
+# Configure terminal and dedicated help message
+isstdio [ "Break (Ctrl C) to stop" ] [ false inecho "Any key to stop" ] ifte
+call putl
 
 # Loop
 0 i popr
 [
 # Compute next appointment
-t pushr i pushr 1000 * + clock - toreal 1000.0 / sleep
-# Display chrono precision second
+t pushr i pushr 1000 * + clock - toreal 1000.0 /
+# Wait until it
+[ sleep ] [ inkeytim isbool ~ [ B pushr call ] ifcall ]
+isstdio etfi call
+# Display chrono with precision second
 true P pushr call
 # Next loop
 i pushr 1 + i popr
