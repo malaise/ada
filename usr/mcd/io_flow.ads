@@ -16,6 +16,9 @@ package Io_Flow is
   -- Clear interactive input buffer (on error)
   procedure Clear_Interactive;
 
+  -- Is io flow the stdio (stdin / stdout, interactive or not)
+  function Is_Stdio return Boolean;
+
   -- Data to output
   procedure Put (Str : in String);
   procedure Put_Line (Str : in String);

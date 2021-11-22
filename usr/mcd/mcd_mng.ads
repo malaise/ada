@@ -144,6 +144,7 @@ package Mcd_Mng is
    Inecho,
    Inkey,
    Instr,
+   Isstdio,
    Readfile,
    Readlins,
    Exec,

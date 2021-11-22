@@ -116,6 +116,13 @@ package body Ios is
     return Res;
   end Get_Str;
 
+  function Is_Stdio return Item_Rec is
+    Res : Item_Rec(Bool);
+  begin
+    Res.Val_Bool := Io_Flow.Is_Stdio;
+    return Res;
+  end Is_Stdio;
+
   function Strarbi (S : Item_Rec) return Item_Rec is
     Len : Natural;
     Res : Item_Rec(Arbi);

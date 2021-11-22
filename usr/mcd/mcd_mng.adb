@@ -218,6 +218,7 @@ package body Mcd_Mng is
     procedure Set_Echo (Item : in Item_Rec);
     function Get_Key return Item_Rec;
     function Get_Str return Item_Rec;
+    function Is_Stdio return Item_Rec;
 
     function Strarbi (S : Item_Rec) return Item_Rec;
     function Strfrac (S : Item_Rec) return Item_Rec;
@@ -1076,6 +1077,9 @@ package body Mcd_Mng is
         when Instr =>
           -- push Get_Str
           Push (Ios.Get_Str);
+        when Isstdio =>
+          -- push Is_Stdio
+          Push (Ios.Is_Stdio);
         when Readfile =>
           -- read content of A as string
           Pop(A);

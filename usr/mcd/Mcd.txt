@@ -321,6 +321,7 @@ Input
   Inecho : Echo stdin inputs or not     // A bool, flow must not be stdio
   Inkey : push key pressed on stdin     // flow must not be stdio
   Instr : push string entered on stdin  // flow must not be stdio
+  Isstdio : push whether IO flow is stdio
   Readfile : push content of file A as a str, or False
   Readlins : push all lines of file A (first line on top) then the number of lines read, or False
   Exec : read command and arguments (one string) and execute, push output string then exit code
