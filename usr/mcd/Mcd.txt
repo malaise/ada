@@ -1,6 +1,6 @@
 Mcd
 ===
-V20.1
+V21.0
 
 Mcd (My Calculator for Desk) is a text oriented reverse polish calculator.
 
@@ -320,6 +320,8 @@ Input
   Getenv : push getenv(A) or False      // R is str or False
   Inecho : Echo stdin inputs or not     // A bool, flow must not be stdio
   Inkey : push key pressed on stdin     // flow must not be stdio
+  Inkeytim : push key pressed within timeout on stdin, or false
+                                        //  A int or float, res=False if timeout
   Instr : push string entered on stdin  // flow must not be stdio
   Isstdio : push whether IO flow is stdio
   Readfile : push content of file A as a str, or False
@@ -395,7 +397,7 @@ Execution
 Examples
 --------
 
-The following examples illustrate the more tricky or complex operators.
+The following examples illustrate tricky or complex operators.
 
 .Rounding and trunking
 Numbers below x.5 are rounded to lower inte part. Trunc always removes the
@@ -516,6 +518,10 @@ in the result is the number of lines read):
 
   "t.dat" readlins put put putl
   ->2Line1Line2
+
+Wait 1s, for Ctrl+C if flow is stdio, or for any key otherwise, and stop
+[ retall ] callbrk
+1 [ sleep ] [ inkeytim isbool ~ [ retall ] ifcall ] isstdio etfi call
 
 .Time
 Delta between two times read at 2.1s interval:
