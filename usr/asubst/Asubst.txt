@@ -1,6 +1,6 @@
 Asubst
 ======
-V19.2
+V19.3
 
 Asubst is a command line tool that substitutes text within an input flow of
 text. It finds occurences of text that match a pattern (regular expression),
@@ -343,9 +343,10 @@ Grep mode is triggered by any of the following options:
 - With option -g (--grep), asubst displays the matching text, possibly with the input
 file name (option 'file') and possibly with the line number in the input file
 (options 'file' and 'line'). +
-In 'grep' mode without 'file' mode it is possible to provide a non empty
-replace_string, so that asubst displays the substitution. This is especially
-useful if the replace_string contains some "\RIJ" or "\rIJ".
+An empty replace_string leads to display the matching text, but in 'grep' mode without
+'file' mode it is possible to provide a non empty replace_string, so that asubst
+displays the substitution. This is especially useful if the replace_string contains
+some "\RIJ" or "\rIJ".
 
 - With option -L (--list), asubst displays once each file name where there is
 at least one matching.
