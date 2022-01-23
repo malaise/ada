@@ -50,8 +50,10 @@ package Git_If is
   procedure List_Files (Current_Path : in String;
                         Files : in out File_List);
 
-  -- List all the files modified in the current repository
-  procedure List_Changes (Files : in out File_List);
+  -- List all the files modified in the current directory or the
+  --  current repository
+  procedure List_Changes (Files : in out File_List;
+                          Path : in String := ".");
 
   -- Status of a file
   function Get_Status (File : String) return File_Entry_Rec;

@@ -436,7 +436,8 @@ package body Git_If is
   end List_Files;
 
   -- List all the files modified in the current repository
-  procedure List_Changes (Files : in out File_List) is
+  procedure List_Changes (Files : in out File_List;
+                          Path : in String := ".") is
     Cmd : Many_Strings.Many_String;
     Str : As.U.Asu_Us;
     File_Entry : File_Entry_Rec;
@@ -450,7 +451,7 @@ package body Git_If is
     Cmd.Set ("git");
     Cmd.Cat ("status");
     Cmd.Cat ("--porcelain");
-    Cmd.Cat (".");
+    Cmd.Cat (Path);
     Execute (Cmd, Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then

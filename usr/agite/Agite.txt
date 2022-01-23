@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V39.12
+V39.13
 
 General purpose
 ---------------
@@ -443,6 +443,13 @@ Root::
 anchor:XRoot[]This line shows the root directory of the current Git repository.
 Clicking in this field changes the current directory to the root.
 
+Changes::
+anchor:XChanges[]At the right of the root directory, a red star ''*'' may
+appear to indicate that the current repository contains local modifications
+compared to the top of the current branch (new files, modifications,
+deletions...). You can use xref:XCommit[commit] menu to see and manage
+these changes.
+
 anchor:XGo[]
 
 Go::
@@ -758,7 +765,7 @@ automatically generated with the comment "Merge branch \'<branch>'".
 TruMerge::
 Click in the 'TruMerge' button to merge, after confirmation, the
 branch selected in the list into the current branch, with no 'fast forward'
-and no 'commit' policy. Then the xref:XCommit[commit] screen is called to
+and no 'commit' policy. Then the xref:XCommit[commit] menu is called to
 allow amending the comment and commiting the result.
 
 Rebase::
@@ -2220,7 +2227,8 @@ version 1.7.0 or above:
 * A function lists local files by calling 'git ls-files' and
 'git status \-- porcelain .',
 
-* A function lists all changes by calling 'git status \-- porcelain .',
+* A function lists local changes by calling 'git status \-- porcelain <path> |
+"."',
 
 * A function lists the status of a file by calling 'git status \-- porcelain
 <file>',

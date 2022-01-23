@@ -57,8 +57,11 @@ procedure Agite is
   Editor : As.U.Asu_Us;
   Differator : As.U.Asu_Us;
 
-  -- Files list and current branch
+  -- Files list
   Files : Git_If.File_List;
+
+  -- Changes in repository
+  Changes : Git_If.File_List;
 
   -- Show symbolic links or not
   Show_Symlinks : Boolean := False;
@@ -134,6 +137,11 @@ procedure Agite is
         Git_If.Get_Root_And_Path (Root, Path);
       end if;
       Git_If.List_Files (Path.Image, Files);
+
+      -- Indicate if some files are modified in the current repository
+      Changes.Delete_List;
+      Git_If.List_Changes (Changes, Root.Image);
+
     exception
       when Git_If.No_Git =>
         -- This dir is not Git
@@ -141,6 +149,7 @@ procedure Agite is
         Path.Set_Null;
         -- List dir content the normal way
         List_Files (Path.Image, Files);
+        Changes.Delete_List;
     end;
     Utils.Chrono.Ended;
   end List_Files;
@@ -214,9 +223,14 @@ procedure Agite is
     end if;
 
     -- Refresh list only if it has changed
-    -- Update list of files and branch
+    -- Update list of files, branch and changes
     List_Files;
     Utils.X.Encode_Branch (Afpx_Xref.Main.Branch);
+    if Changes.Is_Empty then
+      Afpx.Clear_Field (Afpx_Xref.Main.Changes);
+    else
+      Afpx.Reset_Field (Afpx_Xref.Main.Changes);
+    end if;
 
     -- Check lengths then content
     if not Changed
