@@ -23,12 +23,14 @@ A pushr call
 ] E popr
 
 # Function to check a rate: skip empty line and comment
-# Check it is the string of a real, pope the real
+# Check it is the string of a real or inte, pope the real
 [
 dup strnull [ pop 2 retn ] ifcall
 dup 1 1 strsub "#" = [ pop 2 retn ] ifcall
-dup canreal ~ [ "ERROR: Invalid rate " put put "." putl A pushr call ] ifcall
-strreal pope ] R popr
+dup dup canreal [ strreal v popr ] ifcall
+dup caninte [ strinte toreal v popr ] ifcall
+v emptyr [ "ERROR: Invalid rate " put put "." putl A pushr call ] ifcall pop
+v pushr pope v clearr ] R popr
 
 # Read rates from file in Env var COLAB_RATES
 #  Check env var
