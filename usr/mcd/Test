@@ -166,7 +166,6 @@ echo "OK"
 
 title calab
 launch colab ":1000h:"
-cat out
 tail -2 out | head -1 | awk '{print $6}' > exp
 mv exp out
 echo "129" > exp
