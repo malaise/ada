@@ -194,7 +194,7 @@ rm tmp
 echo "OK"
 
 # Show Targets
-title "Swho targets"
+title "Show targets"
 ln -s als A
 ln -s A B
 ln -s B C 
