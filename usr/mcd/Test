@@ -266,7 +266,7 @@ comp out exp
 comp err nul
 echo "OK"
 
-echo -n "departements: "
+title departements
 launch departements &
 sleep 5
 stop
@@ -521,7 +521,7 @@ comp err nul
 echo "OK"
 
 title op_time
-op_time 9.30 + 3.15 > out 2> err
+./op_time 9.30 + 3.15 > out 2> err
 echo "12h45m00s000" > exp
 comp out exp
 comp err nul
@@ -596,8 +596,8 @@ comp out exp
 comp err nul
 echo "OK"
 
-echo -n "proport: "
-proport 10 15 3 > out 2> err
+title proport
+./proport 10 15 3 > out 2> err
 echo "5" > exp
 comp out exp
 comp err nul
@@ -762,18 +762,18 @@ comp err nul
 echo "OK"
 
 title yfx
-mmcdt 0 10 -e x2-1.mcd -e yfx.mcd > out 2> err
+./mmcdt 0 10 -e x2-1.mcd -e yfx.mcd > out 2> err
 echo "1.0000000000E+000" > exp
 comp out exp
 comp err nul
 echo "OK"
 
 title exec
-echo -n '"ls ""mcd_mng.adb"""' exec putl putl | mcd > out 2> err
+echo -n '"ls ""mcd_mng.adb"""' exec putl putl | ./mcd > out 2> err
 echo -en "    0\nmcd_mng.adb\n\n" > exp
 comp out exp
 comp err nul
-echo -n '"pwd" exec pop dup -1 "/" strloc 1 swap strdel put' | mcd > out 2> err
+echo -n '"pwd" exec pop dup -1 "/" strloc 1 swap strdel put' | ./mcd > out 2> err
 echo -en "`basename ${PWD}`\n" > exp
 comp out exp
 comp err nul
