@@ -1,11 +1,21 @@
 # Compute the number of push-ups to do each day
-# 1 during 01/2011, 2 during 02/2011...
+# 1 during first month, 2 during second month...
+# First optional arg is the reference date (default 2016/01)
+"2016/01" r popr
+# Second optional arg is the "curent" date (default today)
 
-# Reference month (the one from which we start)
-2016 y popr 01 m popr
+# Function to parse "yyyy/mm". yyyy is set at top of stack and mm below
+[ dup 1 4 strsub strinte swap 6 7 strsub strinte swap ] P popr
 
-# Current year and month
-clock "%Y%m" dateimg dup 1 4 strsub strinte swap 5 6 strsub strinte swap
+# Parse optional argument "yyyy/mm"
+ssize 0 = [ r pushr ] ifcall P pushr call y popr m popr
+
+# Parse optional argument "yyyy/mm" otherwise today
+ssize 0 = [ clock "%Y%m" dateimg ] ifcall P pushr call
+
+# No more argument
+ssize 0 =
+[ "ERROR: Unexpected argument." putl ssize popn 1 setexit retall ] ifcall
 
 # Delta of years *  12 + delta of months + 1
 y pushr - 12 * swap m pushr - + 1 +
