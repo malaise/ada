@@ -77,7 +77,6 @@ function stop {
 
 # BEGIN
 #######
-
 title age
 launch age :25/10/1963: :28/08/2012:
 echo " 48" > exp
@@ -157,6 +156,17 @@ stop
 sleep 0.5
 echo "OK"
 
+title chrono
+launch chrono &
+sleep 5
+stop
+tail -1 out | cut -d '.' -f 1 > exp
+mv exp out
+echo "    0T00:00:05" > exp
+comp out exp
+comp err nul
+echo "OK"
+
 title clock
 launch clock s &
 sleep 2
@@ -164,8 +174,9 @@ stop
 sleep 0.5
 echo "OK"
 
-title calab
+title colab
 launch colab ":1000h:"
+# man day
 tail -2 out | head -1 | awk '{print $6}' > exp
 mv exp out
 echo "129" > exp
@@ -173,6 +184,12 @@ comp out exp
 comp err nul
 echo "OK"
 
+title concorde
+launch concorde :1500-200Nm:
+echo "52.2T" > exp
+comp out exp
+comp err nul
+echo "OK"
 
 title conso
 launch conso 30 8 1.15
@@ -218,6 +235,15 @@ fi
 comp err nul
 echo "OK"
 
+title decalo
+launch day_of_week
+export date=`head -1 out | cut -d ' ' -f 1`
+launch decalo :$date:
+echo "0j" > exp
+comp out exp
+comp err nul
+echo "OK"
+
 title degmsfr
 res=`degmsfr -123.27.24.441`
 if [ "$res" != "-123.4567892°" ] ; then
@@ -238,6 +264,13 @@ launch degra 21 2.1 g
 echo "Lat: 1.854000000E+001 Lon: 4.133802500E+000 deg" > exp
 comp out exp
 comp err nul
+echo "OK"
+
+echo -n "departements: "
+launch departements &
+sleep 5
+stop
+sleep 0.5
 echo "OK"
 
 title deviation
@@ -268,6 +301,13 @@ Getting reg name from reg B
 Getting data from reg
 Data is: Ah que coucou!
 EOF
+comp out exp
+comp err nul
+echo "OK"
+
+title dist_latlon
+launch dist_latlon 44.815833 001.149444 43.536944 001.231944
+echo "142.262km (77Nm)" > exp
 comp out exp
 comp err nul
 echo "OK"
@@ -344,6 +384,13 @@ echo "OK"
 title fact
 launch fact 6
 echo "@+6 ! = @+720" > exp
+comp out exp
+comp err nul
+echo "OK"
+
+title feltemp
+launch feltemp 23 12
+echo "Felt temp:    24 C" > exp
 comp out exp
 comp err nul
 echo "OK"
@@ -473,6 +520,23 @@ comp out exp
 comp err nul
 echo "OK"
 
+title op_time
+op_time 9.30 + 3.15 > out 2> err
+echo "12h45m00s000" > exp
+comp out exp
+comp err nul
+echo "OK"
+
+title P38
+launch P38 :450Nm:
+head -1 out > exp
+mv exp out
+echo "Flying  1:30 requires 393 kg of fuel." > exp
+
+comp out exp
+comp err nul
+echo "OK"
+
 title percent
 launch percent 10 21
 cat << EOF > exp
@@ -528,6 +592,20 @@ cat << EOF > exp
 @+17
 @+19
 EOF
+comp out exp
+comp err nul
+echo "OK"
+
+echo -n "proport: "
+proport 10 15 3 > out 2> err
+echo "5" > exp
+comp out exp
+comp err nul
+echo "OK"
+
+title pushups
+launch pushups :2021/02: :2021/01:
+echo "  2" > exp
 comp out exp
 comp err nul
 echo "OK"
@@ -649,19 +727,6 @@ stop
 sleep 0.5
 echo "OK"
 
-title tindreg
-launch tindreg
-cat << EOF > exp
-Storing data in reg a
-Storing reg a in reg b
-Storing reg b in reg c
-Getting data
-Data is: Ah que coucou!
-EOF
-comp out exp
-comp err nul
-echo "OK"
-
 title t_loop
 launch t_loop 7
 cat << EOF > exp
@@ -680,6 +745,19 @@ echo "OK"
 title t_str
 launch t_str
 comp out ../tests/data/t_asbu.ref
+comp err nul
+echo "OK"
+
+title tindreg
+launch tindreg
+cat << EOF > exp
+Storing data in reg a
+Storing reg a in reg b
+Storing reg b in reg c
+Getting data
+Data is: Ah que coucou!
+EOF
+comp out exp
 comp err nul
 echo "OK"
 
