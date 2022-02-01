@@ -2,11 +2,17 @@
 
 # Error message
 [ "ERROR. Invalid argument" putl
-"Usage: concorde ""<total_distance>[-<subsonic_distance>]<unit>""" putl
-"  <unit> ::= km | Nm | Mi" putl 1 setexit ssize popn retall ] E popr
+"Usage: concorde ""<total_distance>[-<subsonic_distance>]<unit>"" [""<wind>""]"
+putl
+"  <unit> ::= km | Nm | Mi" putl
+"  <wind> :: H | T <speed>" putl
+1 setexit ssize popn retall ] E popr
+
+# One or two arguments
+ssize isnull E pushr ifcall
+ssize 2 > E pushr ifcall
 
 # Check and extract subsonic length according to "-"
-ssize 1 /= E pushr ifcall
 a copyr dup strlen l popr 1 "-" strloc i copyr isnull
 [ "0" s popr ]
 [ i pushr 1 <= E pushr ifcall i pushr l pushr 3 - > E pushr ifcall
@@ -19,9 +25,10 @@ a pushr 1 l pushr 2 - strsub t popr
 a pushr l pushr 1 - l pushr strsub u popr
 
 # Check unit
+1.852 k popr
 0.0 f popr u pushr dup dup
 "km" = [ 1.000 f popr ] ifcall
-"Nm" = [ 1.852 f popr ] ifcall
+"Nm" = [ k pushr f popr ] ifcall
 "Mi" = [ 1.609 f popr ] ifcall
 f pushr 0.0 = E pushr ifcall
 
@@ -31,13 +38,38 @@ f pushr 0.0 = E pushr ifcall
 s C pushr call
 t C pushr call
 
-# Compute total - (subsonic + transitions)  (transition=climb+descent, 450 NM)
-t pushr 450 v copyr toreal 1.852 * s pushr + - dup isneg
+# Compute cruise = total - (subsonic + transitions)
+#  (transitions=climb+descent, 450 NM)
+t pushr 450 v copyr toreal k pushr * s pushr + - dup isneg
 [ "ERROR. Subsonic plus transitions (" put 3 format v pushr put
 " Nm) is longer than total" putl 1 setexit ssize popn retall ] ifcall
+c popr
+
+# Check optional wind
+0 w popr
+ssize 1 =
+[
+# First letter: 'H' or 'T'
+dup 1 1 strsub dup
+"H" = [ 1 w popr ] ifcall
+"T" = [ -1 w popr ] ifcall
+w pushr isnull E pushr ifcall
+1 1 strdel dup caninte ~ E pushr ifcall
+# In km/h
+strinte w pushr * toreal f pushr * w copyr dup
+# Add length to subsonic and cruise
+# Subsonic at 567KT=1050km/h
+s pushr 1050.0 / *
+# Wind impact on 45min of transitions, apply to subsonic
+0.75 w pushr toreal * + s pushr + s popr
+# Cruise at Mach 2.02=2145km
+c pushr 2145.0 / * c pushr + c popr
+] ifcall
+
 
 # Per 1000km; 10 T cruise and 16 T subsonic
-10.0 * s pushr 16.0 * + 1000.0 /
+c pushr 10.0 * s pushr 16.0 * + 1000.0 /
+
 
 # Add fixed consumption for:
 # Ground + Climb + Descent + Approach + Ground + Security
