@@ -11,6 +11,8 @@ putl
 # One or two arguments
 ssize isnull E pushr ifcall
 ssize 2 > E pushr ifcall
+# Top of stack is optional wind
+ssize 2 = [ swap ] ifcall
 
 # Check and extract subsonic length according to "-"
 a copyr dup strlen l popr 1 "-" strloc i copyr isnull

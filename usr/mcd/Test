@@ -224,8 +224,8 @@ fi
 
 if `match $arg concorde` ; then
   title concorde
-  launch concorde :1500-200Nm:
-  echo "52.2T" > exp
+  launch concorde :3045-200Nm: :H34:
+  echo "87.2T" > exp
   comp out exp
   comp err nul
   echo "OK"
