@@ -62,7 +62,7 @@ strinte w pushr * toreal f pushr * w copyr dup
 s pushr 1050.0 / *
 # Wind impact on 45min of transitions, apply to subsonic
 0.75 w pushr toreal * + s pushr + s popr
-# Cruise at Mach 2.02=2145km
+# Cruise at Mach 2.02=1158KT=2145km
 c pushr 2145.0 / * c pushr + c popr
 ] ifcall
 
