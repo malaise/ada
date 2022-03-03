@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V39.13
+V39.14
 
 General purpose
 ---------------
@@ -44,7 +44,7 @@ from this setting.
 
 AGITE_CONF_FILE::
 Agite allows several settings to be defined in a
-xref:XConfig[configuration file]. By default this file is
+XML xref:XConfig[configuration file]. By default this file is
 '$\{HOME}/.agite/agite.xml' but this can be overridden by setting the
 environment variable 'AGITE_CONF_FILE' to the full path and name of the
 configuration file.
@@ -68,8 +68,8 @@ Configuration file
 ------------------
 User defined configuration
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
-At start-up Agite reads some user-defined parameters from its configuration
-file:
+At start-up Agite reads some user-defined parameters from its XML configuration
+file, which contains the fields:
 
 anchor:XConfXterm[]
 
@@ -136,7 +136,7 @@ menus. This parameter defines the period in seconds of this automatic check.
 +
 Setting the value to 0.0 disables the feature.
 +
-NOTE: Agite refreshes the screen when the mouse cursor enters its window. +
+NOTE: Agite also refreshes the screen when the mouse cursor enters its window. +
 A manual refresh is always possible with the xref:XReread[Reread] button.
 
 anchor:XListTags[]
@@ -160,6 +160,16 @@ xref:XListAll[All], allows listing all the entries).
 Setting the value to 0 disables the feature and Agite will always list all the
 entries of the history.
 
+NOTE: The DTD file 'agite.dtd' must be located according to the ''DOCTYPE''
+directive of the configuration file. +
+
+NOTE: When editing the configuration file in order to modify these parameters,
+you should ensure that: +
+* Agite is not running or at least you are not using it (changing current
+directory or modifying the comment of the commit, which might revert your
+changes), +
+* You don't add XML comments (Agite would remove them), +
+* The configuration file remains compliant with the DTD 'agite.dtd'.
 
 Agite persistent data
 ~~~~~~~~~~~~~~~~~~~~~
@@ -183,12 +193,11 @@ comment::
 Agite saves the text of the current comment of the xref:XCommit[commit], so
 that it is retrieved from one session to another.
 
-NOTE: The DTD file 'agite.dtd' must be located according to the ''DOCTYPE''
-directive of the Agite XML configuration file. +
-You may modify these persistent values, providing that: +
+NOTE If necessary, you may edit the configuration file and modify these
+persistent values, providing that: +
 * Agite is not running (it would overwrite your changes), +
 * You don't add XML comments (Agite would remove them), +
-* The file 'agite.xlm' complies with the DTD 'agite.dtd'.
+* The configuration file remains compliant with the DTD 'agite.dtd'.
 
 NOTE: In case of problem (crash), a backup of the configuration file may be
 found at the same location and is named as the configuration file with the
