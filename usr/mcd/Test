@@ -191,7 +191,7 @@ fi
 if `match $arg chrono` ; then
   title chrono
   launch chrono &
-  sleep 5.1
+  sleep 5.3
   stop
   tail -1 out | cut -d '.' -f 1 > exp
   mv exp out
