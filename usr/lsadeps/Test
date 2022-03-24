@@ -1,10 +1,20 @@
 #!/bin/bash
+export CHKDIR=Check.dir
+function clean {
+  rm -f res1 res2 $CHKDIR
+}
+trap 'echo ""; clean; exit 1' SIGINT SIGTERM
+
+if [ "$1" = "clean" ]  ; then
+  clean
+  exit 0
+fi
+
 
 function error {
   echo "ERROR: $1" 1>&2
   exit 1
 }
-
 
 function check {
 
@@ -127,7 +137,6 @@ EOF
 check "-d tree_mng"
 
 # Check and loop
-export CHKDIR=Check.dir
 if [ -d $CHKDIR ] ; then
   rm -rf $CHKDIR
 fi

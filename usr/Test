@@ -5,7 +5,7 @@ for file in */Test ; do
   export dir=`dirname $file`
   echo "`basename $dir`:"
   cd "$dir"
-  ./Test
+  ./Test $*
   if [ "$?" -ne 0 ] ; then
     echo "ERROR."
     exit 1

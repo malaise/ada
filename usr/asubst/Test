@@ -3,11 +3,6 @@
 # Force UTF-8 mode
 export ASUBST_UTF8=Y
 
-# Display current version
-type asubst
-asubst --version
-sleep 1
-
 # Various file names, reference (in), expected result
 #  tested (in/out), list, saved, inserted, file with no delim
 #  file got
@@ -24,6 +19,16 @@ function clean {
   rm -rf $FR $FT $FS $FE $FL $FI $FD $FG
 }
 trap 'echo ""; clean; exit 1' SIGINT SIGTERM
+
+if [ "$1" = "clean" ]  ; then
+  clean
+  exit 0
+fi
+
+# Display current version
+type asubst
+asubst --version
+sleep 1
 
 # Prepare inserted file
 echo -en "toto\nle" > $FI

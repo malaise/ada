@@ -10,6 +10,12 @@ function error {
 function clean {
   rm -f cmp res out err expout experr
 }
+trap 'echo ""; clean; exit 1' SIGINT SIGTERM
+
+if [ "$1" = "clean" ]  ; then
+  clean
+  exit 0
+fi
 
 # Regenerate interception scenario
 if [ "$1" = "generate_intercept" ] ; then

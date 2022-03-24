@@ -4,6 +4,11 @@ function clean {
 }
 trap 'echo ""; clean; exit 1' SIGINT SIGTERM
 
+if [ "$1" = "clean" ]  ; then
+  clean
+  exit 0
+fi
+
 if [ -f test.adb ] ; then
   echo "Removing previous test.adb"
   clean

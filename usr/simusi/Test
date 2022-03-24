@@ -2,6 +2,16 @@
 # Test simuli with test9 and tests
 touch experr
 
+function clean {
+  rm -f out expout err experr
+}
+trap 'echo ""; clean; exit 1' SIGINT SIGTERM
+
+if [ "$1" = "clean" ]  ; then
+  clean
+  exit 0
+fi
+
 function error {
   echo $* 1>&2
   exit 1
@@ -130,6 +140,6 @@ Simulation FAILED.
 EOF
 do_one tests.*
 
-rm out expout err experr
+clean
 echo "OK"
 

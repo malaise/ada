@@ -9,6 +9,10 @@ function clean {
 }
 trap 'echo ""; clean; exit 1' SIGINT SIGTERM
 
+if [ "$1" = "clean" ]  ; then
+  clean
+  exit 0
+fi
 
 # For loops
 export LIST="A B C D E F G H I J K L M N O P Q R S T U V W X Y Z"

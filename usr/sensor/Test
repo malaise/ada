@@ -17,6 +17,11 @@ function cleanup {
 }
 trap 'echo "Aborted"; cleanup; exit 1' SIGINT SIGTERM
 
+if [ "$1" = "clean" ]  ; then
+  cleanup
+  exit 0
+fi
+
 # Option verbose
 export VERBOSE=1
 if [ \( "$1" = "-s" \) -o \( "$1" = "--silent" \) ] ; then

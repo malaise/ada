@@ -35,6 +35,12 @@ function clean {
 }
 trap 'echo ""; clean; exit 1' SIGINT SIGTERM
 
+if [ "$1" = "clean" ]  ; then
+  clean
+  exit 0
+fi
+
+
 # Send text $1 (on the pipe) then sleep $2...
 # If last arg is a $1 (odd Nb of arg) then sleep a bit before returning
 # If called with ... cmd 0 then we add a sleep 1 otherwise tcpchat
