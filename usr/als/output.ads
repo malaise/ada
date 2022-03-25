@@ -5,18 +5,19 @@ package Output is
   -- Set (store) sorting and format style
   type Sort_Kind_List is (Alpha, Len, None, Size, Time);
   type Format_Kind_List is (Simple, One_Row, Long, Long_Human);
+  type Put_Path_List is (Full, Always, Default, Never);
   procedure Set_Style (Sort_Kind   : in Sort_Kind_List;
                        Revert      : in Boolean;
                        Format_Kind : in Format_Kind_List;
-                       Put_Path    : in Boolean;
-                       Full_Path   : in Boolean;
+                       Put_Path    : in Put_Path_List;
                        Classify    : in Boolean;
                        Date_Iso    : in Boolean;
                        Quiet       : in Boolean;
                        Separator   : in As.U.Asu_Us);
 
   -- Sort list and put according to style
-  procedure Put (List : in out Entities.Entity_List;
+  procedure Put (List            : in out Entities.Entity_List;
+                 In_Dir          : in Boolean;
                  Append_New_Line : in Boolean);
 
   -- Put a dir name ("Dir:")

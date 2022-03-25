@@ -320,6 +320,7 @@ package body Lister is
                   Dir : in String;
                   Dots : in Entities.Dots_Kind_List;
                   Count_Dot : in Boolean) is
+    Loc_Dir : constant String := (if Dir = "" then "." else Dir);
     One_Listed : Boolean;
     Desc : Directory.Dir_Desc;
     Ent : Entities.Entity;
@@ -333,7 +334,7 @@ package body Lister is
     Ent.Path := As.U.Tus (Dir);
     -- Open
     begin
-      Desc.Open (Dir);
+      Desc.Open (Loc_Dir);
     exception
       when Directory.Name_Error =>
         Basic_Proc.Put_Line_Error (Argument.Get_Program_Name & ": "
@@ -342,7 +343,7 @@ package body Lister is
         return;
       when Directory.Access_Error =>
         Basic_Proc.Put_Line_Error (Argument.Get_Program_Name & ": "
-                                 & Dir & ": Permission denied.");
+                                 & Loc_Dir & ": Permission denied.");
         Exit_Code.Update (Exit_Code.Error);
         return;
     end;
@@ -380,7 +381,7 @@ package body Lister is
         begin
           -- Read file stat
           Stat := Sys_Calls.File_Stat (
-             Directory.Build_File_Name (Dir, Ent.Name.Image, ""));
+             Directory.Build_File_Name (Loc_Dir, Ent.Name.Image, ""));
         exception
           when Sys_Calls.Name_Error | Sys_Calls.Access_Error =>
             -- Skip this file
@@ -400,7 +401,7 @@ package body Lister is
         Ent.Size := Stat.Size;
         Ent.Link.Set_Null;
         if Ent.Kind = Directory.Link then
-          Read_Link (Directory.Build_File_Name (Dir, Ent.Name.Image, ""),
+          Read_Link (Directory.Build_File_Name (Loc_Dir, Ent.Name.Image, ""),
                      Ent);
         end if;
 
@@ -425,7 +426,7 @@ package body Lister is
 
     -- Add current dir size
     if Total_Active and then Count_Dot and then One_Listed then
-      Stat := Sys_Calls.File_Stat (Dir);
+      Stat := Sys_Calls.File_Stat (Loc_Dir);
       Add_Size (Stat.Size, False);
     end if;
 
@@ -514,6 +515,7 @@ package body Lister is
   procedure Sort is new Str_List_Mng.Sort (As.U."<");
   procedure List_Dirs (Dir : in String;
                        List : out Dir_List) is
+    Loc_Dir : constant String := (if Dir = "" then "." else Dir);
     Desc : Directory.Dir_Desc;
     Str : As.U.Asu_Us;
     use type Directory.File_Kind_List;
@@ -523,7 +525,7 @@ package body Lister is
 
     -- Open
     begin
-      Desc.Open (Dir);
+      Desc.Open (Loc_Dir);
     exception
       when Directory.Name_Error =>
         Basic_Proc.Put_Line_Error (Argument.Get_Program_Name & ": "
@@ -532,7 +534,7 @@ package body Lister is
         return;
       when Directory.Access_Error =>
         Basic_Proc.Put_Line_Error (Argument.Get_Program_Name & ": "
-                                 & Dir & ": Permission denied.");
+                                 & Loc_Dir & ": Permission denied.");
         Exit_Code.Update (Exit_Code.Error);
         return;
     end;
@@ -550,7 +552,7 @@ package body Lister is
       -- Check if it is a directory
       declare
         Lstr : constant String := Str.Image;
-        Fstr : constant String := Directory.Build_File_Name (Dir, Lstr, "");
+        Fstr : constant String := Directory.Build_File_Name (Loc_Dir, Lstr, "");
         Kind : Directory.File_Kind_List;
         Link_Target : As.U.Asu_Us;
       begin

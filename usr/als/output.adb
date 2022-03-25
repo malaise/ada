@@ -19,13 +19,13 @@ package body Output is
   Sort_Kind : Sort_Kind_List;
   Revert : Boolean;
   Format_Kind : Format_Kind_List;
-  Put_Path : Boolean;
-  Full_Path : Boolean;
+  Put_Path : Put_Path_List;
   Separator : As.U.Asu_Us;
   Classify : Boolean;
   Date_Iso : Boolean;
   Quiet : Boolean;
   Default_Separator : constant String := "  ";
+  In_Dir : Boolean;
 
   -- Current directory path
   Curdir : constant As.U.Asu_Us := As.U.Tus (Directory.Get_Current);
@@ -35,8 +35,7 @@ package body Output is
              Sort_Kind   : in Sort_Kind_List;
              Revert      : in Boolean;
              Format_Kind : in Format_Kind_List;
-             Put_Path    : in Boolean;
-             Full_Path   : in Boolean;
+             Put_Path    : in Put_Path_List;
              Classify    : in Boolean;
              Date_Iso    : in Boolean;
              Quiet       : in Boolean;
@@ -46,7 +45,6 @@ package body Output is
     Output.Revert := Revert;
     Output.Format_Kind := Format_Kind;
     Output.Put_Path := Put_Path;
-    Output.Full_Path := Full_Path;
     Output.Separator := Separator;
     Output.Classify := Classify;
     Output.Date_Iso := Date_Iso;
@@ -61,6 +59,35 @@ package body Output is
      elsif Path(Path'First) = '/' then Directory. Normalize_Path (Path)
      -- Path is relative, prepend current path & Normalize
      else Directory.Normalize_Path (Curdir.Image & "/" & Path));
+
+  -- Build entity image (possibly with full path)
+  function Entity_Image (Entity : in Entities.Entity) return String is
+  begin
+    case Put_Path is
+      when Full =>
+        -- Always a  full path
+        return Directory.Build_File_Name (
+            Make_Full_Path (Entity.Path.Image), Entity.Name.Image, "");
+      when Always =>
+        -- Always a path
+        return Directory.Build_File_Name (
+            (if Entity.Path.Is_Null then "." else Entity.Path.Image),
+            Entity.Name.Image,
+            "");
+      when Default =>
+        if In_Dir then
+          return Entity.Name.Image;
+        else
+          return Directory.Build_File_Name (
+              Entity.Path.Image,
+              Entity.Name.Image,
+              "");
+        end if;
+      when Never =>
+        -- Only basename
+        return Entity.Name.Image;
+    end case;
+  end Entity_Image;
 
   -- Sorting function for 2 paths
   function "<" (S1, S2 : As.U.Asu_Us) return Boolean is
@@ -101,18 +128,9 @@ package body Output is
       C1 := El2;
       C2 := El1;
     end if;
-    -- Sort including full path if required
-    if Full_Path then
-      C1.Name := As.U.Tus (Directory.Build_File_Name (
-           Make_Full_Path (C1.Path.Image), C1.Name.Image, "") );
-      C2.Name := As.U.Tus (Directory.Build_File_Name (
-           Make_Full_Path (C2.Path.Image), C2.Name.Image, "") );
-    elsif Put_Path then
-      C1.Name := As.U.Tus (Directory.Build_File_Name (
-           C1.Path.Image, C1.Name.Image, "") );
-      C2.Name := As.U.Tus (Directory.Build_File_Name (
-           C2.Path.Image, C2.Name.Image, "") );
-    end if;
+    -- Sort including path
+    C1.Name := As.U.Tus (Entity_Image (C1));
+    C2.Name := As.U.Tus (Entity_Image (C2));
     -- Alpha sort case insensitive, and letters before ponctuation
     C1.Name := As.U.Tus (Upper_Str (C1.Name.Image));
     C2.Name := As.U.Tus (Upper_Str (C2.Name.Image));
@@ -198,19 +216,11 @@ package body Output is
   First_Entry : Boolean := True;
 
   -- Put an entity name (possibly with full path)
-  function Name_Image (Entity : in Entities.Entity) return String is
+  function Entry_Image (Entity : in Entities.Entity) return String is
   begin
    First_Entry := True;
-   if Full_Path then
-      return Directory.Build_File_Name (
-           Make_Full_Path (Entity.Path.Image), Entity.Name.Image, "");
-    elsif Put_Path then
-      return Directory.Build_File_Name (
-           Entity.Path.Image, Entity.Name.Image, "");
-    else
-      return Entity.Name.Image;
-    end if;
-  end Name_Image;
+   return Entity_Image (Entity);
+  end Entry_Image;
 
   -- Put an entity in with separator
   procedure Put_Raw (Entity : in Entities.Entity) is
@@ -218,7 +228,7 @@ package body Output is
     if not First_Entry then
       Basic_Proc.Put_Output (Get_Separator);
     end if;
-    Basic_Proc.Put_Output (Name_Image (Entity));
+    Basic_Proc.Put_Output (Entry_Image (Entity));
     First_Entry := False;
   end Put_Raw;
 
@@ -252,7 +262,7 @@ package body Output is
   Max_Col : constant := 80;
   Current_Col : Natural := 0;
   procedure Put_Simple (Entity : in Entities.Entity) is
-    Image : constant String := Name_Image (Entity);
+    Image : constant String := Entry_Image (Entity);
     Name_Len : constant Natural := Image'Length;
     Len : Natural := Name_Len;
     Char : Character := Default_Char;
@@ -284,7 +294,7 @@ package body Output is
   -- Put an entity in one row
   procedure Put_One_Row (Entity : in Entities.Entity) is
   begin
-    Basic_Proc.Put_Output (Name_Image (Entity));
+    Basic_Proc.Put_Output (Entry_Image (Entity));
     if Classify
     and then Char_Of (Entity.Kind, Entity.Rights) /= Default_Char then
       Put_Output (Char_Of (Entity.Kind, Entity.Rights));
@@ -493,7 +503,7 @@ package body Output is
     Basic_Proc.Put_Output (Date(1 .. 19) & ' ');
 
     -- Entity name
-    Basic_Proc.Put_Output (Name_Image (Entity) );
+    Basic_Proc.Put_Output (Entry_Image (Entity) );
 
     -- Link
     if Entity.Kind = Directory.Link then
@@ -517,11 +527,13 @@ package body Output is
   end Put_Long;
 
   -- Sort list and put according to style
-  procedure Put (List : in out Entities.Entity_List;
+  procedure Put (List            : in out Entities.Entity_List;
+                 In_Dir          : in Boolean;
                  Append_New_Line : in Boolean) is
     Moved : Boolean;
     Ent : Entities.Entity;
   begin
+    Output.In_Dir := In_Dir;
     if List.Is_Empty or else Quiet then
       return;
     end if;
@@ -565,7 +577,7 @@ package body Output is
     if Quiet then
       return;
     end if;
-    Basic_Proc.Put_Line_Output (Name & ":");
+    Basic_Proc.Put_Line_Output ((if Name = "" then "." else Name) & ":");
   end Put_Dir;
 
   procedure New_Line is

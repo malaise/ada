@@ -2,10 +2,11 @@
 export N0=0
 export N1=0
 export NE=0
+export PID=$$
 
 export T_ALS=t_als
 function clean {
-  rm -f BrokenLink exp res NewFile tmp /tmp/$T_ALS A B C 
+  rm -f BrokenLink exp res err NewFile tmp/$T_ALS tmp A B C 
 }
 trap 'echo ""; clean; exit 1' SIGINT SIGTERM
 
@@ -17,6 +18,7 @@ fi
 function error {
   echo ""
   echo "ERROR: $*." 1>&2
+  kill -SIGKILL $PID
   exit 1
 }
 
@@ -80,6 +82,22 @@ if [ $ALSRN -ne $ALSMN ] ; then
 fi
 echo "OK"
 
+# Output format
+title "In ., output format"
+echo "Test" >exp
+launch Test >res
+cmp res exp > /dev/null 2>&1
+if [ $? -ne 0 ] ; then
+  error "als Test result res differs from exp"
+fi
+echo "./Test" >exp
+launch ./Test >res
+cmp res exp > /dev/null 2>&1
+if [ $? -ne 0 ] ; then
+  error "als Test result res differs from exp"
+fi
+echo "OK"
+
 # Find a broken link
 title "In ., recursive broken links"
 N0=`launch -BRM | wc -l`
@@ -135,7 +153,6 @@ fi
 rm exp res NewFile
 echo "OK"
 
-# New file
 title "In ., new file"
 export DELAY=2s
 touch NewFile
@@ -186,11 +203,11 @@ echo "OK"
 title "Follow links"
 ln -s /tmp tmp
 touch tmp/$T_ALS
-result=`launch -RM --show-targets 2>/dev/null| grep $T_ALS`
+result=`launch -RM --show-targets 2>err | grep $T_ALS`
 if [ "$result" != "" ] ; then
   error "als --show-targets has followed links"
 fi
-result=`launch -RM --follow-links 2>/dev/null| grep $T_ALS`
+result=`als -RM --follow-links 2>err | grep $T_ALS`
 if [ "$result" != "/tmp/$T_ALS" ] ; then
   error "als --follow-links  has not followed link"
 fi
@@ -214,3 +231,4 @@ fi
 rm A B C
 echo "OK"
 
+clean

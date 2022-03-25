@@ -1,6 +1,6 @@
 Als
 ===
-V21.2
+V22.0
 
 Als lists files, directory contents... It supports several powerful options
 for the selection of entries, for the output format of each entry, and general
@@ -16,11 +16,11 @@ List file or directory contents.
 
 NOTE: The arguments '<file_or_dir_name>' must denote existing files or
 directories. +
-Wildcards are not supported for these arguments but often, the shell expands
+Wildcards are not supported for these arguments, but often the shell expands
 the wildcards before providing the arguments to the program.  This is why,
 for example, "als \*.xml" may work while "als \'\*.xml'" will fail. On this
 respect 'als' behaves like 'ls'. +
-Prefer the option '<match_name>' to specify target names with wildcards. For
+Prefer the option '<match_name>' for specifying target names with wildcards. For
 example, "als -m \'*.xml' subdir" will list the files with suffix 'xml' in
 the subdirectory 'subdir'.
 
@@ -79,11 +79,12 @@ Specify how to show each entry selected
   -1 (--1row)                One name per line
   -c (--classify)            Append '/' to dirs, '@' to symbolic links
   -H (--human)               Show sizes in friendly format (e.g. 1K, 2G)
-  -p (--path)                Show full path of entries
+  -p | --path                Always show path of entries (default: when needed)
+  -b | --basename            Always show only name of entries
+  -P | --full-path           Always show full path of entries
   <separator> ::= -S <string> | --separator=<string>
                              Insert <string> between each entry
   --date-iso                 Show date in strict ISO format (<date>T<time>)
-  -b (--basename)            In Merge mode, show only the basename of each entry
   --show-targets             Show final target of symbolic links and consider its size
 
 Specify general formatting options
@@ -154,8 +155,8 @@ that:
 This mode shows all (and only) the matching entries, one per row. For example,
 when combined with the recursive mode, it does not show the directory names
 as specific entries. +
-By default it shows the full relative path of each entry, except if the
-"-b" option is provided (meaningfull only when merging).
+By default it shows the full relative path of each entry (implicit -p), except
+if the "-b" or '-P' option is is provided.
 
 Criteria
 ~~~~~~~~

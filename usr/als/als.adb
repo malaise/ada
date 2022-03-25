@@ -1,7 +1,7 @@
 with As.U, Basic_Proc, Argument, Argument_Parser, Str_Util, Trilean;
 with Entities, Output, Targets, Lister, Exit_Code;
 procedure Als is
-  Version : constant String  := "V21.2";
+  Version : constant String  := "V22.0";
 
   -- The keys and descriptor of parsed keys
   Nkc : constant Character := Argument_Parser.No_Key_Char;
@@ -46,7 +46,8 @@ procedure Als is
    38 => (False, 'b', As.U.Tus ("basename"),     False),
    39 => (False, Nkc, As.U.Tus ("nodir"),        False),
    40 => (True,  Nkc, As.U.Tus ("access"),       False, True, As.U.Tus ("rights")),
-   41 => (False, Nkc, As.U.Tus ("show-targets"), False) );
+   41 => (False, Nkc, As.U.Tus ("show-targets"), False),
+   42 => (False, 'P', As.U.Tus ("full-path"),    False) );
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
 
   -- Usage
@@ -106,11 +107,12 @@ procedure Als is
     Put_Line_Error ("  " & Key_Img(04) & "// One name per line");
     Put_Line_Error ("  " & Key_Img(23) & "// Append '/' to dirs, '@' to symlinks");
     Put_Line_Error ("  " & Key_Img(25) & "// Show sizes in friendly format (e.g. 1K, 2G)");
-    Put_Line_Error ("  " & Key_Img(27) & "// Show full path of entries");
+    Put_Line_Error ("  " & Key_Img(27) & "// Always show path of entries (default: when needed)");
+    Put_Line_Error ("  " & Key_Img(38) & "// Always show only name of entries");
+    Put_Line_Error ("  " & Key_Img(42) & "// Always show full path of entries");
     Put_Line_Error ("  <separator> ::= " & Argument_Parser.Image(Keys(20)));
     Put_Line_Error ("                     // Insert <string> between each entry");
     Put_Line_Error ("  " & Key_Img(30) & "// Show date in strict ISO format (<date>T<time>)");
-    Put_Line_Error ("  " & Key_Img(38) & "// In Merge mode, show only basename of each entry");
     Put_Line_Error ("  " & Key_Img(41) & "// Show final target and size of symbolic links");
 
     Put_Line_Error ("How to organize entry list:");
@@ -163,14 +165,13 @@ procedure Als is
   Put_Total : Boolean;
   Classify : Boolean;
   Depth : Natural;
-  Full_Path : Boolean;
   Date_Iso : Boolean;
   Skip_Dirs : Boolean;
   List_Only_Others : Boolean;
   Dir_Name : Trilean.Trilean;
   Utc : Boolean;
   Quiet : Boolean;
-  Basename : Boolean;
+  Put_Path : Output.Put_Path_List;
   Access_Rights : Lister.Access_Rights;
   Show_Targets : Boolean;
 
@@ -247,7 +248,6 @@ begin
   Classify := Arg_Dscr.Is_Set (23);
   Human := Arg_Dscr.Is_Set (25);
   No_Sorting := Arg_Dscr.Is_Set (26);
-  Full_Path := Arg_Dscr.Is_Set (27);
   Date_Iso := Arg_Dscr.Is_Set (30);
   List_Only_Others := Arg_Dscr.Is_Set (32);
   Utc := Arg_Dscr.Is_Set (34);
@@ -326,6 +326,7 @@ begin
              & "and the other ""gt or ""ge""");
     end if;
   end if;
+
   -- Parse option newer
   if Arg_Dscr.Get_Nb_Occurences (22) /= 0 then
     Date1 := Parse_Date ("ge" & Arg_Dscr.Get_Option(22, 1));
@@ -422,9 +423,6 @@ begin
     Dir_Name := Trilean.Other;
   end if;
 
-  -- Only basename (in Merge)
-  Basename := Arg_Dscr.Is_Set (38);
-
   -- Put total size
   Put_Total := Arg_Dscr.Is_Set (21);
 
@@ -457,9 +455,26 @@ begin
     else
       Format_Kind := Output.Simple;
     end if;
-    Output.Set_Style (Sort_Kind, Sort_Reverse, Format_Kind,
-                      Merge_Lists and then not Basename,
-                      Full_Path, Classify, Date_Iso, Quiet, Separator);
+    -- Put path
+    if      (Arg_Dscr.Is_Set (27) and then Arg_Dscr.Is_Set (38))
+    or else (Arg_Dscr.Is_Set (27) and then Arg_Dscr.Is_Set (42))
+    or else (Arg_Dscr.Is_Set (27) and then Arg_Dscr.Is_Set (38)) then
+      Error ("-P (full-path), -p (--path) and -b (--basename) are mutually "
+           & " exclusive");
+    end if;
+    if Arg_Dscr.Is_Set (42) then
+      Put_Path := Output.Full;
+    elsif Arg_Dscr.Is_Set (38) then
+      Put_Path := Output.Never;
+    elsif Merge_Lists or else Arg_Dscr.Is_Set (27) then
+      Put_Path := Output.Always;
+    else
+      Put_Path := Output.Default;
+    end if;
+
+    -- Set output style
+    Output.Set_Style (Sort_Kind, Sort_Reverse, Format_Kind, Put_Path,
+                      Classify, Date_Iso, Quiet, Separator);
   end;
 
   -- Depth

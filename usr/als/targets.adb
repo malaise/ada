@@ -76,7 +76,7 @@ package body Targets is
               Output.Put_Dir (Dir);
             end if;
             Found := True;
-            Output.Put (Entries, True);
+            Output.Put (Entries, True, True);
             Need_New_Line := Put_Name /= Trilean.False;
             Entries.Delete_List;
           end if;
@@ -146,21 +146,21 @@ package body Targets is
       if not Merge then
         if not Entries.Is_Empty then
           Found := True;
-          Output.Put (Entries, True);
+          Output.Put (Entries, False, True);
           Need_New_Line := True;
           Entries.Delete_List;
         end if;
       end if;
     end if;
 
-    -- If no arg at all, then process "."
+    -- If no arg at all, then process ""
     if Args.Get_First_Pos_After_Keys = 0
     or else Argument.Get_Parameter (
           Occurence => Args.Get_First_Pos_After_Keys) = "" then
-      Debug.Log ("Doing dir .");
+      Debug.Log ("Doing current dir");
       -- No dir name if explicit dir_name=Always
       Found := Found or --## rule line off Andor_Boolean
-               Do_Dir (".", (if Put_Dir_Names = Trilean.True then Trilean.True
+               Do_Dir ("", (if Put_Dir_Names = Trilean.True then Trilean.True
                              else Trilean.False),
                             1, True);
     end if;
@@ -196,7 +196,7 @@ package body Targets is
 
     -- Put complete result if merge
     if Merge then
-      Output.Put (Entries, False);
+      Output.Put (Entries, False, False);
       Entries.Delete_List;
     end if;
     return Found;
