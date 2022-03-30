@@ -1,6 +1,6 @@
 Als
 ===
-V22.0
+V22.2
 
 Als lists files, directory contents... It supports several powerful options
 for the selection of entries, for the output format of each entry, and general
@@ -155,8 +155,8 @@ that:
 This mode shows all (and only) the matching entries, one per row. For example,
 when combined with the recursive mode, it does not show the directory names
 as specific entries. +
-By default it shows the full relative path of each entry (implicit -p), except
-if the "-b" or '-P' option is is provided.
+By default it shows the full relative path of each entry when needed (implicit
+-p), except if the "-b" or '-P' option is provided.
 
 Criteria
 ~~~~~~~~
