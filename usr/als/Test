@@ -90,12 +90,20 @@ cmp res exp > /dev/null 2>&1
 if [ $? -ne 0 ] ; then
   error "als Test result res differs from exp"
 fi
+
 echo "./Test" >exp
 launch ./Test >res
 cmp res exp > /dev/null 2>&1
 if [ $? -ne 0 ] ; then
   error "als Test result res differs from exp"
 fi
+
+launch ./Test | grep Test >res
+cmp res exp > /dev/null 2>&1
+if [ $? -ne 0 ] ; then
+  error "als Test result res differs from exp"
+fi
+
 echo "OK"
 
 # Find a broken link
