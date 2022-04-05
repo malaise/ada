@@ -1,5 +1,9 @@
 #!/bin/bash
+
 export ORIG=$PWD
+trap 'echo "Test cleaning"; cd $ORIG; ./Test clean; echo Test aborted; exit 0' \
+  SIGINT SIGTERM
+
 T0=`date "+%s"`
 for file in */Test ; do
   export dir=`dirname $file`

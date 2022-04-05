@@ -21,7 +21,7 @@ while [ $res -eq 0 ] ; do
     echo "Failed!"
     exit 1
   elif [ $ABORT -eq 1 ] ; then
-    echo "Aborted"
+    echo "Loop aborted"
     exit 0
   fi
   let n=$n+1
