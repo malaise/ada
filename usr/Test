@@ -1,20 +1,24 @@
 #!/bin/bash
 
 export ORIG=$PWD
-trap 'echo "Test cleaning"; cd $ORIG; ./Test clean; echo Test aborted; exit 0' \
-  SIGINT SIGTERM
+trap 'echo "Test cleaning"; cd $ORIG; ./Test clean; \
+      echo Test aborted; exit 0' SIGINT SIGTERM
 
 T0=`date "+%s"`
 for file in */Test ; do
   export dir=`dirname $file`
-  echo "`basename $dir`:"
+  if [ "$1" != "clean" ] ; then
+    echo "`basename $dir`:"
+  fi
   cd "$dir"
   ./Test $*
   if [ "$?" -ne 0 ] ; then
     echo "ERROR."
     exit 1
   fi
-  echo ""
+  if [ "$1" != "clean" ] ; then
+    echo ""
+  fi
   cd $ORIG
 done
 T1=`date "+%s"`
