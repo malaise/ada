@@ -55,9 +55,11 @@ output "Adding two triggers"
 echo -e "Teta\nTete\n${TRIGGER} 3\nTeti\n" >> $INPUT
 echo -e "Tita\nTite\n${TRIGGER} 4\nTiti\n" >> $INPUT
 sleep $TIMEOUT
-output "Adding a trigger"
 # This one will be filtered out by the latency
+output "Adding a trigger"
 echo -e "${TRIGGER} 4\n" >> $INPUT
+sleep $TIMEOUT
+output "Adding a trigger"
 echo -e "Tota\nTote\n${TRIGGER} 5\nToti\n" >> $INPUT
 sleep $TIMEOUT
 
@@ -71,7 +73,7 @@ Got ${TRIGGER} 1
 Got ${TRIGGER} 2
 Got ${TRIGGER} 3
 ${TRIGGER} 4
-${TRIGGER} 5
+Got ${TRIGGER} 5
 EOF
 cmp $OUTPUT $EXPECTED 2>/dev/null
 res=$? 
