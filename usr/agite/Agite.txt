@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V39.14
+V39.15
 
 General purpose
 ---------------
@@ -129,7 +129,7 @@ period::
 Agite refreshes the current status of files in the xref:XDir[directory] menu
 when it starts the xref:XEdit[editor] and when the editor exits.
 This is because the edition can modify the current status of local files. Still,
-it is also possible that a stand-alone program modifes the status of
+it is also possible that a stand-alone program modifies the status of
 local files. This is why Agite periodically checks and redisplays the status of
 local files in the xref:XDir[directory] and in the xref:XCommit[commit]
 menus. This parameter defines the period in seconds of this automatic check.
