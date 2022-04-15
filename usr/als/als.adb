@@ -1,7 +1,7 @@
 with As.U, Basic_Proc, Argument, Argument_Parser, Str_Util, Trilean;
 with Entities, Output, Targets, Lister, Exit_Code;
 procedure Als is
-  Version : constant String  := "V22.2";
+  Version : constant String  := "V22.3";
 
   -- The keys and descriptor of parsed keys
   Nkc : constant Character := Argument_Parser.No_Key_Char;
@@ -96,7 +96,7 @@ procedure Als is
     Put_Line_Error ("    <date_spec> ::= " & Argument_Parser.Image(Keys(11)));
     Put_Line_Error ("    <date_comp> ::= eq | lt | le | gt | ge");
     Put_Line_Error ("    <date>      ::= yyyy-mm-ddThh:mm:ss | yyyy-mm-dd | Thh:mm:ss");
-    Put_Line_Error ("                  | <positive><duration>");
+    Put_Line_Error ("                  | <positive_duration>");
     Put_Line_Error ("    <duration>  ::= Y | M | D | h | m | s");
     Put_Line_Error ("                     // Keep files that match the date specification");
     Put_Line_Error ("                     //  (before, after or equal to a given date or delay)");

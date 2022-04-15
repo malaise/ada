@@ -1,6 +1,6 @@
 Als
 ===
-V22.2
+V22.3
 
 Als lists files, directory contents... It supports several powerful options
 for the selection of entries, for the output format of each entry, and general
@@ -66,7 +66,7 @@ Specify which entry to select
     <date_spec> ::= -d <date_comp><date> | --date=<date_comp><date>
     <date_comp> ::= eq | lt | le | gt | ge
     <date>      ::= yyyy-mm-ddThh:mm:ss | yyyy-mm-dd | Thh:mm:ss
-                  | <positive><duration>
+                  | <positive_duration>
     <duration>  ::= Y | M | D | h | m | s
                              Keep files that match the date specification
                               (before, after or equal to a given date or delay)
@@ -230,6 +230,25 @@ corresponding access right
 So the default mode (no criteria) corresponds to: '--access=\***', the list of
 read-only items is specified with '--access=r--' and the list of readable and
 executable items is specified with '--access=r*x'.
+
+Date criteria
+~~~~~~~~~~~~~
+These criteria allow selecting the entries based on the modification time.
+
+.One date
+When one criteria is set, it defines a comparison operator and a date or a
+duration. +
+The date specifies the year, month... minutes and seconds. A partial date
+without time stands for 00:00:00, and a partial date with only a time stands for
+the current day.
+
+.Two dates
+Two creteria can be combined (one being 'less' and the other 'greater') in
+order to select files within a given time slice.
+
+.Newer
+The 'newer' criteria can be used as a shortcut for "'date ge'". It cannot be
+combined with a second date criteria ('lt' or 'le').
 
 Symbolic links
 ~~~~~~~~~~~~~~
