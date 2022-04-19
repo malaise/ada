@@ -61,12 +61,12 @@ begin
       Date.Microsecs := 0;
     end if;
     Crit.Date := Date_Text.Pack (Date);
-  elsif Lstr'Length = 11 and then Lstr(3) = 'T'
-  and then Lstr(6) = ':' and then Lstr(9) = ':' then
+  elsif Lstr'Length = 10
+  and then Lstr(5) = ':' and then Lstr(8) = ':' then
     -- Get current day
     Date := Date_Text.Split (Ada.Calendar.Clock);
-    -- Thh:mm:ss
-    Time := Date_Text.Scan (Lstr(3 .. 11), "T%H:%M:%S");
+    -- hh:mm:ss
+    Time := Date_Text.Scan (Lstr(3 .. 10), "%H:%M:%S");
     if Crit.Oper = Entities.Less_Or_Equal
     or else Crit.Oper = Entities.Greater_Than then
       Time.Millisecs := 999;

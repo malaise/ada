@@ -1,6 +1,6 @@
 Als
 ===
-V22.3
+V23.0
 
 Als lists files, directory contents... It supports several powerful options
 for the selection of entries, for the output format of each entry, and general
@@ -247,7 +247,7 @@ Two creteria can be combined (one being 'less' and the other 'greater') in
 order to select files within a given time slice.
 
 .Newer
-The 'newer' criteria can be used as a shortcut for "'date ge'". It cannot be
+The 'newer' criteria can be used as a shortcut for "'date ge'". It can be
 combined with a second date criteria ('lt' or 'le').
 
 Symbolic links

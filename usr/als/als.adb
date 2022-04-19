@@ -1,7 +1,7 @@
 with As.U, Basic_Proc, Argument, Argument_Parser, Str_Util, Trilean;
 with Entities, Output, Targets, Lister, Exit_Code;
 procedure Als is
-  Version : constant String  := "V22.3";
+  Version : constant String  := "V23.0";
 
   -- The keys and descriptor of parsed keys
   Nkc : constant Character := Argument_Parser.No_Key_Char;
@@ -95,7 +95,7 @@ procedure Als is
     Put_Line_Error ("  <date_spec> [ <date_spec> ]");
     Put_Line_Error ("    <date_spec> ::= " & Argument_Parser.Image(Keys(11)));
     Put_Line_Error ("    <date_comp> ::= eq | lt | le | gt | ge");
-    Put_Line_Error ("    <date>      ::= yyyy-mm-ddThh:mm:ss | yyyy-mm-dd | Thh:mm:ss");
+    Put_Line_Error ("    <date>      ::= yyyy-mm-ddThh:mm:ss | yyyy-mm-dd | hh:mm:ss");
     Put_Line_Error ("                  | <positive_duration>");
     Put_Line_Error ("    <duration>  ::= Y | M | D | h | m | s");
     Put_Line_Error ("                     // Keep files that match the date specification");
@@ -160,7 +160,7 @@ procedure Als is
   Sort_By_Len : Boolean;
   No_Sorting : Boolean;
   Merge_Lists : Boolean;
-  Date1, Date2 : Entities.Date_Spec_Rec;
+  Dates : array (1 .. 2) of Entities.Date_Spec_Rec;
   Separator : As.U.Asu_Us;
   Put_Total : Boolean;
   Classify : Boolean;
@@ -300,38 +300,42 @@ begin
     Error ("-n (--no_sort) is exclusive with other sorting options");
   end if;
 
-  -- Check dates
-  if Arg_Dscr.Is_Set (11) and then Arg_Dscr.Is_Set (22) then
-    Error ("-d (--date) and -n (--new) are mutially exclusive");
-  end if;
-  if Arg_Dscr.Get_Nb_Occurences (11) > 2 then
+  -- Check dates, 2 max including "newer"
+  if Arg_Dscr.Get_Nb_Occurences (11) > 2
+  or else (Arg_Dscr.Get_Nb_Occurences (11) = 2
+           and then Arg_Dscr.Is_Set (22)) then
     Error ("At most two dates can be specified");
-  elsif Arg_Dscr.Get_Nb_Occurences (11) /= 0 then
-    Date1 := Parse_Date (Arg_Dscr.Get_Option(11, 1));
-    if Arg_Dscr.Get_Nb_Occurences (11) = 2 then
-      Date2 := Parse_Date (Arg_Dscr.Get_Option(11, 2));
-    else
-      Date2.Oper := Entities.None;
-    end if;
   end if;
-  if Arg_Dscr.Get_Nb_Occurences (11) = 2 then
-    if Date1.Oper = Entities.Equal or else Date2.Oper = Entities.Equal then
-      Error ("With two dates, none can be ""eq""");
+  -- Parse dates (including "newer")
+  declare
+    Next_Date : Positive := Dates'First;
+  begin
+    if Arg_Dscr.Is_Set (22) then
+      Dates(Next_Date) := Parse_Date ("ge" & Arg_Dscr.Get_Option(22, 1));
+      Next_Date := Next_Date + 1;
     end if;
-    if (Date1.Oper in Entities.Less_Oper_List
-           and then Date2.Oper in Entities.Less_Oper_List)
-    or else (Date1.Oper in Entities.Greater_Oper_List
-             and then Date2.Oper in Entities.Greater_Oper_List) then
-      Error ("With two dates, one must be ""lt"" or ""le"" "
-             & "and the other ""gt or ""ge""");
+    if Arg_Dscr.Get_Nb_Occurences (11) /= 0 then
+      Dates(Next_Date) := Parse_Date (Arg_Dscr.Get_Option(11, 1));
+      Next_Date := Next_Date + 1;
+      if Arg_Dscr.Get_Nb_Occurences (11) = 2 then
+        Dates(Next_Date) := Parse_Date (Arg_Dscr.Get_Option(11, 2));
+        Next_Date := Next_Date + 1;
+      end if;
     end if;
-  end if;
-
-  -- Parse option newer
-  if Arg_Dscr.Get_Nb_Occurences (22) /= 0 then
-    Date1 := Parse_Date ("ge" & Arg_Dscr.Get_Option(22, 1));
-    Date2.Oper := Entities.None;
-  end if;
+    if Next_Date > Dates'Last then
+      if Dates(1).Oper = Entities.Equal
+      or else Dates(2).Oper = Entities.Equal then
+        Error ("With two dates, none can be ""eq""");
+      end if;
+      if (Dates(1).Oper in Entities.Less_Oper_List
+             and then Dates(2).Oper in Entities.Less_Oper_List)
+      or else (Dates(1).Oper in Entities.Greater_Oper_List
+               and then Dates(2).Oper in Entities.Greater_Oper_List) then
+        Error ("With two dates, one must be ""lt"" or ""le"" "
+               & "and the other ""gt or ""ge""");
+      end if;
+    end if;
+  end;
 
   -- Some other simple options
   if Arg_Dscr.Is_Set (14) then
@@ -508,7 +512,7 @@ begin
   Lister.Set_Criteria (List_Only_Dirs, List_Only_Files,
                        Access_Rights,
                        List_Only_Links, List_Only_Others,
-                       Follow_Links, Show_Targets, Date1, Date2, Utc);
+                       Follow_Links, Show_Targets, Dates(1), Dates(2), Utc);
   if Put_Total then
     Lister.Activate_Total;
   end if;

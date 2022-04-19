@@ -239,4 +239,21 @@ fi
 rm A B C
 echo "OK"
 
+# Dates
+export TMP=Tmp
+title "Between dates"
+sleep 2
+Date1=`date  +"%Y-%m-%dT%H:%M:%S"`
+touch $TMP
+sleep 1
+Date2=`date  +"%H:%M:%S"`
+sleep 0.5
+result=`launch -n "$Date1" -d lt"$Date2"`
+if [ "$result" != "$TMP" ] ; then
+  error "als -n $Date1 -d lt$Date2 has shown $result"
+fi
+rm $TMP
+echo "OK"
+
 clean
+
