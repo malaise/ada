@@ -248,9 +248,13 @@ touch $TMP
 sleep 1
 Date2=`date  +"%H:%M:%S"`
 sleep 0.5
-result=`launch -n "$Date1" -d lt"$Date2"`
-if [ "$result" != "$TMP" ] ; then
-  error "als -n $Date1 -d lt$Date2 has shown $result"
+result1=`launch -n "$Date1" -d lt"$Date2"`
+result2=`launch -n 3s -o 1s`
+if [ "$result1" != "$TMP" ] ; then
+  error "als -n $Date1 -d lt$Date2 has shown $result1"
+fi
+if [ "$result2" != "$TMP" ] ; then
+  error "als -n 3s -o 1s has shown $result2"
 fi
 rm $TMP
 echo "OK"

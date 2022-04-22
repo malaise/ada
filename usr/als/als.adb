@@ -1,7 +1,7 @@
 with As.U, Basic_Proc, Argument, Argument_Parser, Str_Util, Trilean;
 with Entities, Output, Targets, Lister, Exit_Code;
 procedure Als is
-  Version : constant String  := "V23.0";
+  Version : constant String  := "V24.0";
 
   -- The keys and descriptor of parsed keys
   Nkc : constant Character := Argument_Parser.No_Key_Char;
@@ -47,7 +47,8 @@ procedure Als is
    39 => (False, Nkc, As.U.Tus ("nodir"),        False),
    40 => (True,  Nkc, As.U.Tus ("access"),       False, True, As.U.Tus ("rights")),
    41 => (False, Nkc, As.U.Tus ("show-targets"), False),
-   42 => (False, 'P', As.U.Tus ("full-path"),    False) );
+   42 => (False, 'P', As.U.Tus ("full-path"),    False),
+   43 => (True,  'o', As.U.Tus ("older"),        False, True, As.U.Tus ("date")) );
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
 
   -- Usage
@@ -300,13 +301,17 @@ begin
     Error ("-n (--no_sort) is exclusive with other sorting options");
   end if;
 
-  -- Check dates, 2 max including "newer"
+  -- Check dates, 2 max including "newer" and "older"
   if Arg_Dscr.Get_Nb_Occurences (11) > 2
   or else (Arg_Dscr.Get_Nb_Occurences (11) = 2
-           and then Arg_Dscr.Is_Set (22)) then
+           and then (Arg_Dscr.Is_Set (22)
+                     or else Arg_Dscr.Is_Set (43)) )
+  or else (Arg_Dscr.Is_Set (11)
+           and then Arg_Dscr.Is_Set (22)
+           and then  Arg_Dscr.Is_Set (43) ) then
     Error ("At most two dates can be specified");
   end if;
-  -- Parse dates (including "newer")
+  -- Parse dates (including "newer" and "older")
   declare
     Next_Date : Positive := Dates'First;
   begin
@@ -314,7 +319,11 @@ begin
       Dates(Next_Date) := Parse_Date ("ge" & Arg_Dscr.Get_Option(22, 1));
       Next_Date := Next_Date + 1;
     end if;
-    if Arg_Dscr.Get_Nb_Occurences (11) /= 0 then
+    if Arg_Dscr.Is_Set (43) then
+      Dates(Next_Date) := Parse_Date ("lt" & Arg_Dscr.Get_Option(43, 1));
+      Next_Date := Next_Date + 1;
+    end if;
+    if Arg_Dscr.Is_Set (11) then
       Dates(Next_Date) := Parse_Date (Arg_Dscr.Get_Option(11, 1));
       Next_Date := Next_Date + 1;
       if Arg_Dscr.Get_Nb_Occurences (11) = 2 then

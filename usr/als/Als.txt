@@ -1,6 +1,6 @@
 Als
 ===
-V23.0
+V23.1
 
 Als lists files, directory contents... It supports several powerful options
 for the selection of entries, for the output format of each entry, and general
@@ -175,7 +175,8 @@ template starting by "\@", +
 
 Also beware that template matching function considers the character \'\' as an
 escape character, so "\x" in the template matches the character \'x' in the
-file, whatever \'x', including the character \'\'.
+file, whatever \'x', including the character \'\'. +
+{empty} +
 
 Examples:
 
@@ -235,20 +236,32 @@ Date criteria
 ~~~~~~~~~~~~~
 These criteria allow selecting the entries based on the modification time.
 
-.One date
+.One date or duration
 When one criteria is set, it defines a comparison operator and a date or a
-duration. +
-The date specifies the year, month... minutes and seconds. A partial date
-without time stands for 00:00:00, and a partial date with only a time stands for
-the current day.
+duration:
 
-.Two dates
-Two creteria can be combined (one being 'less' and the other 'greater') in
-order to select files within a given time slice.
+ * A full date and time at format yyyy-mm-ddThh:mm:ss (with the 'T' letter)
+specifies the year, month .. minutes and seconds.
+ * A partial date without time (yyyy-mm-dd) stands for 00:00:00
+ * A partial date with only a time (hh:mm:ss) stands for the current day
+ * A positive duration and a qualifier letter (Y, M, D, h, m or s) stands for
+"sometimes ago".
 
-.Newer
-The 'newer' criteria can be used as a shortcut for "'date ge'". It can be
-combined with a second date criteria ('lt' or 'le').
+.Newer and older
+The 'newer' criteria can be used as a shortcut for "'date ge'", and the
+'older' criteria can be used as a shortcut for "'date lt'". +
+
+.Two dates or durations
+Two creteria can be combined (one being be 'le' or 'lt' and the other being
+'ge' or 'gt') in order to select files within a given time slice. +
+{empty} +
+
+Examples:
+
+  -n 2h -o 1D                  // Files modified between 2 and 1 hour ago
+  -n 2022/04/01 -o 2022/04/02  // Files modifed the 1st of April
+  -d gt2022-03-25T10:21:03     // Files modified after a given date and time
+  -d ge1h                      // Files modified during last hour
 
 Symbolic links
 ~~~~~~~~~~~~~~
