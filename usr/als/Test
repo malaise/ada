@@ -6,7 +6,7 @@ export PID=$$
 
 export T_ALS=t_als
 function clean {
-  rm -f BrokenLink exp res err NewFile tmp/$T_ALS tmp A B C 
+  rm -f BrokenLink exp res err NewFile tmp/$T_ALS tmp A B C Tmp
 }
 trap 'echo ""; clean; exit 1' SIGINT SIGTERM
 
