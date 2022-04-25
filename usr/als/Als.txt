@@ -1,6 +1,6 @@
 Als
 ===
-V23.1
+V24.1
 
 Als lists files, directory contents... It supports several powerful options
 for the selection of entries, for the output format of each entry, and general
@@ -289,6 +289,6 @@ target that is shown is the one on which the reading error occured.
 
 Als exit codes
 --------------
-Als exits with 0 if a file or dir has been shown, with 1 otherwise and with 2
+Als exits with 0 if a file or a dir has been shown, with 1 otherwise, and with 2
 on error.
 
