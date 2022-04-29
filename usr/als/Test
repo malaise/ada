@@ -5,8 +5,10 @@ export NE=0
 export PID=$$
 
 export T_ALS=t_als
+export TMP=Tmp
 function clean {
-  rm -f BrokenLink exp res err NewFile tmp/$T_ALS tmp A B C Tmp
+  rm -f BrokenLink exp res err NewFile tmp/$T_ALS tmp A B C
+  rm -rf $TMP
 }
 trap 'echo ""; clean; exit 1' SIGINT SIGTERM
 
@@ -32,7 +34,7 @@ function launch {
     error "als $* has failed"
   fi
 }
-  
+
 # Compare ls and als -F + -D + -L + -O nb of entries
 function do_dir {
   title "In $1, ls v.s. als -FDLO"
@@ -227,7 +229,7 @@ echo "OK"
 title "Show targets"
 ln -s als A
 ln -s A B
-ln -s B C 
+ln -s B C
 result=`launch -l C | awk '{print $9}'`
 if [ "$result" != "B" ] ; then
   error "als has not shown direct link"
@@ -241,7 +243,6 @@ echo "OK"
 
 # Broken links in subdir
 title "Broken links"
-export TMP=Tmp
 mkdir $TMP
 cd $TMP
 touch Dst
@@ -256,7 +257,6 @@ rm -rf $TMP
 echo "OK"
 
 # Dates
-export TMP=Tmp
 title "Between dates"
 sleep 2
 Date1=`date  +"%Y-%m-%dT%H:%M:%S"`
