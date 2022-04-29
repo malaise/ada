@@ -263,12 +263,13 @@ package body Directory is
     Orig, Src, Dest, Curr_Dir : As.U.Asu_Us;
     Iter : Positive;
     Threshold : constant := 1024;
+    Has_Path : constant Boolean := Str_Util.Locate (File_Name, Sep_Str) /= 0;
     use type As.U.Asu_Us, Sys_Calls.File_Kind_List;
 
     -- Expand as soon as a path
     procedure Expand (File : in out As.U.Asu_Us) is
     begin
-      if Str_Util.Locate (File.Image, Sep_Str) /= 0 then
+      if Has_Path or else Str_Util.Locate (File.Image, Sep_Str) /= 0 then
         if File.Element (1) /= Sep_Char then
           -- Target contains a relative path
           --  => Append current dirname
@@ -371,7 +372,7 @@ package body Directory is
   end Read_Link;
 
   function Scan_Link (File_Name : in String;
-                       Target : out As.U.Asu_Us) return Link_Result is
+                      Target : out As.U.Asu_Us) return Link_Result is
   begin
     return Result : Link_Result do
       Scan_Link (File_Name, True, Target, Result);
