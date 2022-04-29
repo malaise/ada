@@ -249,8 +249,10 @@ touch Dst
 ln -s Dst Lnk
 ln -s NoDst Broken
 cd ..
-result=`launch -RB | tail -1`
-if [ "$result" != "Broken" ] ; then
+echo -en "$TMP:\nBroken\n" >exp
+launch -RB >res
+cmp res exp > /dev/null 2>&1
+if [ $? -ne 0 ] ; then
   error "als -RB has not shown broken link"
 fi
 rm -rf $TMP
