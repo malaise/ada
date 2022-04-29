@@ -254,7 +254,7 @@ package body Lister is
     end if;
     if Result = Directory.Link_Ok or else Result = Directory.Link_Recursive then
       -- Target is valid
-      Stat := Sys_Calls.File_Stat (Ent.Link.Image);
+      Stat := Sys_Calls.File_Stat (Link_Target.Image);
     else
       -- Defaults
       Stat := (Kind => Sys_Calls.Unknown, Rights => 0, Size => 0,

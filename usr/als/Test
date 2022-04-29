@@ -239,6 +239,22 @@ fi
 rm A B C
 echo "OK"
 
+# Broken links in subdir
+title "Broken links"
+export TMP=Tmp
+mkdir $TMP
+cd $TMP
+touch Dst
+ln -s Dst Lnk
+ln -s NoDst Broken
+cd ..
+result=`launch -RB | tail -1`
+if [ "$result" != "Broken" ] ; then
+  error "als -RB has not shown broken link"
+fi
+rm -rf $TMP
+echo "OK"
+
 # Dates
 export TMP=Tmp
 title "Between dates"
