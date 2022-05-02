@@ -318,8 +318,6 @@ begin
           Screen.Put_Color (Propal => Available_Propal,
                             Level  => Available_Level,
                             Color  => History(Curr_Status).Color_No);
-          Screen.Put_Selected_Color (Color => History(Curr_Status).Color_No,
-                                     Selected => False);
           Update_Try (Available_Propal);
           Color_Move := False;
           -- First move from Colors to Propal starts the chrono
@@ -330,19 +328,18 @@ begin
         end if;
       elsif History(Release_Orig).Selection_Kind = Screen.Color then
         -- Selecting another color or unselecting the color
-        Screen.Put_Selected_Color (Color => History(Release_Orig).Color_No,
-                                   Selected => False);
         Color_Move := History(Curr_Status).Color_No
                     /= History(Release_Orig).Color_No;
         if Color_Move then
           -- In fact, we are setting a new origin
+          -- Unselecting the origin has erased part of the new selection if
+          --  the colors are adjacent
+          Screen.Put_Selected_Color (Color => History(Curr_Status).Color_No,
+                                     Selected => True);
           History(Release_Orig) := History(Curr_Status);
          end if;
       else
         -- Selecting a color instead of a propal
-        Screen.Put_Default_Pos (History(Release_Orig).Propal_No,
-                                History(Release_Orig).Column_No,
-                                Show => False);
         History(Release_Orig) := History(Curr_Status);
         Color_Move := True;
       end if;
@@ -355,8 +352,6 @@ begin
       elsif History(Release_Orig).Selection_Kind = Screen.Color then
         if Common.Is_Answered (History(Curr_Status).Propal_No) then
           -- Selecting an anwsered propal instead of a color
-          Screen.Put_Selected_Color (Color => History(Release_Orig).Color_No,
-                                     Selected => False);
           History(Release_Orig) := History(Curr_Status);
           Color_Move := True;
         else
