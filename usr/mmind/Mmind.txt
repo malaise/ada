@@ -116,9 +116,14 @@ Filling a proposal
 In order to fill a proposal you can:
 
 .Pick a color, from either:
-- The colors area. Select a color here, then select a cell in an available (not
-answered) proposal. The selected color will be copied into the destination
-cell, overwriting its content if any.
+- The colors area.
+
+* Select a color here, then select a cell in an available (not answered)
+proposal. The selected color will be copied into the destination cell,
+overwriting its content if any.
+
+* Double click on a color here. The color will be copied into the first
+available cell (scanning from bottom left to top right).
 
 - An answered proposal. Like from the colors area, the color will be copied
 into the target cell.

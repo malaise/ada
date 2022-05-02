@@ -86,8 +86,8 @@ procedure Treat_Release (Go_On, Exit_Game, Color_Move : out Boolean) is
   -- Find an available (firt empty) propal to copy current
   No_Propal : constant Common.Full_Propal_Range
             := Common.Full_Propal_Range'First;
-  Available : Common.Full_Propal_Range;
-  procedure Find_Available is
+  Available_Propal : Common.Full_Propal_Range;
+  procedure Find_Available_Propal is
     Empty : constant Common.Propal_State_Rec (Level)
           := (Level => Level, others => <>);
     use type Common.Propal_State_Rec;
@@ -95,12 +95,37 @@ procedure Treat_Release (Go_On, Exit_Game, Color_Move : out Boolean) is
     for I in Common.Propal_Range loop
       -- State is Not_Set and no colors are set
       if Common.Get_Propal_State (I) = Empty then
-        Available := I;
+        Available_Propal := I;
         return;
       end if;
     end loop;
-    Available := No_Propal;
-  end Find_Available;
+    Available_Propal := No_Propal;
+  end Find_Available_Propal;
+
+  -- Find an available (first empty) cell to copy current color
+  No_Level : constant Common.Full_Level_Range := Common.Full_Level_Range'First;
+  Available_Level : Common.Full_Level_Range;
+  procedure Find_Available_Cell is
+    use type Common.Color_Range;
+  begin
+    for I in Common.Propal_Range loop
+      declare
+        Propal : constant Common.Propal_State_Rec (Level)
+               := Common.Get_Propal_State (I);
+      begin
+        -- Fins an ampty cell
+        for J in Common.Level_Range range Common.Level_Range'First .. Level loop
+          if Propal.Propal_Color(J) = Common.No_Color then
+            Available_Propal := I;
+            Available_Level := J;
+            return;
+          end if;
+        end loop;
+      end;
+    end loop;
+    Available_Propal := No_Propal;
+    Available_Level := No_Level;
+  end Find_Available_Cell;
 
   Propal : Common.Propal_State_Rec(Level);
   Valid : Boolean;
@@ -245,14 +270,14 @@ begin
         if Common.Get_Propal_State (History(Curr_Status).Try_No).Try
             = Common.Answered then
           -- Current is answered, we can copy it
-          Find_Available;
-          if Available /= No_Propal then
+          Find_Available_Propal;
+          if Available_Propal /= No_Propal then
             -- Copy previous propal
             Propal := Common.Get_Propal_State (History(Curr_Status).Try_No);
             Propal.Try := Common.Not_Set;
-            Common.Set_Propal_State (Available, Propal);
-            Screen.Put_Try (Available, Screen.Cannot_Try, False);
-            History(Curr_Status).Try_No := Available;
+            Common.Set_Propal_State (Available_Propal, Propal);
+            Screen.Put_Try (Available_Propal, Screen.Cannot_Try, False);
+            History(Curr_Status).Try_No := Available_Propal;
           end if;
         else
           -- Clear current propal
@@ -276,11 +301,33 @@ begin
       Color_Move := False;
 
     when Screen.Color =>
-      -- Move color if origin or if a different color
+      -- Move color if origin or if a different color or double click
       --  otherwise it is a unselect
       Go_On := True;
       if Curr_Status = Release_Orig then
+        -- Selecting a origin color in the colors
         Color_Move := True;
+      elsif Double_Click then
+        -- Move color into first available cell (if any)
+        Find_Available_Cell;
+        if Available_Propal /= No_Propal then
+          -- Moving from colors to propal
+          Common.Set_Color (Propal => Available_Propal,
+                            Level  => Available_Level,
+                            Color  => History(Curr_Status).Color_No);
+          Screen.Put_Color (Propal => Available_Propal,
+                            Level  => Available_Level,
+                            Color  => History(Curr_Status).Color_No);
+          Screen.Put_Selected_Color (Color => History(Curr_Status).Color_No,
+                                     Selected => False);
+          Update_Try (Available_Propal);
+          Color_Move := False;
+          -- First move from Colors to Propal starts the chrono
+          if not Moved then
+            Clock.Start;
+            Moved := True;
+          end if;
+        end if;
       elsif History(Release_Orig).Selection_Kind = Screen.Color then
         -- Selecting another color or unselecting the color
         Screen.Put_Selected_Color (Color => History(Release_Orig).Color_No,
@@ -313,19 +360,19 @@ begin
           History(Release_Orig) := History(Curr_Status);
           Color_Move := True;
         else
-          -- Moving from color to propoal
+          -- Moving from colors to propal
           Common.Set_Color (Propal => History(Curr_Status).Propal_No,
                             Level  => History(Curr_Status).Column_No,
                             Color  => History(Release_Orig).Color_No);
-          Screen.Put_Color(Propal => History(Curr_Status).Propal_No,
-                           Level  => History(Curr_Status).Column_No,
-                           Color  => History(Release_Orig).Color_No);
+          Screen.Put_Color (Propal => History(Curr_Status).Propal_No,
+                            Level  => History(Curr_Status).Column_No,
+                            Color  => History(Release_Orig).Color_No);
           Screen.Put_Default_Pos (History(Curr_Status).Propal_No,
                                   History(Curr_Status).Column_No,
                                   Show => False);
           Update_Try (History(Curr_Status).Propal_No);
           Color_Move := False;
-          -- First move from Colors to Propal starts the chrono
+          -- First move from colors to propal starts the chrono
           if not Moved then
             Clock.Start;
             Moved := True;
@@ -354,9 +401,9 @@ begin
               Common.Set_Color (History(Curr_Status).Propal_No,
                                 History(Curr_Status).Column_No,
                                 Common.No_Color);
-              Screen.Put_Color(History(Curr_Status).Propal_No,
-                               History(Curr_Status).Column_No,
-                               Common.No_Color);
+              Screen.Put_Color (History(Curr_Status).Propal_No,
+                                History(Curr_Status).Column_No,
+                                Common.No_Color);
               Update_Try (History(Curr_Status).Propal_No);
             end if;
             Color_Move := False;
@@ -379,9 +426,9 @@ begin
               Common.Set_Color (History(Release_Orig).Propal_No,
                                 History(Release_Orig).Column_No,
                                 Common.No_Color);
-              Screen.Put_Color(History(Release_Orig).Propal_No,
-                               History(Release_Orig).Column_No,
-                               Common.No_Color);
+              Screen.Put_Color (History(Release_Orig).Propal_No,
+                                History(Release_Orig).Column_No,
+                                Common.No_Color);
               Update_Try (History(Release_Orig).Propal_No);
             end if;
             Screen.Put_Default_Pos (History(Curr_Status).Propal_No,

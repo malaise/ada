@@ -10,7 +10,7 @@ package Common is
   Max_Number_Propal : constant Propal_Range := Propal_Range'Last;
 
   -- Minimum and maximum level
-  type Full_Level_Range is new Natural range 1 .. 5;
+  type Full_Level_Range is new Natural range 0 .. 5;
   subtype Level_Range is Full_Level_Range range 1 .. Full_Level_Range'Last;
   subtype Last_Level_Range is Level_Range range 3 .. Level_Range'Last;
   Min_Level : constant Last_Level_Range := Last_Level_Range'First;
