@@ -308,10 +308,10 @@ begin
         -- Selecting a origin color in the colors
         Color_Move := True;
       elsif Double_Click then
-        -- Move color into first available cell (if any)
+        -- Copy color into first available cell (if any)
         Find_Available_Cell;
         if Available_Propal /= No_Propal then
-          -- Moving from colors to propal
+          -- Copying from colors to propal
           Common.Set_Color (Propal => Available_Propal,
                             Level  => Available_Level,
                             Color  => History(Curr_Status).Color_No);
@@ -320,7 +320,7 @@ begin
                             Color  => History(Curr_Status).Color_No);
           Update_Try (Available_Propal);
           Color_Move := False;
-          -- First move from Colors to Propal starts the chrono
+          -- First copy from Colors to Propal starts the chrono
           if not Moved then
             Clock.Start;
             Moved := True;
@@ -355,7 +355,7 @@ begin
           History(Release_Orig) := History(Curr_Status);
           Color_Move := True;
         else
-          -- Moving from colors to propal
+          -- Copying from colors to propal
           Common.Set_Color (Propal => History(Curr_Status).Propal_No,
                             Level  => History(Curr_Status).Column_No,
                             Color  => History(Release_Orig).Color_No);
@@ -374,7 +374,7 @@ begin
           end if;
         end if;
       else
-        -- Moving color within propal
+        -- Moving or copying color within propal
         declare
           -- Move what, where
           Orig_State : constant Common.Propal_State_Rec
@@ -390,16 +390,30 @@ begin
             Screen.Put_Default_Pos (History(Curr_Status).Propal_No,
                                     History(Curr_Status).Column_No,
                                     Show => False);
-            if not Common.Is_Answered (History(Curr_Status).Propal_No)
-            and then Double_Click then
-              -- Clear pin
-              Common.Set_Color (History(Curr_Status).Propal_No,
-                                History(Curr_Status).Column_No,
-                                Common.No_Color);
-              Screen.Put_Color (History(Curr_Status).Propal_No,
-                                History(Curr_Status).Column_No,
-                                Common.No_Color);
-              Update_Try (History(Curr_Status).Propal_No);
+            if Double_Click then
+              if Common.Is_Answered (History(Curr_Status).Propal_No) then
+                -- Copy color into first available cell (if any)
+                Find_Available_Cell;
+                if Available_Propal /= No_Propal then
+                  -- Copying from colors to propal
+                  Common.Set_Color (Propal => Available_Propal,
+                                    Level  => Available_Level,
+                                    Color  => Moved_Color);
+                  Screen.Put_Color (Propal => Available_Propal,
+                                    Level  => Available_Level,
+                                    Color  => Moved_Color);
+                  Update_Try (Available_Propal);
+                end if;
+              else
+                -- Clear pin
+                Common.Set_Color (History(Curr_Status).Propal_No,
+                                  History(Curr_Status).Column_No,
+                                  Common.No_Color);
+                Screen.Put_Color (History(Curr_Status).Propal_No,
+                                  History(Curr_Status).Column_No,
+                                  Common.No_Color);
+                Update_Try (History(Curr_Status).Propal_No);
+              end if;
             end if;
             Color_Move := False;
           elsif Common.Is_Answered (History(Curr_Status).Propal_No) then
