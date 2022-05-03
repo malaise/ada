@@ -1,8 +1,8 @@
 -- Master mind (graphic or text mode)
 with Basic_Proc, Argument, Argument_Parser, As.U, Images, Rnd;
 with Common, Action, Mmind_Asc, Screen, Response;
-
 procedure Mmind is
+  Version : constant String := "V1.0";
   -- Options
   Text_Mode : Boolean;
   Default_Level : constant Common.Last_Level_Range
@@ -49,7 +49,8 @@ procedure Mmind is
    02 => (True,  'l', As.U.Tus ("level"), False, True, As.U.Tus ("level")),
    03 => (True,  'c', As.U.Tus ("code"),  False, True, As.U.Tus ("code")),
    04 => (False, 's', As.U.Tus ("show"),  False),
-   05 => (False, 'h', As.U.Tus ("help"),  False) );
+   05 => (False, 'h', As.U.Tus ("help"),  False),
+   06 => (False, 'v', As.U.Tus ("version"),  False) );
    Arg_Dscr : Argument_Parser.Parsed_Dscr;
 
   use type Common.Full_Level_Range;
@@ -64,6 +65,12 @@ begin
   -- Help
   if Arg_Dscr.Is_Set (05) then
     Put_Help;
+    return;
+  end if;
+
+  -- Version
+  if Arg_Dscr.Is_Set (06) then
+    Basic_Proc.Put_Line_Output ("Version: " & Version);
     return;
   end if;
 

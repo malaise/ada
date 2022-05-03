@@ -1,5 +1,6 @@
 Master Mind
 ===========
+V1.0
 
 This is the classic "Master Mind" game, where the goal is to guess a secret
 combination of colors, by successive tries and answers.
