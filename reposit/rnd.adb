@@ -45,7 +45,7 @@ package body Rnd is
     use type K_Rand.Natural_Val;
 
   begin
-    -- 0 <= init <= 1 : Ok, otherwise random
+    -- 0 <= init < 1 : Ok, otherwise random
     F := (if 0.0 <= Init and then Init < 1.0 then Init else Init_Rnd);
 
     Dummy_Ok := Agen.Lock.Get (-1.0);

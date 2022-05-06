@@ -45,7 +45,7 @@ package body Moon is
     Last_Index : Point_Range := Point_Range'Last - 1;
 
   begin
-    -- Check if Hard_Level (-h or --hard argument)
+    -- Check if Hard_Level (-H or --hard argument)
     Hard_Level := False;
     if Argument.Is_Set (1, "H")
     and then Argument.Get_Parameter (1, "H") = "" then
