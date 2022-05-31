@@ -31,9 +31,6 @@ package body Substit is
   Nb_Pattern : Search_Pattern.Ll_Positive;
   Is_Iterative : Boolean;
 
-  -- Line or block separator
-  Delimiter : As.U.Asu_Us;
-
   -- Current line number
   Line_No : Arbitrary.Number;
   function Line_Image (A : Arbitrary.Number)
@@ -369,7 +366,6 @@ package body Substit is
 
   function Do_One_File (File_Name      : String;
                         Tmp_Dir        : String;
-                        Delimiter      : String;
                         Match_Range    : String;
                         Backup         : Boolean;
                         Verbose        : Boolean;
@@ -394,7 +390,6 @@ package body Substit is
     -- Init buffer of lines
     Line_List.Delete_List;
     Trail_Line_Feed := False;
-    Substit.Delimiter := As.U.Tus (Delimiter);
     -- Init substitution by reading Nb_Pattern lines and Newlines
     -- Loop on substit
     Done_File := False;

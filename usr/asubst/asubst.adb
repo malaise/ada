@@ -4,7 +4,7 @@ with As.U.Utils, Environ, Argument, Argument_Parser, Basic_Proc, Language,
 with Search_Pattern, Replace_Pattern, Substit, File_Mng, Log;
 procedure Asubst is
 
-  Version : constant String  := "V19.4";
+  Version : constant String  := "V19.5";
 
   -- Exit codes
   Ok_Exit_Code : constant Natural := 0;
@@ -281,7 +281,6 @@ procedure Asubst is
     Nb_Subst := Substit.Do_One_File (
                   File_Name      => File.Image,
                   Tmp_Dir        => Tmp_Dir.Image,
-                  Delimiter      => Delimiter.Image,
                   Match_Range    => Match_Range.Image,
                   Backup         => Bkp,
                   Verbose        => Verbosity = Verbose,
@@ -692,7 +691,6 @@ begin
         Nb_Subst := Substit.Do_One_File (
             File_Name      => Substit.Std_In_Out,
             Tmp_Dir        => Tmp_Dir.Image,
-            Delimiter      => Delimiter.Image,
             Match_Range    => Match_Range.Image,
             Backup         => False,
             Verbose        => False,

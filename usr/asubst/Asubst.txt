@@ -1,6 +1,6 @@
 Asubst
 ======
-V19.4
+V19.5
 
 Asubst is a command line tool that substitutes text within an input flow of
 text. It finds occurences of text that match a pattern (regular expression),

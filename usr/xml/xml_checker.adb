@@ -5,7 +5,7 @@ with As.U.Utils, Argument, Argument_Parser, Xml_Parser.Generator,
      Trace.Loggers, Mixed_Str, Long_Longs, Normalization;
 procedure Xml_Checker is
   -- Current version
-  Version : constant String := "V25.3";
+  Version : constant String := "V25.4";
 
   procedure Ae_Re (E : in Ada.Exceptions.Exception_Id;
                    M : in String := "")
@@ -211,13 +211,13 @@ procedure Xml_Checker is
   -------------------
   -- Dump xml tree --
   -------------------
-  procedure Dump_Line (Actx : in out Xml_Parser.Generator.Ctx_Type;
+  procedure Dump_Line (Actx : in Xml_Parser.Generator.Ctx_Type;
                        Node : in Xml_Parser.Node_Type) is
   begin
     Out_Flow.Put (Normal (Actx.Get_Line_No (Node), 8, True, '0'));
   end Dump_Line;
 
-  procedure Dump_Attributes (Actx : in out Xml_Parser.Generator.Ctx_Type;
+  procedure Dump_Attributes (Actx : in Xml_Parser.Generator.Ctx_Type;
                              Elt : in Xml_Parser.Element_Type) is
     Attrs : constant Xml_Parser.Attributes_Array := Actx.Get_Attributes (Elt);
   begin

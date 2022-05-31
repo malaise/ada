@@ -85,7 +85,7 @@ procedure Renardeau is
       for I in Bases'Range loop
         begin
           Bases(I) := Positive'Value(Argument.Get_Parameter (I));
-          if (Bases(I) < 1 or else Bases(I) > 9)
+          if Bases(I) > 9
           and then Bases(I) /= 10 and then Bases(I) /= 25
           and then Bases(I) /= 50 and then Bases(I) /= 75
           and then Bases(I) /= 100 then
