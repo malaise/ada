@@ -54,8 +54,7 @@ Window x_window;
     int i;
 
     if (setlocale (LC_ALL, "") == NULL) {
-        fprintf (stderr, "X_LINE : X cannot set locale.\n");
-        return (False);
+        fprintf (stderr, "X_LINE warning : X cannot set locale.\n");
     }
     if (!XSupportsLocale()) {
        fprintf (stderr, "X_LINE : X does not support locale %s.",
