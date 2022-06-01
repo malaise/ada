@@ -54,11 +54,11 @@ Window x_window;
     int i;
 
     if (setlocale (LC_ALL, "") == NULL) {
-        printf ("X_LINE : X cannot set locale.\n");
+        fprintf (stderr, "X_LINE : X cannot set locale.\n");
         return (False);
     }
     if (!XSupportsLocale()) {
-        printf ("X_LINE : X does not support locale %s.",
+       fprintf (stderr, "X_LINE : X does not support locale %s.",
                 setlocale (LC_ALL, NULL));
         return (False);
     }
@@ -67,7 +67,7 @@ Window x_window;
     /* Open X display */
     local_server.x_server = XOpenDisplay (server_name);
     if (local_server.x_server == NULL) {
-        printf ("X_LINE : X Can't open display %s.\n", server_name);
+       fprintf (stderr, "X_LINE : X Can't open display %s.\n", server_name);
         return (False);
     }
 #ifdef SYNCHRO
@@ -86,14 +86,14 @@ Window x_window;
     /* Set default input method */
     modifiers = XSetLocaleModifiers ("@im=none");
     if (modifiers == NULL) {
-        printf ("X_LINE : Can't set locale modifiers.\n");
+       fprintf (stderr, "X_LINE : Can't set locale modifiers.\n");
     }
 
     local_server.xim_style = 0;
     local_server.xim = XOpenIM (local_server.x_server, NULL, NULL, NULL);
     if (local_server.xim == NULL) {
 #ifdef DEBUG
-        printf ("X_LINE : Can't open input method.\n");
+       fprintf (stderr, "X_LINE : Can't open input method.\n");
         xim_styles = NULL;
 #endif
     } else {
@@ -102,7 +102,7 @@ Window x_window;
         if (imvalret != NULL || xim_styles == NULL) {
             xim_styles = NULL;
 #ifdef DEBUG
-            printf ("X_LINE: Input method doesn't support any style.\n");
+           fprintf (stderr, "X_LINE: Input method doesn't support any style.\n");
 #endif
         }
     }
@@ -117,7 +117,7 @@ Window x_window;
         }
 
         if (local_server.xim_style == 0) {
-            printf ("X_LINE: Input method doesn't support the expected style.\n");
+           fprintf (stderr, "X_LINE: Input method doesn't support the expected style.\n");
         }
         XFree (xim_styles);
     }
@@ -143,7 +143,7 @@ Window x_window;
       0, 0, 1, 1, DEF_WIN_ATTRIB);
 
     if (x_window == None) {
-        printf ("X_LINE : X Can't create initial window.\n");
+       fprintf (stderr, "X_LINE : X Can't create initial window.\n");
         XCloseDisplay (local_server.x_server);
         return (False);
     }
@@ -185,7 +185,7 @@ Status res;
     /* Checks number of lines already open */
     if (nbre_window == NBRE_MAX_WINDOW) {
 #ifdef DEBUG
-        printf ("X_LINE : Too many windows.\n");
+       fprintf (stderr, "X_LINE : Too many windows.\n");
 #endif
         return (NULL);
     }
@@ -193,7 +193,7 @@ Status res;
     /* Parameter check */
     if ( (x<0) || (y<0) || (height<1) || (width<1) ) {
 #ifdef DEBUG
-        printf ("X_LINE : Parameter wrong value.\n");
+       fprintf (stderr, "X_LINE : Parameter wrong value.\n");
 #endif
         return (NULL);
     }
@@ -201,7 +201,7 @@ Status res;
     /* Checks that the font number is valid */
     if (!fon_check(no_font)) {
 #ifdef DEBUG
-        printf ("X_LINE : Font no %d is too big.\n", no_font);
+       fprintf (stderr, "X_LINE : Font no %d is too big.\n", no_font);
 #endif
         return (NULL);
     }
@@ -228,7 +228,7 @@ Status res;
             close_screen(p_screen);
         }
 #ifdef DEBUG
-        printf ("X_LINE : Can't alloc memory for window structure.\n");
+       fprintf (stderr, "X_LINE : Can't alloc memory for window structure.\n");
 #endif
         return (NULL);
     }
@@ -277,7 +277,7 @@ Status res;
     /* Verify success */
     if (p_window->x_graphic_context == NULL) {
 #ifdef DEBUG
-        printf ("X_LINE : X can't open graphic context for window.\n");
+       fprintf (stderr, "X_LINE : X can't open graphic context for window.\n");
 #endif
         if (screen_created) {
             close_screen(p_screen);
@@ -312,7 +312,7 @@ Status res;
           (unsigned int)p_window->wheight, DEF_WIN_ATTRIB);
         if (p_window->x_window == None) {
 #ifdef DEBUG
-            printf ("X_LINE : X can't create window.\n");
+           fprintf (stderr, "X_LINE : X can't create window.\n");
 #endif
             XFreeGC (p_window->server->x_server, p_window->x_graphic_context);
             if (screen_created) {
@@ -340,7 +340,7 @@ Status res;
 
         if (p_window->xic == NULL) {
 #ifdef DEBUG
-            printf ("X_LINE : X Can't create input method context.\n");
+           fprintf (stderr, "X_LINE : X Can't create input method context.\n");
 #endif
         }
     }
@@ -348,7 +348,7 @@ Status res;
     /* Set protocol to receive DELETE_WINDOW requests from window manager */
     res =  XSetWMProtocols (p_window->server->x_server, p_window->x_window, &p_window->server->delete_code, 1);
     if (res == 0) {
-            printf ("X_LINE : X Can set delete-window WM protocol.\n");
+           fprintf (stderr, "X_LINE : X Can set delete-window WM protocol.\n");
     }
 
     /* Force fixed size in the window manager */
@@ -524,7 +524,7 @@ t_screen *p_screen;
     p_screen = (t_screen*) malloc (sizeof (t_screen));
     if (p_screen == NULL) {
 #ifdef DEBUG
-        printf ("X_LINE : Can't alloc memory for screen structure.\n");
+       fprintf (stderr, "X_LINE : Can't alloc memory for screen structure.\n");
 #endif
         return (NULL);
     }

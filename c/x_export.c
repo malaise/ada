@@ -21,7 +21,7 @@
  * static void print_date (void) {
  *   timeout_t cur_time;
  *   get_time (&cur_time);
- *   printf ("    >> %010ld %06d << ", cur_time.tv_sec,
+ *  fprintf (stderr, "    >> %010ld %06d << ", cur_time.tv_sec,
  *                                     (int)cur_time.tv_usec);
  * }
  */
@@ -251,7 +251,7 @@ extern int x_set_icon (void *line_id, const char **pixmap) {
                                       icon_def, &icon_pixmap, NULL, NULL);
     if (result < 0) {
 #ifdef DEBUG
-        printf ("X_EXPORT : Can't create pixmap for icon\n");
+       fprintf (stderr, "X_EXPORT : Can't create pixmap for icon\n");
 #endif
         return (WAIT_ERR);
     }
@@ -816,7 +816,7 @@ extern int x_fill_area (void *line_id, int xys[], int nb_points) {
     p_points = malloc (nb_points * sizeof(XPoint));
     if (p_points == NULL) {
 #ifdef DEBUG
-        printf ("X_EXPORT : Can't alloc memory for points to fill.\n");
+       fprintf (stderr, "X_EXPORT : Can't alloc memory for points to fill.\n");
 #endif
         return (WAIT_ERR);
     }
@@ -851,7 +851,7 @@ extern int x_set_pointer (void *line_id, int shape) {
                         win_id->x_window, data, 1, 1);
             if (blank == None) {
 #ifdef DEBUG
-                printf ("X_EXPORT : Can't create blank cursor.\n");
+               fprintf (stderr, "X_EXPORT : Can't create blank cursor.\n");
 #endif
                 return (WAIT_ERR);
             }
@@ -1224,7 +1224,7 @@ extern int x_process_event (void **p_line_id, void **p_ref,
         {
           char *str = XGetAtomName(local_server.x_server,
                                    event.xselectionrequest.target);
-          printf ("X_PROCESS_EVENT : Selection request of target %s\n", str);
+         fprintf (stderr, "X_PROCESS_EVENT : Selection request of target %s\n", str);
           XFree (str);
         }
 #endif

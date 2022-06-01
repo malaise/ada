@@ -44,7 +44,7 @@ void key_chain(XIC xic,
     }
 
 #ifdef DEBUG
-    printf ("X_Key <- %lX %s\n", key_sym, str);
+   fprintf (stderr, "X_Key <- %lX %s\n", key_sym, str);
 #endif
 
     key_sym = key_sym & 0x0000FFFF;
@@ -93,7 +93,7 @@ void key_chain(XIC xic,
     }
 
 #ifdef DEBUG
-    printf ("X_Key -> %lX %s\n", key_sym, str);
+   fprintf (stderr, "X_Key -> %lX %s\n", key_sym, str);
 #endif
 
 }

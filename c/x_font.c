@@ -33,17 +33,17 @@ XFontStruct **fonts;
                        &name_list, &missing_count, NULL);
         if (font_set[i] == NULL) {
 
-            printf ("X_FONT : can't create font set of %s.\n", font_name[i]);
+           fprintf (stderr, "X_FONT : can't create font set of %s.\n", font_name[i]);
             err=i;
             break;
         } else if (missing_count != 0)  {
             if (debug) {
-                printf ("X_FONT warning : missing %d fonts for font set of %s.\n",
+               fprintf (stderr, "X_FONT warning : missing %d fonts for font set of %s.\n",
                         missing_count, font_name[i]);
                 {
                     int j;
                     for (j = 0; j < missing_count; j++) {
-                        printf ("X_FONT warning :     missing font %s.\n",
+                       fprintf (stderr, "X_FONT warning :     missing font %s.\n",
                                  name_list[j]);
                     }
                 }
@@ -55,7 +55,7 @@ XFontStruct **fonts;
         res = XFontsOfFontSet (font_set[i], &fonts, &name_list);
         if (res == -1) {
             if (debug) {
-                printf ("X_FONT : cannot get font from set %s.\n",
+               fprintf (stderr, "X_FONT : cannot get font from set %s.\n",
                         font_name[i]);
             }
             err = i;
@@ -63,12 +63,12 @@ XFontStruct **fonts;
         }
         /* Copy font characteristics */
         if (debug) {
-            printf ("X_FONT info : got font from set %s.\n", name_list[0]);
+           fprintf (stderr, "X_FONT info : got font from set %s.\n", name_list[0]);
         }
         font[i] = XLoadQueryFont (x_server, font_name[i]);
         if (font[i] == NULL) {
             if (debug) {
-                printf ("X_FONT : cannot load font %s.\n", font_name[i]);
+               fprintf (stderr, "X_FONT : cannot load font %s.\n", font_name[i]);
             }
             err = i;
             break;
@@ -93,12 +93,12 @@ XFontStruct **fonts;
         || ( (str != NULL) && ( (str[0] == 'y') || (str[0] == 'Y') ) ) ) {
         int width, nwidth, height, nheight, offset, noffset;
 
-        printf ("Font summary:\n");
+       fprintf (stderr, "Font summary:\n");
         for (i = 0; i < NBRE_FONT; i++) {
             width  = fon_get_width(font[i]);
             height = fon_get_height(font[i]);
             offset = fon_get_offset(font[i]);
-            printf ("%s : %dx%d+%d\n", font_name[i], width, height, offset);
+           fprintf (stderr, "%s : %dx%d+%d\n", font_name[i], width, height, offset);
             if (i % 2 == 0) {
               /* Normal font */
               nwidth  = width;
@@ -110,8 +110,8 @@ XFontStruct **fonts;
                 || (height != nheight)
                 || (offset != noffset) ) {
                     /* Cheracteristics differ */
-                    printf ("X_FONT warning : Different font size between: ");
-                    printf ("%s: %dx%d-%d\n and %s: %dx%d-%d\n",
+                   fprintf (stderr, "X_FONT warning : Different font size between: ");
+                   fprintf (stderr, "%s: %dx%d-%d\n and %s: %dx%d-%d\n",
                       font_name[i-1], nwidth, nheight, noffset,
                       font_name[i], width, height, offset);
                 }
