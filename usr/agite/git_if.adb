@@ -1441,7 +1441,7 @@ package body Git_If is
       return "";
     end if;
     -- Scan
-    -- Line is [*]<space><branch><spaces><hash>[<space><remote>]<space><comment>
+    -- Line is [*]<space><branch><spaces><hash>[<space><remote>[:<space><track>]<space><comment>
     -- * branch may be "(xxx)" containing spaces or a name
     -- * hash is on 7 digits
     -- * remote is '['<name>[: ahead x]']'
@@ -1481,13 +1481,18 @@ package body Git_If is
       -- Scan next
       Out_Flow_1.List.Move_To;
     end loop;
-    -- Now Line contains <name>[: ahead x]
+    -- Now Line contains <name>[: ahead x] or <name>[: gone]
     --  keep head before ':'
     Index := Str_Util.Locate (Line.Image, ":");
 
     if Index = 0 then
+      -- No tracking information (remote is aligned)
       return Line.Image;
+    elsif Line.Slice (Index, Line.Length) = ": gone" then
+      -- The remote branch is gone (following a local rename)
+      return "";
     else
+      -- Skip tracking information
       return Line.Slice (1, Index - 1);
     end if;
   end Remote_Branch;
