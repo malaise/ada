@@ -134,5 +134,13 @@ package Mapcodes is
 
 private
   type Territories is new Natural range 0 .. Countries.Territories_Def'Last - 1;
+  -- Operation exported to child package Languages
+  -- Packing and unpacking to avoid full digits mapcodes
+  function Aeu_Pack (R : Mapcode_Utils.As_U.Asu_Us;
+                     Short : Boolean) return String;
+  function Aeu_Unpack (Str  : String) return String;
+  -- Decode and encode a char
+  function Decode_A_Char (C : Natural) return Integer;
+  function Encode_A_Char (C : Natural) return Character;
 end Mapcodes;
 

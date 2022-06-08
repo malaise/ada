@@ -31,6 +31,7 @@ export TARGET=$1
 if [ \( ! -d $TARGET \) -o \( ! -w $TARGET \) ] ; then
   error "Directory $TARGET not found or not writable"
 fi
+mkdir -p $TARGET/src $TARGET/test
 
 # Generate the version for export
 make Export
@@ -38,6 +39,8 @@ make Export
 # Files to export
 export FILES="mapcode_utils.ads mapcode_utils-*.ad* \
 countries.ads ndata.ads mapcodes.ads mapcodes.adb ndata.ads \
+language_defs.ads language_utils.ads language_utils.adb \
+mapcodes-languages.ads mapcodes-languages.adb \
 t_mapcode.adb fulltest test/*"
 
 # Add Copyright headers and copy in TARGET

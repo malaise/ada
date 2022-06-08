@@ -1,11 +1,11 @@
 -- Mapcode test main program
-with Ada.Command_Line, Ada.Text_Io;
+with Ada.Command_Line, Ada.Text_Io, Ada.Strings.Utf_Encoding.Wide_Strings;
 --#@IfNotDef Export
-with My_Math, Normalization, Gets;
+with Environ, My_Math, Normalization, Gets;
 --#@EndifDef
 with Mapcode_Utils.As_U, Mapcode_Utils.Str_Tools;
 use Mapcode_Utils;
-with Mapcodes, Countries;
+with Countries, Mapcodes.Languages;
 procedure T_Mapcode is
   use Mapcodes;
 
@@ -32,6 +32,8 @@ procedure T_Mapcode is
     Ada.Text_Io.Put_Line (
       "  -a  <territory_mapcode> [ <options> ]          // Alternative mapcodes");
     Ada.Text_Io.Put_Line (
+      "  -l  <mapcode> [ <language> ]                   // Convert into a language");
+    Ada.Text_Io.Put_Line (
       "  <territory_mapcode> ::= <territory>:<mapcode> | [ <territory> ] <mapcode>");
     Ada.Text_Io.Put_Line (
       "  <options>           ::= [ <territory> ] [ <selection> ] [ <precision> ]");
@@ -45,6 +47,10 @@ procedure T_Mapcode is
       "                      // local: the shortest among all the mapcodes");
     Ada.Text_Io.Put_Line (
       "  <precision>         ::= P0 .. P8               // Default P0 or from input");
+    Ada.Text_Io.Put_Line (
+      "  <language>          ::= language name (any casing) or num (0 for Roman)");
+    Ada.Text_Io.Put_Line (
+      "                      // Input language is guessed, default output is Romaic");
   end Usage;
 
   function Lower_Str (Str : String) return String is
@@ -76,7 +82,7 @@ procedure T_Mapcode is
           & Get_Territory_Alpha_Code (Get_Parent_Of (Index)));
     end if;
     if Show_Subdivision and then Has_Subdivision (Index) then
-      Ada.Text_Io.Put_Line ( "  Has subdivisions");
+      Ada.Text_Io.Put_Line ("  Has subdivisions");
     end if;
   end Put_Territory;
 
@@ -313,6 +319,55 @@ begin
       Coord := Decode (Arg1.Image, Arg2.Image);
       Ada.Text_Io.Put_Line ("=> " & Image (Coord.Lat)
                           & " " & Image (Coord.Lon));
+    elsif Command.Image = "-l" then
+      if I + 1 <= Ada.Command_Line.Argument_Count then
+        I := I + 1;
+        Arg1 := As_U.Tus (Ada.Command_Line.Argument (I));
+      else
+--#@IfNotDef Export
+        Arg1 := As_U.Tus (Environ.Getenv ("Mapcode"));
+--#@ElseDef
+        raise Argument_Error;
+--#@EndifDef
+      end if;
+      Arg2.Set_Null;
+      if I + 1 <= Ada.Command_Line.Argument_Count then
+        -- Optional output language
+        Arg2 := As_U.Tus (Ada.Command_Line.Argument (I + 1));
+        if Arg2.Length = 0 and then Arg2.Element (1) = '-' then
+          Arg2.Set_Null;
+        else
+          I := I + 1;
+        end if;
+      end if;
+      -- Set output language
+      declare
+        Language : Mapcodes.Languages.Language_List
+                 := Mapcodes.Languages.Roman;
+      begin
+        if not Arg2.Is_Null
+        and then Arg2.Element (1) >= '0' and then Arg2.Element (1) <= '9' then
+          -- Argument is language num
+          Language := Mapcodes.Languages.Language_List'Val (
+            Natural'Value (Arg2.Image));
+        elsif not Arg2.Is_Null then
+          -- Argument is language name
+          Language := Mapcodes.Languages.Language_List'Value (
+            Mapcode_Utils.Str_Tools.Upper_Str (Arg2.Image));
+         end if;
+        Ada.Text_Io.Put_Line  (
+          Ada.Strings.Utf_Encoding.Wide_Strings.Encode (
+            Mapcodes.Languages.Convert (
+              Ada.Strings.Utf_Encoding.Wide_Strings.Decode (Arg1.Image),
+              Language)));
+      exception
+        when Mapcodes.Decode_Error
+           | Mapcodes.Languages.Invalid_Text
+           | Mapcodes.Languages.Unknown_Language =>
+          raise;
+        when others =>
+          raise Argument_Error;
+      end;
     else
       raise Argument_Error;
     end if;
@@ -329,6 +384,12 @@ exception
                           "Raised Not_A_Subdivision");
   when Mapcodes.Decode_Error =>
     Ada.Text_Io.Put_Line (Ada.Text_Io.Standard_Error, "Raised Decode_Error");
+    Ada.Command_Line.Set_Exit_Status (1);
+  when Mapcodes.Languages.Invalid_Text =>
+    Ada.Text_Io.Put_Line (Ada.Text_Io.Standard_Error, "Raised Invalid_Text");
+    Ada.Command_Line.Set_Exit_Status (1);
+  when Mapcodes.Languages.Unknown_Language =>
+    Ada.Text_Io.Put_Line (Ada.Text_Io.Standard_Error, "Raised Unknown_Language");
     Ada.Command_Line.Set_Exit_Status (1);
   when Argument_Error =>
     Ada.Text_Io.Put_Line (Ada.Text_Io.Standard_Error, "Invalid Argument");

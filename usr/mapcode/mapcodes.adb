@@ -1,5 +1,7 @@
+with Ada.Characters.Handling;
 with Mapcode_Utils.Str_Tools, Mapcode_Utils.Bits;
 use Mapcode_Utils;
+with Mapcodes.Languages;
 with Ndata;
 package body Mapcodes is
 
@@ -546,6 +548,9 @@ package body Mapcodes is
     'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'X', 'Y', 'Z',
     'A', 'E', 'U');
 
+  function Decode_A_Char (C : Natural) return Integer is (Decode_Char(C + 1));
+  function Encode_A_Char (C : Natural) return Character is (Encode_Char(C + 1));
+
   -- Given a minimum and maximum latitude, returns a relative stretch factor
   --  (in 360th)  for the longitud
   function Xdivider4 (Miny, Maxy : Lint) return Natural is
@@ -1071,7 +1076,7 @@ package body Mapcodes is
   end Decode_Extension;
 
   -- Add vowels to prevent a mapcode r from being all-digit
-  function Aeu_Pack(R : As_U.Asu_Us; Short : Boolean) return String is
+  function Aeu_Pack (R : As_U.Asu_Us; Short : Boolean) return String is
     Dotpos : Natural := 0;
     Result : As_U.Asu_Us := R;
     Rlen : Natural := Result.Length;
@@ -1147,7 +1152,7 @@ package body Mapcodes is
          V2 := 31;
       end if;
       S := Image (1000 + V1 + 32 * V2);
-      Result := S(2) & Result.Uslice(2, Lastpos - 1) & S(3 .. 4);
+      Result := S(2) & Result.Uslice(2, Lastpos - 2) & S(3 .. 4);
       Voweled := True;
     elsif Result.Element(1) = 'U' then
       Result.Delete (1, 1);
@@ -2059,11 +2064,34 @@ package body Mapcodes is
   function Decode (Mapcode, Context : String) return Coordinate is
     Contextterritorynumber : Integer;
   begin
+    -- Raise Decode error if Mapcode or Context is not in Roman
+    declare
+      Lm, Lc : Mapcodes.Languages.Language_List;
+      use type Mapcodes.Languages.Language_List;
+    begin
+      Lm := Mapcodes.Languages.Get_Language (
+              Ada.Characters.Handling.To_Wide_String (Mapcode));
+      if Context /= "" then
+        Lc := Mapcodes.Languages.Get_Language (
+                Ada.Characters.Handling.To_Wide_String (Context));
+      else
+        Lc := Mapcodes.Languages.Default_Language;
+      end if;
+      if Lm /= Mapcodes.Languages.Default_Language
+      or else Lc /= Mapcodes.Languages.Default_Language then
+        raise Decode_Error;
+      end if;
+    exception
+      when Mapcodes.Languages.Invalid_Text =>
+        raise Decode_Error;
+    end;
+    -- Set context number
     if Context = Undefined then
       Contextterritorynumber := Ccode_Earth;
     else
       Contextterritorynumber := Integer (Get_Territory (Context));
     end if;
+    -- Decode
     return Master_Decode (Mapcode, Contextterritorynumber);
   end Decode;
 
