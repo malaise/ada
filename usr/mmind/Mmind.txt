@@ -126,7 +126,7 @@ overwriting its content if any.
 * Double click on a color here. The color will be copied into the first
 available cell (scanning from bottom left to top right).
 
-- An answered proposal. 
+- An answered proposal.
 
 * Like from the colors area, select a cell and the color will be selected for
 later copy into a target cell.
