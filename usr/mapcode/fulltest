@@ -206,7 +206,8 @@ fi
 echo Languages
 if [ $TEST -eq 1 ] ; then
   # Some lines in test mode, here are the Numbers of effective lines
-  export TESTS=(1 174 298 478 561 4788)
+  export TESTS=(1 174 298 478 561 4788 4789 4790 4791 4792 4793 4794\
+ 4795 4796 4797)
   let I=0
 else
   # All the tests
