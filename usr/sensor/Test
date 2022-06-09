@@ -78,7 +78,7 @@ EOF
 cmp $OUTPUT $EXPECTED 2>/dev/null
 res=$? 
 if [ $res -ne 0 ] ; then
-  echo "File $OUTPUT differs from expected $EXPECTED."1>&2
+  echo "File $OUTPUT differs from expected $EXPECTED." 1>&2
   exit 1
 else
   # Cleanup
