@@ -206,8 +206,8 @@ fi
 echo Languages
 if [ $TEST -eq 1 ] ; then
   # Some lines in test mode, here are the Numbers of effective lines
-  export TESTS=(1 174 298 478 561 4788 4789 4790 4791 4792 4793 4794\
- 4795 4796 4797)
+  #  plus all the lines after the last
+  export TESTS=(1 174 298 478 561 4788)
   let I=0
 else
   # All the tests
@@ -216,11 +216,13 @@ fi
 PrevLang=x
 while true ; do
   if [ $TEST -eq 1 ] ; then
-    # Some speicif effective lines
-    if [ -z "${TESTS[$I]}" ] ; then
-      break
+    # Some specific effective lines
+    if [ -n "${TESTS[$I]}" ] ; then
+      let L=${TESTS[$I]}
+    else
+      # Last item of the list has been reached
+      let L=${L}+1
     fi
-    let L=${TESTS[$I]}
   else
     # All the lines
     let L=$I
