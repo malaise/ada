@@ -12,7 +12,7 @@ package Mapcodes.Languages is
   -- The unicode sequence to provide a language name in its language
   subtype Unicode_Sequence is Language_Utils.Unicode_Sequence;
 
-  -- Get the Language from its name in its language
+  -- Get the Language from its name, either in Roman or in its own language
   -- Raises, if the output language is not known:
   Unknown_Language : exception;
   function Get_Language (Name : Unicode_Sequence) return Language_List;

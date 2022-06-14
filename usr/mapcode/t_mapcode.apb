@@ -1,9 +1,10 @@
 -- Mapcode test main program
-with Ada.Command_Line, Ada.Text_Io, Ada.Strings.Utf_Encoding.Wide_Strings;
+with Ada.Command_Line, Ada.Text_Io,
+     Ada.Strings.Utf_Encoding.Wide_Strings, Ada.Strings.Utf_Encoding.Wide_Wide_Strings;
 --#@IfNotDef Export
 with Environ, My_Math, Normalization, Gets;
 --#@EndifDef
-with Mapcode_Utils.As_U, Mapcode_Utils.Str_Tools;
+with Mapcode_Utils.As_U, Mapcode_Utils.Str_Tools, Language_Utils;
 use Mapcode_Utils;
 with Countries, Mapcodes.Languages;
 procedure T_Mapcode is
@@ -119,7 +120,7 @@ procedure T_Mapcode is
   end Get;
 
   I : Positive;
-  Command, Arg1, Arg2, Tmp : As_U.Asu_Us;
+  Command, Arg1, Arg2 : As_U.Asu_Us;
 
   Coord : Mapcodes.Coordinate;
   Territory : As_U.Asu_Us;
@@ -133,6 +134,7 @@ procedure T_Mapcode is
   -- Locate "-" in Map to set Precision
   procedure Parse_Mapcode is
     Index : Natural;
+    Tmp : As_U.Asu_Us;
   begin
     I := I + 1;
     Arg1 := As_U.Tus (Ada.Command_Line.Argument (I));
@@ -352,9 +354,19 @@ begin
             Natural'Value (Arg2.Image));
         elsif not Arg2.Is_Null then
           -- Argument is language name
-          Language := Mapcodes.Languages.Language_List'Value (
-            Mapcode_Utils.Str_Tools.Upper_Str (Arg2.Image));
-         end if;
+          declare
+            -- COnvert ti unicodes to get the language
+            Wws : constant Wide_Wide_String
+                := Ada.Strings.Utf_Encoding.Wide_Wide_Strings.Decode (
+                       Mapcode_Utils.Str_Tools.Upper_Str (Arg2.Image));
+            Unicodes : Language_Utils.Unicode_Sequence (Wws'Range);
+          begin
+            for I in Wws'Range loop
+              Unicodes(I) := Wide_Wide_Character'Pos(Wws(I));
+            end loop;
+            Language := Mapcodes.Languages.Get_Language (Unicodes);
+          end;
+        end if;
         Ada.Text_Io.Put_Line  (
           Ada.Strings.Utf_Encoding.Wide_Strings.Encode (
             Mapcodes.Languages.Convert (

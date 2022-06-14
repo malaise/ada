@@ -7,14 +7,35 @@ package body Mapcodes.Languages is
   -- Unknown_Language : exception;
   function Get_Language (Name : Unicode_Sequence) return Language_List is
     use type Language_Utils.Unicode_Sequence;
+    Roman : Boolean := True;
+    Str : String (Name'Range);
   begin
+    -- Try a name in Roman
+    for I in Name'Range  loop
+      if Name(I) < Character'Pos ('0')
+      or else Name(I) > Character'Pos ('z') then
+         Roman := False;
+         exit;
+      else
+        Str(I) := Character'Val(Name(I));
+      end if;
+    end loop;
+    if Roman then
+      begin
+        return Language_List'Value (Str);
+      exception
+        when Constraint_Error =>
+          raise Unknown_Language;
+      end;
+    end if;
+    -- Try each language in its alphabet
     for L in Language_Defs.Langs'Range loop
       if Language_Defs.Langs(L).Name.Txt = Name then
         -- Name is the name of language L
         return Language_List (L);
       end if;
     end loop;
-    return Default_Language;
+    raise Unknown_Language;
   end Get_Language;
 
   -- Get the language of a text (territory name or mapcode)
