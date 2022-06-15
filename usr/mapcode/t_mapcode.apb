@@ -1,6 +1,7 @@
 -- Mapcode test main program
 with Ada.Command_Line, Ada.Text_Io,
-     Ada.Strings.Utf_Encoding.Wide_Strings, Ada.Strings.Utf_Encoding.Wide_Wide_Strings;
+     Ada.Strings.Utf_Encoding.Wide_Strings,
+     Ada.Strings.Utf_Encoding.Wide_Wide_Strings;
 --#@IfNotDef Export
 with Environ, My_Math, Normalization, Gets;
 --#@EndifDef
@@ -355,7 +356,7 @@ begin
         elsif not Arg2.Is_Null then
           -- Argument is language name
           declare
-            -- COnvert ti unicodes to get the language
+            -- Convert to unicodes to get the language
             Wws : constant Wide_Wide_String
                 := Ada.Strings.Utf_Encoding.Wide_Wide_Strings.Decode (
                        Mapcode_Utils.Str_Tools.Upper_Str (Arg2.Image));
