@@ -292,5 +292,22 @@ package Git_If is
   function Cherry_Pick (Commit : in Log_Entry_Rec;
                         Do_Commit : in Boolean) return String;
 
+  -- Reflog
+  subtype Ref_Number is Natural;
+  type Reflog_Entry_Rec is record
+    Hash : Git_Hash;
+    Id : As.U.Asu_Us;
+    Comment : As.U.Asu_Us;
+  end record;
+  procedure Set (To : out Reflog_Entry_Rec; Val : in Reflog_Entry_Rec);
+  package Reflog_Mng is new Long_Long_Limited_List (Reflog_Entry_Rec, Set);
+  subtype Reflog_List is Reflog_Mng.List_Type;
+
+  -- List the reflog
+  procedure List_Reflog (Branch : in String; Reflog : in out Reflog_List);
+
+  -- Delete a reference
+  procedure Delete_Ref (Id : in String);
+
 end Git_If;
 

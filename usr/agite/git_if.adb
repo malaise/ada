@@ -1577,38 +1577,38 @@ package body Git_If is
       -- stash@{<Num>}: WIP on <Branch>: <Name>
       -- stash@{<Num>}: On <Branch>: <Name>
       begin
-       -- "{" <num> "}"
-       I1 := Str_Util.Locate (Line.Image, "{");
-       I2 := Str_Util.Locate (Line.Image, "}");
-       Stash.Num := Stash_Number'Value (Line.Slice (I1 + 1, I2 - 1));
-       -- "}: WIP on " <branch> ":"
-       -- "}: On " <branch> ":"
-       -- "}:"
-       Stash.Branch := As.U.Asu_Null;
-       if Line.Length > I2 + 9
-       and then Line.Slice (I2 + 3, I2 + 9) = "WIP on " then
-         I1 := I2 + 9;
-       elsif Line.Length > I2 + 5
-       and then Line.Slice (I2 + 3, I2 + 5) = "On " then
-         I1 := I2 + 5;
-       else
-         Stash.Branch := As.U.Tus (Stash_Default_Str);
-       end if;
-       if Stash.Branch.Is_Null then
-         -- A branch name
-         I2 := Str_Util.Locate (Line.Image, ":", I1);
-         Stash.Branch := Line.Uslice (I1 + 1, I2 - 1);
-       else
-         -- No branch name => Default
-         I2 := I2 + 1;
-       end if;
-       -- ":" [ " <Name>" ]
-       if I2 /= Line.Length then
-         Stash.Name := Line.Uslice (I2 + 2, Line.Length);
-       else
-         Stash.Name := As.U.Tus (Stash_Default_Str);
-       end if;
-       Stashes.Insert (Stash);
+        -- "{" <num> "}"
+        I1 := Str_Util.Locate (Line.Image, "{");
+        I2 := Str_Util.Locate (Line.Image, "}");
+        Stash.Num := Stash_Number'Value (Line.Slice (I1 + 1, I2 - 1));
+        -- "}: WIP on " <branch> ":"
+        -- "}: On " <branch> ":"
+        -- "}:"
+        Stash.Branch := As.U.Asu_Null;
+        if Line.Length > I2 + 9
+        and then Line.Slice (I2 + 3, I2 + 9) = "WIP on " then
+          I1 := I2 + 9;
+        elsif Line.Length > I2 + 5
+        and then Line.Slice (I2 + 3, I2 + 5) = "On " then
+          I1 := I2 + 5;
+        else
+          Stash.Branch := As.U.Tus (Stash_Default_Str);
+        end if;
+        if Stash.Branch.Is_Null then
+          -- A branch name
+          I2 := Str_Util.Locate (Line.Image, ":", I1);
+          Stash.Branch := Line.Uslice (I1 + 1, I2 - 1);
+        else
+          -- No branch name => Default
+          I2 := I2 + 1;
+        end if;
+        -- ":" [ " <Name>" ]
+        if I2 /= Line.Length then
+          Stash.Name := Line.Uslice (I2 + 2, Line.Length);
+        else
+          Stash.Name := As.U.Tus (Stash_Default_Str);
+        end if;
+        Stashes.Insert (Stash);
       exception
         when Error:others =>
           Basic_Proc.Put_Line_Error ("Error "
@@ -2007,6 +2007,85 @@ package body Git_If is
       return "";
     end if;
   end Cherry_Pick;
+
+  -- Reflogs
+  procedure Set (To : out Reflog_Entry_Rec; Val : in Reflog_Entry_Rec) is
+  begin
+    To := Val;
+  end Set;
+
+  procedure List_Reflog (Branch : in String; Reflog : in out Reflog_List) is
+    Cmd : Many_Strings.Many_String;
+    Line : As.U.Asu_Us;
+    Ref : Reflog_Entry_Rec;
+    Moved : Boolean;
+    I1, I2 : Natural;
+  begin
+    Reflog.Delete_List;
+    -- Git reflog --no-abbrev-commit
+    Cmd.Set ("git");
+    Cmd.Cat ("reflog");
+    Cmd.Cat ("--no-abbrev-commit");
+    Cmd.Cat (Branch);
+    Execute (Cmd, Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
+    -- Handle error
+    if Exit_Code /= 0 then
+      Basic_Proc.Put_Line_Error ("git reflog: " & Err_Flow_1.Str.Image);
+      return;
+    end if;
+    -- Read lines
+    if Out_Flow_1.List.Is_Empty then
+      return;
+    end if;
+    Out_Flow_1.List.Rewind;
+    loop
+      Out_Flow_1.List.Read (Line, Moved => Moved);
+      -- Parse "<Hash> <branch>@{<Num>}: <Comment>"
+      begin
+        I1 := Str_Util.Locate (Line.Image, " ");
+        Ref.Hash := Line.Uslice (1, I1 - 1);
+        -- "<branch>@{" <num> "}:"
+        if Str_Util.Locate (Line.Image, "@{") = 0 then
+          raise Constraint_Error;
+        end if;
+        I2 := Str_Util.Locate (Line.Image, "}:");
+        -- Stop at "}"
+        Ref.Id := Line.Uslice (I1 + 1, I2);
+        if I2 + 3 <= Line.Length then
+          Ref.Comment := Line.Uslice (I2 + 3, Line.Length);
+        else
+          Ref.Comment.Set_Null;
+        end if;
+      exception
+        when others =>
+          Basic_Proc.Put_Line_Error ("git reflog invalid output: "
+                                 & Line.Image);
+          Reflog.Delete_List;
+          return;
+      end;
+      Reflog.Insert (Ref);
+      exit when not Moved;
+    end loop;
+    if not Reflog.Is_Empty then
+      Reflog.Rewind;
+    end if;
+  end List_Reflog;
+
+  -- Delete a reference
+  procedure Delete_Ref (Id : in String) is
+    Cmd : Many_Strings.Many_String;
+  begin
+    Cmd.Set ("git");
+    Cmd.Cat ("reflog");
+    Cmd.Cat ("delete");
+    Cmd.Cat ("--rewrite");
+    Cmd.Cat (Id);
+    Execute (Cmd, Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
+    -- Handle error
+    if Exit_Code /= 0 then
+      Basic_Proc.Put_Line_Error ("git reflog  delete error : " & Err_Flow_1.Str.Image);
+    end if;
+  end Delete_Ref;
 
 end Git_If;
 

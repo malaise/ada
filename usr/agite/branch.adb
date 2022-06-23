@@ -1,6 +1,7 @@
 with Ada.Exceptions;
 with Directory, Afpx.Utils, Basic_Proc, Unicode, Str_Util, Con_Io, Aski;
-with Git_If, Utils.X, Afpx_Xref, Confirm, Error, History, Cherry, Reset, Commit;
+with Git_If, Utils.X, Afpx_Xref, Confirm, Error, History, Cherry, Reset, Commit,
+     Reflog;
 package body Branch is
 
   -- List width
@@ -204,7 +205,7 @@ package body Branch is
 
   -- Actions on branches
   type Action_List is (Create, Rename, Delete, Checkout, Hist,
-                       Merge, True_Merge, Rebase, Cherry_Pick, Reset);
+                       Merge, True_Merge, Rebase, Cherry_Pick, Reset, Ref_Log);
   function Do_Action (Action : in Action_List;
                       Ref : in Afpx.Line_List_Mng.Ll_Natural := 0)
            return Boolean is
@@ -215,7 +216,7 @@ package body Branch is
     Pos, Tmp_Index : Afpx.Line_List_Mng.Ll_Positive;
     Refi : Afpx.Line_List_Mng.Ll_Natural;
     Message1, Message2, Result : As.U.Asu_Us;
-    Done : Boolean;
+    Done : Boolean := False;
     use type Cherry.Result_List, As.U.Asu_Us, Afpx.Line_List_Mng.Ll_Natural;
   begin
     -- Retrieve current name
@@ -261,10 +262,12 @@ package body Branch is
     -- Cancel if not confirm
     if Action /= Create and then Action /= Rename
     and then Action /= Rebase and then Action /= Cherry_Pick
-    and then Action /= Reset and then Action /= Hist then
+    and then Action /= Reset and then Action /= Ref_Log
+    and then Action /= Hist then
       if not Confirm (
           (case Action is
-             when Create | Rename | Hist | Rebase | Cherry_Pick | Reset =>
+             when Create | Rename | Hist | Rebase | Cherry_Pick | Reset
+                | Ref_Log =>
                "???",
              when Delete     =>
                (if Ref = 0 then "Delete branch " & Sel_Name.Image
@@ -274,7 +277,7 @@ package body Branch is
              when True_Merge => "True Merge branch " & Sel_Name.Image),
           (case Action is
              when Create | Rename | Hist | Rebase | Cherry_Pick | Reset
-                | Checkout => "",
+                | Ref_Log | Checkout => "",
              when Delete =>
                (if Ref = 0 then "" else "to " & Ref_Name.Image),
              when Merge | True_Merge  => "into current branch "
@@ -390,16 +393,26 @@ package body Branch is
       when Reset =>
         Previous_Branch := Sel_Name;
         if Sel_Name = Current_Branch then
-          -- Rabse to HEAD of current branch
+          -- Reset to HEAD of current branch
           Done := Reset (Root.Image, "");
         else
-          -- Rebase to another branch
+          -- Reset to selected branch
           Done := Reset (Root.Image, Sel_Name.Image);
         end if;
-        if not Done then
-          Init;
-          Reread (False);
+        Init;
+        Reread (False);
+        return Done;
+      when Ref_Log =>
+        Previous_Branch := Sel_Name;
+        if Sel_Name = Current_Branch then
+          -- Reflog of current branch
+          Done := Reflog.Handle (Root.Image, "");
+        else
+          -- Reflog the selected branch
+          Done := Reflog.Handle (Root.Image, Sel_Name.Image);
         end if;
+        Init;
+        Reread (False);
         return Done;
     end case;
 
@@ -558,6 +571,10 @@ package body Branch is
               end if;
             when Afpx_Xref.Branches.Reset =>
               if Do_Action (Reset) then
+                exit;
+              end if;
+            when Afpx_Xref.Branches.Reflog =>
+              if Do_Action (Ref_Log) then
                 exit;
               end if;
             when Afpx_Xref.Branches.Create =>

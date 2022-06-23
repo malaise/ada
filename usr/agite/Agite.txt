@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V39.16
+V40.00
 
 General purpose
 ---------------
@@ -371,10 +371,11 @@ commits.
 anchor:XNavigation[]
 The navigation between the screens is as follows:
 
-                                  +-----------+
-                              /-->| Bookmarks |
-                             /    +-----------+
-                            /     +----------+          +------------+
+                                  +-----------+ 
+                               /->| Bookmarks |         +--------+      Checkout
+                              /   +-----------+ /------>| Reflog |------+--->
+                             /                 /        +--------+      |
+                            /     +----------+/         +------------+  |
                            /----->| Branches |--+------>| CherryPick |--+
                           /       +---+------+ /        +------------+  |
                          /            |       /                         |
@@ -414,9 +415,11 @@ nor tagging. +
 The 'CherryPick' menu calls the 'Detail' menu, but without allowing
 modifications. +
 The 'CherryPick' menu calls the 'Commit' menu in a specific mode where is does
+the 'Reflog' menu calls the 'Details' menu without allowing modifications nor
+tagging. +
 not allow to call the 'Push' menu. +
-The 'Reset' menu is called by the 'Directory', the 'History', the 'Branch' and
-the 'Commit' menus. +
+The 'Reset' menu is called by the 'Directory', the 'History', the 'Branch',
+the 'Reflog' and the 'Commit' menus. +
 The 'Patch' menu is called by the 'History' menu.
 
 NOTE: All the screen transitions are based on the 'call-return' scheme. +
@@ -835,6 +838,11 @@ This button calls the xref:XReset[reset] menu to reset (soft, mixed or hard)
 the repository to the head of the (left) selected local branch. +
 See also the section on xref:XRewritingHistory[rewriting history].
 
+Reflog::
+
+This button calls the xref:XRefelog menu to display the reflog of the (left)
+selected branch and allowing checkout or reset to a reference.
+
 Create::
 
 Enter a name in the text field and click in the 'Create' button, or hit
@@ -856,6 +864,24 @@ branches included.
 .Back
 
 This button returns to the xref:XDir[directory] menu.
+
+Reflog
+~~~~~~~~~
+anchor:XReflog[]
+
+This menu shows the successive references of the selected branch. Each entry
+provides cause of the change (either acommit, a checkout, a reset... ).
+
+The 'Detail' button shows the details of the (left) selected reference.
+
+The 'Checkout' button calls the Xref:XCheckout[Checkout] menu in order to
+checkout the selected reference (as a new branch).
+
+The 'Reset' button calls the Xref:XReset[Reset] menu in order to
+reset the current branch to the selected reference.
+
+the 'Delete' button deletes, after confirmation, the reference currently
+selected.
 
 Bookmarks
 ~~~~~~~~~
