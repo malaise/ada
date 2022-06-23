@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V40.00
+V40.01
 
 General purpose
 ---------------
@@ -367,26 +367,28 @@ from a remote repository.
 of the current repository.
 * xref:XPatch[Patch]: This allows creating a patch file to export several
 commits.
+* xref:XReflog[Reflog]: This menu allows listing and managing the references
+along a given branch (git reflog).
 
 anchor:XNavigation[]
 The navigation between the screens is as follows:
 
-                                  +-----------+ 
-                               /->| Bookmarks |         +--------+      Checkout
-                              /   +-----------+ /------>| Reflog |------+--->
-                             /                 /        +--------+      |
-                            /     +----------+/         +------------+  |
-                           /----->| Branches |--+------>| CherryPick |--+
-                          /       +---+------+ /        +------------+  |
-                         /            |       /                         |
-                        /             |      /          +-----+         |
-                       /              |     /---------->| Tag |         |
-                      /               V    /            +-----+         |
-                     /            +-------+-+           +--------+      |
-                    /------------>| History |<-+-----+->| Detail |<-----+
-                   /              +-------+-+   \   /   +--------+      |
-                  /               +------+ \     \ /    +----------+    |
-                 /----------------| Tags |--+-----+---->| Checkout |    |
+                                  +-----------+
+                               /->| Bookmarks |         +--------+
+                              /   +-----------+ /------>| Reflog |------+---+
+                             /                 /        +--------+      |   |
+                            /     +----------+/         +------------+  |   |
+                           /----->| Branches |--+------>| CherryPick |--+   |
+                          /       +---+------+ /        +------------+  |   |
+                         /            |       /                         |   |
+                        /             |      /          +-----+         |   |
+                       /              |     /---------->| Tag |         |   |
+                      /               V    /            +-----+         |   |
+                     /            +-------+-+           +--------+      |   |
+                    /------------>| History |<-+-----+->| Detail |<-----+   |
+                   /              +-------+-+   \   /   +--------+      |   |
+                  /               +------+ \     \ /    +----------+    |   |
+                 /----------------| Tags |--+-----+---->| Checkout |<--(|(--+
                 /                 +------+   \          +----------+    |
   +---------- +/                  +-------+   \         +------+        |
   | Directory |------------------>| Commit|----+------->| Push |        |
@@ -866,18 +868,19 @@ branches included.
 This button returns to the xref:XDir[directory] menu.
 
 Reflog
-~~~~~~~~~
+~~~~~~
 anchor:XReflog[]
 
 This menu shows the successive references of the selected branch. Each entry
-provides cause of the change (either acommit, a checkout, a reset... ).
+provides the cause of the change (either acommit, a checkout, a reset... ) and
+additionnal information (comment of the commit, Hash...)
 
 The 'Detail' button shows the details of the (left) selected reference.
 
-The 'Checkout' button calls the Xref:XCheckout[Checkout] menu in order to
+The 'Checkout' button calls the xref:XCheckout[Checkout] menu in order to
 checkout the selected reference (as a new branch).
 
-The 'Reset' button calls the Xref:XReset[Reset] menu in order to
+The 'Reset' button calls the xref:XReset[Reset] menu in order to
 reset the current branch to the selected reference.
 
 the 'Delete' button deletes, after confirmation, the reference currently
