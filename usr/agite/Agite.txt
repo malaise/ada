@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V40.01
+V41.01
 
 General purpose
 ---------------
@@ -153,9 +153,9 @@ entering this menu.
 anchor:XHistoryLen[]
 
 history::
-When reading the xref:XHist[history] of a directory or file, Agite only scans
-and displays the amount of entries specified in this parameter (a button,
-xref:XListAll[All], allows listing all the entries).
+When reading the xref:XHist[history] or xref:XTree[tree] of a directory or file,
+Agite only scans and displays the amount of entries specified in this parameter
+(a button, xref:XListAll[All], allows listing all the entries).
 +
 Setting the value to 0 disables the feature and Agite will always list all the
 entries of the history.
@@ -348,6 +348,8 @@ tracking branches.
 jumping to a bookmark.
 * xref:XHist[History]: This shows the Git history of a file or directory, the
 list of commits that have modified the file(s).
+* xref:XTree[Tree]: This shows the Git history of a file or directory as
+a tree with the different branches.
 * xref:XTag[Tag]: This allows tagging a commit.
 * xref:XDetail[Detail]: This shows information on a commit or a tag,
 including the list of files modified by the commit.
@@ -396,10 +398,13 @@ The navigation between the screens is as follows:
                 \                     |       \                         |
                  \                    V        \                        |
                   \               +-------+     \-----------------------+
-                   \------------->| Stash |
-                    \             +-------+
-                     \            +------+
-                      \---------->| Pull |
+                   \------------->| Stash |                             |
+                    \             +-------+                             |
+                     \            +------+                              |
+                      \---------->| Pull |                              |
+                       \          +------+                              |
+                        \         +------+                              |
+                         \------->| Tree |------------------------------+
                                   +------+
                      +-------+    +-------+
                      | Reset |    | Patch |
@@ -409,6 +414,8 @@ There are also a confirmation screen and an error screen that are called when
 necessary.
 
 NOTE: The 'History' and 'Tags' menus call the 'Detail' and 'Checkout' menus. +
+The 'Tree' menu is like the 'History' menu except that it only calls the
+'Detail' menu, and without allowing modifications nor tagging. +
 The 'Tags' and 'Commit' menus call the 'Push' menu. +
 The 'Tags' menu calls the 'History' menu without allowing modifications, and
 the 'Detail' menu without allowing modifications nor tagging. +
@@ -880,7 +887,7 @@ The 'Detail' button shows the details of the (left) selected reference.
 The 'Checkout' button calls the xref:XCheckout[Checkout] menu in order to
 checkout the selected reference (as a new branch).
 
-The 'Reset' button calls the xref:XReset[Reset] menu in order to
+The 'Reset' button calls the xref:XReset[Reset] menu in order to hard
 reset the current branch to the selected reference.
 
 the 'Delete' button deletes, after confirmation, the reference currently
@@ -1237,6 +1244,26 @@ back to the menu from which the xref:XHist[history] has been called
 * xref:XReorg[Reorg] +
 * xref:XReset[Reset] +
 * xref:XPatch[Patch] (only on success) +
+
+Tree
+~~~~
+anchor:XTree[]
+The 'Tree' manu shows as a tree of branches the successive changes of a
+directory or file.
+
+It behaves like the xref:XHist[history] menu regarding:
+
+* Limitation of the number of entries to xref:XHistoryLen[history length],
+* Switching to Root and back,
+* Navigation in the list, including the scroll bar,
+* Marking and searching for a hash value,
+* Viewing the version of a file committed,
+* Viewing the differences introduced by a commit or between two commits,
+* Viewing the details of a commit (but disallowing 'Restore').
+
+It does not support the other functions of the xref:XHist[history] menu
+('Restore', 'Checkout', 'Reorg', 'Reset', 'Tag' and 'Patch') and it does not
+show the renaming of files.
 
 Tag
 ~~~
@@ -2144,12 +2171,15 @@ Rewriting the history can have serious consequences if you modify commits that
 have already been published, and have been pulled by some other repositories. +
 The four functions of Agite that alter the history are:
 
-* The xref:XReset[reset] functions of the xref:XBranches[branches] and of the
-xref:XHist[history] menus both rewrite the history of the reset branch,
+* The xref:XReset[reset] functions of the xref:XBranches[branches], the
+xref:XHist[history] and the xref:XReflog[reflog] menus rewrite the history of
+the reset branch,
 * The xref:XRebase[rebase] function of the xref:XBranches[branches] menu
 rewrites the history of the rebased branch (which is reset),
 * The xref:XReorg[reorg] function of the xref:XHist[history] menu rewrites
 the history of the current branch (which is reset).
+* The 'Delete' function of the xref:XReflog[reflog] menu also rewrites the
+history.
 
 The confirmation menu for these actions warns you (in red) that the history
 will be rewritten. +
@@ -2236,6 +2266,8 @@ applying to the whole repository
 
 * 'Clean' and 'Reset', clean or reset the whole repository
 
+* 'Reflog' manages the references in the whole repository
+
 Anywhere
 ~~~~~~~~
 The following operations allow changing the current directory with no
@@ -2274,6 +2306,10 @@ version 1.7.0 or above:
 * A function lists the commits on a dir or file by calling
 'git log --date=iso --full-history [ -n <max> ] [ --sparse ] [ --name-status ]
 [ <branch> ] [ \-- <dir_or_file> ]',
+
+* A fuction lists the tree of a dir or file by calling 'git log  --graph
+--oneline --all --full-history [ -n <max> ] --date-order --no-abbrev-commit
+<path>,
 
 * A functions gets the hash of the last commit by calling 'git log
 --pretty=format:"%H" -n -1 -- <pwd>',
@@ -2378,5 +2414,11 @@ branch by calling 'git cherry <target> <reference>',
 
 * A function cherry picks some commits by calling 'git cherry-pick
 --allow-empty [ --ff | --no-commit ] <HSA1>',
+
+* A function lists the references of a given branch by calling 'git reflog
+--no-abbrev-commit <branch>',
+
+* A function deletes a given reference by calling 'git reflog delete --rewrite
+<reference>'.
 
 

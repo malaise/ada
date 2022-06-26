@@ -109,7 +109,7 @@ package body Reflog is
                          Comment => "from reflog");
       when Delete =>
         if Confirm ("Deleting reference", Refs.Access_Current.Hash.Image,
-                    Warning => "This cannot be undone") then
+              Warning => "This may alter history and cannot be undone") then
           Git_If.Delete_Ref (Refs.Access_Current.Id.Image);
         end if;
         -- Remain in reflog menu

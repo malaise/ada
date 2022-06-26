@@ -1,7 +1,7 @@
 package Details is
   -- Show the details of a commit
   -- Allow_Modif (Restore, also passed to Hist) or not
-  -- Allow_Tad (passed to Hist) or not
+  -- Allow_Tag (passed to Hist) or not
   -- Or of a Tag and associated commit
   procedure Handle (Root : in String;
                     Branch : in String;

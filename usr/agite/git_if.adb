@@ -789,6 +789,97 @@ package body Git_If is
     End_Reached := Done;
   end List_Log;
 
+  -- List tree
+  procedure Set (To : out Tree_Entry_Rec; Val : in Tree_Entry_Rec) is
+  begin
+    To := Val;
+  end Set;
+  procedure List_Tree (Path : in String;
+                       Max : in Tree_Mng.Ll_Natural;
+                       Tree : in out Tree_Mng.List_Type;
+                       End_Reached : out Boolean) is
+    Cmd : Many_Strings.Many_String;
+    Line : As.U.Asu_Us;
+    Tree_Entry: Tree_Entry_Rec;
+    I1, I2 : Natural;
+    C : Character;
+    No : Tree_Mng.Ll_Natural;
+    Moved : Boolean;
+    use type Tree_Mng.Ll_Natural;
+  begin
+    Tree.Delete_List;
+    End_Reached := True;
+
+    Cmd.Set ("git");
+    Cmd.Cat ("log");
+    Cmd.Cat ("--graph");
+    Cmd.Cat ("--oneline");
+    Cmd.Cat ("--all");
+    Cmd.Cat ("--full-history");
+    if Max /= 0 then
+      Cmd.Cat ("-n");
+      Cmd.Cat (Images.Llunat_Image (Max + 1));
+    end if;
+    Cmd.Cat ("--date-order");
+    Cmd.Cat ("--no-abbrev-commit");
+    Cmd.Cat (Path);
+    Execute (Cmd, Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
+
+    -- Handle error
+    if Exit_Code /= 0 then
+      Basic_Proc.Put_Line_Error ("git log tree: " & Err_Flow_1.Str.Image);
+      return;
+    end if;
+
+    -- Encode info
+    if Out_Flow_1.List.Is_Empty then
+      return;
+    end if;
+
+    -- Encode info: Split in head, hash and tail
+    Out_Flow_1.List.Rewind;
+    No := 0;
+    loop
+      Out_Flow_1.List.Read (Line, Moved => Moved);
+      No := No + 1;
+      -- An entry: locate first [0-9a-f] if any
+      I1 := 0;
+      for I in 1 .. Line.Length loop
+        C := Line.Element (I);
+        if (C >= '0' and then C <= '9')
+        or else (C >= 'a' and then C <= 'f') then
+          I1 := I;
+          exit;
+        end if;
+      end loop;
+      if I1 = 0 then
+        -- Only tree decoration
+        Tree_Entry.Head := Line;
+        Tree_Entry.Hash.Set_Null;
+        Tree_Entry.Tail.Set_Null;
+      else
+        -- Skip space between decoration and hash
+        Tree_Entry.Head := Line.Uslice (1, I1 - 2);
+        I2 := Line.Locate (" ", I1);
+        if I2 = 0 then
+          -- No Tail
+          Tree_Entry.Hash := Line.Uslice (I1, Line.Length);
+          Tree_Entry.Tail.Set_Null;
+        else
+          Tree_Entry.Hash := Line.Uslice (I1, I2 - 1);
+          Tree_Entry.Tail := Line.Uslice (I2 + 1, Line.Length);
+        end if;
+      end if;
+      Tree.Insert (Tree_Entry);
+      exit when not Moved;
+      if  No = Max then
+        End_Reached := False;
+        exit;
+      end if;
+    end loop;
+    Tree.Rewind;
+  end List_Tree;
+
   -- Get last hash (hash of last commit) of file or dir
   function Last_Hash (Path : in String) return Git_Hash is
     Cmd : Many_Strings.Many_String;

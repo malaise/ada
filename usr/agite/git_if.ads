@@ -105,6 +105,20 @@ package Git_If is
                       Log : in out Log_List;
                       End_Reached : out Boolean);
 
+  -- List Tree
+  -- A tree entry
+  type Tree_Entry_Rec is record
+    Head : As.U.Asu_Us;
+    Hash : Git_Hash := No_Hash;
+    Tail : As.U.Asu_Us;
+  end record;
+  procedure Set (To : out Tree_Entry_Rec; Val : in Tree_Entry_Rec);
+  package Tree_Mng is new Long_Long_Limited_List (Tree_Entry_Rec, Set);
+  procedure List_Tree (Path : in String;
+                       Max : in Tree_Mng.Ll_Natural;
+                       Tree : in out Tree_Mng.List_Type;
+                       End_Reached : out Boolean);
+
   -- Get last hash (hash of last commit) of file or dir
   function Last_Hash (Path : in String) return Git_Hash;
 

@@ -1,6 +1,6 @@
 with As.U, Afpx.Utils, Basic_Proc, Images, Directory,
      Dir_Mng, Sys_Calls, Argument, Argument_Parser, Socket, Environ, Command;
-with Utils.X, Git_If, Config, Bookmarks, History, Tags, Commit, Push_Pull,
+with Utils.X, Git_If, Config, Bookmarks, History, Tree, Tags, Commit, Push_Pull,
      Confirm, Confirm_Diff_Dir, Error, Stash, Branch, Afpx_Xref, Reset, Aski,
      Icon;
 procedure Agite is
@@ -398,6 +398,7 @@ procedure Agite is
     Afpx.Utils.Protect_Field (Afpx_Xref.Main.Branch, Root.Is_Null);
     Afpx.Utils.Protect_Field (Afpx_Xref.Main.Diff, Root.Is_Null);
     Afpx.Utils.Protect_Field (Afpx_Xref.Main.History, Root.Is_Null);
+    Afpx.Utils.Protect_Field (Afpx_Xref.Main.Tree, Root.Is_Null);
     Afpx.Utils.Protect_Field (Afpx_Xref.Main.Tags, Root.Is_Null);
     Afpx.Utils.Protect_Field (Afpx_Xref.Main.Add, Root.Is_Null);
     Afpx.Utils.Protect_Field (Afpx_Xref.Main.Commit, Root.Is_Null);
@@ -536,6 +537,14 @@ procedure Agite is
                   True, True);
     Init (Position);
   end Do_History;
+
+  procedure Do_Tree (Name : in String; Is_File : in Boolean) is
+  begin
+    -- Call tree and restore current entry
+    Position := Afpx.Line_List.Get_Position;
+    Tree.List (Root.Image, "", Path.Image, Name, Is_File);
+    Init (Position);
+  end Do_Tree;
 
   procedure List_Tags is
   begin
@@ -718,7 +727,7 @@ procedure Agite is
   -- List action on File or Dir:
   --  Launch the diff depending on file kind and status
   --  or dispatch other actions
-  type Action_List is (Default, Edit, Diff, History, Revert, Add);
+  type Action_List is (Default, Edit, Diff, History, Tree, Revert, Add);
   procedure List_Action (Action : in Action_List) is
     File : constant Git_If.File_Entry_Rec := Get_Current_File;
     File_Name : constant String := File.Name.Image;
@@ -745,6 +754,12 @@ procedure Agite is
             Do_History ("", False);
           elsif File_Name /= ".." then
             Do_History (File_Name, False);
+          end if;
+        when Tree =>
+          if File_Name = "." then
+            Do_Tree ("", False);
+          elsif File_Name /= ".." then
+            Do_Tree (File_Name, False);
           end if;
         when Revert =>
           if File_Name /= ".." then
@@ -822,6 +837,8 @@ procedure Agite is
           end if;
         when History =>
           Do_History (File_Name, True);
+        when Tree =>
+          Do_Tree (File_Name, True);
         when Revert =>
           Do_Revert (File_Name, File.Prev.Image);
         when Add =>
@@ -922,10 +939,11 @@ procedure Agite is
     end if;
     -- No Diff, Hist, Add, Revert on ".." (already de-activated if not in Git)
     Dotdot := File.Name.Image = ".." or else Root.Is_Null;
-    -- No Diff, Hist on untracked file
+    -- No Diff, Hist, Tree on untracked file
     Untracked := File.S2 = '?';
     Afpx.Utils.Protect_Field (Afpx_Xref.Main.Diff, Dotdot or else Untracked);
     Afpx.Utils.Protect_Field (Afpx_Xref.Main.History, Dotdot or else Untracked);
+    Afpx.Utils.Protect_Field (Afpx_Xref.Main.Tree, Dotdot or else Untracked);
     Afpx.Utils.Protect_Field (Afpx_Xref.Main.Add, Dotdot);
     Afpx.Utils.Protect_Field (Afpx_Xref.Main.Revert,
                               Dotdot or else File.Name.Image = ".");
@@ -1122,6 +1140,15 @@ begin -- Agite
               begin
                 Position := Afpx.Line_List.Get_Position;
                 List_Action (History);
+                Init (Position, Curr_Dir);
+              end;
+            when Afpx_Xref.Main.Tree =>
+              -- Tree
+              declare
+                Curr_Dir : constant String := Directory.Get_Current;
+              begin
+                Position := Afpx.Line_List.Get_Position;
+                List_Action (Tree);
                 Init (Position, Curr_Dir);
               end;
             when Afpx_Xref.Main.Tags =>

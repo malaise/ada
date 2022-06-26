@@ -96,7 +96,7 @@ package body Afpx.Utils is
                          Keep_Tail : in Boolean := True;
                          Show_Cut : Boolean := True) is
   begin
-  Clean_Line (Line);
+    Clean_Line (Line);
     Afpx.Encode_Line (Line,
         Head & Procuste (Text, Width - Head'Length - Tail'Length,
                          True, Keep_Tail, Show_Cut)
