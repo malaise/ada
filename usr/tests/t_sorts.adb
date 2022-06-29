@@ -73,15 +73,15 @@ begin
       exit;
     else
       for I in 1 .. Last loop
-        Basic_Proc.Put_Output (Normal(Init(I), 3));
+        Basic_Proc.Put_Output_Again (Normal(Init(I), 3));
       end loop;
-      Basic_Proc.New_Line_Output;
+      Basic_Proc.New_Line_Output_Again;
       for I in 1 .. Last loop
-        Basic_Proc.Put_Output (Normal(Res_Rap(I), 3));
+        Basic_Proc.Put_Output_Again (Normal(Res_Rap(I), 3));
       end loop;
-      Basic_Proc.Put_Line_Output (" OK");
-      Basic_Proc.New_Line_Output;
-      Basic_Proc.Flush_Output;
+      Basic_Proc.Put_Line_Output_Again (" OK");
+      Basic_Proc.New_Line_Output_Again;
+      Basic_Proc.Flush_Output_Again;
 
       Id_Loop := Id_Loop + 1;
       exit when Id_Loop = Nb_Loops;

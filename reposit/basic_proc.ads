@@ -3,7 +3,14 @@ package Basic_Proc is
   -- Any Put can raise (for ex on EPIPE)
   Io_Error : exception;
 
-  -- Put line on stdout
+  -- Put line on stdout, loop as long as EAGAIN
+  procedure Put_Output_Again (Str : in String);
+  procedure Put_Output_Again (Char : in Character);
+  procedure Put_Line_Output_Again (Str : in String);
+  procedure New_Line_Output_Again;
+  procedure Flush_Output_Again;
+
+  -- Put line on stdout, loop as long as EAGAIN
   procedure Put_Output (Str : in String);
   procedure Put_Output (Char : in Character);
   procedure Put_Line_Output (Str : in String);

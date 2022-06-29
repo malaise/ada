@@ -2292,9 +2292,13 @@ fi
 # t_utf
 if `match $arg t_utf` ; then
   title t_utf
-  try t_utf U+E7
+  try t_utf -unicode E7
   cat << EOF >exp
-U+0000E7 : 00E7      : C3 A7       : ç
+Unicode : 000000E7
+Utf-16  :     00E7
+Utf-8   :     C3A7
+Utf-8   : ç      
+String  : ç
 EOF
   comp err nul
   comp out exp

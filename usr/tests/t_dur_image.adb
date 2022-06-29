@@ -31,11 +31,11 @@ begin
       else
         D := Rnd.Gen.Dur_Random (-99.999999, 100.0);
       end if;
-      Basic_Proc.Put_Line_Output ("D is " & D'Img);
+      Basic_Proc.Put_Line_Output_Again ("D is " & D'Img);
       -- Loop of various Nb_Digits
       for I in 1 .. 10 loop
         N := Rnd.Gen.Int_Random (Maxi => 10);
-        Basic_Proc.Put_Line_Output (
+        Basic_Proc.Put_Line_Output_Again (
              N'Img & " ->" & Images.Dur_Image (D, N, True)
                    & "<->" & Images.Dur_Image (D, N, False)
                                           & "<");
@@ -45,7 +45,7 @@ begin
     exit when Id_Loop = Nb_Loops;
     exit when Key_Pressed.Key_Pressed;
     if Nb_Loops = 0 then
-      Basic_Proc.Put_Line_Output ("Hit a key to stop.");
+      Basic_Proc.Put_Line_Output_Again ("Hit a key to stop.");
       delay 1.0;
     end if;
     exit when Key_Pressed.Key_Pressed;

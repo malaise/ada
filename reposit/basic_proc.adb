@@ -1,22 +1,84 @@
 with System, Interfaces.C_Streams;
 with Ada.Command_Line;
-with Aski, C_Types, As.U;
+with Aski, C_Types, As.U, Sys_Calls;
 package body Basic_Proc is
 
-  procedure Check (I : in Integer) is
+  function Check (I : Integer; Eagain : Boolean) return Boolean is
   begin
-    if I = C_Types.Eof then
+    if I /= C_Types.Eof then
+      return True;
+    elsif not Eagain and then Sys_Calls.Errno = 11 then
+      -- EAGAIN, EWOULDBLOCK
+      return False;
+    else
+      -- Error
       raise Io_Error;
     end if;
   end Check;
 
-  -- Put line on stdout
+  procedure Check (I : Integer) is
+    Dummy : Boolean;
+  begin
+    Dummy := Check (I, True);
+  end Check;
+
+  -- Put line on stdout, loop as long as EAGAIN
+  procedure Put_Output_Again (Str : in String) is
+    I : Interfaces.C_Streams.Int;
+    Str4C : constant String := Str & Aski.Nul;
+  begin
+    loop
+      I := Interfaces.C_Streams.Fputs (Str4C'Address,
+                     Interfaces.C_Streams.Stdout);
+      exit when Check (I, False);
+    end loop;
+  end Put_Output_Again;
+
+  procedure Put_Output_Again (Char : in Character) is
+    I : Interfaces.C_Streams.Int;
+    Str4C : constant String := Char & Aski.Nul;
+  begin
+    loop
+      I := Interfaces.C_Streams.Fputs (Str4C'Address,
+                   Interfaces.C_Streams.Stdout);
+      exit when Check (I, False);
+    end loop;
+  end Put_Output_Again;
+
+  procedure New_Line_Output_Again is
+    I : Interfaces.C_Streams.Int;
+    Str4C : constant String := Aski.Lf & Aski.Nul;
+  begin
+    loop
+      I := Interfaces.C_Streams.Fputs (Str4C'Address,
+                   Interfaces.C_Streams.Stdout);
+      exit when Check (I, False);
+    end loop;
+  end New_Line_Output_Again;
+
+  procedure Put_Line_Output_Again (Str : in String) is
+  begin
+    Put_Output_Again (Str);
+    New_Line_Output_Again;
+  end Put_Line_Output_Again;
+
+  procedure Flush_Output_Again is
+    I : Interfaces.C_Streams.Int;
+  begin
+    loop
+      I := Interfaces.C_Streams.Fflush (Interfaces.C_Streams.Stdout);
+      exit when Check (I, False);
+    end loop;
+  end Flush_Output_Again;
+
+  -- Put line on stdout (error on EAGAIN)
   procedure Put_Output (Str : in String) is
     I : Interfaces.C_Streams.Int;
     Str4C : constant String := Str & Aski.Nul;
   begin
+
     I := Interfaces.C_Streams.Fputs (Str4C'Address,
-                 Interfaces.C_Streams.Stdout);
+                    Interfaces.C_Streams.Stdout);
     Check (I);
   end Put_Output;
 
@@ -25,7 +87,7 @@ package body Basic_Proc is
     Str4C : constant String := Char & Aski.Nul;
   begin
     I := Interfaces.C_Streams.Fputs (Str4C'Address,
-                 Interfaces.C_Streams.Stdout);
+                    Interfaces.C_Streams.Stdout);
     Check (I);
   end Put_Output;
 
@@ -34,8 +96,8 @@ package body Basic_Proc is
     Str4C : constant String := Aski.Lf & Aski.Nul;
   begin
     I := Interfaces.C_Streams.Fputs (Str4C'Address,
-                 Interfaces.C_Streams.Stdout);
-    Check (I);
+                    Interfaces.C_Streams.Stdout);
+      Check (I);
   end New_Line_Output;
 
   procedure Put_Line_Output (Str : in String) is
@@ -65,9 +127,9 @@ package body Basic_Proc is
     I : Interfaces.C_Streams.Int;
     Str4C : constant String := Char & Aski.Nul;
   begin
-    I := Interfaces.C_Streams.Fputs (Str4C'Address,
+      I := Interfaces.C_Streams.Fputs (Str4C'Address,
                  Interfaces.C_Streams.Stderr);
-    Check (I);
+      Check (I);
   end Put_Error;
 
   procedure New_Line_Error is

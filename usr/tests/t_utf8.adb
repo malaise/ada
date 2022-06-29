@@ -47,24 +47,24 @@ begin
   loop
     U1 := Rnd.Gen.Int_Random (Utf_8.Unicode_Number'First,
                               Utf_8.Unicode_Number'Last);
-    Basic_Proc.Put_Output (Image16.Image (U1));
-    Basic_Proc.Put_Output (" ->");
+    Basic_Proc.Put_Output_Again (Image16.Image (U1));
+    Basic_Proc.Put_Output_Again (" ->");
     declare
       Str : constant Utf_8.Word := Utf_8.Encode (U1);
     begin
       for C of Str loop
-        Basic_Proc.Put_Output (" " & Image16.Image (Character'Pos (C)));
+        Basic_Proc.Put_Output_Again (" " & Image16.Image (Character'Pos (C)));
       end loop;
-      Basic_Proc.Put_Output (" -> ");
+      Basic_Proc.Put_Output_Again (" -> ");
 
       U2 := Utf_8.Decode (Str);
-      Basic_Proc.Put_Output (Image16.Image (U2));
+      Basic_Proc.Put_Output_Again (Image16.Image (U2));
       if U1 /= U2 then
-        Basic_Proc.Put_Line_Output (" Bug");
+        Basic_Proc.Put_Line_Output_Again (" Bug");
         Basic_Proc.Set_Error_Exit_Code;
         exit;
       else
-        Basic_Proc.Put_Line_Output (" OK");
+        Basic_Proc.Put_Line_Output_Again (" OK");
       end if;
     end;
     exit when Key_Pressed.Key_Pressed;
@@ -72,7 +72,7 @@ begin
     exit when Id_Loop = Nb_Loops;
   end loop;
 
-  Basic_Proc.Flush_Output;
+  Basic_Proc.Flush_Output_Again;
   Key_Pressed.Close;
 exception
   when others =>

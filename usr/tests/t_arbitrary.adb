@@ -43,9 +43,9 @@ procedure T_Arbitrary is
            I : in Integer) is
   begin
     if N.Image /= Image (I) then
-      Basic_Proc.Put_Output ("ERROR on " &
+      Basic_Proc.Put_Output_Again ("ERROR on " &
         Arbitrary.Image (A) & " " & Oper & " " & B.Image & ". ");
-      Basic_Proc.Put_Line_Output ("Expected " & Image (I)
+      Basic_Proc.Put_Line_Output_Again ("Expected " & Image (I)
              & ", got " & N.Image & ".");
       raise Abort_Error;
     end if;
@@ -214,7 +214,7 @@ begin
   -- Setting empty
   begin
     A.Set("");
-    Basic_Proc.Put_Line_Output ("ERROR: Set("""") should have raised "
+    Basic_Proc.Put_Line_Output_Again ("ERROR: Set("""") should have raised "
                         & "Constraint_Error");
     raise Abort_Error;
   exception
@@ -223,16 +223,16 @@ begin
   end;
 
   if A.Is_Set then
-    Basic_Proc.Put_Line_Output ("A is set, OK.");
+    Basic_Proc.Put_Line_Output_Again ("A is set, OK.");
   else
-    Basic_Proc.Put_Line_Output ("ERROR: A is not set.");
+    Basic_Proc.Put_Line_Output_Again ("ERROR: A is not set.");
     raise Abort_Error;
   end if;
 
   if not Nul.Is_Set then
-    Basic_Proc.Put_Line_Output ("Nul is not set, OK.");
+    Basic_Proc.Put_Line_Output_Again ("Nul is not set, OK.");
   else
-    Basic_Proc.Put_Line_Output ("ERROR: Nul is set.");
+    Basic_Proc.Put_Line_Output_Again ("ERROR: Nul is set.");
     raise Abort_Error;
   end if;
   delay 1.0;
@@ -249,7 +249,7 @@ begin
       Ib := 0;
     end if;
     Nb.Set (Ib);
-    Basic_Proc.Put_Line_Output (Na.Image & " and " & Nb.Image);
+    Basic_Proc.Put_Line_Output_Again (Na.Image & " and " & Nb.Image);
 
     -- Unary operators
     Check (Nul, "abs", Na, abs Na, abs Ia);
@@ -281,7 +281,8 @@ begin
       -- Shall raise Constraint_Error
       begin
         A := Na / Nb;
-        Basic_Proc.Put_Line_Output ("ERROR: / should have raised Constraint_Error");
+        Basic_Proc.Put_Line_Output_Again
+            ("ERROR: / should have raised Constraint_Error");
         raise Abort_Error;
       exception
         when Constraint_Error =>
@@ -290,7 +291,8 @@ begin
       end;
       begin
         A := Na rem Nb;
-        Basic_Proc.Put_Line_Output ("ERROR: rem should have raised Constraint_Error");
+        Basic_Proc.Put_Line_Output_Again
+            ("ERROR: rem should have raised Constraint_Error");
         raise Abort_Error;
       exception
         when Constraint_Error =>
@@ -299,7 +301,8 @@ begin
       end;
       begin
         A := Na mod Nb;
-        Basic_Proc.Put_Line_Output ("ERROR: mod should have raised Constraint_Error");
+        Basic_Proc.Put_Line_Output_Again
+            ("ERROR: mod should have raised Constraint_Error");
         raise Abort_Error;
       exception
         when Constraint_Error =>
@@ -328,8 +331,8 @@ begin
     else
       begin
         A := Nb.Sqrt;
-        Basic_Proc.Put_Line_Output ("ERROR: Sqrt should have raised " &
-                              "Constraint_Error");
+        Basic_Proc.Put_Line_Output_Again
+            ("ERROR: Sqrt should have raised " & "Constraint_Error");
         raise Abort_Error;
       exception
         when Constraint_Error =>
@@ -349,15 +352,17 @@ begin
         exit when not Moved;
       end loop;
       if C /= Na then
-        Basic_Proc.Put_Line_Output ("ERROR: Prime decomposition of " &
-              Na.Image & " does not mutiply to itself");
+        Basic_Proc.Put_Line_Output_Again
+            ("ERROR: Prime decomposition of " &
+             Na.Image & " does not mutiply to itself");
         raise Abort_Error;
       end if;
     elsif Ia <= 1 then
       begin
         Arbitrary.Factors.Decompose (Na, L);
-        Basic_Proc.Put_Line_Output ("ERROR: decomposition into prime factors " &
-                              "should have raised Constraint_Error");
+        Basic_Proc.Put_Line_Output_Again
+            ("ERROR: decomposition into prime factors " &
+             "should have raised Constraint_Error");
         raise Abort_Error;
       exception
         when Constraint_Error =>
@@ -369,7 +374,7 @@ begin
     exit when Key_Pressed.Key_Pressed;
     -- Sleep a bit
     if Nb_Loops = 0 and then I /= 0 and then I mod 1000 = 0 then
-      Basic_Proc.Put_Line_Output ("Waiting a bit, hit a key to stop...");
+      Basic_Proc.Put_Line_Output_Again ("Waiting a bit, hit a key to stop...");
       delay 1.0;
       exit when Key_Pressed.Key_Pressed;
     end if;
