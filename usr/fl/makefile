@@ -5,5 +5,7 @@ ADACTL := true
 
 EXES := fl
 
+CLIBS_fl := $(UTILS_SLIBS) 
+
 include $(TEMPLATES)/ada.mk
 
