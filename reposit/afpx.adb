@@ -455,6 +455,16 @@ package body Afpx is
     Width  := Af_Dscr.Fields(Fn).Width;
   end Get_Field_Size;
 
+  -- Get full geometry of a field
+  procedure Get_Field_Geometry (Field_No : Absolute_Field_Range;
+                                Upper_Left, Lower_Right : out Con_Io.Square) is
+      Fn : constant Absolute_Field_Range := Field_No;
+  begin
+    Af_Dscr.Check(Fn);
+    Upper_Left  := Af_Dscr.Fields(Fn).Upper_Left;
+    Lower_Right := Af_Dscr.Fields(Fn).Lower_Right;
+  end Get_Field_Geometry;
+
   -- Data len
   function Get_Data_Len (Field_No : Absolute_Field_Range)
                          return Width_Range is

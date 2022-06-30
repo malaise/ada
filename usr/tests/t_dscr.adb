@@ -1,4 +1,4 @@
-with Basic_Proc, Argument, Afpx, Normal, Mixed_Str, Language, Images;
+with Basic_Proc, Argument, Afpx, Con_Io, Normal, Mixed_Str, Language, Images;
 procedure T_Dscr is
   Dscr_No : Afpx.Descriptor_Range;
   Get_Handle : Afpx.Get_Handle_Rec;
@@ -16,6 +16,9 @@ procedure T_Dscr is
 
   procedure Set_Dscr(No : in Afpx.Descriptor_Range) is
     Start : Afpx.Absolute_Field_Range;
+    Upper_Left, Lower_Right : Con_Io.Square;
+    Height : Afpx.Height_Range;
+    Width  : Afpx.Width_Range;
     use type Afpx.Field_Kind_List, Afpx.Absolute_Field_Range;
   begin
     Afpx.Use_Descriptor(No);
@@ -34,11 +37,19 @@ procedure T_Dscr is
       & Afpx.Absolute_Field_Range'Image (Afpx.Nb_Fields)
       & " fields.");
     for I in Start .. Afpx.Nb_Fields loop
-      Basic_Proc.Put_Line_Output (
+      Basic_Proc.Put_Output (
          (if I = Afpx.List_Field_No then "List"
-          else "Field No" & I'Img & " is of kind "
-             & Mixed_Str (Afpx.Field_Kind_List'Image(Afpx.Get_Field_Kind (I))) )
-         & ", " & Images.Integer_Image (Afpx.Get_Field_Height (I))
+          else "Field" & I'Img & " kind "
+            & Mixed_Str (Afpx.Field_Kind_List'Image(Afpx.Get_Field_Kind (I)))
+         ));
+      Afpx.Get_Field_Geometry (I, Upper_Left, Lower_Right);
+      Afpx.Get_Field_Size (I, Height, Width);
+      Basic_Proc.Put_Line_Output (
+        ": (" & Images.Integer_Image (Upper_Left.Row)
+        & "," & Images.Integer_Image (Upper_Left.Col)
+        & ")-(" & Images.Integer_Image (Lower_Right.Row)
+        & "," & Images.Integer_Image (Lower_Right.Col)
+        & ") => " & Images.Integer_Image (Afpx.Get_Field_Height (I))
          & "x"  & Images.Integer_Image (Afpx.Get_Field_Width (I))
          & (if I in Afpx.Field_Range
             and then Afpx.Get_Field_Kind (I) = Afpx.Get_Field then

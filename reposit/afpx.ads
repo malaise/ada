@@ -111,6 +111,12 @@ package Afpx is
   procedure Get_Field_Size (Field_No : in Absolute_Field_Range;
                             Height : out Height_Range;
                             Width  : out Width_Range);
+  -- Get full geometry of a field
+  -- Exceptions : No_Descriptor (no Descriptor in use),
+  --              Invalid_Field (Field_No too big)
+  procedure Get_Field_Geometry (Field_No : Absolute_Field_Range;
+                                Upper_Left, Lower_Right : out Con_Io.Square);
+
   -- Data len of a get field (which can be longer than the field width if
   --  Data_Len is defined in the Xml)
   -- Exceptions : No_Descriptor (no Descriptor in use),
