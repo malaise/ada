@@ -22,23 +22,21 @@ procedure T_Mapcode is
     Ada.Text_Io.Put_Line (
       "Usage: " & Ada.Command_Line.Command_Name & " <command>");
     Ada.Text_Io.Put_Line (
-      "  -h                                             // This help");
+      "  -h                                       // This help");
     Ada.Text_Io.Put_Line (
-      "  -t <territory> [ <context> ]                   // Territory info");
+      "  -t <territory> [ <context> ]             // Territory info");
     Ada.Text_Io.Put_Line (
-      "  -s <subdivision>                               // Same subdivisions");
+      "  -s <subdivision>                         // Same subdivisions");
     Ada.Text_Io.Put_Line (
-      "  -S <name>                                      // Search territory");
+      "  -S <name>                                // Search territory");
     Ada.Text_Io.Put_Line (
-      "  -d  <territory_mapcode>                        // Decode");
+      "  -d  <territory_mapcode>                  // Decode");
     Ada.Text_Io.Put_Line (
-      "  -c <lat> <lon> [ <options> ]                   // Encode");
+      "  -c <lat> <lon> [ <options> ]             // Encode");
     Ada.Text_Io.Put_Line (
-      "  -a  <territory_mapcode> [ <options> ]          // Alternative mapcodes");
+      "  -a  <territory_mapcode> [ <options> ]    // Alternative mapcodes");
     Ada.Text_Io.Put_Line (
-      "  -l                                             // List languages");
-    Ada.Text_Io.Put_Line (
-      "  -l  <mapcode> [ <language> ]                   // Convert into a language");
+      "  -l  [ <mapcode> [ <language> ] ]         // List or convert into a language");
     Ada.Text_Io.Put_Line (
       "  <territory_mapcode> ::= <territory>:<mapcode> | [ <territory> ] <mapcode>");
     Ada.Text_Io.Put_Line (
