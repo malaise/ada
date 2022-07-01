@@ -2,7 +2,9 @@
 with Ada.Command_Line, Ada.Text_Io,
      Ada.Strings.Utf_Encoding.Wide_Strings,
      Ada.Strings.Utf_Encoding.Wide_Wide_Strings;
---#@IfNotDef Export
+--#@IfDef Export
+with Ada.Environment_Variables;
+--#@ElseDef
 with Environ, My_Math, Normalization, Gets;
 --#@EndifDef
 with Mapcode_Utils.As_U, Mapcode_Utils.Str_Tools, Language_Utils;
@@ -33,6 +35,8 @@ procedure T_Mapcode is
       "  -c <lat> <lon> [ <options> ]                   // Encode");
     Ada.Text_Io.Put_Line (
       "  -a  <territory_mapcode> [ <options> ]          // Alternative mapcodes");
+    Ada.Text_Io.Put_Line (
+      "  -l                                             // List languages");
     Ada.Text_Io.Put_Line (
       "  -l  <mapcode> [ <language> ]                   // Convert into a language");
     Ada.Text_Io.Put_Line (
@@ -90,7 +94,8 @@ procedure T_Mapcode is
 
   function Is_Command (Arg : in String) return Boolean is
     (Arg = "-h" or else Arg = "-t" or else Arg = "-s" or else Arg = "-S"
-     or else Arg = "-d" or else Arg = "-c" or else Arg = "-a");
+     or else Arg = "-d" or else Arg = "-c" or else Arg = "-a"
+     or else Arg = "-l");
 
   function Image (F : Mapcodes.Real) return String is
 --#@IfNotDef Export
@@ -323,64 +328,89 @@ begin
       Ada.Text_Io.Put_Line ("=> " & Image (Coord.Lat)
                           & " " & Image (Coord.Lon));
     elsif Command.Image = "-l" then
+      -- Languge conversion
       if I + 1 <= Ada.Command_Line.Argument_Count then
+        -- Text is set
         I := I + 1;
         Arg1 := As_U.Tus (Ada.Command_Line.Argument (I));
       else
+      -- Text is in ENV (easier with a debugger)
+      --  and output language will be default
 --#@IfNotDef Export
         Arg1 := As_U.Tus (Environ.Getenv ("Mapcode"));
 --#@ElseDef
-        raise Argument_Error;
+        begin
+          Arg1 := As_U.Tus (Ada.Environment_Variables ("Mapcode");
+        exception
+          when others =>
+            Arg1.Set_Null;
+        end;
 --#@EndifDef
       end if;
-      Arg2.Set_Null;
-      if I + 1 <= Ada.Command_Line.Argument_Count then
-        -- Optional output language
-        Arg2 := As_U.Tus (Ada.Command_Line.Argument (I + 1));
-        if Arg2.Length = 0 and then Arg2.Element (1) = '-' then
-          Arg2.Set_Null;
-        else
-          I := I + 1;
-        end if;
-      end if;
-      -- Set output language
-      declare
-        Language : Mapcodes.Languages.Language_List
-                 := Mapcodes.Languages.Roman;
-      begin
-        if not Arg2.Is_Null
-        and then Arg2.Element (1) >= '0' and then Arg2.Element (1) <= '9' then
-          -- Argument is language num
-          Language := Mapcodes.Languages.Language_List'Val (
-            Natural'Value (Arg2.Image));
-        elsif not Arg2.Is_Null then
-          -- Argument is language name
+      if Arg1.Is_Null then
+        -- No text and no ENV: list all languages
+        for Lang in Mapcodes.Languages.Language_List loop
           declare
-            -- Convert to unicodes to get the language
-            Wws : constant Wide_Wide_String
-                := Ada.Strings.Utf_Encoding.Wide_Wide_Strings.Decode (
-                       Mapcode_Utils.Str_Tools.Upper_Str (Arg2.Image));
-            Unicodes : Language_Utils.Unicode_Sequence (Wws'Range);
+            Str : constant String
+                := Integer'Image (Mapcodes.Languages.Language_List'Pos (Lang));
           begin
-            for I in Wws'Range loop
-              Unicodes(I) := Wide_Wide_Character'Pos(Wws(I));
-            end loop;
-            Language := Mapcodes.Languages.Get_Language (Unicodes);
+            Ada.Text_Io.Put_Line (
+               (if Str'Length = 3 then Str (2 .. 3)
+                else '0' & Str (2))
+               & " " & Mapcode_Utils.Str_Tools.Mixed_Str (Lang'Img));
           end;
+        end loop;
+      else
+        -- Text is set
+        Arg2.Set_Null;
+        if I + 1 <= Ada.Command_Line.Argument_Count then
+          -- Optional output language
+          Arg2 := As_U.Tus (Ada.Command_Line.Argument (I + 1));
+          if Arg2.Length = 0 and then Arg2.Element (1) = '-' then
+            Arg2.Set_Null;
+          else
+            I := I + 1;
+          end if;
         end if;
-        Ada.Text_Io.Put_Line  (
-          Ada.Strings.Utf_Encoding.Wide_Strings.Encode (
-            Mapcodes.Languages.Convert (
-              Ada.Strings.Utf_Encoding.Wide_Strings.Decode (Arg1.Image),
-              Language)));
-      exception
-        when Mapcodes.Decode_Error
-           | Mapcodes.Languages.Invalid_Text
-           | Mapcodes.Languages.Unknown_Language =>
-          raise;
-        when others =>
-          raise Argument_Error;
-      end;
+        -- Set output language
+        declare
+          Language : Mapcodes.Languages.Language_List
+                   := Mapcodes.Languages.Default_Language;
+        begin
+          if not Arg2.Is_Null
+          and then Arg2.Element (1) >= '0' and then Arg2.Element (1) <= '9' then
+            -- Argument is language num
+            Language := Mapcodes.Languages.Language_List'Val (
+              Natural'Value (Arg2.Image));
+          elsif not Arg2.Is_Null then
+            -- Argument is language name
+            declare
+              -- Convert to unicodes to get the language
+              Wws : constant Wide_Wide_String
+                  := Ada.Strings.Utf_Encoding.Wide_Wide_Strings.Decode (
+                         Mapcode_Utils.Str_Tools.Upper_Str (Arg2.Image));
+              Unicodes : Language_Utils.Unicode_Sequence (Wws'Range);
+            begin
+              for I in Wws'Range loop
+                Unicodes(I) := Wide_Wide_Character'Pos(Wws(I));
+              end loop;
+              Language := Mapcodes.Languages.Get_Language (Unicodes);
+            end;
+          end if;
+          Ada.Text_Io.Put_Line  (
+            Ada.Strings.Utf_Encoding.Wide_Strings.Encode (
+              Mapcodes.Languages.Convert (
+                Ada.Strings.Utf_Encoding.Wide_Strings.Decode (Arg1.Image),
+                Language)));
+        exception
+          when Mapcodes.Decode_Error
+             | Mapcodes.Languages.Invalid_Text
+             | Mapcodes.Languages.Unknown_Language =>
+            raise;
+          when others =>
+            raise Argument_Error;
+        end;
+      end if;
     else
       raise Argument_Error;
     end if;
