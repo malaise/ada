@@ -89,6 +89,7 @@ package body Reflog is
   function Do_Action (Action : in Action_List) return Boolean is
     Position : Afpx.Line_List_Mng.Ll_Positive;
     Result : Boolean;
+    use type Afpx.Line_List_Mng.Ll_Positive;
   begin
     -- Save current position and move to proper ref
     Position := Afpx.Line_List.Get_Position;
@@ -117,7 +118,12 @@ package body Reflog is
     end case;
     Init;
     Reread;
-    Afpx.Line_List.Move_At (Position);
+    if Position <= Afpx.Line_List.List_Length then
+      Afpx.Line_List.Move_At (Position);
+    elsif not  Afpx.Line_List.Is_Empty then
+      Afpx.Line_List.Rewind;
+    end if;
+    Afpx.Update_List (Afpx.Top_Selected);
     return Result;
   end Do_Action;
 
