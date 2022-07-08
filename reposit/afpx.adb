@@ -3,7 +3,6 @@ package body Afpx is
 
   Console : aliased Con_Io.Console;
   Af_Con_Io : Con_Io.Window;
-  Size : Con_Io.Square;
 
   Lfn : constant Absolute_Field_Range := List_Field_No;
   Afpx_Internal_Error : exception;
@@ -27,8 +26,11 @@ package body Afpx is
     -- Characters of the fields
     Chars : Afpx_Typ.Char_Str;
 
-    -- Load the screen size
-    function Load_Size return Con_Io.Square;
+    -- Get the screen size
+    function Get_Size return Con_Io.Square;
+
+    -- Check if a descriptor exists
+    function Is_Defined (Dscr_No : in Descriptor_Range) return Boolean;
 
     -- Load a descriptor, raise No_Descriptor if invalid No
     procedure Load_Dscr (Dscr_No : in Descriptor_Range);
@@ -42,11 +44,11 @@ package body Afpx is
     -- Check if a descriptor is being used
     function Is_Set return Boolean;
 
-    -- Check if a descriptor has been used (raise No_Descriptor)
+    -- Check if a descriptor is being used (raise No_Descriptor)
     --  and if Field_No is valid in it (raise Invalid_Field)
     procedure Check (Field_No : in Absolute_Field_Range);
 
-    -- Check if a descriptor has been used (raise No_Descriptor)
+    -- Check if a descriptor is being used (raise No_Descriptor)
     -- and it has the list field active
     function Has_List return Boolean;
 
@@ -245,6 +247,7 @@ package body Afpx is
   -- Width and height of the screen
   procedure Get_Screen_Size (Height : out Height_Range;
                              Width  : out Width_Range) is
+    Size : constant Con_Io.Square := Af_Dscr.Get_Size;
   begin
     Height := Size.Row + 1;
     Width := Size.Col + 1;
@@ -264,9 +267,17 @@ package body Afpx is
       null;
   end Init_Double_Click_Delay_From_Env;
 
+  -- Is a descriptor defined offline
+  function Is_Descriptor_Defined (Descriptor_No : in Descriptor_Range)
+           return Boolean is
+  begin
+    return Af_Dscr.Is_Defined (Descriptor_No);
+  end Is_Descriptor_Defined;
+
   -- Set current descriptor (read descriptor description)
   procedure Use_Descriptor (Descriptor_No : in Descriptor_Range;
                             Clear_Screen : in Boolean := True) is
+    Size : constant Con_Io.Square := Af_Dscr.Get_Size;
   begin
     Check_Ptg;
     Af_Dscr.Load_Dscr (Descriptor_No);
@@ -277,8 +288,6 @@ package body Afpx is
         -- If necessary, Set the colors when using the first descriptor
         Con_Io.Set_Colors (Afpx_Typ.To_Def (Af_Dscr.Current_Dscr.Colors));
       end if;
-      -- Done only once at first descriptor
-      Size := Af_Dscr.Load_Size;
       -- Create console and screen
       Console.Open (
               Font_No => 1,

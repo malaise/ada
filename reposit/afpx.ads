@@ -23,6 +23,10 @@ package Afpx is
   procedure Get_Screen_Size (Height : out Height_Range;
                              Width  : out Width_Range);
 
+  -- Is a descriptor defined offline
+  function Is_Descriptor_Defined (Descriptor_No : in Descriptor_Range)
+           return Boolean;
+
   -- Set current descriptor (read from file)
   -- Previous descriptor modifications (from encode, set_colors, put_then_get)
   --  are lost

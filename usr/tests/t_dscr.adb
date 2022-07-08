@@ -25,6 +25,7 @@ procedure T_Dscr is
     Get_Handle.Cursor_Field := Afpx.Next_Cursor_Field(0);
 
     -- Dump descriptor
+    Basic_Proc.New_Line_Output;
     Basic_Proc.Put_Output ("Descriptor" & No'Img & " has");
     if Afpx.Has_List then
       Basic_Proc.Put_Output (" a");
@@ -56,7 +57,7 @@ procedure T_Dscr is
               "-" & Images.Integer_Image (Afpx.Get_Data_Len (I))
             else "") );
     end loop;
-    Basic_Proc.Put_Line_Output ("Cursor field is"
+    Basic_Proc.Put_Line_Output ("First cursor field is"
                               & Get_Handle.Cursor_Field'Img);
 
     -- Fix Cursor_Field for Put_Then_Get
@@ -96,9 +97,6 @@ begin
   end loop;
   Afpx.Line_List.Rewind;
 
-  -- Set a first dscr to get screen size
-  Afpx.Use_Descriptor(Dscr_No);
-
   -- Get and prind screen size
   Afpx.Get_Screen_Size (Height, Width);
   Basic_Proc.Put_Line_Output ("Screen is " & Images.Integer_Image (Height)
@@ -118,14 +116,10 @@ begin
             Next_Dscr:
             loop
               Dscr_No := Dscr_No + 1;
-              begin
-                Set_Dscr(Dscr_No);
-                exit Next_Dscr;
-              exception
-                when Afpx.No_Descriptor =>
-                  exit One_Dscr when Dscr_No > 21;
-              end;
+              exit Next_Dscr when Afpx.Is_Descriptor_Defined (Dscr_No);
+              exit One_Dscr when Dscr_No > 42;
             end loop Next_Dscr;
+            Set_Dscr(Dscr_No);
           when Afpx.Escape_Key | Afpx.Break_Key =>
             exit One_Dscr;
         end case;

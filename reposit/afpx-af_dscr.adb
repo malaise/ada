@@ -20,15 +20,31 @@ package body Af_Dscr is
   -- Descriptor read
   Dscrs : Afpx_Typ.Descriptors_Array;
 
+  -- Load Afpx files if needed
+  procedure Load_Files;
+
   -- Load the screen size, raise No_Descriptor if failure of version check
-  function Load_Size return Con_Io.Square is
+  function Get_Size return Con_Io.Square is
   begin
+    -- Load Afpx files if needed
+    Load_Files;
+
     -- Even when not used, each dscr has the screen size
     return Dscrs(1).Size;
-  end Load_Size;
+  end Get_Size;
+
+
+  -- Check if a descriptor exists
+  function Is_Defined (Dscr_No : in Descriptor_Range) return Boolean is
+  begin
+    -- Load Afpx files if needed
+    Load_Files;
+
+    -- Check it is defined
+    return Dscrs(Dscr_No).Modified;
+  end Is_Defined;
 
   -- Load a descriptor
-  procedure Load_Files;
   procedure Load_Dscr (Dscr_No : in Descriptor_Range) is
     Dscr_Index : Descriptor_Range;
   begin
