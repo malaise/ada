@@ -3,7 +3,7 @@
 <!-- For agite -->
 
 <Afpx_Descriptors Height="48" Width="55">
-  <Var Name="Version" Value="V41.03"/>
+  <Var Name="Version" Value="V41.04"/>
 
   <!-- List management setup -->
   <Var Name="LmWidth" Value="8"/>
@@ -2625,33 +2625,39 @@
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="0">Checkout</Init>
     </Field>
-    <Field Num="17" Kind="Button" Name="Reset">
+    <Field Num="17" Kind="Button" Name="Mark">
       <Geometry Up="${Field_16.Low}+2" Left="${LmLeft}" Height="1"
+                Width="${LmWidth}"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="0" Col="2">Mark</Init>
+    </Field>
+    <Field Num="18" Kind="Button" Name="Reset">
+      <Geometry Up="${Field_17.Low}+2" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Red" Background="Dark_Grey"/>
       <Init Row="0" Col="1">Reset</Init>
     </Field>
 
-    <Field Num="18" Kind="Button" Name="Delete">
-      <Geometry Up="${Field_17.Low}+4" Left="${LmLeft}" Height="1"
+    <Field Num="19" Kind="Button" Name="Delete">
+      <Geometry Up="${Field_18.Low}+3" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Red" Background="Dark_Grey"/>
       <Init Row="0" Col="1">Delete</Init>
     </Field>
-    <Field Num="19" Kind="Put">
+    <Field Num="20" Kind="Put">
       <Geometry Up="${Field_2.Low}-1" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">--------</Init>
     </Field>
 
-    <Field Num="20" Kind="Put">
+    <Field Num="21" Kind="Put">
       <Geometry Up="${Field_8.Low}+1" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">--------</Init>
     </Field>
-    <Field Num="21" Kind="Button" Name="Back">
+    <Field Num="22" Kind="Button" Name="Back">
       <Geometry Low="${Screen.Low}-1" Left="${LmLeft}" Height="3"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>

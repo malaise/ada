@@ -1,6 +1,6 @@
 with Ada.Exceptions;
 with As.U, Directory, Afpx.Utils, Basic_Proc, Unicode;
-with Git_If, Utils.X, Afpx_Xref, Details, Checkout, Reset, Confirm;
+with Git_If, Utils.X, Utils.Store, Afpx_Xref, Details, Checkout, Reset, Confirm;
 package body Reflog is
 
   -- List width
@@ -85,7 +85,7 @@ package body Reflog is
   end Init;
 
   -- Actions on refs
-  type Action_List is (Detail, Chkout, Reset, Delete);
+  type Action_List is (Detail, Chkout, Mark, Reset, Delete);
   function Do_Action (Action : in Action_List) return Boolean is
     Position : Afpx.Line_List_Mng.Ll_Positive;
     Result : Boolean;
@@ -104,6 +104,9 @@ package body Reflog is
                                    "From reflog of branch",
                                    Target_Branch.Image,
                                    Refs.Access_Current.Hash);
+      when Mark =>
+        Utils.Store.Hash := Refs.Access_Current.Hash;
+        return False;
       when Reset =>
         Result := Reset (Root.Image, Refs.Access_Current.Hash.Image,
                          Only_Hard => True, Allow_Clean => False,
@@ -180,6 +183,8 @@ package body Reflog is
                 -- Back to Dir menu
                 return True;
               end if;
+            when Afpx_Xref.Reflog.Mark =>
+              Result := Do_Action (Mark);
             when Afpx_Xref.Reflog.Reset =>
               Result := Do_Action (Reset);
               if Result then

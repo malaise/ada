@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V41.03
+V41.04
 
 General purpose
 ---------------
@@ -887,6 +887,10 @@ The 'Detail' button shows the details of the (left) selected reference.
 The 'Checkout' button calls the xref:XCheckout[Checkout] menu in order to
 checkout the selected reference (as a new branch).
 
+The 'Mark' button stores internally (until Agite exits) the hash value of the
+reference currently left-selected, for later xref:XSearch[Search] in the
+xref:XHist[history] or xref:XTree[tree].
+
 The 'Reset' button calls the xref:XReset[Reset] menu in order to hard
 reset the current branch to the selected reference.
 
@@ -1248,7 +1252,7 @@ back to the menu from which the xref:XHist[history] has been called
 Tree
 ~~~~
 anchor:XTree[]
-The 'Tree' manu shows as a tree of branches the successive changes of a
+The 'Tree' menu shows as a tree of branches the successive changes of a
 directory or file.
 
 It behaves like the xref:XHist[history] menu regarding:
