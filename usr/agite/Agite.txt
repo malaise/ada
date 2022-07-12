@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V41.05
+V41.06
 
 General purpose
 ---------------
@@ -907,9 +907,12 @@ The 'Checkout' button calls the xref:XCheckout[Checkout] menu in order to
 checkout the selected reference (as a new branch).
 
 anchor:XMarkRef[]
-The 'Mark' button stores internally (until Agite exits) the hash value of the
-reference currently left-selected, for later xref:XSearchRef[Search] of
-reference, or in the xref:XHist[history] or the xref:XTree[tree].
+The 'Mark' button stores the hash value of the reference currently
+left-selected, for later xref:XSearchRef[Search] of reference.
+
+NOTE: Agite store internally the hash value is stored internally until it exits.
+The menus xref:XReflog[reflog], xref:XHist[history] and xref:XTree[tree] share
+this reference for marking and searching.
 
 anchor:XSearchRef[]
 Searches the reference with the hash value matching the hash contained in the
@@ -1250,8 +1253,8 @@ the output or the error message of the command.
 
 .Mark
 anchor:XMark[]
-Stores internally (until Agite exits) the hash value of the commit currently
-left-selected, for later xref:XSearch[Search].
+Stores the hash value of the commit currently left-selected, for later
+xref:XSearch[Search].
 
 .Search
 anchor:XSearch[]
@@ -1259,6 +1262,10 @@ Searches the commit with the hash value matching the hash contained in the
 xref:XHash[Hash] field. If this field is empty (you can clear it with
 Ctrl-Suppr) then Agite searches the xref:XMark[marked] hash instead.
 If found, this commit becomes left-selected.
+
+NOTE: Agite store internally the hash value is stored internally until it exits.
+The menus xref:XReflog[reflog], xref:XHist[history] and xref:XTree[tree] share
+this reference for marking and searching.
 
 .Back
 This button returns to the xref:XDir[directory] menu.
