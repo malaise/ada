@@ -2111,12 +2111,16 @@ package body Git_If is
     Ref : Reflog_Entry_Rec;
     Moved : Boolean;
     I1, I2 : Natural;
+    Num : Natural;
+    Sub : String (1 .. 2);
+    use type As.U.Asu_Us;
   begin
     Reflog.Delete_List;
     -- Git reflog --no-abbrev-commit
     Cmd.Set ("git");
     Cmd.Cat ("reflog");
     Cmd.Cat ("--no-abbrev-commit");
+    Cmd.Cat ("--date=iso");
     Cmd.Cat (Branch);
     Execute (Cmd, Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
@@ -2129,23 +2133,61 @@ package body Git_If is
       return;
     end if;
     Out_Flow_1.List.Rewind;
+    Num := 0;
     loop
       Out_Flow_1.List.Read (Line, Moved => Moved);
-      -- Parse "<Hash> <branch>@{<Num>}: <Comment>"
+      -- Parse "<Hash> <branch>@{<date time zone>}: <Comment>"
       begin
         I1 := Str_Util.Locate (Line.Image, " ");
         Ref.Hash := Line.Uslice (1, I1 - 1);
-        -- "<branch>@{" <num> "}:"
+        -- "<branch>@{" <date time zone> "}:"
         if Str_Util.Locate (Line.Image, "@{") = 0 then
           raise Constraint_Error;
         end if;
         I2 := Str_Util.Locate (Line.Image, "}:");
-        -- Stop at "}"
-        Ref.Id := Line.Uslice (I1 + 1, I2);
+        -- Keep head
+        Ref.Id := Line.Uslice (I1 + 1, I2 - 26)
+                & Images.Integer_Image (Num) & "}";
+        -- Keep date until " zone"
+        Ref.Date := Line.Slice (I2 - 25, I2 - 7);
+        -- Store Comment
         if I2 + 3 <= Line.Length then
           Ref.Comment := Line.Uslice (I2 + 3, Line.Length);
         else
           Ref.Comment.Set_Null;
+        end if;
+        -- Replace first word of comment by 2 letters
+        -- Co, Ch, Cp, Re, Me, Pu
+        I1 := Ref.Comment.Locate (":");
+        if I1 = 0 and then Ref.Comment.Image = "update by push" then
+          I1 := Ref.Comment.Length;
+          Sub := "Pu";
+        elsif Ref.Comment.Slice (1, I1) = "commit:" then
+          I1 := I1 + 1;
+          Sub := "Co";
+        elsif Ref.Comment.Slice (1, I1) = "checkout:" then
+          I1 := I1 + 1;
+          Sub := "Ch";
+        elsif Ref.Comment.Slice (1, I1) = "cherry-pick:" then
+          I1 := I1 + 1;
+          Sub := "Cp";
+        elsif Ref.Comment.Slice (1, I1) = "reset:" then
+          I1 := I1 + 1;
+          Sub := "Re";
+        elsif Ref.Comment.Slice (1, I1) = "merge:" then
+          I1 := I1 + 1;
+          Sub := "Me";
+        elsif I1 > 9 and then Ref.Comment.Slice (1, 7) = "commit " then
+          I1 := 7;
+          Sub := "Co";
+        elsif I1 > 8 and then Ref.Comment.Slice (1, 6) = "merge " then
+          I1 := 6;
+          Sub := "Me";
+        else
+           I1 := 0;
+        end if;
+        if I1 /= 0 then
+          Ref.Comment.Replace (1, I1, Sub & ": ");
         end if;
       exception
         when others =>
@@ -2154,8 +2196,10 @@ package body Git_If is
           Reflog.Delete_List;
           return;
       end;
+      -- Done
       Reflog.Insert (Ref);
       exit when not Moved;
+      Num := Num + 1;
     end loop;
     if not Reflog.Is_Empty then
       Reflog.Rewind;

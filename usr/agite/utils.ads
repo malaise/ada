@@ -35,6 +35,9 @@ package Utils is
   -- Get current date
   function Get_Current_Date return Git_If.Iso_Date;
 
+  -- "YYYY-MM-DD HH:MM:SS" -> "YYMMDD-HH:MM "
+  function Image (Date : Git_If.Iso_Date) return String;
+
   package Chrono is
     -- Reset and start a chrono (before calling a potentially long operation)
     procedure Start;

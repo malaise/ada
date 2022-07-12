@@ -104,6 +104,11 @@ package body Utils is
                           "%Y-%m-%d %H:%M:%S");
   end Get_Current_Date;
 
+  -- "YYYY-MM-DD HH:MM:SS" -> "YYMMDD-HH:MM "
+  function Image (Date : Git_If.Iso_Date) return String is
+    (Date(03 .. 04) & Date(06 .. 07) & Date(09 .. 10) & '-'
+   & Date(12 .. 13) & Date(15 .. 16));
+
   package body Chrono is
     -- The Chrono
     The_Chrono : Chronos.Chrono_Type;

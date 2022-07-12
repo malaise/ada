@@ -11,10 +11,8 @@ package body History is
   List_Width : Afpx.Width_Range;
 
   -- Full image of a commit: Date, then Comment
-  function Image1 (Log : Git_If.Log_Entry_Rec) return String is
-    -- "YYYY-MM-DD HH:MM:SS" -> "YYMMDD HH:MM "
-    (Log.Date(03 .. 04) & Log.Date(06 .. 07) & Log.Date(09 .. 10) & '-'
-   & Log.Date(12 .. 13) & Log.Date(15 .. 16));
+  function Image1 (Log : Git_If.Iso_Date) return String
+           renames Utils.Image;
   function Image2 (Log : Git_If.Log_Entry_Rec) return String is
     -- 1 or 2 lines of comment
     (Log.Comment(1).Image
@@ -26,7 +24,7 @@ package body History is
                  From : in Git_If.Log_Entry_Rec) is
   begin
     Afpx.Utils.Encode_Line (
-        Image1 (From) & (if From.Merged then
+        Image1 (From.Date) & (if From.Merged then
                            (if From.Extra.Is_Null then '>'
                             else '+')
                          else ' '),
@@ -370,7 +368,8 @@ package body History is
         -- In fact this is a reset to head  (no warning on history change)
         Res := Reset (Root, "");
       else
-        Str := As.U.Tus (Str_Util.Strip (Image1 (Log) & " " & Image2 (Log)));
+        Str := As.U.Tus (Str_Util.Strip (Image1 (Log.Date)
+                       & " " & Image2 (Log)));
         Res := Reset (Root, Hash.Image, Comment => Str.Image);
       end if;
       if Res then

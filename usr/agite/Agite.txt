@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V41.04
+V41.05
 
 General purpose
 ---------------
@@ -882,14 +882,43 @@ This menu shows the successive references of the selected branch. Each entry
 provides the cause of the change (either acommit, a checkout, a reset... ) and
 additionnal information (comment of the commit, Hash...)
 
+The header shows the current branch and repository, and the name of the branch
+from which are extracted the references.
+
+anchor:XHashRef[]
+Below is a "H:" tagged get field in which you can enter (or paste), up to
+128 hexadecimal digits, a hash value to xref:XSearchRef[Search] for.
+
+The list shows for each reference:
+
+* The date
+* Two letters of operation
+** Co for Commit
+** Ch for Checkout
+** Re for Reset
+** Cp for Cherry-Pick
+** Me for Merge
+** Pu for Push
+* The comment
+
 The 'Detail' button shows the details of the (left) selected reference.
 
 The 'Checkout' button calls the xref:XCheckout[Checkout] menu in order to
 checkout the selected reference (as a new branch).
 
+anchor:XMarkRef[]
 The 'Mark' button stores internally (until Agite exits) the hash value of the
-reference currently left-selected, for later xref:XSearch[Search] in the
-xref:XHist[history] or xref:XTree[tree].
+reference currently left-selected, for later xref:XSearchRef[Search] of
+reference, or in the xref:XHist[history] or the xref:XTree[tree].
+
+anchor:XSearchRef[]
+Searches the reference with the hash value matching the hash contained in the
+xref:XHashRef[Hash] field. If this field is empty (you can clear it with
+Ctrl-Suppr) then Agite searches the xref:XMarkRef[marked] hash instead.
+If found, this reference becomes left-selected.
+
+NOTE: Several references may correspond to the same Hash. Successive searches
+will show the matching references one after the other.
 
 The 'Reset' button calls the xref:XReset[Reset] menu in order to hard
 reset the current branch to the selected reference.
@@ -2420,7 +2449,7 @@ branch by calling 'git cherry <target> <reference>',
 --allow-empty [ --ff | --no-commit ] <HSA1>',
 
 * A function lists the references of a given branch by calling 'git reflog
---no-abbrev-commit <branch>',
+--no-abbrev-commit --date=iso <branch>',
 
 * A function deletes a given reference by calling 'git reflog delete --rewrite
 <reference>'.

@@ -1,5 +1,5 @@
 with Ada.Exceptions;
-with As.U, Directory, Afpx.Utils, Basic_Proc, Unicode;
+with As.U, Directory, Afpx.Utils, Basic_Proc, Unicode, Str_Util;
 with Git_If, Utils.X, Utils.Store, Afpx_Xref, Details, Checkout, Reset, Confirm;
 package body Reflog is
 
@@ -9,15 +9,16 @@ package body Reflog is
   -- Root path and current branch
   Root, Target_Branch : As.U.Asu_Us;
 
-  -- Current list o resf
+  -- Current list of refs
   Refs : Git_If.Reflog_List;
 
   -- Init Afpx list from Refs
   procedure Set (Line : in out Afpx.Line_Rec;
                  From : in Git_If.Reflog_Entry_Rec) is
   begin
-    Afpx.Utils.Encode_Line ("", From.Comment.Image, "", List_Width, Line,
-                            False);
+    Afpx.Utils.Encode_Line (
+        "", Utils.Image (From.Date) & " " & From.Comment.Image, "",
+        List_Width, Line, False);
   exception
     when Error:others =>
       Basic_Proc.Put_Line_Error ("Exception "
@@ -32,6 +33,55 @@ package body Reflog is
     return Current.Str(1 .. Current.Len) = Criteria.Str(1 .. Criteria.Len);
   end Match;
   function Search is new Afpx.Line_List_Mng.Search (Match);
+
+  -- Search by Hash
+  Occurence : Git_If.Reflog_Mng.Ll_Positive;
+  -- To search matching hash in Log
+  function List_Hash_Match (Current, Criteria : Git_If.Reflog_Entry_Rec)
+           return Boolean is
+    use type As.U.Asu_Us;
+  begin
+    if Current.Hash.Length >= Criteria.Hash.Length then
+      return Current.Hash.Uslice (1, Criteria.Hash.Length) = Criteria.Hash;
+    else
+      return False;
+    end if;
+  end List_Hash_Match;
+  function List_Hash_Search is
+           new Git_If.Reflog_Mng.Search (List_Hash_Match);
+
+  -- Local: encode currently stored hash
+  procedure Encode_Hash (Hash : in Git_If.Git_Hash) is
+  begin
+    Utils.X.Encode_Field (Hash.Image, Afpx_Xref.Reflog.Hash);
+  end Encode_Hash;
+
+ -- Move Afpx list at Hash
+  -- First if No_Hash or not found
+  procedure Move_At (Hash : in Git_If.Git_Hash) is
+    Ref : Git_If.Reflog_Entry_Rec;
+    use type As.U.Asu_Us, Git_If.Reflog_Mng.Ll_Positive;
+  begin
+    if Refs.Is_Empty or else Afpx.Line_List.Is_Empty then
+      return;
+    end if;
+    Ref.Hash := Hash;
+    if Hash /= Git_If.No_Hash
+    and then List_Hash_Search (Refs, Ref,
+                               Occurence => Occurence,
+                               From => Git_If.Reflog_Mng.Absolute)
+    then
+      -- Move to found, ready for next occurence
+      Afpx.Line_List.Move_At (Refs.Get_Position);
+      Afpx.Update_List (Afpx.Center_Selected);
+      Occurence := Occurence + 1;
+    else
+       Afpx.Line_List.Rewind;
+       Refs.Rewind;
+       Afpx.Update_List (Afpx.Top);
+      Occurence := 1;
+    end if;
+  end Move_At;
 
   -- Afpx Ptg stuff
   Get_Handle : Afpx.Get_Handle_Rec;
@@ -85,11 +135,12 @@ package body Reflog is
   end Init;
 
   -- Actions on refs
-  type Action_List is (Detail, Chkout, Mark, Reset, Delete);
+  type Action_List is (Detail, Chkout, Mark, Search, Reset, Delete);
   function Do_Action (Action : in Action_List) return Boolean is
     Position : Afpx.Line_List_Mng.Ll_Positive;
     Result : Boolean;
-    use type Afpx.Line_List_Mng.Ll_Positive;
+    Hash : Git_If.Git_Hash;
+    use type As.U.Asu_Us, Afpx.Line_List_Mng.Ll_Positive;
   begin
     -- Save current position and move to proper ref
     Position := Afpx.Line_List.Get_Position;
@@ -106,6 +157,21 @@ package body Reflog is
                                    Refs.Access_Current.Hash);
       when Mark =>
         Utils.Store.Hash := Refs.Access_Current.Hash;
+        Occurence := 1;
+        return False;
+      when Search =>
+        -- Use got hash or else stored hash
+        Hash := As.U.Tus (Str_Util.Strip (Afpx.Decode_Field (
+                          Afpx_Xref.Reflog.Hash, 0, True)));
+        if Hash = Git_If.No_Hash then
+          Hash := Utils.Store.Hash;
+          Encode_Hash (Hash);
+        end if;
+        if Hash = Git_If.No_Hash then
+          return False;
+        end if;
+        -- Search
+        Move_At (Hash);
         return False;
       when Reset =>
         Result := Reset (Root.Image, Refs.Access_Current.Hash.Image,
@@ -149,6 +215,7 @@ package body Reflog is
 
     -- Encode refs
     Reread;
+    Occurence := 1;
 
     -- Main loop
     loop
@@ -159,7 +226,7 @@ package body Reflog is
         when Afpx.Keyboard =>
           case Ptg_Result.Keyboard_Key is
             when Afpx.Return_Key =>
-              null;
+              Result := Do_Action (Search);
             when Afpx.Escape_Key =>
               -- Back
               exit;
@@ -185,6 +252,8 @@ package body Reflog is
               end if;
             when Afpx_Xref.Reflog.Mark =>
               Result := Do_Action (Mark);
+            when Afpx_Xref.Reflog.Search =>
+              Result := Do_Action (Search);
             when Afpx_Xref.Reflog.Reset =>
               Result := Do_Action (Reset);
               if Result then

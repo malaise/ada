@@ -83,7 +83,7 @@ package Git_If is
   type Log_Entry_Rec is record
     Hash : Git_Hash := No_Hash;
     Merged : Boolean := False;
-    Date : Iso_Date := (others => ' ');
+    Date : Iso_Date := No_Date;
     Comment : Comment_2;
     Extra : As.U.Asu_Us;
   end record;
@@ -311,6 +311,7 @@ package Git_If is
   type Reflog_Entry_Rec is record
     Hash : Git_Hash;
     Id : As.U.Asu_Us;
+    Date : Iso_Date := No_Date;
     Comment : As.U.Asu_Us;
   end record;
   procedure Set (To : out Reflog_Entry_Rec; Val : in Reflog_Entry_Rec);
