@@ -39,10 +39,10 @@ procedure T_Dscr is
       & " fields.");
     for I in Start .. Afpx.Nb_Fields loop
       Basic_Proc.Put_Output (
-         (if I = Afpx.List_Field_No then "List"
-          else "Field" & I'Img & " kind "
+         if I = Afpx.List_Field_No then "List"
+         else "Field" & I'Img & " kind "
             & Mixed_Str (Afpx.Field_Kind_List'Image(Afpx.Get_Field_Kind (I)))
-         ));
+         );
       Afpx.Get_Field_Geometry (I, Upper_Left, Lower_Right);
       Afpx.Get_Field_Size (I, Height, Width);
       Basic_Proc.Put_Line_Output (
