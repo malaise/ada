@@ -614,6 +614,10 @@ package Con_Io is
       Con                : in Console;
       Double_Click_Delay : in Double_Click_Delay_Range);
 
+  -- Get current delay criteria for double-click
+  function Get_Double_Click_Delay (Con : in Console)
+                                   return Double_Click_Delay_Range;
+
   -- After the validation of a simple click it may be wise sometimes to prevent
   --  the detection of the associated double-click
   procedure Cancel_Double_Click (Con  : in Console);

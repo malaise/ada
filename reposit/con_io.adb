@@ -1988,6 +1988,14 @@ package body Con_Io is
     Con.Get_Access.Double_Click_Delay := Double_Click_Delay;
   end Set_Double_Click_Delay;
 
+  -- Get current delay criteria for double-click
+  function Get_Double_Click_Delay (Con : in Console)
+                                   return Double_Click_Delay_Range is
+  begin
+    Check_Con (Con);
+    return Con.Get_Access.Double_Click_Delay;
+  end Get_Double_Click_Delay;
+
   -- After the validation of a simple click it may be wise sometimes to prevent
   --  the detection of the associated double-click
   procedure Cancel_Double_Click (Con  : in Console) is
