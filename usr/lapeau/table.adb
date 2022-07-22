@@ -1,6 +1,6 @@
 with Ada.Calendar;
 with X_Mng, Timers, Long_Long_Limited_Pool, Trace.Loggers, Images,
-     Aski.Unicode, Language;
+     Aski.Unicode, Language, Perpet;
 with Movements;
 package body Table is
   -- Debug logger
@@ -200,13 +200,19 @@ package body Table is
     and then Pos.Y <= Y and then Y <= Pos.Y + Cards.Deck.Height;
   end Is_Pointer_Above;
 
-
   -- Local: Decode a card event
+  No_Click : constant Event_Rec := (Leave, null);
+  Prev_Click : Event_Rec := No_Click;
+  Prev_Time : Ada.Calendar.Time := Perpet.Origin;
   function Decode_Card_Event (Mouse_Event : Con_Io.Mouse_Event_Rec;
                               Event : out Event_Rec) return Boolean is
     Acc : Cards.Card_Access;
+    Time : Ada.Calendar.Time;
+    use type Ada.Calendar.Time;
     use type Con_Io.Mouse_Button_List, Cards.Card_Access;
   begin
+    -- Default
+    Event := No_Click;
     if not Mouse_Event.Valid then
       return False;
     end if;
@@ -218,6 +224,19 @@ package body Table is
       when Con_Io.Pressed =>
         if Mouse_Event.Button = Con_Io.Left then
           Event := (Left_Pressed, Acc);
+          -- Handle double left click
+          Time := Ada.Calendar.Clock;
+          if Event = Prev_Click
+          and then Time - Prev_Time < Console.Get_Double_Click_Delay then
+            -- Yes => transform into a righ click
+            Event := (Right_Pressed, Acc);
+            Prev_Click := No_Click;
+            Prev_Time := Perpet.Origin;
+          else
+            -- No => store for next time
+            Prev_Click := Event;
+            Prev_Time := Time;
+          end if;
         elsif Mouse_Event.Button = Con_Io.Right then
           Event := (Right_Pressed, Acc);
         else
@@ -263,7 +282,7 @@ package body Table is
     end if;
     -- Decode click
     Square := Console.To_Square (Mouse_Event.X, Mouse_Event.Y);
-    Event := (Leave, null);
+    Event := No_Click;
     if Square.Row = Menu_Row then
       case Square.Col is
         when Start_Exit  .. Stop_Exit  => Event := (Kind => Quit);
@@ -334,7 +353,7 @@ package body Table is
       -- Wait for an event
       Expiration := Con_Io.Infinite_Delay;
     else
-      -- Wiat until the delay expiration, store intermediate events
+      -- Wait until the delay expiration, store intermediate events
       Expiration := (Delay_Kind => Timers.Delay_Exp,
                      Expiration_Time => Ada.Calendar.Clock + Dur,
                      others => <>);

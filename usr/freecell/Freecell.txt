@@ -1,6 +1,6 @@
 Freecell
 ========
-V3.1
+V4.0
 
 Freecell is a famous solitaire card game.
 
@@ -106,6 +106,9 @@ Moving to Done stacks
 .Right click
 A right click on a selectable card directly moves it to its Done stack if this
 is valid, otherwise moves it in a Tempo stack if available.
+
+.Double left click
+A double left click on a selectable card acts as a right click (see above).
 
 .Automatic purge
 A card of a suit can be used as relay for a card of another color.

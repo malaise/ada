@@ -1,6 +1,6 @@
 La Peau
 =======
-V3.1
+V4.0
 
 "La Peau" is a solitaire card game.
 
@@ -134,6 +134,9 @@ Moving to Done stacks
 .Right click
 A right click on a selectable card directly moves it to its Done stack if this
 is valid.
+
+.Double left click
+A double left click on a selectable card acts as a right click (see above).
 
 .Impact of the policy on the purge
 The stacking policy impacts the behavior of the 'Purge' function.
