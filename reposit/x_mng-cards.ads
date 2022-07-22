@@ -5,7 +5,7 @@ package X_Mng.Cards is
   -- Line association --
   ----------------------
   -- Link this card deck to a X_Mng Line, which is often open after the
-  --  instanciation of the gneeric (this is why it is not a formal generic
+  --  instanciation of the generic (this is why it is not a formal generic
   --  parameter)
   -- This association is not reversible
   -- Enable pointer motion reporting for the cards, or not
@@ -97,7 +97,7 @@ package X_Mng.Cards is
   procedure Move (Acard : in out Card; Position : in Position_Rec);
   function Get_Position (Acard : Card) return Position_Rec;
 
-  -- From external reference to Card access
+  -- From external reference (returned by X_Wait_event) to Card access
   function Ref_To_Access (Ref : External_Reference) return Card_Access;
 
   ----------------
