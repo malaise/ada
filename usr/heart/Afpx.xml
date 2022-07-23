@@ -214,7 +214,7 @@
 
     <!-- List of activities -->
     <List>
-      <Geometry Up="05" Left="05" Low="19" Right="35"/>
+      <Geometry Up="03" Left="05" Low="16" Right="35"/>
       <Colors Foreground="Black" Background="Dark_Grey" Selected="Lime_Green"/>
     </List>
 
@@ -234,7 +234,7 @@
 
     <!-- Tittle of list -->
     <Field Num="03" Kind="Put" Name="Title">
-      <Geometry Up="04" Left="05" Low="04" Right="37"/>
+      <Geometry Up="02" Left="05" Low="02" Right="37"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="00" Col="00">Person</Init>
       <Init Row="00" Col="21">Activity</Init>
@@ -277,39 +277,50 @@
 
     <!-- Deletion confirm -->
     <Field Num="09" Kind="Put" Name="Confirm">
-      <Geometry Up="20" Left="01" Low="20" Right="48"/>
+      <Geometry Up="17" Left="01" Low="17" Right="48"/>
       <Colors Foreground="Red" Background="Light_Grey"/>
       <Init Row="00" Col="00">CONFIRM DELETION OF ACTIVITY AND ALL ITS RECORDS</Init>
     </Field>
 
     <!-- Person edit tittle -->
     <Field Num="10" Kind="Put" Name="Person_Title">
-      <Geometry Up="21" Left="01" Low="21" Right="06"/>
+      <Geometry Up="18" Left="01" Low="18" Right="06"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="00" Col="00">Person</Init>
     </Field>
 
     <!-- Person get -->
     <Field Num="11" Kind="Get" Name="Person">
-      <Geometry Up="21" Left="08" Low="21" Right="27"/>
+      <Geometry Up="18" Left="08" Low="18" Right="27"/>
       <Colors Foreground="Black" Background="White" Selected="Lime_Green"/>
     </Field>
 
     <!-- Activity edit tittle -->
     <Field Num="12" Kind="Put">
-      <Geometry Up="21" Left="30" Low="21" Right="37"/>
+      <Geometry Up="18" Left="30" Low="18" Right="37"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="00" Col="00">Activity</Init>
     </Field>
 
     <!-- Activity get -->
     <Field Num="13" Kind="Get" Name="Activity">
-      <Geometry Up="21" Left="39" Low="21" Right="48"/>
+      <Geometry Up="18" Left="39" Low="18" Right="48"/>
+      <Colors Foreground="Black" Background="White" Selected="Lime_Green"/>
+    </Field>
+
+    <!-- Sampling delta title and get -->
+    <Field Num="14" Kind="Put">
+      <Geometry Up="20" Left="01" Low="20" Right="14"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
+      <Init Row="00" Col="00">Sampling delta</Init>
+    </Field>
+    <Field Num="15" Kind="Get" Name="Sampling">
+      <Geometry Up="20" Left="16" Low="20" Right="18"/>
       <Colors Foreground="Black" Background="White" Selected="Lime_Green"/>
     </Field>
 
     <!-- TZ edit numbers -->
-    <Field Num="14" Kind="Put">
+    <Field Num="16" Kind="Put">
       <Geometry Up="22" Left="16" Low="22" Right="44"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="00" Col="00">Res</Init>
@@ -322,70 +333,70 @@
     </Field>
 
     <!-- TZ edit tittle -->
-    <Field Num="15" Kind="Put">
+    <Field Num="17" Kind="Put">
       <Geometry Up="23" Left="01" Low="23" Right="14"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="00" Col="00">Training Zones</Init>
     </Field>
 
     <!-- Rest get -->
-    <Field Num="16" Kind="Get" Name="Rest">
+    <Field Num="18" Kind="Get" Name="Rest">
       <Geometry Up="23" Left="16" Low="23" Right="18"/>
       <Colors Foreground="Black" Background="White" Selected="Lime_Green"/>
     </Field>
 
     <!-- TZ1 get -->
-    <Field Num="17" Kind="Get" Name="Tz1">
+    <Field Num="19" Kind="Get" Name="Tz1">
       <Geometry Up="23" Left="20" Low="23" Right="22"/>
       <Colors Foreground="Black" Background="White" Selected="Lime_Green"/>
     </Field>
 
     <!-- TZ2 get -->
-    <Field Num="18" Kind="Get">
+    <Field Num="20" Kind="Get">
       <Geometry Up="23" Left="24" Low="23" Right="26"/>
       <Colors Foreground="Black" Background="White" Selected="Lime_Green"/>
     </Field>
 
     <!-- TZ3 get -->
-    <Field Num="19" Kind="Get">
+    <Field Num="21" Kind="Get">
       <Geometry Up="23" Left="28" Low="23" Right="30"/>
       <Colors Foreground="Black" Background="White" Selected="Lime_Green"/>
     </Field>
 
     <!-- TZ4 get -->
-    <Field Num="20" Kind="Get">
+    <Field Num="22" Kind="Get">
       <Geometry Up="23" Left="32" Low="23" Right="34"/>
       <Colors Foreground="Black" Background="White" Selected="Lime_Green"/>
     </Field>
 
     <!-- TZ5 get -->
-    <Field Num="21" Kind="Get">
+    <Field Num="23" Kind="Get">
       <Geometry Up="23" Left="36" Low="23" Right="38"/>
       <Colors Foreground="Black" Background="White" Selected="Lime_Green"/>
     </Field>
 
     <!-- TZ6 get -->
-    <Field Num="22" Kind="Get" Name="Tz6">
+    <Field Num="24" Kind="Get" Name="Tz6">
       <Geometry Up="23" Left="40" Low="23" Right="42"/>
       <Colors Foreground="Black" Background="White" Selected="Lime_Green"/>
     </Field>
 
     <!-- Compute button -->
-    <Field Num="23" Kind="Button" Name="Compute">
+    <Field Num="25" Kind="Button" Name="Compute">
       <Geometry Up="23" Left="45" Low="23" Right="53"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="00" Col="01">Compute</Init>
     </Field>
 
     <!-- Valid button -->
-    <Field Num="24" Kind="Button" Name="Valid">
+    <Field Num="26" Kind="Button" Name="Valid">
       <Geometry Up="17" Left="57" Low="19" Right="64"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="01" Col="02">Valid</Init>
+      <Init Row="01" Col="01">Valid</Init>
     </Field>
 
     <!-- Cancel button -->
-    <Field Num="25" Kind="Button" Name="Cancel">
+    <Field Num="27" Kind="Button" Name="Cancel">
       <Geometry Up="21" Left="57" Low="23" Right="64"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="01" Col="01">Cancel</Init>

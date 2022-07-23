@@ -13,6 +13,10 @@ package Pers_Def is
   subtype Set_Bpm_Range is Bpm_Range range
    Bpm_Range'Succ(Bpm_Range'First) .. Bpm_Range'Last;
 
+  -- Delta in seconds between 2 samplings
+  type Sampling_Delta_Range is new Positive range 1 .. 120;
+  Default_Sampling_Delta : constant Sampling_Delta_Range := 120;
+
   -- 6 time zones for a person
   type Person_Tz_Array is array (1 .. 6) of Bpm_Range;
 
@@ -22,6 +26,7 @@ package Pers_Def is
     Activity : Person_Activity_Str := (others => ' ');
     Pid : Pid_Range := Pid_Range'First;
     Tz : Person_Tz_Array := (others => Bpm_Range'First);
+    Sampling_Delta : Sampling_Delta_Range := Default_Sampling_Delta;
   end record;
 
   -- A list of person (all set)

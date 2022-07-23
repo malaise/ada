@@ -193,8 +193,11 @@ package body Mesu_Edi is
             -- Copy Pid
             Mesure.Pid := Person.Pid;
             if not For_Valid then
-              -- Encode Tz
+              -- Encode Tz from person
               Encode_Tz;
+              -- Encode Sample delta from person
+              Afpx.Encode_Field (Afpx_Xref.Records.Sampling, (00, 00),
+                      Normal(Integer(Person.Sampling_Delta), 3));
               -- Go to date
               Current_Field := Afpx_Xref.Records.Day;
             else
@@ -276,7 +279,7 @@ package body Mesu_Edi is
           if Locok then
             begin
               Mesure.Sampling_Delta :=
-                 Mesu_Def.Sampling_Delta_Range'Value(Delta_Str);
+                 Pers_Def.Sampling_Delta_Range'Value(Delta_Str);
             exception
               when others =>
                 Locok := False;

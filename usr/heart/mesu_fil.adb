@@ -6,7 +6,8 @@ package body Mesu_Fil is
 
   -- A mesure in file (same as in definition but without pid)
   type File_Rec is record
-    Sampling_Delta : Mesu_Def.Sampling_Delta_Range := 60;
+    Sampling_Delta : Pers_Def.Sampling_Delta_Range
+                   := Pers_Def.Default_Sampling_Delta;
     Comment : Mesu_Def.Comment_Str := (others => ' ');
     -- Time zones for the mesure
     Tz : Pers_Def.Person_Tz_Array := (others => Pers_Def.Bpm_Range'First);

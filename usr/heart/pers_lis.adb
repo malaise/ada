@@ -1,4 +1,4 @@
-with Afpx, Con_Io, Upper_Str;
+with Afpx, Con_Io, Upper_Str, Normal;
 with Pers_Def, Str_Mng, Mesu_Mng, Pers_Mng, Pers_Fil, Afpx_Xref;
 package body Pers_Lis is
 
@@ -56,10 +56,16 @@ package body Pers_Lis is
     use Pers_Def.Person_List_Mng;
 
     procedure Encode_Person is
+      Dummy_Pos : Integer;
     begin
+      Pers_Mng.Expand (Pers_Def.The_Persons,
+                       Person.Name, Person.Activity, Dummy_Pos);
       Afpx.Encode_Field (Afpx_Xref.Activity.Person, (00, 00), Person.Name);
       Afpx.Encode_Field (Afpx_Xref.Activity.Activity, (00, 00),
                          Person.Activity);
+      Afpx.Encode_Field (Afpx_Xref.Activity.Sampling, (00, 00),
+                         Normal(Integer(Person.Sampling_Delta), 3));
+
       for I in Afpx.Absolute_Field_Range'(0) .. 5 loop
         Afpx.Encode_Field (Afpx.Field_Range (Afpx_Xref.Activity.Tz1 + I),
                            (00, 00),
@@ -72,6 +78,7 @@ package body Pers_Lis is
                            Ok : out Boolean; Expand : in Boolean) is
       Locok : Boolean;
       Pos_Pers : Integer;
+      Delta_S : String (1 .. 3);
       Tz_S  : Str_Mng.Bpm_Str;
       Tz    : Pers_Def.Bpm_Range;
       use type Pers_Def.Bpm_Range;
@@ -81,7 +88,8 @@ package body Pers_Lis is
         when Afpx_Xref.Activity.Person | Afpx_Xref.Activity.Activity =>
           -- In name or activity
           Person.Name     := Afpx.Decode_Field (Afpx_Xref.Activity.Person, 00);
-          Person.Activity := Afpx.Decode_Field (Afpx_Xref.Activity.Activity, 00);
+          Person.Activity :=
+                  Afpx.Decode_Field (Afpx_Xref.Activity.Activity, 00);
 
           if Str_Mng.Is_Spaces (Person.Name) then
             if Str_Mng.Is_Spaces (Person.Activity) then
@@ -130,8 +138,27 @@ package body Pers_Lis is
             if Locok then
               Afpx.Encode_Field (Afpx_Xref.Activity.Activity, (00, 00),
                   Upper_Str (Person.Activity));
-              Current_Field := Afpx_Xref.Activity.Tz1;
+              Current_Field := Afpx_Xref.Activity.Sampling;
             end if;
+          end if;
+
+        when Afpx_Xref.Activity.Sampling =>
+          Delta_S := Afpx.Decode_Field(Afpx_Xref.Activity.Sampling, 00);
+          Str_Mng.Parse (Delta_S);
+          -- No hole no space
+          Locok := not Str_Mng.Has_Holes (Delta_S);
+          Locok := Locok and then not Str_Mng.Is_Spaces (Delta_S);
+          if Locok then
+            begin
+              Person.Sampling_Delta :=
+                 Pers_Def.Sampling_Delta_Range'Value(Delta_S);
+            exception
+              when others =>
+                Locok := False;
+            end;
+          end if;
+          if Locok then
+            Current_Field := Afpx_Xref.Activity.Tz1;
           end if;
 
         when Afpx_Xref.Activity.Tz1 .. Afpx_Xref.Activity.Tz6 =>
@@ -249,6 +276,7 @@ package body Pers_Lis is
       -- Un protect other fields if in create or edit
       Act := State = In_Create or else State = In_Edit;
       Set_Protection (Afpx_Xref.Activity.Rest, not Act);
+      Set_Protection (Afpx_Xref.Activity.Sampling, not Act);
       for I in Afpx_Xref.Activity.Tz1 .. Afpx_Xref.Activity.Tz6 loop
         Set_Protection (I, not Act);
       end loop;
@@ -320,7 +348,7 @@ package body Pers_Lis is
             when Afpx.List_Field_No | Afpx_Xref.Activity.Edit =>
               -- Edit
               State := In_Edit;
-              First_Field := Afpx_Xref.Activity.Tz1;
+              First_Field := Afpx_Xref.Activity.Sampling;
               Get_Handle.Cursor_Field := First_Field;
               Get_Handle.Cursor_Col := 0;
               Get_Handle.Insert := False;
@@ -337,10 +365,12 @@ package body Pers_Lis is
               -- Compute
               Ok := Compute;
               if Ok then
-                -- Decode name & activity, then rencode all
+                -- Decode name, activity & sampling delta, then rencode all
                 Get_Handle.Cursor_Field := Afpx_Xref.Activity.Person;
                 Check_Field (Get_Handle.Cursor_Field, Ok, False);
                 Get_Handle.Cursor_Field := Afpx_Xref.Activity.Activity;
+                Check_Field (Get_Handle.Cursor_Field, Ok, False);
+                Get_Handle.Cursor_Field := Afpx_Xref.Activity.Sampling;
                 Check_Field (Get_Handle.Cursor_Field, Ok, False);
                 Encode_Person;
                 Get_Handle.Cursor_Field := Afpx_Xref.Activity.Tz1;
@@ -362,6 +392,7 @@ package body Pers_Lis is
               if Ok then
                 if State = In_Create then
                   -- In create : insert person in list (uniq)
+                  Encode_Person;
                   begin
                     Pers_Mng.Insert (Pers_Def.The_Persons, Person);
                     Build_List;
