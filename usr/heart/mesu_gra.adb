@@ -191,9 +191,9 @@ package body Mesu_Gra is
       X := X_To_Screen (Secs);
       Console.Draw_Line (X, Ys_First - 2, X, Ys_First + 2);
       if I rem 3 = 0 or else I = X_Last / Secs_Scale_Step then
-        if X / Console.Font_Width - 1 <= Con_Io.Col_Range'Last - 3 then
+        if X / Console.Font_Width - 1 <= Con_Io.Col_Range'Last - 1 then
           Screen.Move (Console.Row_Range_Last - 1,
-                       X / Console.Font_Width - 1);
+                       X / Console.Font_Width - 2);
         else
           Screen.Move (Console.Row_Range_Last - 1, Console.Col_Range_Last - 3);
         end if;
