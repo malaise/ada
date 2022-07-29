@@ -23,6 +23,14 @@ package Str_Mng is
   -- True if a parsed string has spaces in the middle
   function Has_Holes (Str : String) return Boolean;
 
+  subtype Sampling_Str is String (1 .. 3);
+  -- 0 <-> spaces
+  -- others <-> value
+  function To_Str (Sampling : Pers_Def.Sampling_Delta_Range)
+           return Sampling_Str;
+  function To_Sampling (Str : Sampling_Str)
+           return Pers_Def.Sampling_Delta_Range;
+
   subtype Bpm_Str is String (1 .. 3);
   -- 0 <-> spaces
   -- others <-> value
@@ -30,7 +38,6 @@ package Str_Mng is
   function To_Bpm (Str : Bpm_Str) return Pers_Def.Bpm_Range;
 
   function Pid_Str (Pid : Pers_Def.Pid_Range) return Mesu_Nam.File_Pid_Str;
-
 
   subtype Str2 is String (1 .. 2);
   subtype Str4 is String (1 .. 4);

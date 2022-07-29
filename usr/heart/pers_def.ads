@@ -14,7 +14,7 @@ package Pers_Def is
    Bpm_Range'Succ(Bpm_Range'First) .. Bpm_Range'Last;
 
   -- Delta in seconds between 2 samplings
-  type Sampling_Delta_Range is new Positive range 1 .. 120;
+  type Sampling_Delta_Range is new Natural range 0 .. 120;
   Default_Sampling_Delta : constant Sampling_Delta_Range := 120;
 
   -- 6 time zones for a person

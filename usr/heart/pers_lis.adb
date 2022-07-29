@@ -1,4 +1,4 @@
-with Afpx, Con_Io, Upper_Str, Normal;
+with Afpx, Con_Io, Upper_Str;
 with Pers_Def, Str_Mng, Mesu_Mng, Pers_Mng, Pers_Fil, Afpx_Xref;
 package body Pers_Lis is
 
@@ -64,7 +64,7 @@ package body Pers_Lis is
       Afpx.Encode_Field (Afpx_Xref.Activity.Activity, (00, 00),
                          Person.Activity);
       Afpx.Encode_Field (Afpx_Xref.Activity.Sampling, (00, 00),
-                         Normal(Integer(Person.Sampling_Delta), 3));
+                         Str_Mng.To_Str (Person.Sampling_Delta));
 
       for I in Afpx.Absolute_Field_Range'(0) .. 5 loop
         Afpx.Encode_Field (Afpx.Field_Range (Afpx_Xref.Activity.Tz1 + I),
@@ -78,7 +78,7 @@ package body Pers_Lis is
                            Ok : out Boolean; Expand : in Boolean) is
       Locok : Boolean;
       Pos_Pers : Integer;
-      Delta_S : String (1 .. 3);
+      Delta_S : Str_Mng.Sampling_Str;
       Tz_S  : Str_Mng.Bpm_Str;
       Tz    : Pers_Def.Bpm_Range;
       use type Pers_Def.Bpm_Range;
@@ -143,21 +143,17 @@ package body Pers_Lis is
           end if;
 
         when Afpx_Xref.Activity.Sampling =>
+          Locok := True;
           Delta_S := Afpx.Decode_Field(Afpx_Xref.Activity.Sampling, 00);
-          Str_Mng.Parse (Delta_S);
-          -- No hole no space
-          Locok := not Str_Mng.Has_Holes (Delta_S);
-          Locok := Locok and then not Str_Mng.Is_Spaces (Delta_S);
+          begin
+            Person.Sampling_Delta := Str_Mng.To_Sampling (Delta_S);
+          exception
+            when others =>
+              Locok := False;
+          end;
           if Locok then
-            begin
-              Person.Sampling_Delta :=
-                 Pers_Def.Sampling_Delta_Range'Value(Delta_S);
-            exception
-              when others =>
-                Locok := False;
-            end;
-          end if;
-          if Locok then
+            Afpx.Encode_Field (Afpx_Xref.Activity.Sampling, (00, 00),
+                               Str_Mng.To_Str (Person.Sampling_Delta));
             Current_Field := Afpx_Xref.Activity.Tz1;
           end if;
 

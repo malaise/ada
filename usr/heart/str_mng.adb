@@ -72,6 +72,31 @@ package body Str_Mng is
 
   -- 0 <-> spaces
   -- others <-> value
+  function To_Str (Sampling : Pers_Def.Sampling_Delta_Range)
+           return Sampling_Str is
+    use type Pers_Def.Sampling_Delta_Range;
+  begin
+    if Sampling = Pers_Def.Sampling_Delta_Range'First then
+      return Sampling_Str'(others => ' ');
+    else
+      -- Align right
+      return Normal(Integer(Sampling), Sampling_Str'Length);
+    end if;
+  end To_Str;
+
+  function To_Sampling (Str : Sampling_Str)
+           return Pers_Def.Sampling_Delta_Range is
+    Loc_Str : Sampling_Str := Str;
+  begin
+    if Is_Spaces (Loc_Str) then
+      return 0;
+    end if;
+    Parse (Loc_Str);
+    return  Pers_Def.Sampling_Delta_Range'Value(Loc_Str);
+  end To_Sampling;
+
+  -- 0 <-> spaces
+  -- others <-> value
   function To_Str (Bpm : Pers_Def.Bpm_Range) return Bpm_Str is
     use type Pers_Def.Bpm_Range;
   begin
@@ -85,14 +110,12 @@ package body Str_Mng is
 
   function To_Bpm (Str : Bpm_Str) return Pers_Def.Bpm_Range is
     Loc_Str : Bpm_Str := Str;
-    Result : Pers_Def.Set_Bpm_Range;
   begin
     if Is_Spaces (Loc_Str) then
       return 0;
     end if;
     Parse (Loc_Str);
-    Result := Pers_Def.Set_Bpm_Range'Value(Loc_Str);
-    return Result;
+    return Pers_Def.Set_Bpm_Range'Value(Loc_Str);
   end To_Bpm;
 
   function Pid_Str (Pid : Pers_Def.Pid_Range) return Mesu_Nam.File_Pid_Str is

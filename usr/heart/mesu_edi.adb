@@ -1,4 +1,4 @@
-with Con_Io, Afpx, Normal, Get_Line;
+with Con_Io, Afpx, Get_Line;
 with As.U.Utils;
 with Pers_Def, Pers_Mng, Mesu_Def, Mesu_Fil, Str_Mng, Afpx_Xref;
 -- with Mesu_Nam;
@@ -29,7 +29,7 @@ package body Mesu_Edi is
     Afpx.Encode_Field (Afpx_Xref.Records.Year, (00, 00), Date_R.Year);
     Afpx.Encode_Field (Afpx_Xref.Records.Comment, (00, 00), Mesure.Comment);
     Afpx.Encode_Field (Afpx_Xref.Records.Sampling, (00, 00),
-                       Normal(Integer(Mesure.Sampling_Delta), 3));
+                       Str_Mng.To_Str (Mesure.Sampling_Delta));
     -- Samples
     for I in Mesu_Def.Sample_Nb_Range loop
       Afpx.Encode_Field (Afpx_Xref.Records.Rate_001 + Afpx.Field_Range(I) - 1,
@@ -45,7 +45,6 @@ package body Mesu_Edi is
                            Background => Con_Io.Color_Of ("Light_Grey"));
     Afpx.Set_Field_Protection (Field_No, True);
   end Protect;
-
 
   -- Import sample data from ascii file
   procedure Import_Samples (Import_File_Name : in Import_File_Name_Str;
@@ -197,7 +196,7 @@ package body Mesu_Edi is
               Encode_Tz;
               -- Encode Sample delta from person
               Afpx.Encode_Field (Afpx_Xref.Records.Sampling, (00, 00),
-                      Normal(Integer(Person.Sampling_Delta), 3));
+                                 Str_Mng.To_Str (Person.Sampling_Delta));
               -- Go to date
               Current_Field := Afpx_Xref.Records.Day;
             else
@@ -278,8 +277,7 @@ package body Mesu_Edi is
           Locok := Locok and then not Str_Mng.Is_Spaces (Delta_Str);
           if Locok then
             begin
-              Mesure.Sampling_Delta :=
-                 Pers_Def.Sampling_Delta_Range'Value(Delta_Str);
+              Mesure.Sampling_Delta := Str_Mng.To_Sampling (Delta_Str);
             exception
               when others =>
                 Locok := False;
