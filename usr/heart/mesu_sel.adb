@@ -1,5 +1,4 @@
-with Ada.Text_Io;
-with Dir_Mng;
+with Dir_Mng, Text_Line, Sys_Calls;
 with Pers_Mng, Str_Mng, Mesu_Fil;
 
 -- Mesure selection management
@@ -10,7 +9,7 @@ package body Mesu_Sel is
 
   List_File_Name : constant String := "SELECTIO.LST";
 
-  List_File : Ada.Text_Io.File_Type;
+  List_File : Text_Line.File_Type;
 
   procedure Copy_List (From, To : in out Afpx.Line_List_Mng.List_Type) is
   begin
@@ -406,14 +405,6 @@ package body Mesu_Sel is
 
   end Rem_Selection;
 
-
-  procedure Close is
-  begin
-    Ada.Text_Io.Close (List_File);
-  exception
-    when others => null;
-  end Close;
-
   -- Load the selection from file
   procedure Load is
     File_Name : Mesu_Nam.File_Name_Str;
@@ -421,22 +412,26 @@ package body Mesu_Sel is
     Line_List.Delete_List;
     -- Open file
     begin
-      Ada.Text_Io.Open (List_File, Ada.Text_Io.In_File, List_File_Name);
+      List_File.Open_All (Text_Line.In_File, List_File_Name);
     exception
-      when Ada.Text_Io.Name_Error =>
+      when Text_Line.Name_Error =>
         return;
     end;
 
     -- Read file
-    while not Ada.Text_Io.End_Of_File (List_File) loop
-      File_Name := Ada.Text_Io.Get_Line (List_File);
+    loop
+      declare
+       Str : constant String := List_File.Get;
+      begin
+        exit when Str = "";
+        File_Name := Text_Line.Trim (Str);
+      end;
       Add_Selection (File_Name);
     end loop;
 
-    Close;
+    List_File.Close_All;
 
   end Load;
-
 
   -- Save the selection to file
   procedure Save is
@@ -445,19 +440,14 @@ package body Mesu_Sel is
     File_Name : Mesu_Nam.File_Name_Str;
   begin
     -- Delete previous file
-    begin
-      Ada.Text_Io.Open (List_File, Ada.Text_Io.In_File, List_File_Name);
-      Ada.Text_Io.Delete (List_File);
-    exception
-      when Ada.Text_Io.Name_Error => null;
-    end;
+    Sys_Calls.Unlink (List_File_Name);
 
     -- Create file
-    Ada.Text_Io.Create (List_File, Ada.Text_Io.Out_File, List_File_Name);
+    List_File.Create_All (List_File_Name);
 
     -- Save current position
     if Line_List.Is_Empty then
-      Close;
+      List_File.Close_All;
       return;
     else
       Saved_Pos := Line_List.Get_Position;
@@ -468,7 +458,7 @@ package body Mesu_Sel is
     loop
       Line_List.Read (Line, Line_List_Mng.Current);
       Str_Mng.Format_List_To_Mesure (Line, File_Name);
-      Ada.Text_Io.Put_Line (List_File, File_Name);
+      List_File.Put_Line (File_Name);
 
       exit when not Line_List.Check_Move;
       Line_List.Move_To;
@@ -477,7 +467,7 @@ package body Mesu_Sel is
     -- Restore pos, set it in saved_list
     Line_List.Move_At (Saved_Pos);
 
-    Close;
+    List_File.Close_All;
   end Save;
 
   -- Undo (if possible) previous action on selection

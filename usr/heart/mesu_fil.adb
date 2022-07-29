@@ -1,5 +1,5 @@
-with Ada.Direct_Io, Ada.Text_Io, Ada.Exceptions;
-with Normal, As.B;
+with Ada.Direct_Io, Ada.Exceptions;
+with Normal, Str_Util, Text_Line, Basic_Proc, Sys_Calls;
 with Pers_Def, Str_Mng;
 package body Mesu_Fil is
 
@@ -22,8 +22,8 @@ package body Mesu_Fil is
   package Mesure_Io is new Ada.Direct_Io (Element_Type => File_Rec);
   Mesure_File : Mesure_Io.File_Type;
 
-  -- Text_Io of measure (new format)
-  Txt_File : Ada.Text_Io.File_Type;
+  -- Text file of measure (new format)
+  Txt_File : Text_Line.File_Type;
 
   procedure Open (File_Name : in String; Create : in Boolean) is
   begin
@@ -31,14 +31,14 @@ package body Mesu_Fil is
       begin
         begin
           -- Reuse or create Txt file for writing
-          Ada.Text_Io.Open (Txt_File, Ada.Text_Io.Out_File, File_Name);
+          Txt_File.Open_All (Text_Line.Out_File, File_Name);
         exception
-          when Ada.Text_Io.Name_Error =>
-            Ada.Text_Io.Create (Txt_File, Ada.Text_Io.Out_File, File_Name);
+          when Text_Line.Name_Error =>
+            Txt_File.Create_All (File_Name);
         end;
       exception
         when Error:others =>
-          Ada.Text_Io.Put_Line ("Exception on create "
+          Basic_Proc.Put_Line_Error ("Exception on Create "
               & Ada.Exceptions.Exception_Name (Error) & " " & File_Name);
           raise Io_Error;
       end;
@@ -47,21 +47,22 @@ package body Mesu_Fil is
 
     -- Try to open existing Txt file for reading
     begin
-      Ada.Text_Io.Open (Txt_File, Ada.Text_Io.In_File, File_Name);
+      Txt_File.Open_All (Text_Line.In_File, File_Name);
       -- Try to read Txt content
       declare
-        Str : constant String := Ada.Text_Io.Get_Line (Txt_File);
+        Str : constant String := Text_Line.Trim (Txt_File.Get);
       begin
         if Str'Length = File_Txt'Length
         and then (Str(1) = ' ' or else Str(1) = '1') then
           -- Looks as the start of a sampling rate
-          Ada.Text_Io.Reset (Txt_File);
+          Txt_File.Close_All;
+          Txt_File.Open_All (Text_Line.In_File, File_Name);
           return;
         end if;
-        Ada.Text_Io.Close (Txt_File);
+        Txt_File.Close_All;
       exception
         when others =>
-          Ada.Text_Io.Close (Txt_File);
+          Txt_File.Close_All;
       end;
     exception
       when others =>
@@ -75,7 +76,7 @@ package body Mesu_Fil is
       when Mesure_Io.Name_Error =>
         raise File_Not_Found_Error;
       when Error:others =>
-        Ada.Text_Io.Put_Line ("Exception on Open "
+        Basic_Proc.Put_Line_Error ("Exception on Open "
             & Ada.Exceptions.Exception_Name (Error) & " " & File_Name);
         raise Io_Error;
     end;
@@ -83,8 +84,8 @@ package body Mesu_Fil is
 
   procedure Close is
   begin
-    if Ada.Text_Io.Is_Open (Txt_File) then
-      Ada.Text_Io.Close (Txt_File);
+    if Txt_File.Is_Open then
+      Txt_File.Close_All;
     end if;
     if Mesure_Io.Is_Open (Mesure_File) then
       Mesure_Io.Close (Mesure_File);
@@ -126,7 +127,7 @@ package body Mesu_Fil is
                  Samples => Tmp_Rec.Samples);
     else
       -- New text format
-      Tmp_Txt := Ada.Text_Io.Get_Line (Txt_File);
+      Tmp_Txt := Text_Line.Trim (Txt_File.Get);
       Close;
       Mesure.Pid := Pers_Def.Pid_Range'Value(Pid);
       Mesure.Date :=  Date;
@@ -155,7 +156,7 @@ package body Mesu_Fil is
     when File_Not_Found_Error =>
       raise;
     when Error:others =>
-      Ada.Text_Io.Put_Line ("Exception on Load "
+      Basic_Proc.Put_Line_Error ("Exception on Load "
           & Ada.Exceptions.Exception_Name (Error) & " " & File_Name);
       Close;
       raise Io_Error;
@@ -189,11 +190,11 @@ package body Mesu_Fil is
     end loop;
 
     Open (File_Name, True);
-    Ada.Text_Io.Put_Line (Txt_File, Tmp_Txt);
+    Txt_File.Put_Line (Tmp_Txt);
     Close;
   exception
     when Error:others =>
-      Ada.Text_Io.Put_Line ("Exception on save "
+      Basic_Proc.Put_Line_Error ("Exception on save "
           & Ada.Exceptions.Exception_Name (Error) & " " & File_Name);
       Close;
       raise Io_Error;
@@ -204,19 +205,12 @@ package body Mesu_Fil is
   procedure Delete (File_Name : in Mesu_Nam.File_Name_Str) is
   begin
     -- No space in file_name
-    if As.B.Locate (As.B.Tbs (File_Name), " ") /= 0 then
+    if Str_Util.Locate (File_Name, " ") /= 0 then
       raise File_Name_Error;
     end if;
-    Open (File_Name, False);
-    if Ada.Text_Io.Is_Open (Txt_File) then
-      Ada.Text_Io.Delete (Txt_File);
-    end if;
-    if Mesure_Io.Is_Open (Mesure_File) then
-      Mesure_Io.Delete (Mesure_File);
-    end if;
+    Sys_Calls.Unlink (File_Name);
   exception
     when others =>
-      Close;
       raise Io_Error;
   end Delete;
 
