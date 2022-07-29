@@ -189,6 +189,7 @@ package body Mesu_Fil is
       Start := Start + 3;
     end loop;
 
+    Sys_Calls.Unlink (File_Name);
     Open (File_Name, True);
     Txt_File.Put_Line (Tmp_Txt);
     Close;
