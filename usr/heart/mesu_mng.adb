@@ -336,10 +336,7 @@ package body Mesu_Mng is
               Allow_Undo := True;
             elsif Ptg_Result.Field_No = Afpx_Xref.Main.Draw then
               -- Draw
-              Mesu_Gra.Graphic(Exit_Program);
-              if Exit_Program then
-                exit List;
-              end if;
+              Mesu_Gra.Graphic;
               exit Ptg;
             elsif Ptg_Result.Field_No = Afpx_Xref.Main.Print then
               -- Print
@@ -348,10 +345,7 @@ package body Mesu_Mng is
             elsif Ptg_Result.Field_No = Afpx_Xref.Main.Create then
               -- Create
               File_Name := (others => ' ');
-              Mesu_Edi.Edit (File_Name, Exit_Program);
-              if Exit_Program then
-                exit List;
-              end if;
+              Mesu_Edi.Edit (File_Name);
               if not Str_Mng.Is_Spaces (File_Name) then
                 Mesu_Sel.Add_Selection (File_Name);
               end if;
@@ -364,10 +358,7 @@ package body Mesu_Mng is
               Str_Mng.Format_List_To_Mesure (Line, File_Name);
 
               -- Edit
-              Mesu_Edi.Edit (File_Name, Exit_Program);
-              if Exit_Program then
-                exit List;
-              end if;
+              Mesu_Edi.Edit (File_Name);
               if not Str_Mng.Is_Spaces (File_Name) then
                 Mesu_Sel.Rem_Selection (Line);
                 Mesu_Sel.Add_Selection (File_Name);
@@ -380,11 +371,7 @@ package body Mesu_Mng is
               Str_Mng.Format_List_To_Mesure (Line, File_Name);
 
               -- Delete
-              Mesu_Edi.Delete (File_Name, Exit_Program);
-
-              if Exit_Program then
-                exit List;
-              end if;
+              Mesu_Edi.Delete (File_Name);
               if not Str_Mng.Is_Spaces (File_Name) then
                 Mesu_Sel.Rem_Selection (Line);
               end if;

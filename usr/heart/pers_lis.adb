@@ -316,8 +316,10 @@ package body Pers_Lis is
               Get_Handle.Cursor_Col := 0;
               Get_Handle.Insert := False;
             when Afpx.Break_Key =>
-              Exit_Program := True;
-              exit;
+              if State = In_List then
+                Exit_Program := True;
+                exit;
+              end if;
           end case;
 
         when Afpx.Mouse_Button =>

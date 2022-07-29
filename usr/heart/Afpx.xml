@@ -141,9 +141,9 @@
 
     <!-- Exit button -->
     <Field Num="19" Kind="Button" Name="Quit">
-      <Geometry Up="03" Left="72" Low="05" Right="79"/>
+      <Geometry Up="02" Left="70" Low="02" Right="77"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="01" Col="02">Exit</Init>
+      <Init Row="00" Col="02">EXIT</Init>
     </Field>
 
     <!-- Number of recors in list -->
@@ -242,16 +242,17 @@
 
     <!-- Back to Mesure DB button -->
     <Field Num="04" Kind="Button" Name="Records">
-      <Geometry Up="01" Left="44" Low="03" Right="55"/>
+      <Geometry Up="01" Left="50" Low="03" Right="61"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="01" Col="01">Records DB</Init>
     </Field>
 
+
     <!-- Exit button -->
     <Field Num="05" Kind="Button" Name="Quit">
-      <Geometry Up="01" Left="57" Low="03" Right="64"/>
+      <Geometry Up="02" Left="70" Low="02" Right="77"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="01" Col="02">Exit</Init>
+      <Init Row="00" Col="02">EXIT</Init>
     </Field>
 
     <!-- Create button -->
@@ -1182,49 +1183,42 @@
       <Init Row="01" Col="02">Cancel</Init>
     </Field>
 
-    <!-- Exit button -->
-    <Field Num="127" Kind="Button" Name="Quit">
-      <Geometry Up="03" Left="72" Low="05" Right="79"/>
-      <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="01" Col="02">Exit</Init>
-    </Field>
-
     <!-- Import button -->
-    <Field Num="128" Kind="Button" Name="Import">
+    <Field Num="127" Kind="Button" Name="Import">
       <Geometry Up="21" Left="62" Low="21" Right="79"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="00" Col="02">Import samples</Init>
     </Field>
 
     <!-- Import tittle -->
-    <Field Num="129" Kind="Put" Name="Import_Title">
+    <Field Num="128" Kind="Put" Name="Import_Title">
       <Geometry Up="23" Left="54" Low="23" Right="57"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="00" Col="00">File</Init>
     </Field>
 
     <!-- Import file name -->
-    <Field Num="130" Kind="Get" Name="Import_File">
+    <Field Num="129" Kind="Get" Name="Import_File">
       <Geometry Up="23" Left="58" Low="23" Right="79"/>
       <Colors Foreground="Black" Background="White" Selected="Lime_Green"/>
     </Field>
 
     <!-- Insert button -->
-    <Field Num="131" Kind="Button" Name="Ins">
+    <Field Num="130" Kind="Button" Name="Ins">
       <Geometry Up="21" Left="5" Low="23" Right="11"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="01" Col="02">Ins</Init>
     </Field>
 
     <!-- Suppr button -->
-    <Field Num="132" Kind="Button" Name="Del">
+    <Field Num="131" Kind="Button" Name="Del">
       <Geometry Up="21" Left="13" Low="23" Right="21"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="01" Col="02">Suppr</Init>
     </Field>
 
     <!-- Reset TZs button -->
-    <Field Num="133" Kind="Button" Name="Reset">
+    <Field Num="132" Kind="Button" Name="Reset">
       <Geometry Up="7" Left="57" Low="7" Right="63"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="00" Col="01">Reset</Init>

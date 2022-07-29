@@ -9,14 +9,12 @@ package Mesu_Edi is
   --  is affected
   -- If Exit_Program then File_Name is not significant
   -- If File_Name is set to empty, the edition has been canceled
-  procedure Edit (File_Name : in out Mesu_Nam.File_Name_Str;
-                  Exit_Program : out Boolean);
+  procedure Edit (File_Name : in out Mesu_Nam.File_Name_Str);
 
   -- Delete a mesure.
   -- If Exit_Program then File_Name is not significant
   -- If File_Name is set to empty, the edition has been canceled
-  procedure Delete (File_Name : in out Mesu_Nam.File_Name_Str;
-                    Exit_Program : out Boolean);
+  procedure Delete (File_Name : in out Mesu_Nam.File_Name_Str);
 
 end Mesu_Edi;
 

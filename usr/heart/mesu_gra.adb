@@ -305,7 +305,7 @@ package body Mesu_Gra is
   end Draw_Mesure;
 
   -- The main
-  procedure Graphic (Exit_Program : out Boolean) is
+  procedure Graphic is
     Saved_Pos : Afpx.Line_List_Mng.Ll_Natural;
     Line      : Afpx.Line_Rec;
     File_Name : Mesu_Nam.File_Name_Str;
@@ -484,10 +484,8 @@ package body Mesu_Gra is
 
       -- Exit when Escape
       if Get_Res.Mvt = Con_Io.Esc then
-        Exit_Program := False;
         exit Main_Loop;
       elsif Get_Res.Mvt = Con_Io.Break then
-        Exit_Program := True;
         exit Main_Loop;
       elsif Char = 'T' or else Char = 't' then
         if Tz_Drown then

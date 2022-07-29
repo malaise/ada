@@ -127,8 +127,7 @@ package body Mesu_Edi is
   -- If date or person changes, then the file name may be affected.
   -- If File_Name is empty as input, then it is a creation and file_name
   --  is affected
-  procedure Edit (File_Name : in out Mesu_Nam.File_Name_Str;
-                  Exit_Program : out Boolean) is
+  procedure Edit (File_Name : in out Mesu_Nam.File_Name_Str) is
     In_Create : Boolean;
     Person : Pers_Def.Person_Rec;
     Pos_Pers : Integer;
@@ -424,23 +423,17 @@ package body Mesu_Edi is
               Get_Handle.Cursor_Col := 0;
               Get_Handle.Insert := False;
             when Afpx.Break_Key =>
-              Exit_Program := True;
-              exit;
+              null;
           end case;
 
         when Afpx.Mouse_Button =>
-          if Ptg_Result.Field_No = Afpx_Xref.Records.Quit then
-            -- Exit
-            Exit_Program := True;
-            exit;
-          elsif Ptg_Result.Field_No = Afpx_Xref.Records.Import then
+          if Ptg_Result.Field_No = Afpx_Xref.Records.Import then
             -- Import samples
             Get_Handle.Cursor_Field := Afpx_Xref.Records.Import_File;
             Check_Field (Get_Handle.Cursor_Field, False, Ok);
           elsif Ptg_Result.Field_No = Afpx_Xref.Records.Cancel then
             -- Cancel
             File_Name := Mesu_Nam.File_Name_Str'((others => ' '));
-            Exit_Program := False;
             exit;
           elsif Ptg_Result.Field_No = Afpx_Xref.Records.Valid then
             -- Valid: Clear import file name
@@ -516,7 +509,6 @@ package body Mesu_Edi is
             if Ok then
               -- Save
               Mesu_Fil.Save (No_S, Mesure);
-              Exit_Program := False;
               exit;
             end if;
 
@@ -558,8 +550,7 @@ package body Mesu_Edi is
   end Edit;
 
   -- Delete a mesure
-  procedure Delete (File_Name : in out Mesu_Nam.File_Name_Str;
-                    Exit_Program : out Boolean) is
+  procedure Delete (File_Name : in out Mesu_Nam.File_Name_Str) is
     Person : Pers_Def.Person_Rec;
     Pos_Pers : Integer;
     Date_S : Mesu_Nam.File_Date_Str;
@@ -627,26 +618,16 @@ package body Mesu_Edi is
            | Afpx.Refresh =>
           null;
         when Afpx.Keyboard =>
-
-          case Ptg_Result.Keyboard_Key is
-            when Afpx.Return_Key | Afpx.Escape_Key =>
-              null;
-            when Afpx.Break_Key =>
-              Exit_Program := True;
-              exit;
-          end case;
-
+          null;
         when Afpx.Mouse_Button =>
 
           if Ptg_Result.Field_No = Afpx_Xref.Records.Cancel then
             -- Cancel
             File_Name := Mesu_Nam.File_Name_Str'((others => ' '));
-            Exit_Program := False;
             exit;
           elsif Ptg_Result.Field_No = Afpx_Xref.Records.Valid then
             -- Delete
             Mesu_Fil.Delete (File_Name);
-            Exit_Program := False;
             exit;
           end if; -- Ptg_Result.Field_No = valid or cancel
 

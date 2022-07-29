@@ -3,7 +3,6 @@ with Pers_Fil, Mesu_Nam, Mesu_Edi, Mesu_Fil;
 
 procedure Ins_Mesu is
   File_Name : Mesu_Nam.File_Name_Str;
-  Done : Boolean;
 
   procedure Error (Msg : in String) is
   begin
@@ -33,7 +32,7 @@ begin
 
   Pers_Fil.Load;
 
-  Mesu_Edi.Edit (File_Name, Done);
+  Mesu_Edi.Edit (File_Name);
 
   Afpx.Release_Descriptor;
 
