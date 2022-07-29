@@ -1,4 +1,4 @@
-with Ada.Sequential_Io;
+with Ada.Text_Io;
 with Dir_Mng;
 with Pers_Mng, Str_Mng, Mesu_Fil;
 
@@ -10,8 +10,7 @@ package body Mesu_Sel is
 
   List_File_Name : constant String := "SELECTIO.LST";
 
-  package List_Io is new Ada.Sequential_Io (Mesu_Nam.File_Name_Str);
-  List_File : List_Io.File_Type;
+  List_File : Ada.Text_Io.File_Type;
 
   procedure Copy_List (From, To : in out Afpx.Line_List_Mng.List_Type) is
   begin
@@ -135,7 +134,6 @@ package body Mesu_Sel is
       -- No new file. Pos not affected and file list is empty.
       return;
     end if;
-
 
     -- Add files in line list
     The_Files.Rewind;
@@ -411,7 +409,7 @@ package body Mesu_Sel is
 
   procedure Close is
   begin
-    List_Io.Close (List_File);
+    Ada.Text_Io.Close (List_File);
   exception
     when others => null;
   end Close;
@@ -419,20 +417,19 @@ package body Mesu_Sel is
   -- Load the selection from file
   procedure Load is
     File_Name : Mesu_Nam.File_Name_Str;
-    use List_Io;
   begin
     Line_List.Delete_List;
     -- Open file
     begin
-      Open (List_File, In_File, List_File_Name);
+      Ada.Text_Io.Open (List_File, Ada.Text_Io.In_File, List_File_Name);
     exception
-      when Name_Error =>
+      when Ada.Text_Io.Name_Error =>
         return;
     end;
 
     -- Read file
-    while not End_Of_File (List_File) loop
-      Read (List_File, File_Name);
+    while not Ada.Text_Io.End_Of_File (List_File) loop
+      File_Name := Ada.Text_Io.Get_Line (List_File);
       Add_Selection (File_Name);
     end loop;
 
@@ -446,18 +443,17 @@ package body Mesu_Sel is
     Saved_Pos  : Afpx.Line_List_Mng.Ll_Positive;
     Line   : Afpx.Line_Rec;
     File_Name : Mesu_Nam.File_Name_Str;
-    use List_Io;
   begin
     -- Delete previous file
     begin
-      Open (List_File, In_File, List_File_Name);
-      Delete (List_File);
+      Ada.Text_Io.Open (List_File, Ada.Text_Io.In_File, List_File_Name);
+      Ada.Text_Io.Delete (List_File);
     exception
-      when Name_Error => null;
+      when Ada.Text_Io.Name_Error => null;
     end;
 
     -- Create file
-    Create (List_File, Out_File, List_File_Name);
+    Ada.Text_Io.Create (List_File, Ada.Text_Io.Out_File, List_File_Name);
 
     -- Save current position
     if Line_List.Is_Empty then
@@ -472,7 +468,7 @@ package body Mesu_Sel is
     loop
       Line_List.Read (Line, Line_List_Mng.Current);
       Str_Mng.Format_List_To_Mesure (Line, File_Name);
-      Write (List_File, File_Name);
+      Ada.Text_Io.Put_Line (List_File, File_Name);
 
       exit when not Line_List.Check_Move;
       Line_List.Move_To;
