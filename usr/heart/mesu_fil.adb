@@ -25,7 +25,7 @@ package body Mesu_Fil is
   -- Text_Io of measure (new format)
   Txt_File : Ada.Text_Io.File_Type;
 
-  procedure Open (File_Name : in String; Create : Boolean) is
+  procedure Open (File_Name : in String; Create : in Boolean) is
   begin
     if Create then
       begin

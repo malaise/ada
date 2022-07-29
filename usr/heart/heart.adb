@@ -34,7 +34,6 @@ begin
 
 exception
   when others =>
-    Afpx.Bell (3);
     End_Of_Program;
     raise;
 end Heart;
