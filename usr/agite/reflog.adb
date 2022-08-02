@@ -124,7 +124,7 @@ package body Reflog is
     List_Width := Afpx.Get_Field_Width (Afpx.List_Field_No);
     -- Encode target branch
     Utils.X.Encode_Field (
-        (if  Target_Branch.Is_Null then
+        (if Target_Branch.Is_Null then
            Utils.X.Branch_Image (Git_If.Current_Branch)
          else
            Target_Branch.Image),

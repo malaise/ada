@@ -733,14 +733,14 @@ package body Cherry is
           null;
         when Empty =>
           -- No cherry picked: we can cancel
-          Afpx.Encode_Field (Afpx_Xref.Cherry.Go, (1, 1), "Cancel");
+          Utils.X.Center_Field ("Cancel", Afpx_Xref.Cherry.Go);
         when Foldprev =>
           -- Folding a cherry without previous => Disable
-          Afpx.Encode_Field (Afpx_Xref.Cherry.Go, (1, 0), "FoldPrev");
+          Utils.X.Center_Field ("FoldPrev", Afpx_Xref.Cherry.Go);
           Afpx.Utils.Protect_Field (Afpx_Xref.Cherry.Go, True);
         when Emptycmt =>
           -- A wipe cherry is not folloed by a squash => Disable
-          Afpx.Encode_Field (Afpx_Xref.Cherry.Go, (1, 0), "EmptyCmt");
+          Utils.X.Center_Field ("EmptyCmt", Afpx_Xref.Cherry.Go);
           Afpx.Utils.Protect_Field (Afpx_Xref.Cherry.Go, True);
       end case;
       Afpx.Put_Then_Get (Get_Handle, Ptg_Result, Right_Select => True,

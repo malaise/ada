@@ -153,16 +153,16 @@ package body Afpx.Utils is
                           Keep_Head : in Boolean := True;
                           Show_Cut : Boolean := True;
                           Offset : Integer := 0) is
+    Width : constant Afpx.Width_Range := Afpx.Get_Field_Width (Field);
   begin
     Afpx.Clear_Field (Field);
     if Text'Length <= Afpx.Get_Field_Width (Field) then
+      Afpx.Set_Half_Col_Offset (Field, Row, Width rem 2 /= Text'Length rem 2);
       Afpx.Encode_Field (Field, (Row, 0),
-          Str_Util.Center (Text, Afpx.Get_Field_Width (Field),
-                           Offset => Offset) );
+          Str_Util.Center (Text, Width, Offset => Offset) );
     else
       Afpx.Encode_Field (Field, (Row, 0),
-          Procuste (Text, Afpx.Get_Field_Width (Field),
-                    True, not Keep_Head, Show_Cut));
+          Procuste (Text, Width, True, not Keep_Head, Show_Cut));
     end if;
   end Center_Field;
 

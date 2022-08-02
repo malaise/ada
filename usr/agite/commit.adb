@@ -417,8 +417,8 @@ package body Commit is
       Reset_Ptg;
       -- Change buttons when in loop
       if In_Loop then
-        Afpx.Encode_Field (Afpx_Xref.Commit.Back, (1, 2), "Done");
-        Afpx.Encode_Field (Afpx_Xref.Commit.Push, (1, 1), "Abort");
+        Utils.X.Center_Field ("Done", Afpx_Xref.Commit.Back);
+        Utils.X.Center_Field ("Abort", Afpx_Xref.Commit.Push);
       else
         Afpx.Set_Field_Activation (Afpx_Xref.Commit.Reset, False);
       end if;

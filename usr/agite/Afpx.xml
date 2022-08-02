@@ -3,7 +3,7 @@
 <!-- For agite -->
 
 <Afpx_Descriptors Height="48" Width="55">
-  <Var Name="Version" Value="V41.06"/>
+  <Var Name="Version" Value="V41.07"/>
 
   <!-- List management setup -->
   <Var Name="LmWidth" Value="8"/>
@@ -33,7 +33,7 @@
     <Field Num="2" Kind="Button" Name="Top">
       <Geometry Up="${LmUp}" Left="${LmLeft}" Height="1" Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="0" Col="${LmSta}+1">Top</Init>
+      <Init Row="0" Col="${LmSta}+1" Half_Col_Offset="True">Top</Init>
     </Field>
     <Field Num="3" Kind="Button">
       <Geometry Up="${Field_2.Low}+2" Left="${LmLeft}" Height="3"
@@ -224,7 +224,7 @@
       <Geometry Up="${Field_33.Low}+2" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="0" Col="2">Add</Init>
+      <Init Row="0" Col="2" Half_Col_Offset="True" >Add</Init>
     </Field>
     <Field Num="35" Kind="Button" Name="Revert">
       <Geometry Up="${Field_34.Low}+2" Left="${LmLeft}" Height="1"
@@ -254,13 +254,13 @@
       <Geometry Up="${Field_38.Low}+2" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="0" Col="1">Reset</Init>
+      <Init Row="0" Col="1" Half_Col_Offset="True">Reset</Init>
     </Field>
     <Field Num="40" Kind="Button" Name="Stash">
       <Geometry Up="${Field_39.Low}+2" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="0" Col="1">Stash</Init>
+      <Init Row="0" Col="1" Half_Col_Offset="True">Stash</Init>
     </Field>
     <Field Num="41" Kind="Put">
       <Geometry Up="${Field_2.Up}-1" Left="${LmLeft}" Height="1"
@@ -305,7 +305,7 @@
     <Field Num="2" Kind="Button">
       <Geometry Up="${LmUp}" Left="${LmLeft}" Height="1" Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="0" Col="${LmSta}+1">Top</Init>
+      <Init Row="0" Col="${LmSta}+1" Half_Col_Offset="True">Top</Init>
     </Field>
     <Field Num="3" Kind="Button">
       <Geometry Up="${Field_2.Low}+2" Left="${LmLeft}" Height="3"
@@ -392,7 +392,7 @@
       <Geometry Up="${Field_15.Low}+2" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="0" Col="1">MovUp</Init>
+      <Init Row="0" Col="1" Half_Col_Offset="True">MovUp</Init>
     </Field>
     <Field Num="17" Kind="Button" Name="Movedown">
       <Geometry Up="${Field_16.Low}+2" Left="${LmLeft}" Height="1"
@@ -410,7 +410,7 @@
       <Geometry Up="${Field_18.Low}+2" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="0" Col="2">Del</Init>
+      <Init Row="0" Col="2" Half_Col_Offset="True">Del</Init>
     </Field>
     <Field Num="20" Kind="Put">
       <Geometry Low="${Field_2.Up}-1" Left="${LmLeft}" Height="1"
@@ -456,7 +456,7 @@
     <Field Num="2" Kind="Button">
       <Geometry Up="${LmUp}" Left="${LmLeft}" Height="1" Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="0" Col="${LmSta}+1">Top</Init>
+      <Init Row="0" Col="${LmSta}+1" Half_Col_Offset="True">Top</Init>
     </Field>
     <Field Num="3" Kind="Button">
       <Geometry Up="${Field_2.Low}+2" Left="${LmLeft}" Height="3"
@@ -468,7 +468,7 @@
       <Geometry Up="${Field_3.Low}+2" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="0" Col="${LmSta}+2">Up </Init>
+      <Init Row="0" Col="${LmSta}+2" Half_Col_Offset="True">Up </Init>
     </Field>
     <Field Num="5" Kind="Button">
       <Geometry Up="${Field_4.Low}+2" Left="${LmLeft}" Height="1"
@@ -591,7 +591,7 @@
       <Geometry Up="${Field_1.Up}" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="0" Col="2">All</Init>
+      <Init Row="0" Col="2" Half_Col_Offset="True">All</Init>
     </Field>
     <Field Num="27" Kind="Button" Name="Root">
       <Geometry Up="${Field_26.Low}+2" Left="${LmLeft}" Height="1"
@@ -621,7 +621,7 @@
       <Geometry Up="${Field_30.Low}+2" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="0" Col="0">Restore</Init>
+      <Init Row="0" Col="0" Half_Col_Offset="True">Restore</Init>
     </Field>
     <Field Num="32" Kind="Button" Name="Checkout">
       <Geometry Up="${Field_31.Low}+2" Left="${LmLeft}" Height="1"
@@ -633,25 +633,25 @@
       <Geometry Up="${Field_32.Low}+2" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="0" Col="1">Reorg</Init>
+      <Init Row="0" Col="1" Half_Col_Offset="True">Reorg</Init>
     </Field>
     <Field Num="34" Kind="Button" Name="Reset">
       <Geometry Up="${Field_33.Low}+2" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="0" Col="1">Reset</Init>
+      <Init Row="0" Col="1" Half_Col_Offset="True">Reset</Init>
     </Field>
     <Field Num="35" Kind="Button" Name="Tag">
       <Geometry Up="${Field_34.Low}+2" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="0" Col="2">Tag</Init>
+      <Init Row="0" Col="2" Half_Col_Offset="True">Tag</Init>
     </Field>
     <Field Num="36" Kind="Button" Name="Patch">
       <Geometry Up="${Field_35.Low}+2" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="0" Col="1">Patch</Init>
+      <Init Row="0" Col="1" Half_Col_Offset="True">Patch</Init>
     </Field>
     <Field Num="37" Kind="Button" Name="Mark">
       <Geometry Up="${Field_36.Low}+2" Left="${LmLeft}" Height="1"
@@ -709,7 +709,7 @@
     <Field Num="2" Kind="Button">
       <Geometry Up="${LmUp}" Left="${LmLeft}" Height="1" Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="0" Col="${LmSta}+1">Top</Init>
+      <Init Row="0" Col="${LmSta}+1" Half_Col_Offset="True">Top</Init>
     </Field>
     <Field Num="3" Kind="Button">
       <Geometry Up="${Field_2.Low}+2" Left="${LmLeft}" Height="1"
@@ -847,7 +847,7 @@
       <Geometry Up="${Field_25.Low}+2" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="0" Col="0">Restore</Init>
+      <Init Row="0" Col="0" Half_Col_Offset="True">Restore</Init>
     </Field>
     <Field Num="27" Kind="Button" Name="Mark">
       <Geometry Up="${Field_26.Low}+2" Left="${LmLeft}" Height="1"
@@ -953,7 +953,7 @@
       <Geometry Up="${List.Up}-8" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="0" Col="2">Top</Init>
+      <Init Row="0" Col="2" Half_Col_Offset="True">Top</Init>
     </Field>
     <Field Num="3" Kind="Button">
       <Geometry Up="${Field_2.Low}+2" Left="${LmLeft}" Height="3"
@@ -1040,7 +1040,7 @@
     <Field Num="2" Kind="Button">
       <Geometry Up="${LmUp}" Left="${LmLeft}" Height="1" Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="0" Col="${LmSta}+1">Top</Init>
+      <Init Row="0" Col="${LmSta}+1" Half_Col_Offset="True">Top</Init>
     </Field>
     <Field Num="3" Kind="Button">
       <Geometry Up="${Field_2.Low}+2" Left="${LmLeft}" Height="3"
@@ -1262,7 +1262,7 @@
     <Field Num="2" Kind="Button">
       <Geometry Up="${LmUp}" Left="${LmLeft}" Height="1" Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="0" Col="${LmSta}+1">Top</Init>
+      <Init Row="0" Col="${LmSta}+1" Half_Col_Offset="True">Top</Init>
     </Field>
     <Field Num="3" Kind="Button">
       <Geometry Up="${Field_2.Low}+2" Left="${LmLeft}" Height="3"
@@ -1422,7 +1422,7 @@
     <Field Num="2" Kind="Button" Name="Up">
       <Geometry Up="${LmUp}" Left="${LmLeft}" Height="1" Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="0" Col="${LmSta}+1">Top</Init>
+      <Init Row="0" Col="${LmSta}+1" Half_Col_Offset="True">Top</Init>
     </Field>
     <Field Num="3" Kind="Button">
       <Geometry Up="${Field_2.Low}+2" Left="${LmLeft}" Height="3"
@@ -1653,7 +1653,7 @@
     <Field Num="41" Kind="Button" Name="Push">
       <Geometry Up="${Field_40.Up}" Left="24" Height="3" Width="7"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="1" Col="1">Push</Init>
+      <Init Row="1" Col="1" Half_Col_Offset="True">Push</Init>
     </Field>
     <Field Num="42" Kind="Button" Name="Back">
       <Geometry Low="${Screen.Low}-1" Height="3" Right="${Screen.Width}-2"
@@ -1686,7 +1686,7 @@
     <Field Num="2" Kind="Button" Name="Up">
       <Geometry Up="${LmUp}" Left="${LmLeft}" Height="1" Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="0" Col="${LmSta}+1">Top</Init>
+      <Init Row="0" Col="${LmSta}+1" Half_Col_Offset="True">Top</Init>
     </Field>
     <Field Num="3" Kind="Button">
       <Geometry Up="${Field_2.Low}+2" Left="${LmLeft}" Height="3"
@@ -1763,13 +1763,13 @@
     <Field Num="15" Kind="Button" Name="Fetch">
       <Geometry Up="${List.Up}" Left="${LmLeft}" Height="1" Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="0" Col="1">Fetch</Init>
+      <Init Row="0" Col="1" Half_Col_Offset="True">Fetch</Init>
     </Field>
     <Field Num="16" Kind="Button" Name="Prune">
       <Geometry Up="${Field_15.Low}+2" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="0" Col="1">Prune</Init>
+      <Init Row="0" Col="1" Half_Col_Offset="True">Prune</Init>
     </Field>
     <Field Num="17" Kind="Put">
       <Geometry Up="${Field_2.Up}-1" Left="${LmLeft}" Height="1"
@@ -1834,7 +1834,7 @@
     <Field Num="2" Kind="Button" Name="Up">
       <Geometry Up="${LmUp}" Left="${LmLeft}" Height="1" Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="0" Col="${LmSta}+1">Top</Init>
+      <Init Row="0" Col="${LmSta}+1" Half_Col_Offset="True">Top</Init>
     </Field>
     <Field Num="3" Kind="Button">
       <Geometry Up="${Field_2.Low}+2" Left="${LmLeft}" Height="3"
@@ -1911,7 +1911,7 @@
     <Field Num="15" Kind="Button" Name="Add_Apply">
       <Geometry Up="${List.Up}" Left="${LmLeft}" Height="3" Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="1" Col="0">AddAppl</Init>
+      <Init Row="1" Col="0" Half_Col_Offset="True">AddAppl</Init>
     </Field>
     <Field Num="16" Kind="Button" Name="Add_Reset">
       <Geometry Up="${Field_15.Low}+2" Left="${LmLeft}" Height="1"
@@ -1923,19 +1923,19 @@
       <Geometry Up="${Field_16.Low}+2" Left="${LmLeft}" Height="3"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="1" Col="1">Apply</Init>
+      <Init Row="1" Col="1" Half_Col_Offset="True">Apply</Init>
     </Field>
     <Field Num="18" Kind="Button" Name="Pop">
       <Geometry Up="${Field_17.Low}+2" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="0" Col="2">Pop</Init>
+      <Init Row="0" Col="2" Half_Col_Offset="True">Pop</Init>
     </Field>
     <Field Num="19" Kind="Button" Name="Del">
       <Geometry Up="${Field_18.Low}+2" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="0" Col="2">Del</Init>
+      <Init Row="0" Col="2" Half_Col_Offset="True">Del</Init>
     </Field>
     <Field Num="20" Kind="Button" Name="Rename">
       <Geometry Up="${Field_19.Low}+2" Left="${LmLeft}" Height="1"
@@ -1988,7 +1988,7 @@
     <Field Num="2" Kind="Button" Name="Up">
       <Geometry Up="${LmUp}" Left="${LmLeft}" Height="1" Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="0" Col="${LmSta}+1">Top</Init>
+      <Init Row="0" Col="${LmSta}+1" Half_Col_Offset="True">Top</Init>
     </Field>
     <Field Num="3" Kind="Button">
       <Geometry Up="${Field_2.Low}+2" Left="${LmLeft}" Height="3"
@@ -2093,7 +2093,7 @@
       <Geometry Up="${Field_19.Low}+2" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="0" Col="1">Reset</Init>
+      <Init Row="0" Col="1" Half_Col_Offset="True">Reset</Init>
     </Field>
     <Field Num="21" Kind="Button" Name="Reflog">
       <Geometry Up="${Field_20.Low}+2" Left="${LmLeft}" Height="1"
@@ -2165,7 +2165,7 @@
     <Field Num="2" Kind="Button">
       <Geometry Up="${LmUp}" Left="${LmLeft}" Height="1" Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="0" Col="${LmSta}+1">Top</Init>
+      <Init Row="0" Col="${LmSta}+1" Half_Col_Offset="True">Top</Init>
     </Field>
     <Field Num="3" Kind="Button">
       <Geometry Up="${Field_2.Low}+2" Left="${LmLeft}" Height="1"
@@ -2267,7 +2267,7 @@
       <Geometry Up="${Field_18.Low}+2" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="0" Col="1">Fixup</Init>
+      <Init Row="0" Col="1" Half_Col_Offset="True">Fixup</Init>
     </Field>
     <Field Num="20" Kind="Button" Name="Drop">
       <Geometry Up="${Field_19.Low}+2" Left="${LmLeft}" Height="1"
@@ -2285,7 +2285,7 @@
       <Geometry Up="${Field_21.Low}+2" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="0" Col="1">MovUp</Init>
+      <Init Row="0" Col="1" Half_Col_Offset="True">MovUp</Init>
     </Field>
     <Field Num="23" Kind="Button" Name="Move_Down">
       <Geometry Up="${Field_22.Low}+2" Left="${LmLeft}" Height="1"
@@ -2413,7 +2413,7 @@
     <Field Num="2" Kind="Button" Name="Top">
       <Geometry Up="${LmUp}+12" Left="${LmLeft}" Height="1" Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="0" Col="2">Top</Init>
+      <Init Row="0" Col="2" Half_Col_Offset="True">Top</Init>
     </Field>
     <Field Num="3" Kind="Button">
       <Geometry Up="${Field_2.Low}+2" Left="${LmLeft}" Height="3"
@@ -2491,13 +2491,13 @@
       <Geometry Up="${Field_14.Low}+2" Left="${LmLeft}" Height="3"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="1" Col="1">Today</Init>
+      <Init Row="1" Col="1" Half_Col_Offset="True">Today</Init>
     </Field>
     <Field Num="16" Kind="Button" Name="Reset">
       <Geometry Up="${Field_15.Low}+2" Left="${LmLeft}" Height="3"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="1" Col="1">Reset</Init>
+      <Init Row="1" Col="1" Half_Col_Offset="True">Reset</Init>
     </Field>
 
     <Field Num="17" Kind="Put">
@@ -2542,7 +2542,7 @@
     <Field Num="2" Kind="Button" Name="Up">
       <Geometry Up="${LmUp}" Left="${LmLeft}" Height="1" Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="0" Col="${LmSta}+1">Top</Init>
+      <Init Row="0" Col="${LmSta}+1" Half_Col_Offset="True">Top</Init>
     </Field>
     <Field Num="3" Kind="Button">
       <Geometry Up="${Field_2.Low}+2" Left="${LmLeft}" Height="3"
@@ -2652,7 +2652,7 @@
       <Geometry Up="${Field_20.Low}+2" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Red" Background="Dark_Grey"/>
-      <Init Row="0" Col="1">Reset</Init>
+      <Init Row="0" Col="1" Half_Col_Offset="True">Reset</Init>
     </Field>
 
     <Field Num="22" Kind="Button" Name="Delete">
