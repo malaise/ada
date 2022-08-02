@@ -1,4 +1,4 @@
-with Con_Io, Argument, Mixed_Str;
+with Con_Io, Argument, Mixed_Str, Images;
 procedure T_Color is
   Console : aliased Con_Io.Console;
   Screen : Con_Io.Window;
@@ -7,6 +7,8 @@ procedure T_Color is
   X1, Y1, X2, Y2 : Natural;
   Ic : Con_Io.Effective_Colors;
   R : Con_Io.Get_Result;
+  Start : constant Con_Io.Row_Range := 6;
+  Foreground : Con_Io.Effective_Colors;
   use type Con_Io.Curs_Mvt;
 begin
 
@@ -27,18 +29,55 @@ begin
 
   loop
     Screen.Clear;
+    Screen.Put ("Font: " & Images.Integer_Image (Console.Font_Width)
+       & "x" & Images.Integer_Image (Console.Font_Height));
+
+    -- Chessboard of text and rectangles
+    -- Start rows and 21 columns, alternate screen foreground and background
+    -- Cells are: space at Row-Col, space at X-Y, rectangle at X-Y
+    for Row in 1 .. Start - 1 loop
+      for Col in 0 .. 20 loop
+        if (Row + Col) rem 2 = 0 then
+          Foreground := Console.Foreground;
+        else
+          Foreground := Console.Background;
+        end if;
+        if (Row + Col) rem 3 = 0 then
+          -- Space at Row-Col
+          Screen.Move (Row, Col);
+          Screen.Put (' ', Background => Foreground, Move => False);
+        elsif (Row + Col) rem 3 = 1 then
+          -- Space at X-Y
+          Console.To_Xy ( (Row, Col), X1, Y1);
+          Screen.Set_Background (Foreground);
+          Console.Put (' ', X1, Y1);
+        else
+          -- Rectangle at X-Y
+          Console.To_Xy ( (Row, Col), X1, Y1);
+          Screen.Set_Foreground (Foreground);
+          Console.Fill_Rectangle (X1, Y1,
+              X1 + Console.Font_Width - 1,
+              Y1 + Console.Font_Height - 1);
+        end if;
+      end loop;
+    end loop;
+    Screen.Set_Background (Con_Io.Default_Background);
+    Screen.Set_Foreground (Con_Io.Default_Foreground);
+
+    -- Colors part
+    Screen.Move (Start, 1);
     Screen.Put ("01234567890123456789012345678901234567890123456789",
                 Foreground => Con_Io.Effective_Colors'Last);
     Color := Con_Io.Effective_Colors'Last;
     for I in Con_Io.Effective_Colors loop
-      Screen.Move (Con_Io.Colors'Pos(I), 1);
+      Screen.Move (Start + Con_Io.Colors'Pos(I), 1);
       Screen.Put (Mixed_Str (Con_Io.Color_Name_Of (Color) ),
                   Foreground => Con_Io.Effective_Colors'Last);
-      Screen.Move (Con_Io.Colors'Pos(I), 20);
+      Screen.Move (Start + Con_Io.Colors'Pos(I), 20);
       Screen.Put ("^!@#$%&€*é$ê|", Foreground => Color, Move => False); --## rule line off Char
       -- First target col is 33, Pos of first effective color is 1
       Screen.Set_Foreground (Color);
-      Screen.Move (Con_Io.Colors'Pos(I), 32 + Con_Io.Colors'Pos(I));
+      Screen.Move (Start + Con_Io.Colors'Pos(I), 32 + Con_Io.Colors'Pos(I));
       Console.To_Xy (Screen.Position, X1, Y1);
       X2 := X1 + Console.Font_Width  - 1;
       Y2 := Y1 + Console.Font_Height - 1;
@@ -55,7 +94,7 @@ begin
           null;
       end case;
       -- Last column with '*'
-      Screen.Move (Con_Io.Colors'Pos(I), 49);
+      Screen.Move (Start + Con_Io.Colors'Pos(I), 49);
       Console.To_Xy (Screen.Position, X1, Y1);
       Console.Put ('*', X1, Y1);
       Screen.New_Line;
@@ -64,16 +103,16 @@ begin
     -- Last color
     Color := Con_Io.Effective_Colors'Last;
     Screen.Set_Foreground (Color);
-    Screen.Move (Con_Io.Colors'Pos(Color) + 1, 1);
+    Screen.Move (Start + Con_Io.Colors'Pos(Color) + 1, 1);
     Screen.Put ("Black");
-    Screen.Move (Con_Io.Colors'Pos(Color) + 1, 20);
+    Screen.Move (Start + Con_Io.Colors'Pos(Color) + 1, 20);
     Screen.Put ("^!@#$%&€*é$ê|", Move => False); --## rule line off Char
-    Screen.Move (Con_Io.Colors'Pos(Color) + 1, 47);
+    Screen.Move (Start + Con_Io.Colors'Pos(Color) + 1, 47);
     Console.To_Xy (Screen.Position, X1, Y1);
     X2 := X1 + Console.Font_Width  - 1;
     Y2 := Y1 + Console.Font_Height - 1;
     Console.Fill_Rectangle (X1, Y1, X2, Y2);
-    Screen.Move (Con_Io.Colors'Pos(Color) + 1, 49);
+    Screen.Move (Start + Con_Io.Colors'Pos(Color) + 1, 49);
     Console.To_Xy (Screen.Position, X1, Y1);
     Console.Put ('*', X1, Y1);
     -- Last line
