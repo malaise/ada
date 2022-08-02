@@ -165,8 +165,8 @@ package Str_Util is
   return String;
 
   -- Center the string Str in a fixed size
-  -- if Str <= Size, then pad with Gap before then after Str,
-  --  then after then before, then after then before...
+  -- if Str <= Size, then pad with Gap after then before Str,
+  --  then after then before...
   -- if Str > Size  raise Constraint_Error
   -- Offset denotes the offset from the center of the result
   --  and the center of Str; it is applied as much as possible
