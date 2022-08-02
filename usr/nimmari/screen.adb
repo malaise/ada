@@ -231,6 +231,7 @@ package body Screen is
     Afpx.Set_Field_Activation (Afpx_Xref.Game.Remove, True);
     Afpx.Set_Field_Activation (Afpx_Xref.Game.Reset, True);
     Afpx.Encode_Field (Afpx_Xref.Game.Remove, (1, 1), "P l a y");
+    Afpx.Set_Half_Col_Offset (Afpx_Xref.Game.Remove, 1, True);
     Afpx.Set_Field_Activation (Afpx_Xref.Game.Play, True);
     loop
       Afpx.Put_Then_Get (Get_Handle, Ptg_Result);
