@@ -147,7 +147,7 @@ package body Afpx is
     type State_List is (Normal, Clicked, Selected);
 
     -- Sets Foreground and background according to state
-    procedure Set_Colors (Field : in Afpx_Typ.Field_Rec;
+    procedure Get_Colors (Field : in Afpx_Typ.Field_Rec;
                           State : in State_List;
                           Foreground : out Con_Io.Effective_Colors;
                           Background : out Con_Io.Effective_Colors);
@@ -593,6 +593,54 @@ package body Afpx is
   begin
     Str := As.U.Tus (Get_Init_Field (Field_No, Row, Adjust));
   end Get_Init_Field;
+
+  -- Set/Get the half-row offset applicable to all the rows of a field
+  -- Exceptions : No_Descriptor (no Descriptor in use),
+  --              Invalid_Field (Field_No too big or not a Get field)
+  procedure Set_Half_Row_Offset (Field_No : in Field_Range;
+                                 Set      : in Boolean) is
+    Fn : constant Field_Range := Field_No;
+  begin
+    Af_Dscr.Check(Fn);
+    Af_Dscr.Fields(Fn).Half_Row_Offset := Set;
+  end Set_Half_Row_Offset;
+
+
+  function Get_Half_Row_Offset (Field_No : Field_Range) return Boolean is
+    Fn : constant Field_Range := Field_No;
+  begin
+    Af_Dscr.Check(Fn);
+    return Af_Dscr.Fields(Fn).Half_Row_Offset;
+  end Get_Half_Row_Offset;
+
+  -- Set/Get the half-col offset for a row of a field
+   -- Exceptions : No_Descriptor (no Descriptor in use),
+  --               Invalid_Field (Field_No too big or not a Get field)
+  --               Invalid_Row (not in field)
+  procedure Set_Half_Col_Offset (Field_No : in Field_Range;
+                                 Row      : in Con_Io.Row_Range;
+                                 Set      : in Boolean) is
+    Fn : constant Field_Range := Field_No;
+  begin
+    Af_Dscr.Check(Fn);
+    -- Check that row is in field
+    if not Afpx_Typ.In_Field (Af_Dscr.Fields(Fn), (Row, 0)) then
+      raise Invalid_Row;
+    end if;
+    Af_Dscr.Fields(Fn).Half_Col_Offsets(Row) := Set;
+  end Set_Half_Col_Offset;
+
+  function Get_Half_Col_Offset (Field_No : Field_Range;
+                                Row      : Con_Io.Row_Range) return Boolean is
+    Fn : constant Field_Range := Field_No;
+  begin
+    Af_Dscr.Check(Fn);
+    -- Check that row is in field
+    if not Afpx_Typ.In_Field (Af_Dscr.Fields(Fn), (Row, 0)) then
+      raise Invalid_Row;
+    end if;
+    return Af_Dscr.Fields(Fn).Half_Col_Offsets(Row);
+  end Get_Half_Col_Offset;
 
   -- Encode a string in a row of a field
   procedure Encode_Field (Field_No : in Field_Range;

@@ -763,7 +763,6 @@ begin
     Field : Xml_Parser.Node_Type;
     Child : Xml_Parser.Element_Type;
     Num_Read, Num_Comp : Afpx_Typ.Absolute_Field_Range;
-    Geometry : Xml_Parser.Attributes_Array (1 .. 4);
     Txt : As.U.Asu_Us;
     Updated, Changed : Boolean;
   begin
@@ -811,23 +810,27 @@ begin
           Error ("INTERNAL ERROR: No child Geometry found");
         end if;
         begin
-          Geometry := Xml.Get_Attributes (Child);
+          declare
+            Geometry : Xml_Parser.Attributes_Array
+                     := Xml.Get_Attributes (Child);
+          begin
+            Changed := False;
+            for Geo of Geometry loop
+              Update (Geo.Value, Xml.Get_Line_No (Tmp_Node), Updated);
+              Changed := Changed or else Updated;
+              if Updated then
+                Logger.Log_Debug ("Update Geometry " &
+                  Geo.Name.Image & " to " & Geo.Value.Image);
+              end if;
+            end loop;
+            if Changed then
+              Xml.Set_Attributes (Child, Geometry);
+            end if;
+          end;
         exception
           when Constraint_Error =>
             Error ("INTERNAL ERROR: Invalid Geometry");
         end;
-        Changed := False;
-        for Geo of Geometry loop
-          Update (Geo.Value, Xml.Get_Line_No (Tmp_Node), Updated);
-          Changed := Changed or else Updated;
-          if Updated then
-            Logger.Log_Debug ("Update Geometry " &
-              Geo.Name.Image & " to " & Geo.Value.Image);
-          end if;
-        end loop;
-        if Changed then
-          Xml.Set_Attributes (Child, Geometry);
-        end if;
 
         -- Field Init if any, brother of Geometry
         Update_Init (Child);

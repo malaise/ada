@@ -59,7 +59,7 @@ package body Af_List is
     Background : Con_Io.Effective_Colors;
   begin
     -- Set colors
-    Af_Ptg.Set_Colors (Af_Dscr.Fields(Lfn), State,
+    Af_Ptg.Get_Colors (Af_Dscr.Fields(Lfn), State,
                        Foreground, Background);
     -- Set str
     if Item.Len > Str'Last then
@@ -83,7 +83,7 @@ package body Af_List is
     Background : Con_Io.Effective_Colors;
   begin
     -- Set colors
-    Af_Ptg.Set_Colors (Af_Dscr.Fields(Lfn), Af_Ptg.Normal,
+    Af_Ptg.Get_Colors (Af_Dscr.Fields(Lfn), Af_Ptg.Normal,
                        Foreground, Background);
     -- Move
     List_Window.Move ( (Row, 0) );

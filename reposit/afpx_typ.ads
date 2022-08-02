@@ -2,7 +2,7 @@ with As.U, Unicode, Con_Io;
 package Afpx_Typ is
 
   -- Version of Afpx
-  Afpx_Version : constant Float := 10.0;
+  Afpx_Version : constant Float := 11.0;
 
   -- Files path
   Dest_Path : As.U.Asu_Us;
@@ -67,6 +67,9 @@ package Afpx_Typ is
    (Con_Io.Last_Row + 1) * (Con_Io.Last_Col + 1);
   subtype Char_Str_Range is Positive range 1 .. Max_Init_Len;
 
+  -- Half col offset for each row
+  type Half_Col_Offsets_Array is array (Con_Io.Row_Range) of Boolean;
+
   -- A field
   type Field_Rec is record
     -- First (0) field is the List.
@@ -92,6 +95,10 @@ package Afpx_Typ is
     Colors : Colors_Rec;
     -- Index in Char_Str of start of field content
     Char_Index : Char_Str_Range;
+    -- Half row offset for all the rows
+    Half_Row_Offset : Boolean;
+    -- Half col offset for each col
+    Half_Col_Offsets : Half_Col_Offsets_Array;
   end record;
 
   -- The array of fields of current descriptor

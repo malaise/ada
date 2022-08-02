@@ -396,16 +396,18 @@ procedure Afpx_Bld is
       Add_Variable (Node, Name_Of (Fn) & "." & Name, Geo_Image (Value),
                     False, False);
     end Add_Geo;
-    Up, Left, Low, Right : Boolean := False;
+    Up, Left, Low, Right, Hro_Set : Boolean := False;
     Nb_Verti, Nb_Horiz : Natural := 0;
   begin
     if Node.Kind /= Xp.Element
     or else not Match (Ctx.Get_Name (Node), "Geometry")
-    or else Ctx.Get_Nb_Attributes (Node) /= 4
+    or else (Ctx.Get_Nb_Attributes (Node) /= 4
+        and then Ctx.Get_Nb_Attributes (Node) /= 5)
     or else Ctx.Get_Nb_Children (Node) /= 0 then
       File_Error (Node, "Invalid geometry " & String'(Ctx.Get_Name (Node))
                  & ", expected Up, Left, Low, Right, Width, Height");
     end if;
+    Fields(Fn).Half_Row_Offset := False;
     declare
       Attrs : constant Xp.Attributes_Array := Ctx.Get_Attributes (Node);
       N : Arbitrary.Number;
@@ -448,6 +450,13 @@ procedure Afpx_Bld is
           N := Memory.Compute (Attr.Value.Image);
           Fields(Fn).Width := Natural'Value (N.Image);
           Add_Geo ("Width", Fields(Fn).Width);
+        elsif Match (Attr.Name, "Half_Row_Offset") then
+          if Hro_Set then
+            File_Error (Node,
+                        "Invalid geometry. Half_Row_Offset already defined");
+          end if;
+          Hro_Set := True;
+          Fields(Fn).Half_Row_Offset := Boolean'Value (Attr.Value.Image);
         else
           File_Error (Node, "Invalid geometry " & Attr.Name);
         end if;
@@ -513,7 +522,17 @@ procedure Afpx_Bld is
 
     -- One Row for Get fields
     if Fields(Fn).Kind = Afpx_Typ.Get and then Fields(Fn).Height /= 1 then
-      File_Error (Node, "Invalid geometry. Get fields must have ONE row");
+      File_Error (Node, "Invalid geometry. Get field must have ONE row");
+    end if;
+
+    -- No Half_Row_Offset for list or Get fields
+    if Fn = 0 and then Hro_Set then
+      File_Error (Node,
+                  "Invalid geometry. List cannot have Half_Row_Offset");
+    end if;
+    if Fields(Fn).Kind = Afpx_Typ.Get and then Hro_Set then
+      File_Error (Node,
+                  "Invalid geometry. Get field cannot have Half_Row_Offset");
     end if;
 
   exception
@@ -664,6 +683,7 @@ procedure Afpx_Bld is
     Fields(0).Data_Len := Fields(0).Width;
     Load_Colors (Ctx.Get_Child (Node, 2), 0);
     Fields(0).Char_Index := 1;
+    Fields(0).Half_Col_Offsets := (others => False);
   end Load_List;
 
   procedure Loc_Load_Field (Node : in Xp.Node_Type;
@@ -684,6 +704,8 @@ procedure Afpx_Bld is
     Finit_Length : Positive;
     -- Index in Char_Str of beginning of Init string
     Finit_Index : Afpx_Typ.Char_Str_Range;
+    -- Half_Col_Offset set for each row
+    Hco_Set : Afpx_Typ.Half_Col_Offsets_Array := (others => False);
   begin
     Fields(No).Modified := True;
     Fields(No).Activated := True;
@@ -766,12 +788,14 @@ procedure Afpx_Bld is
     -- Parse Init
     First_Init := True;
     Prev_Init_Square := (0, 0);
+    Fields(No).Half_Col_Offsets := (others => False);
     for I in Start_Init .. Ctx.Get_Nb_Children (Node) loop
       Child := Ctx.Get_Child (Node, I);
       if not Match (Ctx.Get_Name (Child), "Init")
-      or else Ctx.Get_Nb_Attributes (Child) < 2
+      or else Ctx.Get_Nb_Attributes (Child) < 3
       or else Ctx.Get_Nb_Children (Child) > 1 then
-        File_Error (Child, "Invalid Init, expected row, col and text");
+        File_Error (Child,
+          "Invalid Init, expected Row, Col, Half_Col_Offset and text");
       end if;
 
       declare
@@ -791,9 +815,23 @@ procedure Afpx_Bld is
           elsif Match (Child_Attr.Name, "xml:space") then
             -- Discard
             null;
+          elsif Match (Child_Attr.Name, "Half_Col_Offset") then
+            if Fields(No).Kind = Afpx_Typ.Get then
+              File_Error (Child,
+                  "Invalid geometry. Get field cannot have Half_Col_Offset");
+            end if;
+            -- Half_Col_Offsets cannot be defined twice for a row
+            if not First_Init
+            and then Finit_Square.Row = Prev_Init_Square.Row
+            and then Hco_Set(Finit_Square.Row) then
+              File_Error (Child,
+              "Invalid geometry. Half_Col_Offset cannot be set twice on a row");
+            end if;
+            Hco_Set(Finit_Square.Row) := True;
+            Fields(No).Half_Col_Offsets(Finit_Square.Row) := True;
           else
             File_Error (Child, "Invalid Init attribute "
-                             & Child_Attr.Value);
+                             & Child_Attr.Name);
           end if;
         end loop;
       exception

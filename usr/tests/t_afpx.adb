@@ -98,6 +98,12 @@ begin
   Basic_Proc.Put_Line_Output ("Screen geometry is "
                             & Width'Img & " x" & Height'Img);
   Afpx.Use_Descriptor(1);
+  Basic_Proc.Put_Line_Output (
+    "Font " & Afpx.Get_Console.Font_Name &
+    " height: " & Natural'Image (Afpx.Get_Console.Font_Height) &
+    " width: " & Natural'Image (Afpx.Get_Console.Font_Width) &
+    " offset: " & Natural'Image (Afpx.Get_Console.Font_Offset));
+
 
   Background := Afpx.Get_Descriptor_Background;
   Basic_Proc.Put_Line_Output ("Dscr background is " & Background'Img);

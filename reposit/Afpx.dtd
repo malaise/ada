@@ -11,6 +11,9 @@
 <!-- Rows are from 0 to 255. -->
 <!-- Cols are from 0 to 255. -->
 
+<!-- General types -->
+<!ENTITY % Boolean "True | False">
+
 <!-- Syntax and semantic of the descriptor file -->
 <!-- ========================================== -->
 <!-- Afpx_Descriptors allows defining the screen size for all descriptors -->
@@ -110,11 +113,15 @@
 <!--  required. -->
 <!-- Geometry must not make the field overlap with another field of the -->
 <!--  descriptor. -->
-<!-- Geometry of a Get field must define only one row. -->
+<!-- Half_Row_Offset defines wether a half row offset applies to all the -->
+<!--  rows of the field (default False), then last row is not displayed. -->
+<!-- Geometry of a Get field must define only one row and cannot define -->
+<!--  row half offset. -->
 <!ELEMENT Geometry EMPTY>
 <!ATTLIST Geometry
      Up   CDATA #IMPLIED Low   CDATA #IMPLIED Height  CDATA #IMPLIED
-     Left CDATA #IMPLIED Right CDATA #IMPLIED Width   CDATA #IMPLIED>
+     Left CDATA #IMPLIED Right CDATA #IMPLIED Width   CDATA #IMPLIED
+     Half_Row_Offset (%Boolean;) #IMPLIED>
 <!-- As soon as an attribute is parsed, the corresponding constant -->
 <!--  is defined and valid for the rest of the descriptor (e.g. List.Up, -->
 <!--  Field_2.Low, Field_21.Width). When all geometry is parsed for a list -->
@@ -152,13 +159,20 @@
 <!--  (valid for the remaining part of the descriptor) is defined (e.g. -->
 <!--  List.Foreground and Field_1.Background). -->
 
+
 <!-- Init row and col have to be compatible with the geometry of the field. -->
 <!-- Rows must appear in crescent order of rows and then cols. -->
 <!-- Init string must not contain Line Feed and must be compatible with the -->
-<!-- geometry and the init col. -->
+<!--  geometry and the init col. -->
+<!-- When a Half_Row_Offset is set, the last row is not displayed (but it -->
+<!--  can be initialized). -->
+<!-- On each row of a non Get field, Half_Col_Offset defines wether a half -->
+<!--  col offset applies to this row (default False), then last column is -->
+<!--  not displayed. -->
 <!ELEMENT Init (#PCDATA)>
 <!ATTLIST Init Row CDATA #REQUIRED Col CDATA #REQUIRED
-               xml:space (default|preserve) "preserve">
+               xml:space (default|preserve) "preserve"
+               Half_Col_Offset (%Boolean;) #IMPLIED>
 
 <!-- Note on Cross-reference package -->
 <!-- If afpx_bld is called with the option -x<cross_ref_package> then it -->

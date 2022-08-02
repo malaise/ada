@@ -17,6 +17,11 @@ package body Af_Dscr is
   -- Colors from file
   Init_Colors : array (Absolute_Field_Range) of Afpx_Typ.Colors_Rec;
 
+  -- Half offsets from file
+  Half_Row_Offset : array (Absolute_Field_Range) of Boolean;
+  Half_Col_Offsets : array (Absolute_Field_Range)
+                     of Afpx_Typ.Half_Col_Offsets_Array;
+
   -- Descriptor read
   Dscrs : Afpx_Typ.Descriptors_Array;
 
@@ -66,10 +71,11 @@ package body Af_Dscr is
     Fld_Io.Read  (Fld_File , Fields,   Fld_Io.Positive_Count(Dscr_Index));
     Init_Io.Read (Init_File, Init_Str, Init_Io.Positive_Count(Dscr_Index));
 
-    -- Save colors, copy chars
-    for I in
-        Absolute_Field_Range'First .. Dscrs(Dscr_No).Nb_Fields loop
+    -- Save colors and half offset, copy chars
+    for I in Absolute_Field_Range'First .. Dscrs(Dscr_No).Nb_Fields loop
       Init_Colors(I) := Fields(I).Colors;
+      Half_Row_Offset(I) := Fields(I).Half_Row_Offset;
+      Half_Col_Offsets(I) := Fields(I).Half_Col_Offsets;
     end loop;
     Chars := Init_Str;
 
@@ -123,7 +129,6 @@ package body Af_Dscr is
     return Fields(Lfn).Kind = Button_Field;
   end Has_List;
 
-
   -- Load a field
   procedure Load_Field (Field_No : in Absolute_Field_Range;
         Load_Colors : in Boolean;
@@ -144,6 +149,8 @@ package body Af_Dscr is
       for I in Field.Char_Index .. Field.Char_Index + Nb_Chars - 1 loop
         Chars(I) := Init_Str(I);
       end loop;
+      Fields(Field_No).Half_Row_Offset := Half_Row_Offset(Field_No);
+      Fields(Field_No).Half_Col_Offsets := Half_Col_Offsets(Field_No);
     end if;
   exception
     when others =>

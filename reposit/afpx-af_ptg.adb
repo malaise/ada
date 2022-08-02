@@ -45,7 +45,7 @@ package body Af_Ptg is
   Need_Redisplay : Boolean := False;
 
   -- Sets Foreground and background according to state
-  procedure Set_Colors (Field : in Afpx_Typ.Field_Rec;
+  procedure Get_Colors (Field : in Afpx_Typ.Field_Rec;
                         State : in State_List;
                         Foreground : out Con_Io.Effective_Colors;
                         Background : out Con_Io.Effective_Colors) is
@@ -62,7 +62,7 @@ package body Af_Ptg is
         Foreground := Field.Colors.Foreground;
         Background := Field.Colors.Selected;
     end case;
-  end Set_Colors;
+  end Get_Colors;
 
   -- Put a whole field
   procedure Put_Fld (Field_No : in Field_Range;
@@ -71,28 +71,78 @@ package body Af_Ptg is
     Char_Index  : Afpx_Typ.Char_Str_Range;
     Foreground  : Con_Io.Effective_Colors;
     Background  : Con_Io.Effective_Colors;
+    Font_Width : constant Natural := Console.Font_Width;
+    Font_Height : constant Natural := Console.Font_Height;
+    Width : Afpx_Typ.Char_Str_Range;
+    X : Con_Io.X_Range;
+    Y : Con_Io.Y_Range;
+    Offset_Applied : Boolean := False;
   begin
     -- Set colors
-    Set_Colors (Field, State, Foreground, Background);
+    Get_Colors (Field, State, Foreground, Background);
 
     -- Set index to start of field's data and to first char to put
     Char_Index := Field.Char_Index + Field.Offset;
     -- Put spaces in each row
     for I in 1 .. Field.Height loop
-      -- Go to row, left of field
-      Af_Con_Io.Move (Field.Upper_Left.Row + I - 1, Field.Upper_Left.Col);
-      -- Put Field.Width chars, starting at Char_Index + Field.Offset
-      Af_Con_Io.Putu (
-         S          => Af_Dscr.Chars(Char_Index ..
-                                     Char_Index + Field.Width - 1),
-         Foreground => Foreground,
-         Background => Background,
-         Move       => False);
+      if not Field.Half_Row_Offset
+      and then not Field.Half_Col_Offsets (I - 1) then
+      -- No half offset, text mode => Go to row, left of field
+        Af_Con_Io.Move (Field.Upper_Left.Row + I - 1, Field.Upper_Left.Col);
+        -- Put Field.Width chars, starting at Char_Index + Field.Offset
+        Af_Con_Io.Putu (
+           S          => Af_Dscr.Chars(Char_Index ..
+                                       Char_Index + Field.Width - 1),
+           Foreground => Foreground,
+           Background => Background,
+           Move       => False);
+      else
+        -- Half offset, graphic mode => Put at X, Y with offsets
+        -- Skip last row if row offset
+        exit when Field.Half_Row_Offset and then I = Field.Height;
+        -- First and once once, draw the rectangle and set colors
+        if not Offset_Applied then
+          -- Draw rectangle with field background
+          Console.To_Xy ( (Field.Upper_Left.Row, Field.Upper_Left.Col), X, Y);
+          Af_Con_Io.Set_Foreground (Background);
+          Console.Fill_Rectangle (
+              X,
+              Y,
+              X + Field.Width * Font_Width - 1,
+              Y + Field.Height * Font_Height - 1);
+          -- Set colors  for next Put
+          Af_Con_Io.Set_Foreground (Foreground);
+          Af_Con_Io.Set_Background (Background);
+          Offset_Applied := True;
+        end if;
+        -- Now put the row
+        Console.To_Xy ( (Field.Upper_Left.Row + I - 1, Field.Upper_Left.Col),
+                         X, Y);
+        if Field.Half_Row_Offset then
+          -- Shift down half height (for all the rows)
+          Y := Y + Console.Font_Height / 2;
+        end if;
+        Width := Field.Width;
+        if Field.Half_Col_Offsets (I - 1) then
+          -- Skip last col (for this row)
+          Width := Width - 1;
+          -- Shift right half width
+          X := X +  Console.Font_Width / 2;
+        end if;
+        Console.Put (
+            Language.Unicode_To_String (Af_Dscr.Chars(Char_Index ..
+                                          Char_Index + Width - 1)),
+            X, Y);
+      end if;
       -- Update Char_Index to first char of next row (except after last row)
       if I /= Field.Height then
         Char_Index := Char_Index + Field.Data_Len;
       end if;
     end loop;
+    if Offset_Applied then
+      -- Restore screen background
+      Af_Con_Io.Set_Background (Af_Dscr.Current_Dscr.Background);
+    end if;
   end Put_Fld;
 
   -- Erase a field (screen_background, screen_background)
@@ -889,6 +939,9 @@ package body Af_Ptg is
       Prev_Cursor_Field := Afpx_Typ.List_Field_No;
     end if;
 
+    -- Set Con_Io Square to Xy convertion
+    Console.Set_Y_Mode (Con_Io.X_Mng_Mode);
+
     -- The infinite loop
     loop
       Init_List (List_Present);
@@ -924,7 +977,7 @@ package body Af_Ptg is
       -- Get field, set colors when field changes
       if Get_Active then
         Field := Af_Dscr.Fields(Cursor_Field);
-        Set_Colors (Field, Selected, Foreground, Background);
+        Get_Colors (Field, Selected, Foreground, Background);
       end if;
 
       -- Flush output

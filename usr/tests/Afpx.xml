@@ -36,9 +36,9 @@
     </Field>
 
     <Field Num="5" Kind="Button">
-      <Geometry Up="15" Left="34" Low="17" Right="46"/>
+      <Geometry Up="15" Left="34" Low="16" Right="46" Half_Row_Offset="True"/>
       <Colors Foreground="Red" Background="Blue"/>
-      <Init Row="1" Col="2">P R I N T</Init>
+      <Init Row="0" Col="2">P R I N T</Init>
     </Field>
 
     <Field Num="6" Kind="Get">
@@ -81,7 +81,7 @@
     <Field Num="12" Kind="Button">
       <Geometry Up="7" Left="21" Low="9" Right="28"/>
       <Colors Foreground="Red" Background="Blue"/>
-      <Init Row="1" Col="2">Top</Init>
+      <Init Row="1" Col="2" Half_Col_Offset="True">Top</Init>
     </Field>
 
     <Field Num="13" Kind="Button">
@@ -93,7 +93,7 @@
     <Field Num="14" Kind="Button">
       <Geometry Up="11" Height="1" Right="${Field_13.Right}" Width="8"/>
       <Colors Foreground="Red" Background="Blue"/>
-      <Init Row="0" Col="2">Top</Init>
+      <Init Row="0" Col="2" Half_Col_Offset="True">Top</Init>
     </Field>
 
     <Field Num="15" Kind="Button">

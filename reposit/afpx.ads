@@ -95,9 +95,9 @@ package Afpx is
   --              Invalid_Field (Field_No too big)
   procedure Clear_Field (Field_No : in Field_Range);
 
-  -- Reset the field from initial definition in file
-  --  colors and / or  content,
+  -- Reset the field from initial definition in file colors and / or  content,
   -- The field becomes activated and not protected.
+  -- Reset_String also resets half offsets
   -- Reset_String is meaningless if Field_No is List_Field_No
   -- Exceptions : No_Descriptor (no Descriptor in use),
   --              Invalid_Field (Field_No too big)
@@ -166,6 +166,23 @@ package Afpx is
                             Row      : in Con_Io.Row_Range;
                             Str      : in out As.U.Asu_Us;
                             Adjust   : in Boolean := True);
+
+  -- Set/Get the half-row offset applicable to all the rows of a field
+  -- Exceptions : No_Descriptor (no Descriptor in use),
+  --              Invalid_Field (Field_No too big or not a Get field)
+  procedure Set_Half_Row_Offset (Field_No : in Field_Range;
+                                 Set      : in Boolean);
+  function Get_Half_Row_Offset (Field_No : Field_Range) return Boolean;
+
+  -- Set/Get the half-col offset for a row of a field
+   -- Exceptions : No_Descriptor (no Descriptor in use),
+  --               Invalid_Field (Field_No too big or not a Get field)
+  --               Invalid_Row (not in field)
+  procedure Set_Half_Col_Offset (Field_No : in Field_Range;
+                                 Row      : in Con_Io.Row_Range;
+                                 Set      : in Boolean);
+  function Get_Half_Col_Offset (Field_No : Field_Range;
+                                Row      : Con_Io.Row_Range) return Boolean;
 
   -- Encode a string in a field.
   -- The Row is filled with spaces, then with Str starting at Col
