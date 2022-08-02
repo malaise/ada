@@ -654,6 +654,8 @@ static void rectangle_of (int x1, int y1, int x2, int y2,
         *y = y2;
         *height = y1 - y2;
     }
+    (*width)++;
+    (*height)++;
 }
 
 /* Compute angle in 1/64 degrees */
