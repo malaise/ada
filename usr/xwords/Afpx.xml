@@ -187,14 +187,14 @@
       <Geometry Up="${Field_29.Low}+1" Left="${BtnLeft}+1" Width="${Btnwidth}"
                 Height="1"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="0" Col="1">History</Init>
+      <Init Row="0" Col="1" Half_Col_Offset="True">History</Init>
     </Field>
 
     <Field Num="31" Kind="Button" Name="Clear_List">
       <Geometry Up="${Field_30.Low}+2" Left="${BtnLeft}+1" Width="${Btnwidth}"
                 Height="1"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="0" Col="2">Clear</Init>
+      <Init Row="0" Col="2" Half_Col_Offset="True">Clear</Init>
     </Field>
     <Field Num="32" Kind="Button" Name="Nouns">
       <Geometry Up="${Field_31.Low}+2" Left="${BtnLeft}+1" Width="${Btnwidth}"
@@ -218,7 +218,7 @@
     <Field Num="34" Kind="Button" Name="List_Mng">
       <Geometry Up="${LmUp}" Left="${LmLeft}" Height="1" Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="0" Col="${LmSta}+1">Top</Init>
+      <Init Row="0" Col="${LmSta}+1" Half_Col_Offset="True">Top</Init>
     </Field>
     <Field Num="35" Kind="Button">
       <Geometry Up="${Field_34.Low}+2" Left="${LmLeft}" Height="1"
@@ -268,7 +268,7 @@
       <Geometry Up="${Field_41.Low}+1" Left="${BtnLeft}+1" Height="3"
                 Width="${Btnwidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="1" Col="1">E X I T</Init>
+      <Init Row="1" Col="1" Half_Col_Offset="True">E X I T</Init>
     </Field>
 
   </Descriptor>
