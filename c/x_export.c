@@ -361,11 +361,9 @@ extern int x_put_char (void *line_id, int car, int row, int column) {
     }
 
     /* Compute pixels */
-    x = column *
-      fon_get_width  (win_id->server->x_font[no_font]);
-    y = row *
-      fon_get_height (win_id->server->x_font[no_font]) +
-      fon_get_offset (win_id->server->x_font[no_font]);
+    x = column * fon_get_width (win_id->server->x_font[no_font]);
+    y = row * fon_get_height (win_id->server->x_font[no_font])
+            + fon_get_offset (win_id->server->x_font[no_font]);
 
     /* Put char */
     scr_put_char (win_id->server->x_server,
@@ -401,11 +399,9 @@ extern int x_overwrite_char (void *line_id, int car, int row, int column) {
     }
 
     /* Compute pixels */
-    x = column *
-      fon_get_width  (win_id->server->x_font[no_font]);
-    y = row *
-      fon_get_height (win_id->server->x_font[no_font]) +
-      fon_get_offset (win_id->server->x_font[no_font]);
+    x = column * fon_get_width (win_id->server->x_font[no_font]);
+    y = row * fon_get_height (win_id->server->x_font[no_font])
+            + fon_get_offset (win_id->server->x_font[no_font]);
 
     /* Put char */
     scr_overwrite_char (win_id->server->x_server,
@@ -437,11 +433,9 @@ extern int x_put_string (void *line_id, const char *p_char, int number,
     }
 
     /* Compute pixels */
-    x = column *
-      fon_get_width  (win_id->server->x_font[no_font]);
-    y = row *
-      fon_get_height (win_id->server->x_font[no_font]) +
-      fon_get_offset (win_id->server->x_font[no_font]);
+    x = column * fon_get_width (win_id->server->x_font[no_font]);
+    y = row * fon_get_height (win_id->server->x_font[no_font])
+            + fon_get_offset (win_id->server->x_font[no_font]);
 
     /* Put string */
     scr_put_string (win_id->server->x_server,
@@ -575,8 +569,10 @@ extern int x_get_bold_name (void *line_id, char *font_name, int font_len) {
 
 
 /* Writes a char on a line (characteristics are previously set) */
-/* x is a number of pixels of vertical position (top down) */
-/* y                          horizontal position (left right) */
+/* x is the number of pixels of vertical position (top down) for the */
+/*  reference line for the font, so you need to add the offset to it if */
+/*  you want to specify the upperleft pixel for the chat */
+/* y is the number of pixels of horizontal position (left right) */
 /* The output is not flushed */
 extern int x_put_char_pixels (void *line_id, int car, int x, int y) {
 

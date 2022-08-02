@@ -1732,7 +1732,7 @@ package body Con_Io is
     Check_Con (Con);
     Acc := Con.Get_Access;
     Set_Screen_Attributes (Con);
-    Ly := Y;
+    Ly := Y + Con.Get_Access.Font_Offset;
     if Acc.Y_Mode = Con_Io_Mode then
       Ly := Acc.Y_Max - Ly;
     end if;
@@ -1751,7 +1751,7 @@ package body Con_Io is
     Acc := Con.Get_Access;
     Set_Screen_Attributes (Con);
     Lx := X;
-    Ly := Y;
+    Ly := Y + Con.Get_Access.Font_Offset;
     if Acc.Y_Mode = Con_Io_Mode then
       Ly := Acc.Y_Max - Ly;
     end if;

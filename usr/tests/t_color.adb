@@ -54,9 +54,14 @@ begin
         when others =>
           null;
       end case;
+      -- Last column with '*'
+      Screen.Move (Con_Io.Colors'Pos(I), 49);
+      Console.To_Xy (Screen.Position, X1, Y1);
+      Console.Put ('*', X1, Y1);
       Screen.New_Line;
       Color := Con_Io.Colors'Pred(Color);
     end loop;
+    -- Last color
     Color := Con_Io.Effective_Colors'Last;
     Screen.Set_Foreground (Color);
     Screen.Move (Con_Io.Colors'Pos(Color) + 1, 1);
@@ -68,6 +73,10 @@ begin
     X2 := X1 + Console.Font_Width  - 1;
     Y2 := Y1 + Console.Font_Height - 1;
     Console.Fill_Rectangle (X1, Y1, X2, Y2);
+    Screen.Move (Con_Io.Colors'Pos(Color) + 1, 49);
+    Console.To_Xy (Screen.Position, X1, Y1);
+    Console.Put ('*', X1, Y1);
+    -- Last line
     Screen.New_Line;
     Screen.Put ("01234567890123456789012345678901234567890123456789",
                 Foreground => Color);

@@ -44,10 +44,10 @@ static void put(void *line, const char *string, int row, int column) {
   (void) x_put_string (line, string, (int)strlen(string), row, column);
 }
 
+static  int ww, wh, fw, fh, fo;
 static void title (void *line) {
   unsigned char str[80];
   char tit[80];
-  int ww, wh, fw, fh, fo;
 
   (void) x_clear_line (line);
   (void) x_set_attributes (line, back, 13, 0, 0, 0);
@@ -195,6 +195,10 @@ boolean read;
       x_draw_points (line, 20, 1, 7, 8, draw);
       x_fill_arc (line, 30, 1, 44, 15, 0.0, 5400);
       x_draw_arc (line, 50, 1, 64, 15, 0.0, 21600);
+      x_fill_rectangle (line, 65, 1, 71, 13);
+      x_put_char (line, (int) '@', 0, 12);
+      /* One pixel gap from prev char and top */
+      x_put_char_pixels (line, (int) '@', 13 * fw + 1, fo + 1);
 
       /* Text display  : show attributes */
       strcpy (stra, "(s)uperbright:");

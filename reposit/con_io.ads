@@ -465,7 +465,7 @@ package Con_Io is
 
   -- By default, the origin in Con_Io is at bottom left, which is easier
   --  for graphics. But this is different from X_Mng and X11 orgin, which is
-  --  top left.
+  --  top left and easier for square to Xy conversions.
   -- This operation toggles the origin of Y scale for display and events
   type Y_Modes is (Con_Io_Mode, X_Mng_Mode);
   procedure Set_Y_Mode (Con : in Console; Y_Mode : in Y_Modes);
@@ -488,7 +488,8 @@ package Con_Io is
   function Font_Height (Con : Console) return Natural;
   function Font_Offset (Con : Console) return Natural;
 
-  -- Convert X, Y to a square and reverse
+  -- Convert X, Y to a square (the one containing the pixel)
+  --  and reverse (the upper left pixel of the square)
   function To_Square (Con : Console;
                       X : X_Range; Y : Y_Range) return Square;
   procedure To_Xy (Con : in Console; Position : in Square;
@@ -496,6 +497,7 @@ package Con_Io is
 
   -- Put a char with screen foreground and current Xor mode
   -- on screen background
+  -- X and Y denote the upper left pixel for the char
   -- No window is affected
   procedure Put (Con : in Console;
                  C   : in Character;
@@ -504,6 +506,7 @@ package Con_Io is
 
   -- Put a string with screen foreground and current Xor mode
   -- on screen background
+  -- X and Y denote the upper left pixel for the first char
   -- No window is affected
   procedure Put (Con : in Console;
                  S   : in String;
