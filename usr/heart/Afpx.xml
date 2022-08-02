@@ -181,7 +181,7 @@
     <Field Num="24" Kind="Button" Name="Print">
       <Geometry Up="15" Left="68" Low="15" Right="79"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="00" Col="03">Print</Init>
+      <Init Row="00" Col="03"Half_Col_Offset="True">Print</Init>
     </Field>
 
     <!-- Create button -->
@@ -393,7 +393,7 @@
     <Field Num="26" Kind="Button" Name="Valid">
       <Geometry Up="17" Left="57" Low="19" Right="64"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="01" Col="01">Valid</Init>
+      <Init Row="01" Col="01" Half_Col_Offset="True">Valid</Init>
     </Field>
 
     <!-- Cancel button -->
