@@ -7,11 +7,9 @@ procedure T_Color is
   X1, Y1, X2, Y2 : Natural;
   Ic : Con_Io.Effective_Colors;
   R : Con_Io.Get_Result;
-  Start : constant Con_Io.Row_Range := 6;
-  Foreground : Con_Io.Effective_Colors;
+  Start : constant Con_Io.Row_Range := 2;
   use type Con_Io.Curs_Mvt;
 begin
-
   -- Load default colors
   Colors := Con_Io.Default_Colors;
   -- Store Arguments as colors
@@ -32,40 +30,8 @@ begin
     Screen.Put ("Font: " & Images.Integer_Image (Console.Font_Width)
        & "x" & Images.Integer_Image (Console.Font_Height));
 
-    -- Chessboard of text and rectangles
-    -- Start rows and 21 columns, alternate screen foreground and background
-    -- Cells are: space at Row-Col, space at X-Y, rectangle at X-Y
-    for Row in 1 .. Start - 1 loop
-      for Col in 0 .. 20 loop
-        if (Row + Col) rem 2 = 0 then
-          Foreground := Console.Foreground;
-        else
-          Foreground := Console.Background;
-        end if;
-        if (Row + Col) rem 3 = 0 then
-          -- Space at Row-Col
-          Screen.Move (Row, Col);
-          Screen.Put (' ', Background => Foreground, Move => False);
-        elsif (Row + Col) rem 3 = 1 then
-          -- Space at X-Y
-          Console.To_Xy ( (Row, Col), X1, Y1);
-          Screen.Set_Background (Foreground);
-          Console.Put (' ', X1, Y1);
-        else
-          -- Rectangle at X-Y
-          Console.To_Xy ( (Row, Col), X1, Y1);
-          Screen.Set_Foreground (Foreground);
-          Console.Fill_Rectangle (X1, Y1,
-              X1 + Console.Font_Width - 1,
-              Y1 + Console.Font_Height - 1);
-        end if;
-      end loop;
-    end loop;
-    Screen.Set_Background (Con_Io.Default_Background);
-    Screen.Set_Foreground (Con_Io.Default_Foreground);
-
     -- Colors part
-    Screen.Move (Start, 1);
+    Screen.Move (Start, 0);
     Screen.Put ("01234567890123456789012345678901234567890123456789",
                 Foreground => Con_Io.Effective_Colors'Last);
     Color := Con_Io.Effective_Colors'Last;
