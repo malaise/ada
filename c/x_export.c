@@ -714,6 +714,7 @@ extern int x_fill_rectangle (void *line_id, int x1, int y1, int x2, int y2) {
 }
 
 /* Draw an arc within a regtangle at x1y1, x1y2, x2y2, x2y1 */
+/* Angles are trigo (origin and way) */
 extern int x_draw_arc (void *line_id, int x1, int y1, int x2, int y2,
                        int a1, int a2) {
     t_window *win_id = (t_window*) line_id;
@@ -740,6 +741,7 @@ extern int x_draw_arc (void *line_id, int x1, int y1, int x2, int y2,
 }
 
 /* Fill an arc within a regtangle at x1y1, x1y2, x2y2, x2y1 */
+/* Angles are trigo (origin and way) */
 extern int x_fill_arc (void *line_id, int x1, int y1, int x2, int y2,
                        int a1, int a2) {
     t_window *win_id = (t_window*) line_id;
