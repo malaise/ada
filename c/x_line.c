@@ -264,10 +264,13 @@ Status res;
         unsigned long gc_mask;
         XGCValues gc_values;
 
-        gc_mask = GCForeground | GCBackground | GCFont;
-        gc_values.font = p_window->server->x_font[no_font]->fid;
+        gc_mask = GCForeground | GCBackground | GCFillStyle | GCFont
+                | GCArcMode;
         gc_values.foreground = col_get(1, p_window->screen->color_id);
         gc_values.background = col_get(0, p_window->screen->color_id);
+        gc_values.fill_style = FillSolid;
+        gc_values.font = p_window->server->x_font[no_font]->fid;
+        gc_values.arc_mode = ArcChord;
 
         p_window->x_graphic_context = XCreateGC (p_window->server->x_server,
                           p_window->screen->x_root_win, gc_mask, &gc_values);
