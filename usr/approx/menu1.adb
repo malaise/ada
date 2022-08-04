@@ -251,10 +251,11 @@ package body Menu1 is
     procedure Edit_Point is
     begin
       Afpx.Set_Field_Protection (Afpx.List_Field_No, True);
+      Afpx.Set_Field_Activation (Afpx_Xref.Points.Center, False);
       -- Get index then point
       Point_Index := Positive (Afpx.Line_List.Get_Position);
       A_Point := Points.P_One_Point(Point_Index);
-      if Ptg_Result.Field_No = 26 then
+      if Ptg_Result.Field_No = Afpx_Xref.Points.Delete then
         -- Delete a point
         Screen.Put_Title(Screen.Suppress_1);
         Afpx.Encode_Field (Screen.Get_Fld, (0, 0),
@@ -282,8 +283,7 @@ package body Menu1 is
         end if;
       end if;
       Afpx.Set_Field_Protection (Afpx.List_Field_No, False);
-      Restore := Partial;
-      Afpx.Set_Field_Protection (Afpx.List_Field_No, False);
+      Afpx.Set_Field_Activation (Afpx_Xref.Points.Center, True);
       Restore := Partial;
     end Edit_Point;
 
@@ -364,7 +364,8 @@ package body Menu1 is
                 exit when Exit_Prog;
                 Restore := Partial;
               when Afpx_Xref.Points.Load | Afpx_Xref.Points.Save =>
-                Load_Save(Ptg_Result.Field_No = 21, Restore);
+                Load_Save(Ptg_Result.Field_No = Afpx_Xref.Points.Load,
+                          Restore);
                 Data_Changed := True;
               when Afpx_Xref.Points.New_Points =>
                 -- New points
@@ -380,6 +381,7 @@ package body Menu1 is
               when Afpx_Xref.Points.Add =>
                 -- Add point
                 Afpx.Set_Field_Protection (Afpx.List_Field_No, True);
+                Afpx.Set_Field_Activation (Afpx_Xref.Points.Center, False);
                 Screen.Put_Title(Screen.Add_1);
                 if not Afpx.Line_List.Is_Empty then
                   Saved_Index := Afpx.Line_List.Get_Position;
@@ -394,13 +396,14 @@ package body Menu1 is
                   Saved_Index := Afpx.Line_List.List_Length;
                 end loop;
                 Afpx.Set_Field_Protection (Afpx.List_Field_No, False);
+                Afpx.Set_Field_Activation (Afpx_Xref.Points.Center, True);
                 Restore := Partial;
               when Afpx_Xref.Points.Delete
                  | Afpx_Xref.Points.Modify
                  | Afpx.List_Field_No =>
                 Edit_Point;
               when Afpx_Xref.Points.Approx =>
-                -- approximation
+                -- Approximation
                 Screen.Store_File;
                 Saved_Index := Afpx.Line_List.Get_Position;
                 Menu2.Main_Screen(Data_Changed);

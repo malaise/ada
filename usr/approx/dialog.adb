@@ -229,12 +229,18 @@ package body Dialog is
       Insert (Point_Str.Coordinate_Image(Polynom(I))
         & " * X^" & Normal (I - 1, Screen.Max_Degree_Width, Gap => '0'));
     end loop;
+    -- Allow selection in list
+    Afpx.Set_Field_Protection (Afpx.List_Field_No, False);
+    Afpx.Set_Field_Activation (Afpx_Xref.Points.Center, True);
     -- Rewind
     Afpx.Line_List.Rewind;
     -- Go to top
     Afpx.Update_List (Afpx.Top);
     -- Let screen/afpx do the job
     Screen.Error (Screen.E_Done, Subtitle => True);
+    -- Disable selection in list
+    Afpx.Set_Field_Protection (Afpx.List_Field_No, True);
+    Afpx.Set_Field_Activation (Afpx_Xref.Points.Center, False);
   end Put_Polynom;
 
   -- Display y=f(x)
@@ -243,7 +249,7 @@ package body Dialog is
     Go_On : Boolean;
   begin
     -- Enable Fx, enable and protect y (get field)
-    Afpx.Set_Field_Colors (My_Fld, Foreground => Con_Io.Color_Of ("Cyan"));
+    Afpx.Set_Field_Colors (My_Fld, Foreground => Con_Io.Color_Of ("Black"));
     Afpx.Set_Field_Activation(Screen.Get_Fld, True);
     Afpx.Set_Field_Protection(Screen.Get_Fld, True);
     Afpx.Clear_Field(Screen.Get_Fld);

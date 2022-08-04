@@ -2,13 +2,14 @@ with As.U, Con_Io, Normal;
 with Points, Resol;
 package body Screen is
 
-  Title_Fld : constant Afpx.Field_Range := 2;
-  File_Fld : constant Afpx.Field_Range := 4;
-  Nb_Point_Fld : constant Afpx.Field_Range := 5;
-  State_Point_Fld : constant Afpx.Field_Range := 7;
-  Info_Fld : constant Afpx.Field_Range := 10;
+  -- Common fields
+  Title_Fld : constant Afpx.Field_Range := Afpx_Xref.Points.Title;
+  File_Fld : constant Afpx.Field_Range := Afpx_Xref.Points.File;
+  Nb_Point_Fld : constant Afpx.Field_Range := Afpx_Xref.Points.Points;
+  State_Point_Fld : constant Afpx.Field_Range := Afpx_Xref.Points.State;
+  Info_Fld : constant Afpx.Field_Range := Afpx_Xref.Points.Info;
 
-  Degree_Fld : constant Afpx.Field_Range := 21;
+  Degree_Fld : constant Afpx.Field_Range := Afpx_Xref.Compute.Degree;
 
   Stored_File_Name : As.U.Asu_Us;
 
@@ -88,9 +89,10 @@ package body Screen is
       when 11 => Afpx.Update_List(Afpx.Top);
       when 12 => Afpx.Update_List(Afpx.Page_Up);
       when 13 => Afpx.Update_List(Afpx.Up);
-      when 14 => Afpx.Update_List(Afpx.Down);
-      when 15 => Afpx.Update_List(Afpx.Page_Down);
-      when 16 => Afpx.Update_List(Afpx.Bottom);
+      when 14 => Afpx.Update_List(Afpx.Center_Selected);
+      when 15 => Afpx.Update_List(Afpx.Down);
+      when 16 => Afpx.Update_List(Afpx.Page_Down);
+      when 17 => Afpx.Update_List(Afpx.Bottom);
     end case;
   end Scroll;
 
@@ -128,7 +130,8 @@ package body Screen is
     if not Get_Prot then
       Afpx.Set_Field_Protection (Get_Fld, True);
     end if;
-    Afpx.Set_Field_Colors(Get_Fld, Background => Con_Io.Color_Of ("Black"));
+    Afpx.Set_Field_Colors(Get_Fld,
+                          Background => Afpx.Get_Descriptor_Background);
     loop
       Afpx.Put_Then_Get (Get_Handle, Ptg_Result);
       case Ptg_Result.Event is
@@ -336,6 +339,7 @@ package body Screen is
     Afpx.Set_Field_Activation(Get_Fld, False);
     -- Lock points
     Afpx.Set_Field_Protection (Afpx.List_Field_No, True);
+    Afpx.Set_Field_Activation (Afpx_Xref.Points.Center, False);
     Put_Title(Approximate);
     Put_Point_Status;
     Put_Degree;
@@ -351,6 +355,7 @@ package body Screen is
     Afpx.Set_Field_Activation(Get_Fld, False);
     -- Lock points
     Afpx.Set_Field_Protection (Afpx.List_Field_No, True);
+    Afpx.Set_Field_Activation (Afpx_Xref.Points.Center, False);
     Put_Title(Boundaries);
     Put_Point_Status;
     -- So whatever cursor field
