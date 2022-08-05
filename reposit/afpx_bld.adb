@@ -655,7 +655,9 @@ procedure Afpx_Bld is
       when File_Syntax_Error =>
         raise;
       when Computer.Unknown_Variable =>
-        File_Error (Node, "Unknown variable when evaluating "
+        File_Error (Node, "Unknown variable when evaluating " & Err_Val.Image);
+      when Con_Io.Unknown_Color =>
+        File_Error (Node, "Unknown color "
                         & Err_Val.Image);
       when others =>
         File_Error (Node, "Invalid colors specification");
