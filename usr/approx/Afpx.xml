@@ -24,7 +24,7 @@
     <!-- Title -->
     <Field Num="2" Kind="Put" Name="Title">
       <Geometry Up="1" Left="3" Low="1" Right="27"/>
-      <Colors Foreground="Black" Background="Light_Grey"/>
+      <Colors Foreground="Blue" Background="Light_Grey"/>
     </Field>
 
     <!-- File name -->
@@ -230,7 +230,7 @@
     <!-- Title -->
     <Field Num="2" Kind="Put">
       <Geometry Up="1" Left="3" Low="1" Right="27"/>
-      <Colors Foreground="Black" Background="Light_Grey"/>
+      <Colors Foreground="Blue" Background="Light_Grey"/>
     </Field>
 
     <!-- File -->
@@ -366,7 +366,7 @@
     <!-- Title -->
     <Field Num="2" Kind="Put">
       <Geometry Up="1" Left="3" Low="1" Right="27"/>
-      <Colors Foreground="Black" Background="Light_Grey"/>
+      <Colors Foreground="Blue" Background="Light_Grey"/>
     </Field>
 
     <!-- File name -->
@@ -576,7 +576,7 @@
     <!-- Title -->
     <Field Num="2" Kind="Put">
       <Geometry Up="1" Left="3" Low="1" Right="27"/>
-      <Colors Foreground="Black" Background="Light_Grey"/>
+      <Colors Foreground="Blue" Background="Light_Grey"/>
     </Field>
 
     <!-- File name -->
