@@ -1,6 +1,6 @@
 Asubst
 ======
-V19.5
+V19.6
 
 Asubst is a command line tool that substitutes text within an input flow of
 text. It finds occurences of text that match a pattern (regular expression),
@@ -168,7 +168,7 @@ regex is re-compiled at each try. +
 * For back reference within the current regex, use the "\i" notation of the
 standard regex syntax. +
 * Beware that "\i" is processed by PCRE and refers to the current regex,
-while "\rij" and "\Rij" are processed by asubst and refer to a previous regex.
+while "\rIJ" and "\RIJ" are processed by asubst and refer to a previous regex.
 
 NOTE: Significant ''^'' and ''$'' make sense only respectively at the beginning
 and at the end of a regex, otherwise no text will match. In case of several

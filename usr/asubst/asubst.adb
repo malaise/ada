@@ -4,7 +4,7 @@ with As.U.Utils, Environ, Argument, Argument_Parser, Basic_Proc, Language,
 with Search_Pattern, Replace_Pattern, Substit, File_Mng, Log;
 procedure Asubst is
 
-  Version : constant String  := "V19.5";
+  Version : constant String  := "V19.6";
 
   -- Exit codes
   Ok_Exit_Code : constant Natural := 0;
@@ -168,11 +168,11 @@ procedure Asubst is
     Basic_Proc.Put_Line_Error (
      "    Conditions apply first, then replacement and command, then case conversion.");
     Basic_Proc.Put_Line_Error (
-     "    ""\R01"" <-> 1st <regex>, ""\R00"" <-> all <regex>, ""\ri0"" == ""\R0i"".");
+     "    ""\R01"" <-> 1st <regex>, ""\R00"" <-> all <regex>, ""\rI0"" == ""\R0I"".");
     Basic_Proc.Put_Line_Error (
      "    Like back references, substrs are numbered in order of opening parentheses.");
     Basic_Proc.Put_Line_Error (
-     "    Note that ""\r0i"" and ""\i0i"" are is forbidden.");
+     "    Note that ""\r0J"" and ""\i0J"" are forbidden.");
 
     Basic_Proc.Put_Line_Error (
      "  <exclude_pattern> if set must have the same number of regex as <find_pattern>.");
