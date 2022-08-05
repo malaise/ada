@@ -4,6 +4,7 @@
 
 <Afpx_Descriptors>
   <Color_Definitions>
+    <Color_Definition Id="Color13" Color="YellowGreen"/>
     <Default_Background Color="Dark_Grey"/>
   </Color_Definitions>
 
@@ -48,7 +49,7 @@
 
     <Field Num="7" Kind="Put">
       <Geometry Up="22" Left="0" Low="24" Right="79"/>
-      <Colors Foreground="Red" Background="Magenta"/>
+      <Colors Foreground="Red" Background="Yellowgreen"/>
       <Init Row="0" Col="0">Type exit in a get field to desactivate it</Init>
       <Init Row="1" Col="0">Type return to print content of field, escape to clear field</Init>
       <Init Row="2" Col="0">Print button and list are flip-flop based on keyboard events and timer</Init>

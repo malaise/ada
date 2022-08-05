@@ -42,7 +42,7 @@
     <!-- Get -->
     <Field Num="5" Kind="Get">
       <Geometry Up="23" Left="1" Low="23" Right="33"/>
-      <Colors Foreground="Black" Background="White" Selected="White"/>
+      <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Messages -->

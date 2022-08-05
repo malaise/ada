@@ -35,7 +35,7 @@
     <Field Num="5" Kind="Get" Name="Regex">
       <Geometry Up="${Field_2.Low}+1" Left="1" Height="1"
                 Width="${Screen.Width}-2"/>
-      <Colors Foreground="Black" Background="White" Selected="White"/>
+      <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Text to search in -->
@@ -49,55 +49,55 @@
       <Geometry Up="${Field_6.Low}+1" Right="${Screen.Right}-1" Height="1"
                 Width="80"/>
       <Get_Tuning Data_Len="${Text_Len}" Move_Next="True"/>
-      <Colors Foreground="Black" Background="White" Selected="White"/>
+      <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
     <Field Num="8" Kind="Get" Name="Text2">
       <Geometry Up="${Field_7.Low}+1" Left="${Field_7.Left}" Height="1"
                 Right="${Field_7.Right}"/>
       <Get_Tuning Data_Len="${Text_Len}" Move_Prev="True" Move_Next="True"/>
-      <Colors Foreground="Black" Background="White" Selected="White"/>
+      <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
     <Field Num="9" Kind="Get" Name="Text3">
       <Geometry Up="${Field_8.Low}+1" Left="${Field_7.Left}" Height="1"
                 Right="${Field_7.Right}"/>
       <Get_Tuning Data_Len="${Text_Len}" Move_Prev="True" Move_Next="True"/>
-      <Colors Foreground="Black" Background="White" Selected="White"/>
+      <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
     <Field Num="10" Kind="Get" Name="Text4">
       <Geometry Up="${Field_9.Low}+1" Left="${Field_7.Left}" Height="1"
                 Right="${Field_7.Right}"/>
       <Get_Tuning Data_Len="${Text_Len}" Move_Prev="True" Move_Next="True"/>
-      <Colors Foreground="Black" Background="White" Selected="White"/>
+      <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
     <Field Num="11" Kind="Get" Name="Text5">
       <Geometry Up="${Field_10.Low}+1" Left="${Field_7.Left}" Height="1"
                 Right="${Field_7.Right}"/>
       <Get_Tuning Data_Len="${Text_Len}" Move_Prev="True" Move_Next="True"/>
-      <Colors Foreground="Black" Background="White" Selected="White"/>
+      <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
     <Field Num="12" Kind="Get" Name="Text6">
       <Geometry Up="${Field_11.Low}+1" Left="${Field_7.Left}" Height="1"
                 Right="${Field_7.Right}"/>
       <Get_Tuning Data_Len="${Text_Len}" Move_Prev="True" Move_Next="True"/>
-      <Colors Foreground="Black" Background="White" Selected="White"/>
+      <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
     <Field Num="13" Kind="Get" Name="Text7">
       <Geometry Up="${Field_12.Low}+1" Left="${Field_7.Left}" Height="1"
                 Right="${Field_7.Right}"/>
       <Get_Tuning Data_Len="${Text_Len}" Move_Prev="True" Move_Next="True"/>
-      <Colors Foreground="Black" Background="White" Selected="White"/>
+      <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
     <Field Num="14" Kind="Get" Name="Text8">
       <Geometry Up="${Field_13.Low}+1" Left="${Field_7.Left}" Height="1"
                 Right="${Field_7.Right}"/>
       <Get_Tuning Data_Len="${Text_Len}" Move_Prev="True" Move_Next="True"/>
-      <Colors Foreground="Black" Background="White" Selected="White"/>
+      <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
     <Field Num="15" Kind="Get" Name="Text9">
       <Geometry Up="${Field_14.Low}+1" Left="${Field_7.Left}" Height="1"
                 Right="${Field_7.Right}"/>
       <Get_Tuning Data_Len="${Text_Len}" Move_Prev="True" Move_Next="True"/>
-      <Colors Foreground="Black" Background="White" Selected="White"/>
+      <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
     <Field Num="16" Kind="Put">
       <Geometry Up="${Field_7.Up}" Left="${Field_7.Left}-2" Height="9"

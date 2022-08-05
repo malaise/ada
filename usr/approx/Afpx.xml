@@ -66,7 +66,7 @@
     <!-- Get -->
     <Field Num="9" Kind="Get" Name="Get">
       <Geometry Up="23" Left="1" Low="23" Right="33"/>
-      <Colors Foreground="Black" Background="White" Selected="White"/>
+      <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Message -->
@@ -248,7 +248,7 @@
     <!-- Get -->
     <Field Num="5" Kind="Get">
       <Geometry Up="23" Left="1" Low="23" Right="33"/>
-      <Colors Foreground="Black" Background="White" Selected="White"/>
+      <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Messages -->
@@ -408,7 +408,7 @@
     <!-- Get -->
     <Field Num="9" Kind="Get">
       <Geometry Up="23" Left="1" Low="23" Right="30"/>
-      <Colors Foreground="Black" Background="White" Selected="White"/>
+      <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Message -->
@@ -618,7 +618,7 @@
     <!-- Get -->
     <Field Num="9" Kind="Get">
       <Geometry Up="23" Left="1" Low="23" Right="33"/>
-      <Colors Foreground="Black" Background="White" Selected="White"/>
+      <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Message -->

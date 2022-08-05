@@ -4,10 +4,6 @@
 
 <Afpx_Descriptors Height="45" Width="80">
 
-  <Color_Definitions>
-    <Color_Definition Id="Color13" Color="YellowGreen"/>
-  </Color_Definitions>
-
   <Descriptor Num="1" Background="Light_Grey" Name="Main">
 
     <!-- Top and Bottom of the list -->
@@ -319,7 +315,7 @@
     <!-- Get -->
     <Field Num="5" Kind="Get">
       <Geometry Up="${Screen.Low}-1" Left="1" Low="${Screen.Low}-1" Right="33"/>
-      <Colors Foreground="Black" Background="White" Selected="White"/>
+      <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Messages -->
@@ -466,7 +462,7 @@
     <Field Num="13" Kind="Get" Name="Day">
       <Geometry Up="6" Left="8" Low="6" Right="9"/>
       <Get_Tuning Move_Next="True"/>
-      <Colors Foreground="Black" Background="White" Selected="Lime_Green"/>
+      <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
     <Field Num="14" Kind="Put">
       <Geometry Up="6" Left="10" Low="6" Right="10"/>
@@ -476,7 +472,7 @@
     <Field Num="15" Kind="Get" Name="Month">
       <Geometry Up="6" Left="11" Low="6" Right="12"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
-      <Colors Foreground="Black" Background="White" Selected="Lime_Green"/>
+      <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
     <Field Num="16" Kind="Put">
       <Geometry Up="6" Left="13" Low="6" Right="15"/>
@@ -486,7 +482,7 @@
     <Field Num="17" Kind="Get" Name="Year">
       <Geometry Up="6" Left="16" Low="6" Right="17"/>
       <Get_Tuning Move_Prev="True"/>
-      <Colors Foreground="Black" Background="White" Selected="Lime_Green"/>
+      <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Amount -->
@@ -501,7 +497,7 @@
     </Field>
     <Field Num="20" Kind="Get" Name="Amount">
       <Geometry Up="8" Left="12" Low="8" Right="23"/>
-      <Colors Foreground="Black" Background="White" Selected="Lime_Green"/>
+      <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Kind -->
@@ -566,7 +562,7 @@
     </Field>
     <Field Num="32" Kind="Get" Name="Destination">
       <Geometry Up="14" Left="15" Low="14" Right="34"/>
-      <Colors Foreground="Black" Background="White" Selected="Lime_Green"/>
+      <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Comment -->
@@ -577,7 +573,7 @@
     </Field>
     <Field Num="34" Kind="Get" Name="Comment">
       <Geometry Up="16" Left="11" Low="16" Right="30"/>
-      <Colors Foreground="Black" Background="White" Selected="Lime_Green"/>
+      <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Reference -->
@@ -588,7 +584,7 @@
     </Field>
     <Field Num="36" Kind="Get" Name="Reference">
       <Geometry Up="18" Left="13" Low="18" Right="22"/>
-      <Colors Foreground="Black" Background="White" Selected="Lime_Green"/>
+      <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Deleted info -->
@@ -783,7 +779,7 @@
     </Field>
     <Field Num="26" Kind="Get" Name="Reference">
       <Geometry Up="18" Left="24" Low="18" Right="33"/>
-      <Colors Foreground="Black" Background="White" Selected="Lime_Green"/>
+      <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Set to All/None -->

@@ -36,7 +36,7 @@
     </Field>
     <Field Num="5" Kind="Get" Name="Get">
       <Geometry Up="4" Left="1" Height="1" Width="${List.Width}"/>
-      <Colors Foreground="Black" Background="Light_Grey" Selected="White"/>
+      <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
     <Field Num="6" Kind="Put">
       <Geometry Up="${Field_5.Up}-1" Left="${Field_5.Left}" Height="1"
