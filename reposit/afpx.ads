@@ -58,6 +58,7 @@ package Afpx is
   -- The pregram can re-use this Console (e.g. for graphics) as long as it
   --  doesn't call Afpx during this time, then it can Redisplay and use Afpx
   --  again.
+  -- Note that Put_Then_Get sets Y mode to X_Mng_Mode
   -- Exceptions : No_Descriptor (no Descriptor in use)
   function Get_Console return Con_Io.Console;
 

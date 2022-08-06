@@ -355,6 +355,7 @@ package body Mesu_Gra is
     -- Re-use Afpx console
     Console := Afpx.Get_Console;
     Screen.Set_To_Screen (Console'Access);
+    Console.Set_Y_Mode (Con_Io.Con_Io_Mode);
 
     -- Screen scale
     Xs_First := 4 * Console.Font_Width;
