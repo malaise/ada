@@ -1,14 +1,14 @@
 with Ada.Characters.Latin_1;
 with As.U, As.B, Argument, Basic_Proc, Con_Io, Afpx.Utils, Str_Util, Language,
-     Reg_Exp;
+     Reg_Exp, Trilean;
+  use Trilean;
 with Units, Lat_Lon, String_Util, Great_Circle, Afpx_Xref;
-
 procedure Gc is
 
   procedure Usage is
   begin
     Basic_Proc.Put_Line_Output ("Usage: " & Argument.Get_Program_Name
-      & " -x | --gui       // interactive mode");
+      & " [ -x ] | [ --gui ]      // interactive mode");
     Basic_Proc.Put_Line_Output ("   or: " & Argument.Get_Program_Name
       & " add.mm.ssss/oddd.mm.ssss add.mm.ssss/oddd.mm.ssss");
     Basic_Proc.Put_Line_Output ("   or: " & Argument.Get_Program_Name
@@ -20,13 +20,22 @@ procedure Gc is
 
   Use_Afpx : Boolean;
 
-  Decode_Ok : Boolean;
   A, B : Lat_Lon.Lat_Lon_Rad_Rec;
   Heading  : Units.Rad_Coord_Range;
   Distance : String_Util.Distance;
 
   Get_Handle : Afpx.Get_Handle_Rec;
   Result : Afpx.Result_Rec;
+
+  -- Result of decoding of a data (a point or a mapcode) or of both data
+  -- Global: True if both OK, Other if both are ameptu or ig if one is empty
+  --   and the other is OK, False if an error
+  -- Each data: True if OK, Other if empty, False if error
+  type Decode_Status_Rec is record
+    Global : Trilean.Trilean;
+    Data1, Data2 : Trilean.Trilean;
+  end record;
+  Decode_Status : Decode_Status_Rec;
 
   Sexa_Pattern : constant String :=
       "[NnSs][0-9]{2}\.[0-9]{2}\.[0-9]{4}/[EeWw][0-9]{3}\.[0-9]{2}\.[0-9]{4}";
@@ -169,15 +178,14 @@ procedure Gc is
     end if;
   end Next_Field_Cb;
 
-  -- During all decoding, are all the get fields empty
-  Default_Content : Boolean;
   -- Decode a point, sexa or deci
   procedure Decode_Point (First_Fld, Last_Fld : in Afpx.Field_Range;
                           Point : out Lat_Lon.Lat_Lon_Rad_Rec;
-                          Ok : out Boolean;
+                          Status : out Trilean.Trilean;
                           Cursor : in out Afpx.Field_Range) is
     -- Two '"' added and two 'o' instead of '.' in Afpx screen
     Point_Txt : As.B.Asb_Bs (String_Util.Geo_Str'Length+4);
+    Default_Content : Boolean;
 
     -- Replace trailing spaces by '0' for decimal numeric fields (len = 4)
     function Pad_Field (Field : Afpx.Field_Range) return String is
@@ -203,9 +211,17 @@ procedure Gc is
 
   begin
     Point_Txt.Set_Null;
+    Default_Content := True;
     for Field in First_Fld .. Last_Fld loop
       Point_Txt.Append (Pad_Field(Field));
     end loop;
+    if Default_Content then
+      Great_Circle.Logger.Log_Debug ("Point is empty");
+      Status := Other;
+      Cursor := First_Fld;
+      return;
+    end if;
+    
     Great_Circle.Logger.Log_Debug ("Decoded point: " & Point_Txt.Image);
     if Mode = Sexa_Mode then
       -- Replace Nddomm'ssss"/Edddomm'ssss" by Ndd.mm.ssss/Eddd.mm.ssss
@@ -222,11 +238,11 @@ procedure Gc is
       Point := Lat_Lon.Dec2Rad (String_Util.Str2Dec(Point_Txt.Image));
     end if;
     Great_Circle.Logger.Log_Debug ("Got point OK");
-    Ok := True;
+    Status := True;
   exception
     when others =>
       Great_Circle.Logger.Log_Debug ("Decode point Exception");
-      Ok := False;
+      Status := False;
       Cursor := First_Fld;
   end Decode_Point;
 
@@ -236,11 +252,13 @@ procedure Gc is
   procedure Decode_Mapcode (First_Fld, Last_Fld : in Afpx.Field_Range;
                             Point : out Lat_Lon.Lat_Lon_Rad_Rec;
                             Mapcode : out Mapcode_Txt;
-                            Ok : out Boolean;
+                            Status : out Trilean.Trilean;
                             Cursor : in out Afpx.Field_Range) is
     Txt : As.U.Asu_Us;
+    Default_Content : Boolean;
   begin
     Mapcode.Set_Null;
+    Default_Content := True;
     for Field in First_Fld .. Last_Fld loop
       if Afpx.Is_Get_Kind (Field) and then
              Afpx.Decode_Field  (Field, 0, False)
@@ -254,56 +272,72 @@ procedure Gc is
       end if;
       Mapcode.Append (Txt.Image);
     end loop;
+    if Default_Content then
+      Great_Circle.Logger.Log_Debug ("Mapcode is empty");
+      Status := Other;
+      Cursor := First_Fld;
+      return;
+    end if;
     Great_Circle.Logger.Log_Debug ("Parsed mapcode: " & Mapcode.Image);
     Point := Lat_Lon.Mapcode2Rad (Mapcode.Image);
     Great_Circle.Logger.Log_Debug ("Got point OK");
-    Ok := True;
+    Status := True;
   exception
     when others =>
       Great_Circle.Logger.Log_Debug ("Decode mapcode Exception");
-      Ok := False;
+      Status := False;
       Cursor := First_Fld;
   end Decode_Mapcode;
 
-  -- Decode points or mapcodes, set A and B. Return OK
-  function Decode return Boolean is
-    Ok1, Ok2 : Boolean;
+  -- Decode points or mapcodes, set A and B. Return
+  -- Ok if both are OK, Empty if one is Ok and the other is empty
+  function Decode return Decode_Status_Rec is
+    Status : Decode_Status_Rec;
     Mapa, Mapb : Mapcode_Txt;
   begin
     Get_Handle.Cursor_Col := 0;
     Get_Handle.Insert := False;
     Clear_Result;
-    Default_Content := True;
     -- Decode both points/maps in order to set Default_Content
     if Mode /= Map_Mode then
       Get_Handle.Cursor_Field := A_Flds'First;
-      Decode_Point (A_Flds'First, A_Flds'Last, A, Ok1,
+      Decode_Point (A_Flds'First, A_Flds'Last, A, Status.Data1,
                     Get_Handle.Cursor_Field);
-      if Ok1 then
+      if Status.Data1 /= False then
         Get_Handle.Cursor_Field := B_Flds'First;
+        Decode_Point (B_Flds'First, B_Flds'Last, B, Status.Data2,
+                      Get_Handle.Cursor_Field);
       end if;
-      Decode_Point (B_Flds'First, B_Flds'Last, B, Ok2,
-                    Get_Handle.Cursor_Field);
     else
       Get_Handle.Cursor_Field := Code_Flds'First;
-      Decode_Mapcode (Code_Flds'First, Code_Flds'First + 2, A, Mapa, Ok1,
-                      Get_Handle.Cursor_Field);
-      if Ok1 then
+      Decode_Mapcode (Code_Flds'First, Code_Flds'First + 2, A, Mapa,
+                      Status.Data1, Get_Handle.Cursor_Field);
+      if Status.Data1 /= False then
         Get_Handle.Cursor_Field := Code_Flds'First + 3;
+        Decode_Mapcode (Code_Flds'First + 3, Code_Flds'Last, B, Mapb,
+                        Status.Data2, Get_Handle.Cursor_Field);
       end if;
-      Decode_Mapcode (Code_Flds'First + 3, Code_Flds'Last, B, Mapb, Ok2,
-                      Get_Handle.Cursor_Field);
-      if Ok1 and then Ok2 then
+      if Status.Data1 = True and then Status.Data2 = True then
         Afpx.Set_Selection (Mapa.Image & " " & Mapb.Image);
       end if;
     end if;
-    if Ok1 and then Ok2 then
+    Great_Circle.Logger.Log_Debug (
+          "End of decoding, status: " & Status.Data1'Img
+        & " " & Status.Data2'Img);
+    if Status.Data1 = True and then Status.Data2 = True then
       Great_Circle.Logger.Log_Debug ("Got point A:" & A.X'Img & A.Y'Img);
       Great_Circle.Logger.Log_Debug ("Got point B:" & B.X'Img & B.Y'Img);
     end if;
-    Great_Circle.Logger.Log_Debug (
-          "End of decoding, default content " & Default_Content'Img);
-    return Ok1 and then Ok2;
+    if Status.Data1 = True and then Status.Data2 = True then
+      Status.Global := True;
+    elsif   (Status.Data1 = True  and then Status.Data2 = Other)
+    or else (Status.Data1 = Other and then Status.Data2 = True)
+    or else (Status.Data1 = Other and then Status.Data2 = Other) then
+      Status.Global := Other;
+    else
+      Status.Global := False;
+    end if;
+    return Status;
   end Decode;
 
   -- Encode a point in degree of decimal
@@ -347,14 +381,22 @@ procedure Gc is
   end Encode_Mapcode;
 
   -- Encode A and B as points or mapcodes
-  procedure Encode is
+  procedure Encode (Encode1, Encode2 : in Boolean) is
   begin
     if Mode /= Map_Mode then
-      Encode_Point (A_Flds'First, A_Flds'Last, A);
-      Encode_Point (B_Flds'First, B_Flds'Last, B);
+      if Encode1 then
+        Encode_Point (A_Flds'First, A_Flds'Last, A);
+      end if;
+      if Encode2 then
+        Encode_Point (B_Flds'First, B_Flds'Last, B);
+      end if;
     else
-      Encode_Mapcode (Code_Flds'First,     Code_Flds'First + 2, A);
-      Encode_Mapcode (Code_Flds'First + 3, Code_Flds'Last,      B);
+      if Encode1 then
+        Encode_Mapcode (Code_Flds'First,     Code_Flds'First + 2, A);
+      end if;
+      if Encode2 then
+        Encode_Mapcode (Code_Flds'First + 3, Code_Flds'Last,      B);
+      end if;
     end if;
   end Encode;
 
@@ -397,6 +439,8 @@ begin
       or else Argument.Get_Parameter = "--help") then
     Usage;
     return;
+  elsif Argument.Get_Nbre_Arg = 0 then
+    Use_Afpx := True;
   elsif Argument.Get_Nbre_Arg = 1
     and then (Argument.Get_Parameter = "-x"
       or else Argument.Get_Parameter = "--gui") then
@@ -482,7 +526,8 @@ begin
       or else (Result.Event = Afpx.Mouse_Button
                and then Result.Field_No = Compute_Field) then
         -- Decode input
-        if Decode then
+        Decode_Status := Decode;
+        if Decode_Status.Global = True then
           -- Compute
           Great_Circle.Compute_Route(A => A, B => B,
                                      Head => Heading, Dist => Distance);
@@ -500,8 +545,8 @@ begin
       elsif Result.Event = Afpx.Mouse_Button then
         -- Switches
         -- Decode current point / mapcodes
-        Decode_Ok := Decode;
-        if Decode_Ok or else Default_Content then
+        Decode_Status := Decode;
+        if Decode_Status.Global /= False then
           -- Switch
           case Result.Field_No is
             when Sexa_Field =>
@@ -515,10 +560,8 @@ begin
           end case;
           -- Clear
           Reset;
-        end if;
-        if Decode_Ok then
           -- Encode points / mapcodes
-          Encode;
+          Encode (Decode_Status.Data1 = True, Decode_Status.Data2 = True);
         end if;
       end if;
 
