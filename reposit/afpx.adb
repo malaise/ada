@@ -152,6 +152,13 @@ package body Afpx is
                           Foreground : out Con_Io.Effective_Colors;
                           Background : out Con_Io.Effective_Colors);
 
+    --  The default cursor pos when entering a get field
+    function Default_Cursor_Col (Cursor_Field : Field_Range;
+                                 Pointer_Col : Con_Io.Col_Range;
+                                 Enter_Field_Cause : Enter_Field_Cause_List)
+             return Con_Io.Col_Range;
+
+
     -- Put a whole field in attribute
     procedure Put_Fld (Field_No : in Field_Range;
                        State    : in State_List);
@@ -1067,7 +1074,7 @@ package body Afpx is
       -- Last character is significant. That's it.
       return Str'Length - 1;
     else
-      -- Set to space after N
+      -- "Move" just after N
       return N - Str'First + 1;
     end if;
   end Last_Index;
@@ -1080,6 +1087,12 @@ package body Afpx is
    -- Get position in list corresponding to Percent
   function Get_List_Index (Percent : Percent_Range)
            return Line_List_Mng.Ll_Natural renames Af_List.Get_Index;
+
+  -- The default cursor pos when entering a get field
+  function Default_Cursor_Col (Cursor_Field : Field_Range;
+                               Pointer_Col : Con_Io.Col_Range;
+                               Enter_Field_Cause : Enter_Field_Cause_List)
+           return Con_Io.Col_Range renames Af_Ptg.Default_Cursor_Col;
 
   -- Force redisplay at next Put_Then_Get
   procedure Redisplay is

@@ -699,6 +699,34 @@ package body Af_Ptg is
       return Sel_No_Change;
   end Handle_Selection;
 
+  -- The default cursor pos when entering a get field
+  function Default_Cursor_Col (Cursor_Field : Field_Range;
+                               Pointer_Col : Con_Io.Col_Range;
+                               Enter_Field_Cause : Enter_Field_Cause_List)
+           return Con_Io.Col_Range  is
+    Signif_Col : Con_Io.Col_Range;
+  begin
+    case Enter_Field_Cause is
+      when Right_Full | Tab | Stab =>
+        -- Start of field if Right_Full, Tab or Stab
+        return Con_Io.Col_Range'First;
+      when Left =>
+        -- Last significant col if Left
+        Signif_Col := Last_Col (Cursor_Field);
+        return Signif_Col;
+      when Mouse | Selection =>
+        -- When click in a Get, set cursor where clicked if there is a
+        --  significant char there or on its right, otherwise set it just
+        --  after last significant char
+        Signif_Col := Last_Col (Cursor_Field);
+        if Pointer_Col > Signif_Col then
+          return Signif_Col;
+        else
+          return Pointer_Col;
+        end if;
+    end case;
+  end Default_Cursor_Col;
+
   -- Call the user callback to get cursor col
   function Get_Cursor_Col (
                  Field_No : Field_Range;
@@ -716,29 +744,10 @@ package body Af_Ptg is
   return Con_Io.Col_Range is
     Field : constant Afpx_Typ.Field_Rec := Af_Dscr.Fields (Field_No);
     Result : Con_Io.Col_Range;
-    Signif_Col : Con_Io.Col_Range;
   begin
-    -- Call Cb if set
     if Cursor_Col_Cb = null then
-      case Enter_Field_Cause is
-        when Right_Full | Tab | Stab =>
-          -- Start of field if Right_Full, Tab or Stab
-          return Con_Io.Col_Range'First;
-        when Left =>
-          -- Last significant col if Left
-          Signif_Col := Last_Col (Field_No);
-          return Signif_Col;
-        when Mouse | Selection =>
-          -- When click in a Get, set cursor where clicked if there is a
-          --  significant char there or on its right, otherwise set it just
-          --  after last significant char
-          Signif_Col := Last_Col (Field_No);
-          if Pointer_Col > Signif_Col then
-            return Signif_Col;
-          else
-            return Pointer_Col;
-          end if;
-      end case;
+      -- No Cb => Default
+      return Default_Cursor_Col (Field_No, Pointer_Col, Enter_Field_Cause);
     end if;
     -- The user Cb will appreciate a string (1 .. Len)
     --  so make a local copy

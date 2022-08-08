@@ -386,8 +386,10 @@ package Afpx is
   --  the client specifies the column of the cursor.
   -- If the value returned is bigger than Str'Length - 1,
   --  then Str'Length - 1 is used.
-  -- If no callback is provided, then cursor is set to end of field if Left and
-  --  start of field otherwise.
+  -- If no callback is provided, then the cursor is set by the function
+  --  Default_Cursor_Col below
+  -- Note that this function can change some (protection, activation, colors... of other
+  --  fields that the new get field
   -- Beware that modifying the list (including changing the current position)
   --  affects the ongoing Put_Then_Get
   type Enter_Field_Cause_List is (Mouse, Selection,
@@ -399,6 +401,17 @@ package Afpx is
                  Offset : Con_Io.Col_Range;
                  Enter_Field_Cause : Enter_Field_Cause_List;
                  Str : Unicode_Sequence) return Con_Io.Col_Range;
+
+  -- The default cursor pos when entering a get field, depending on the cause
+  --  - when Mouse click, to the position where clicked if within words, otherwise
+  --     to the end of the last word (possibliy the start of the field),
+  --  - when pasting Selection, to the end of the selection,
+  --  - When Left, to the end of the field,
+  --  - Otherwise, to the start of the field.
+  function Default_Cursor_Col (Cursor_Field : Field_Range;
+                               Pointer_Col : Con_Io.Col_Range;
+                               Enter_Field_Cause : Enter_Field_Cause_List)
+           return Con_Io.Col_Range;
 
   -- Returns the index (from 0 to Str'Length-1) of the first character of Str
   --  or, if Significant, the index preceeding first significant character
