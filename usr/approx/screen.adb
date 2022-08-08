@@ -1,5 +1,5 @@
 with As.U, Con_Io, Normal;
-with Points, Resol;
+with Points, Resol, Menu2;
 package body Screen is
 
   -- Common fields
@@ -52,7 +52,8 @@ package body Screen is
         else
           Encode_Title("Set scales boundaries");
         end if;
-      when Curve        => Encode_Title("Draw curve");
+      when Draw_Curve   => Encode_Title("Draw curve");
+      when Show_Curve   => Encode_Title("Show curve");
       when Exit_Approx  => Encode_Title("Exit approx");
     end case;
   end Put_Title;
@@ -118,7 +119,7 @@ package body Screen is
   end Encode_Info;
 
   -- Ptg on Ok (and Cancel) buttons
-  function S_Confirm return Boolean is
+  function S_Confirm (Wait_Curve : in Boolean := False) return Boolean is
     Get_Handle : Afpx.Get_Handle_Rec;
     Ptg_Result : Afpx.Result_Rec;
     Get_Prot : Boolean;
@@ -163,6 +164,7 @@ package body Screen is
            | Afpx.Refresh =>
           null;
       end case;
+      exit when Wait_Curve and then Menu2.Curve_Stopped;
     end loop;
     -- Restore Get field
     Get_Act := Afpx.Get_Field_Activation (Get_Fld);
@@ -216,15 +218,21 @@ package body Screen is
     Afpx.Set_Field_Activation(Ok_Button_Fld, True);
     Afpx.Set_Field_Activation(Cancel_Button_Fld, True);
     -- Set colors
-    Afpx.Set_Field_Colors(Info_Fld, Foreground => Con_Io.Color_Of("Orange"));
     if Alert then
       Afpx.Bell(1);
     end if;
+    Afpx.Set_Field_Colors(Info_Fld, Foreground => Con_Io.Color_Of("Red"));
     case Msg is
-      when C_File_Exists  =>  Encode_Info ("File exists and will be overwritten");
-      when C_Delete_Point =>  Encode_Info ("Delete this point");
-      when C_Go_On        =>  Encode_Info ("Continue with an other");
-      when C_Data_Lost    =>  Encode_Info ("Data is not saved and will be lost");
+      when C_File_Exists =>
+        Encode_Info ("File exists and will be overwritten!");
+      when C_Delete_Point =>
+        Encode_Info ("Delete this point!");
+      when C_Go_On =>
+        Afpx.Set_Field_Colors(Info_Fld,
+                              Foreground => Con_Io.Color_Of("Orange"));
+        Encode_Info ("Continue with an other?");
+      when C_Data_Lost =>
+        Encode_Info ("Data is not saved and will be lost!");
     end case;
     Res := S_Confirm;
     -- Reset default colors
@@ -243,7 +251,7 @@ package body Screen is
     Afpx.Set_Field_Activation(Ok_Button_Fld, True);
     Afpx.Set_Field_Activation(Cancel_Button_Fld, False);
     -- Set colors
-    Afpx.Set_Field_Colors(Info_Fld, Foreground => Con_Io.Color_Of("Orange"));
+    Afpx.Set_Field_Colors(Info_Fld, Foreground => Con_Io.Color_Of("Red"));
     if Msg /= E_Done then
       Afpx.Bell(1);
     end if;
@@ -263,7 +271,7 @@ package body Screen is
       when E_Curve_Active       => Encode_Info ("A curve is currently active");
       when E_Too_Many_Points    => Encode_Info ("Too many points");
     end case;
-    Dummy_Res := S_Confirm;
+    Dummy_Res := S_Confirm (Msg = E_Curve_Active);
     -- Reset default colors
     Afpx.Reset_Field(Info_Fld);
   end Error;

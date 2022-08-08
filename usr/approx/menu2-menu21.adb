@@ -150,7 +150,7 @@ package body Menu21 is
 
     loop
       -- Activate or not according to curve activity
-      Activate_No_Curve := Menu2.Curved_Stopped;
+      Activate_No_Curve := Menu2.Curve_Stopped;
       case Restore is
         when None =>
           null;

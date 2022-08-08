@@ -38,7 +38,7 @@ package body Menu2 is
   package body Menu21 is separate;
 
   procedure Do_Restore (Restore : in Restore_List) is
-    Activate_No_Curve : constant Boolean := Curved_Stopped;
+    Activate_No_Curve : constant Boolean := Curve_Stopped;
   begin
     case Restore is
       when None =>
@@ -68,8 +68,10 @@ package body Menu2 is
     Afpx.Set_Field_Activation (Afpx_Xref.Compute.Draw, Activate_No_Curve);
     -- Set/View bounds
     if Activate_No_Curve then
+      Screen.Put_Title (Screen.Approximate);
       Afpx.Encode_Field(Afpx_Xref.Compute.Bounds, (1, 1), " Set");
     else
+      Screen.Put_Title (Screen.Show_Curve);
       Afpx.Encode_Field(Afpx_Xref.Compute.Bounds, (1, 1), "View");
     end if;
   end Do_Restore;
@@ -178,7 +180,7 @@ package body Menu2 is
     end loop;
   end Curve_Task;
 
-  function Curved_Stopped return Boolean is
+  function Curve_Stopped return Boolean is
    Ok : Boolean;
   begin
     select
@@ -190,12 +192,12 @@ package body Menu2 is
       Ok := False;
     end select;
     return Ok;
-  end Curved_Stopped;
+  end Curve_Stopped;
 
   procedure Draw_Curve is
     Ok : Boolean;
   begin
-    Screen.Put_Title(Screen.Curve);
+    Screen.Put_Title(Screen.Draw_Curve);
     Screen.Inform(Screen.I_Wait);
     Curve_Task.Start (Resol.R_Resolution (Points.P_The_Points), Ok);
     Screen.Inform(Screen.I_Clear);
@@ -207,7 +209,6 @@ package body Menu2 is
     when others =>
       Screen.Error (Screen.E_Resolution_Problem);
   end Draw_Curve;
-
 
   procedure Main_Screen (Data_Changed : in Boolean) is
     Ptg_Result : Afpx.Result_Rec;
@@ -241,7 +242,6 @@ package body Menu2 is
     loop
       Do_Restore (Restore);
 
-
       Afpx.Put_Then_Get (Get_Handle, Ptg_Result);
       Restore := None;
       case Ptg_Result.Event is
@@ -250,7 +250,7 @@ package body Menu2 is
             when Afpx.Return_Key =>
               null;
             when Afpx.Escape_Key =>
-              if not Curved_Stopped then
+              if not Curve_Stopped then
                 Screen.Error (Screen.E_Curve_Active);
                 Restore := Partial;
               else

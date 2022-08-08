@@ -26,7 +26,8 @@ package Screen is
   -- Put a title
   type S_Action_List is (Data, Read_Points, Write_Points, New_Points,
       Modify_1, Add_1, Suppress_1, Approximate, Sort_Points,
-      Get_Degree, Polynom, Y_F_X, Scales, Boundaries, Curve, Exit_Approx);
+      Get_Degree, Polynom, Y_F_X, Scales, Boundaries, Draw_Curve, Show_Curve,
+      Exit_Approx);
   procedure Put_Title (S_Action : in S_Action_List;
                        Option : in Boolean := False);
 
