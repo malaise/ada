@@ -340,8 +340,25 @@ package body Mesu_Edi is
 
     end Check_Field;
 
-    use type Afpx.Absolute_Field_Range;
+    function Cursor_Set_Col_Cb (
+        Cursor_Field : Afpx.Field_Range;
+        Dummy_New_Field : Boolean;
+        Pointer_Col : Con_Io.Col_Range;
+        Dummy_Offset : Con_Io.Col_Range;
+        Enter_Field_Cause : Afpx.Enter_Field_Cause_List;
+        Dummy_Str : Afpx.Unicode_Sequence) return Con_Io.Col_Range is
+      use type Afpx.Absolute_Field_Range;
+    begin
+      -- Reset is available only when in TZs
+      Afpx.Set_Field_Activation (Afpx_Xref.Records.Reset,
+                   Cursor_Field >= Afpx_Xref.Records.Tz1
+          and then Cursor_Field <= Afpx_Xref.Records.Tz6);
+      return Afpx.Default_Cursor_Col (Cursor_Field,
+                                      Pointer_Col,
+                                      Enter_Field_Cause);
+    end Cursor_Set_Col_Cb;
 
+    use type Afpx.Absolute_Field_Range;
   begin
     -- Use descriptor
     Afpx.Use_Descriptor (Afpx_Xref.Records.Dscr_Num);
@@ -383,6 +400,7 @@ package body Mesu_Edi is
       -- Date
       Get_Handle.Cursor_Field := Afpx_Xref.Records.Day;
     end if;
+    Afpx.Set_Field_Activation (Afpx_Xref.Records.Reset, False);
     Get_Handle.Cursor_Col := 0;
     Get_Handle.Insert := False;
 
@@ -390,7 +408,8 @@ package body Mesu_Edi is
     loop
       Afpx.Encode_Field (Afpx_Xref.Records.Date, (00, 00),
                          Str_Mng.Current_Date_Printed);
-      Afpx.Put_Then_Get (Get_Handle, Ptg_Result);
+      Afpx.Put_Then_Get (Get_Handle, Ptg_Result,
+          Cursor_Col_Cb => Cursor_Set_Col_Cb'Access);
 
       case Ptg_Result.Event is
         when Afpx.Fd_Event | Afpx.Timer_Event | Afpx.Signal_Event
