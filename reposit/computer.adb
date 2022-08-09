@@ -14,14 +14,12 @@ package body Computer is
     To := Val;
   end Set;
   function Image (Element : Var_Rec) return String is
-    ( (if Element.Persistent then "P" else "V")
-      & " " & Element.Name.Image);
+    (Element.Name.Image);
   overriding function "=" (Current : Var_Rec;
                            Criteria : Var_Rec ) return Boolean is
     use type As.U.Asu_Us;
   begin
-    return Current.Persistent = Criteria.Persistent
-    and then Current.Name = Criteria.Name;
+    return Current.Name = Criteria.Name;
   end "=";
 
   -- Variable management
@@ -57,13 +55,27 @@ package body Computer is
       begin
         exit when Name = "";
         Var.Name := As.U.Tus (Name);
-        Var.Persistent := False;
         Trace ("Deleting volatile " & Image (Var));
         Memory.Var_List.Delete (Var);
       end;
     end loop;
     Iter.Del;
   end Reset;
+
+  -- Internal check of Name validity
+  procedure Check_Name (Name : in String; Caller : in String) is
+  begin
+    if Name = "" then
+      Trace (Caller & " raises Invalid_Variable on " & Name);
+      raise Invalid_Variable;
+    end if;
+    for C of Name loop
+      if Parser.Is_Space_Or_Htab_Function (C) then
+        Trace (Caller & " raises Invalid_Variable on " & Name);
+        raise Invalid_Variable;
+      end if;
+    end loop;
+  end Check_Name;
 
   -- Set (store), maybe overwrite a variable
   procedure Set (Memory : in out Memory_Type;
@@ -74,41 +86,28 @@ package body Computer is
     Var : Var_Rec;
     Found : Boolean;
   begin
-    if Name = "" then
-      raise Invalid_Variable;
-    end if;
+    Check_Name (Name, "Set");
     -- Check if this variable exists (persistent or not) and is modifiable
     Var.Name := As.U.Tus (Name);
-    Var.Persistent := False;
     Memory.Var_List.Search (Var, Found);
     if Found then
       Memory.Var_List.Read (Var);
       if not Var.Modifiable
       or else not Modifiable then
-        -- One of the original and of the new (or both)
-        --  is not modifiable
-        raise Constant_Exists;
-      end if;
-    end if;
-    Var.Persistent := True;
-    Memory.Var_List.Search (Var, Found);
-    if Found then
-      Memory.Var_List.Read (Var);
-      if not Var.Modifiable
-      or else not Modifiable then
-        -- One of the original and of the new (or both)
-        --  is not modifiable
+        -- One of the original or of the new (or both) is not modifiable
+        Trace ("Set raises Constant_Exists on " & Name);
         raise Constant_Exists;
       end if;
     end if;
     -- Insert or overwrite modifiable variable, or insert new constant
-    Var.Persistent := Persistent;
     Var.Value := As.U.Tus (Value);
+    Var.Persistent := Persistent;
     Var.Modifiable := Modifiable;
     Memory.Var_List.Insert (Var);
     Trace ("Inserted "
-           & (if Modifiable then "variable" else "constant ")
-           & " " & Image (Var) & ", " & Value);
+           & (if Persistent then "persistent " else "volatile ")
+           & (if Modifiable then "variable " else "constant ")
+           & Image (Var) & ", " & Value);
   end Set;
 
   -- Check if a variable is set
@@ -117,42 +116,30 @@ package body Computer is
     Crit : Var_Rec;
     Found : Boolean;
   begin
-    if Name = "" then
-      raise Invalid_Variable;
-    end if;
-    -- First check if variable is volatile
+    Check_Name (Name, "Is_Set");
     Crit.Name := As.U.Tus (Name);
-    Crit.Persistent := False;
-    Memory.Var_List.Search (Crit, Found);
-    if Found then
-      return True;
-    end if;
-    -- Then check if it is persistent
-    Crit.Persistent := True;
     Memory.Var_List.Search (Crit, Found);
     return Found;
   end Is_Set;
 
-  -- Set (store), maybe overwrite a variable
+  -- Unset a variable
   procedure Unset (Memory : in out Memory_Type;
                    Name : in String) is
     Var : Var_Rec;
     Found : Boolean;
   begin
-    if Name = "" then
-      raise Invalid_Variable;
-    end if;
+    Check_Name (Name, "Unset");
     -- Check that this variable exists (persistent or not) and is modifiable
     Var.Name := As.U.Tus (Name);
-    Var.Persistent := False;
     Memory.Var_List.Search (Var, Found);
     if not Found then
+      Trace ("Unset raises Unknown_Variable on " & Name);
       raise Unknown_Variable;
     end if;
     Memory.Var_List.Read (Var);
     if not Var.Modifiable then
-      -- One of the original and of the new (or both)
-      --  is not modifiable
+      -- This is a constant
+      Trace ("Unset raises Constant_Exists on " & Name);
       raise Constant_Exists;
     end if;
     Trace ("Deleting volatile " & Image (Var));
@@ -166,27 +153,18 @@ package body Computer is
     Found : Boolean;
     Res : Var_Rec;
   begin
-    Trace ("Reading >" & Name & "<");
-    if Name = "" then
-      raise Invalid_Variable;
-    end if;
+    Check_Name (Name, "Read");
     -- First check if variable is volatile
     Res.Name := As.U.Tus (Name);
-    Res.Persistent := False;
     Memory.Var_List.Search (Res, Found);
     if Found then
       Memory.Var_List.Read (Res);
-      Trace ("Read >" & Res.Value.Image & "<");
+      Trace ("Read " & Name & " => " & Res.Value.Image);
       return Res;
-    end if;
-    -- Then try to read this variable as persistent
-    Res.Persistent := True;
-    Memory.Var_List.Read (Res);
-    Trace ("Read >" & Res.Value.Image & "<");
-    return Res;
-  exception
-    when Var_Mng.Not_In_List =>
+    else
+      Trace ("Read raises Unknown_Variable on " & Name);
       raise Unknown_Variable;
+    end if;
   end Read;
 
   -- Get a variable
@@ -239,6 +217,7 @@ package body Computer is
         when Unknown_Variable =>
           if Memory.External_Resolver = null then
             -- Variable is not set and no external resolver
+            Trace ("Resolv raises Unknown_Variable on " & Name);
             raise;
           end if;
           -- Will go on trying external resolver
@@ -247,15 +226,18 @@ package body Computer is
         return Memory.External_Resolver.all (Name);
       exception
         when others =>
+          Trace ("Resolv raises Unknown_Variable on " & Name);
           raise Unknown_Variable;
       end;
     end Ext_Get;
+
     -- Get a variable, check if it is empty or contains spaces
     function Check_Get (Name : String) return String is
       Result : constant String := Ext_Get (Name);
     begin
       if Check and then
       (Result = "" or else Str_Util.Locate (Result, " ") /= 0) then
+        Trace ("Check_Get raises Invalid_Expression on " & Name);
         raise Invalid_Expression;
       end if;
       return Result;
@@ -269,6 +251,7 @@ package body Computer is
               Skip_Backslashed => True);
   exception
     when Str_Util.Inv_Delimiter | Str_Util.Delimiter_Mismatch =>
+      Trace ("Internal_Eval raises Invalid_Expression on " & Expression);
       raise Invalid_Expression;
   end Internal_Eval;
 
@@ -286,11 +269,13 @@ package body Computer is
     -- No space not Htab
     for C of Expression loop
       if Parser.Is_Space_Or_Htab_Function (C) then
+        Trace ("Fix raises Invalid_Expression on " & Expression);
         raise Invalid_Expression;
       end if;
     end loop;
     -- Variables must not follow one each other (${var}${var})
     if Str_Util.Locate (Exp.Image, "}$") /= 0 then
+        Trace ("Fix raises Invalid_Expression on " & Expression);
       raise Invalid_Expression;
     end if;
     -- Isolate variables
@@ -401,7 +386,7 @@ package body Computer is
       if Iter.Is_Set then
         Iter.Del;
       end if;
-      Trace ("Constraint Error when parsing");
+      Trace ("Parse raises Invalid_Expression on " & Exp);
       raise Invalid_Expression;
   end Parse;
 

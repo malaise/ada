@@ -18,10 +18,12 @@ package Computer is
   --  a way to reset only the volatile (non-persistent) variables or all the
   --  variables
 
-  -- Reset (delete) volatile or all variables
+  -- Reset (delete) only volatile variables
+  --  or all (volatile and persistent) variables
   procedure Reset (Memory : in out Memory_Type; Only_Volatile : in Boolean);
 
   -- Set (store), maybe overwrite a variable
+  -- May raise Invalid_Variable is name contains a space or Htab
   -- May raise Constant_Exists if a variable with this name already exists
   --  and if either previous value or new value is not Modifiable
   procedure Set (Memory : in out Memory_Type;
@@ -78,7 +80,7 @@ package Computer is
   function Compute (Memory : in out Memory_Type;
                     Expression : in String) return Arbitrary.Number;
 
-  -- On Set, Get or Is_Set if empty name
+  -- On Set, Get or Is_Set if empty or incorrect name
   Invalid_Variable : exception;
   -- On Set if a constant (not modifiable variable) with this name already
   --  exists, or if Modifiable is set but a variable (modifiable or not) with
