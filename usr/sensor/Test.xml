@@ -1,14 +1,21 @@
 <?xml version="1.0" encoding="Utf-8"?>
-<!DOCTYPE Sensor SYSTEM "Test.dtd">
+<!DOCTYPE Sensor SYSTEM "Sensor.dtd">
 
 <Sensor>
   <Actions>
-    <Action Name="${ACTION}">/bin/echo -en "Got ${Match}" >>${OUTPUT}</Action>
+    <Action Name="LogTrigger"
+            Command='/bin/echo -en "Got ${Match}" >>${OUTPUT}'>
+      <Repeat Number="3" During="2.0" Action="Repeat"/>
+    </Action>
+    <Action Name="Repeat"
+            Command='/bin/echo "Repeated ${Action}" >>${OUTPUT}'>
+    </Action>
   </Actions>
   <Rules>
-    <Rule File="${INPUT}" Period="${PERIOD}" Tail="10" History="5"
-          Action="${ACTION}" Latency="1.5">
-      <Criteria>${TRIGGER}</Criteria>
+    <Rule>
+      <Scan File="${INPUT}" Criteria="${TRIGGER}" Period="${PERIOD}" Tail="10">
+      </Scan>
+      <Execute Action="LogTrigger" History="5" Latency="1.5"/>
     </Rule>
   </Rules>
 </Sensor>

@@ -9,15 +9,6 @@ package body Rules is
   package Rules_Mng is new Long_Long_Limited_List (Rule_Rec, Set);
   Rules : Rules_Mng.List_Type;
 
-  -- type Rule_Rec is record
-  --   File : As.U.Asu_Us;
-  --   Period : Timers.Period_Range;
-  --   Tail : Long_Longs.Ll_Positive;
-  --   Hist : access Hist_Mng.Circ_Type;
-  --   Action : As.U.Asu_Us;
-  --   Pattern : access Reg_Exp.Compiled_Pattern;
-  -- end record;
-
   -- Check and store a Rule
   procedure Store (Rule : Rule_Rec) is
   begin

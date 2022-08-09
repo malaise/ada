@@ -1,5 +1,17 @@
 #!/bin/bash
 
+export SENSOR_DEBUG="${SENSOR_DEBUG^^}"
+if [ \( "$SENSOR_DEBUG" = "Y" \) -o \( "$SENSOR_DEBUG" = "YES" \) ] ; then
+  export DEBUG=1
+else
+  export DEBUG=0
+fi
+
+if [ $DEBUG -eq 1 ] ; then
+  export sensor_TRACE_Sensor=Debug
+  export sensor_TRACEFILE=Sensor.log
+fi
+
 # Env
 export INPUT=input.txt
 export OUTPUT=output.txt
@@ -7,9 +19,6 @@ export EXPECTED=expected.txt
 export TIMEOUT=1
 export PERIOD="0.2"
 export TRIGGER="Trigger"
-# Defining the action in a variable requires a specific DTD
-#  (where Action ID and ADREF are replaced by CDATA)
-export ACTION="LogTrigger"
 
 # Clean files
 function cleanup {
@@ -73,6 +82,7 @@ Got ${TRIGGER} 1
 Got ${TRIGGER} 2
 Got ${TRIGGER} 3
 ${TRIGGER} 4
+Repeated LogTrigger
 Got ${TRIGGER} 5
 EOF
 cmp $OUTPUT $EXPECTED 2>/dev/null
@@ -83,6 +93,8 @@ if [ $res -ne 0 ] ; then
 else
   # Cleanup
   echo Test OK.
-  cleanup
+  if [ $DEBUG -eq 0 ] ; then
+    cleanup
+  fi
 fi
 

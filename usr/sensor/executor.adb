@@ -47,6 +47,7 @@ package body Executor is
                         & " is in history");
              Matches.Delete;
              if Matches.Is_Empty then
+               -- Done if all already in history (all deleted)
                return;
              end if;
            else
@@ -57,7 +58,6 @@ package body Executor is
          end loop;
        end loop;
      end if;
-     -- Done if all already in history (all deleted)
 
      -- Save the new lines in history and concat them
      Matches.Rewind;
@@ -67,48 +67,68 @@ package body Executor is
          Debug.Log ("  Saving " & Matches.Access_Current.Image);
          Rule.History.Push (Matches.Access_Current.all);
        end if;
-       Rule.Result.all := Rule.Result.all
-                        & Matches.Access_Current.all & Aski.Lf;
+       Rule.Nb_Match.all := Rule.Nb_Match.all + 1;
+       Rule.Matches.all := Rule.Matches.all
+                         & Matches.Access_Current.all & Aski.Lf;
        exit when not Matches.Check_Move;
        Matches.Move_To;
      end loop;
-
   end Check;
 
   -- Expiration or termination of time
   function Execute (Rule_Num : Long_Longs.Ll_Positive;
                     Flush : Boolean) return Boolean is
     Rule : Rules.Rule_Rec;
-    Dummy : Integer;
     Now : Ada.Calendar.Time;
+    Nb_Match : Natural;
+    Matches : As.U.Asu_Us;
     use type Ada.Calendar.Time;
+
+    -- Expand the command and execute it if not empty
+    procedure Launch (Action, Lines : in String) is
+      Expanded : As.U.Asu_Us;
+      Dummy : Integer;
+    begin
+      Expanded := As.U.Tus (Actions.Expand (Action, Lines));
+      Debug.Log ("  Launching " & Expanded.Image);
+      if not Expanded.Is_Null then
+        Dummy := Sys_Calls.Call_System (Expanded.Image);
+      end if;
+    end Launch;
+
   begin
-     -- Retrieve the filter index from data and read it
-     Rule := Rules.Get_Rule (Rule_Num);
-     Debug.Log ("Expiration of rule on " & Rule.File.Image);
-     -- Search the pattern in the tail of the file
-     Check (Rule);
-     -- Nothing to do if no match
-     if Rule.Result.Is_Null then
-       return False;
-     end if;
-     -- Check latency
-     Now := Ada.Calendar.Clock;
-     if Rule.Latency /= 0.0
-         and then Rule.Previous.all + Rule.Latency > Now
-         and then not Flush then
-       -- Within latency
-       Debug.Log ("  Within latency");
-       return False;
-     end if;
-     -- Expand the command and execute it
-     Debug.Log ("  Action "
-              & Actions.Expand (Rule.Action.Image, Rule.Result.Image));
-     Dummy := Sys_Calls.Call_System (
-         Actions.Expand (Rule.Action.Image, Rule.Result.Image));
-     -- Reset result and latency reference
-     Rule.Result.Set_Null;
-     Rule.Previous.all := Now;
+    -- Retrieve the filter index from data and read it
+    Rule := Rules.Get_Rule (Rule_Num);
+    Debug.Log ("Expiration of rule on " & Rule.File.Image);
+    -- Search the pattern in the tail of the file
+    Check (Rule);
+    -- Nothing to do if no match
+    if Rule.Nb_Match.all = 0 then
+      return False;
+    end if;
+    -- Check latency
+    Now := Ada.Calendar.Clock;
+    if Rule.Latency /= 0.0
+        and then Rule.Previous.all + Rule.Latency > Now
+        and then not Flush then
+      -- Within latency
+      Debug.Log ("  Within latency");
+      return False;
+    end if;
+    -- Expand the command and execute it if not empty
+    Launch (Rule.Action.Image, Rule.Matches.Image);
+    -- Save and reset result, and and reset latency reference
+    Nb_Match := Rule.Nb_Match.all;
+    Matches := Rule.Matches.all;
+    Rule.Previous.all := Now;
+    Rule.Nb_Match.all := 0;
+    Rule.Matches.Set_Null;
+    -- Execute actions triggered by repetitions of action
+    Actions.Set_Action (Rule.Action.Image);
+    for Repeat of Actions.Occurs (Rule.Action.Image, Nb_Match) loop
+      Launch (Repeat.Image, Matches.Image);
+    end loop;
+    Actions.Unset_Action;
     return False;
   end Execute;
 
@@ -119,11 +139,20 @@ package body Executor is
     return Execute (Data.Lint, Flush => False);
   end Expire;
 
+  Purge_Id : Timers.Timer_Id;
+  function Purge (Dummy_Id : Timers.Timer_Id;
+                  Dummy_Data : Timers.Timer_Data) return Boolean is
+  begin
+    Actions.Purge;
+    return False;
+  end Purge;
+
   -- Init the executor (arms timers and sets handlers)
   procedure Init is
     Rule : Rules.Rule_Rec;
     Data : Any_Def.Any (Any_Def.Lint_Kind);
     Appointment : Timers.Delay_Rec  (Timers.Delay_Sec);
+    Max_Period : Timers.Period_Range := 0.0;
     Id : Timers.Timer_Id;
   begin
     -- Set sigterm callback
@@ -134,11 +163,19 @@ package body Executor is
       -- Retrieve the rule
       Rule := Rules.Get_Rule (I);
       Appointment.Period := Rule.Period;
+      -- Update max period
+      if Rule.Period > Max_Period then
+        Max_Period := Rule.Period;
+      end if;
       -- Arm the timer
       Data.Lint := I;
       Id := Timers.Create (Appointment, Expire'Access, Data);
       Timers_List.Insert ( (Id, I) );
     end loop;
+    -- Arm a timer for purge
+    Appointment.Period := Max_Period;
+    Data.Lint := 0;
+    Purge_Id := Timers.Create (Appointment, Purge'Access, Data);
   end Init;
 
   -- Has exit been requested
@@ -156,6 +193,7 @@ package body Executor is
       Timers.Delete (Timer.Tid);
       Dummy_Res := Execute (Timer.Rule, Flush => True);
     end loop;
+    Timers.Delete (Purge_Id);
   end Close;
 
 end Executor;

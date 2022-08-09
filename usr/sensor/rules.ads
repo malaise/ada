@@ -12,6 +12,7 @@ package Rules is
   type Pattern_Access is access all Reg_Exp.Compiled_Pattern;
   type History_Access is access Hist_Mng.Circ_Type;
   type Time_Access is access Ada.Calendar.Time;
+  type Natural_Access is access Natural;
   type Asu_Access is access As.U.Asu_Us;
   type Rule_Rec is record
     File : As.U.Asu_Us;
@@ -23,8 +24,10 @@ package Rules is
     Time_Format : As.U.Asu_Us;
     Pattern : Pattern_Access;
     Latency : Duration;
+    -- Internal data for handling the check of a rule
     Previous : Time_Access;
-    Result : Asu_Access;
+    Nb_Match : Natural_Access;
+    Matches : Asu_Access;
   end record;
 
   -- Check and store a rule

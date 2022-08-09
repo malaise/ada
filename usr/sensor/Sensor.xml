@@ -2,17 +2,26 @@
 <!DOCTYPE Sensor SYSTEM "Sensor.dtd">
 
 <Sensor>
+  <Var Name="Syslog" Value="/var/log/syslog"/>
+  <Var Name="Auth" Value="/var/log/auth.log"/>
   <Actions>
-    <Action Name="Antibot">echo "${Match}" | /root/sensor/antibot</Action>
-    <Action Name="RootLogin">echo -n "${Match}" >> /root/log/login</Action>
+    <Action Name="CloseRootSSH" Command='/root/bin/CloseRootSSH'/>
+    <Action Name="Antibot" Command='echo -en "${Match}" | /root/sensor/antibot'>
+      <Repeat Number="3" During="900" Action="CloseRootSSH"/>
+    </Action>
+    <Action Name="RootLogin" Command='echo -en "${Match}" >> /root/log/login'></Action>
   </Actions>
   <Rules>
-    <Rule File="/var/log/syslog" Action="Antibot">
-      <Criteria>BANNING </Criteria>
+    <Rule>
+      <Scan File="${Syslog}" Criteria="BANNING"></Scan>
+      <Execute Action="Antibot"/>
     </Rule>
-    <Rule File="/var/log/auth.log" Action="RootLogin">
-      <Past Seconds="3600">%b %d %H:%M:%S</Past>
-      <Criteria>pam_unix\((su|sshd):session\): session opened for user root by</Criteria>
+    <Rule>
+      <Scan File="${Auth}"
+            Criteria="pam_unix\((su|sshd):session\): session opened for user root by">
+        <Past Format="%b %d %H:%M:%S" Seconds="3600"/>
+      </Scan>
+      <Execute Action="RootLogin"/>
     </Rule>
   </Rules>
 </Sensor>

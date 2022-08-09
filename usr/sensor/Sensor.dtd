@@ -1,38 +1,61 @@
 <?xml version="1.0" encoding="Utf-8"?>
-<!ELEMENT Sensor (Actions, Rules)>
+<!ELEMENT Sensor (Var*,Actions, Rules)>
 
-<!-- List of action, each uniquely identified by a name, -->
+<!-- Optional variables -->
+<!ATTLIST Var Name  NMTOKEN #REQUIRED
+              Value CDATA   #REQUIRED>
+<!ELEMENT Var EMPTY>
+
+<!-- List of actions -->
 <!ELEMENT Actions (Action*)>
-<!ATTLIST Action Name ID #REQUIRED>
-<!-- and each defining the shell command to be executed. -->
-<!ELEMENT Action (#PCDATA)>
-<!-- In the command, the following variables are expanded: -->
-<!-- ${Match} : Lines of the log that match the filter -->
-<!-- ${Time} : Date and time at ISO format (YYyy-Mm-DdTHh:Mm:Ss.mmm) -->
-<!-- ${Host}: Local host name -->
+<!-- Each action is identified by a name, -->
+<!-- and is defining the shell command to be executed. -->
+<!-- In the command, the following variables are defined: -->
+<!--  - ${Match} : Lines of the log that match the filter -->
+<!--  - ${Time} : Date and time at ISO format (YYyy-Mm-DdTHh:Mm:Ss.mmm) -->
+<!--  - ${Host}: Local host name -->
+<!--  - ${Action}: when executing an action as the consequence of a repeated -->
+<!--     Action -->
+<!ATTLIST Action Name ID #REQUIRED
+          Command CDATA #REQUIRED>
 
-<!-- List of rules, each defining: -->
+<!-- When an action is repeated: -->
+<!ELEMENT Action (Repeat*)>
+<!-- - at least a given number of times -->
+<!-- - withing a given number of seconds (min 1.0)-->
+<!-- - trigger another action -->
+<!ATTLIST Repeat Number CDATA "3"
+                 During CDATA "900"
+                 Action IDREF #REQUIRED>
+<!ELEMENT Repeat EMPTY>
+
+<!-- List of rules, each defining -->
 <!ELEMENT Rules (Rule*)>
-<!-- - the file to which it applies -->
-<!-- - the scanning period in seconds (float, min 1.0) -->
-<!-- - the number of tailing lines of the file to scan (0 for infinite) -->
-<!-- - the maximum number of known alerts to store in the history -->
-<!-- - the action to execute when a line of file matches and is not known -->
-<!--   in the history -->
-<!-- - the latency between two successive executions of the action -->
-<!ATTLIST Rule File CDATA #REQUIRED
+<!-- scanning and execution characteristics -->
+<!ELEMENT Rule (Scan,Execute)>
+
+<!-- Scanning characteristics: -->
+<!-- - the file to scan -->
+<!-- - the criteria (regex) to look for -->
+<!-- - the scanning period in seconds (min 0.1) -->
+<!-- - the number of trailing lines of the file to scan (0 for infinite) -->
+<!ATTLIST Scan File CDATA #REQUIRED
+               Criteria CDATA #REQUIRED
                Period CDATA "60.0"
-               Tail CDATA "100"
-               History CDATA "100"
-               Action IDREF #REQUIRED
-               Latency CDATA "0">
-<!ELEMENT Rule (Past?,Criteria)>
-
+               Tail CDATA "100">
+<!-- - the format of the time in the file (see Date_Text) -->
 <!-- - the number of past seconds to scan (0 for infinite) -->
-<!ATTLIST Past Seconds CDATA "3600">
-<!-- - format of the time in the file (see Date_Text) -->
-<!ELEMENT Past (#PCDATA)>
+<!ELEMENT Scan (Past?)>
+<!ATTLIST Past Format CDATA #REQUIRED
+               Seconds CDATA "3600">
+<!ELEMENT Past EMPTY>
 
-<!-- - the criteria (regex) to scan -->
-<!ELEMENT Criteria (#PCDATA)>
+<!-- Execution characteristics: -->
+<!-- - the action to execute when a line of file matches and is not known -->
+<!-- - the maximum number of known alerts to store in the history -->
+<!-- - the latency between two successive executions of the action -->
+<!ATTLIST Execute Action IDREF #REQUIRED
+                  History CDATA "100"
+                  Latency CDATA "0">
+<!ELEMENT Execute EMPTY>
 
