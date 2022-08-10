@@ -69,7 +69,6 @@ package body Actions is
   procedure Set_Action (Value : in String) is
   begin
     Memory.Set ("Action", Value, True, True);
-Debug.Log ("Action set to " & Value);
   exception
     when Computer.Constant_Exists =>
       raise Invalid_Variable;
@@ -77,9 +76,7 @@ Debug.Log ("Action set to " & Value);
 
   procedure Unset_Action is
   begin
-Debug.Log ("Unsetting Action");
     Memory.Unset ("Action");
-Debug.Log ("Action unset");
   exception
     when Computer.Unknown_Variable | Computer.Constant_Exists =>
       raise Invalid_Variable;
@@ -254,7 +251,7 @@ Debug.Log ("Action unset");
           Rep.Occurences.Rewind (Occurences_Mng.Prev);
         end if;
         for I in 1 .. Nb loop
-          Rep.Occurences.Insert ( (Now) );
+          Rep.Occurences.Insert (Now);
         end loop;
         --  If the number of occurences is above the max then
         --    append the launch to the result

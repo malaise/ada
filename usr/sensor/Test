@@ -45,6 +45,14 @@ function output {
   fi
 }
 
+# Check empty config file
+output "Check empty config file"
+./sensor -c Empty.xml
+if [ $? -ne 0 ] ; then
+  echo "Error when checking empty config file." 1>&2
+  exit 1
+fi
+
 # Initialise input and output
 echo -e "Toto\nTiti\nTata\n${TRIGGER} 1\nToto\n" > $INPUT
 rm -f $OUTPUT

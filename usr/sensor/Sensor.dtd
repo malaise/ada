@@ -15,7 +15,7 @@
 <!--  - ${Time} : Date and time at ISO format (YYyy-Mm-DdTHh:Mm:Ss.mmm) -->
 <!--  - ${Host}: Local host name -->
 <!--  - ${Action}: when executing an action as the consequence of a repeated -->
-<!--     Action -->
+<!--     action -->
 <!ATTLIST Action Name ID #REQUIRED
           Command CDATA #REQUIRED>
 

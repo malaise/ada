@@ -173,9 +173,11 @@ package body Executor is
       Timers_List.Insert ( (Id, I) );
     end loop;
     -- Arm a timer for purge
-    Appointment.Period := Max_Period;
-    Data.Lint := 0;
-    Purge_Id := Timers.Create (Appointment, Purge'Access, Data);
+    if Max_Period /= 0.0 then
+      Appointment.Period := Max_Period;
+      Data.Lint := 0;
+      Purge_Id := Timers.Create (Appointment, Purge'Access, Data);
+    end if;
   end Init;
 
   -- Has exit been requested
@@ -186,14 +188,13 @@ package body Executor is
     Timer : Timer_Rec;
     Dummy_Res : Boolean;
   begin
-    -- Cancel timers and force execution
     Timers_List.Rewind (Check_Empty => False);
     while not Timers_List.Is_Empty loop
       Timers_List.Get (Timer);
       Timers.Delete (Timer.Tid);
       Dummy_Res := Execute (Timer.Rule, Flush => True);
     end loop;
-    Timers.Delete (Purge_Id);
+    Timers.Delete_If_Exists (Purge_Id);
   end Close;
 
 end Executor;

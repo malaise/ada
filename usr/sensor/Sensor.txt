@@ -1,67 +1,86 @@
 Sensor
 ======
-Version: 7.0
+Version: 7.1
 
-Sensor scans several log files and raises alerts on some events (matching
-filters).
+Sensor scans some files and triggers actions when finding specific events. +
+It is usefull to raise alerts when some log messages are matching criteria.
 
 Syntax and configuration
 ------------------------
 ...............................................................
-sensor <configuration file> | -h | --help | -v | --version
+sensor [ -c | --check ] <configuration file> | -h | --help | -v | --version
 ...............................................................
 
+.Options
+With option -c (--check), sensor only checks the configuration file and exits.
+
+.Variables
 The XML configuration file may start by defining variables. Each variable has
 a unique name and a text value.
 
+.Actions
 Then the configuration file defines several actions. +
-Each action has a unique name and executes a predefined shell command. The
-definition of a command can refer to some variables of the form
+Each action has a unique name and executes a predefined shell command. +
+If an action is triggered too often (more than a given number of occurences
+within a given time), it is possible to trigger another action. +
+The definition of a command can refer to some variables of the form
 '$\{variable}'. The following variable names are automatically defined:
 
 - $\{Match} : Lines (content) of the log that match the filter
 - $\{Time} : Date and time at ISO format (YYyy-Mm-DdTHh:Mm:Ss.mmm)
 - $\{Host}: Local host name
+- $\{Action}: when executing an action as the consequence of a repeated action
 
 All the other variables must be defined previously in the configuration or in
 the environment, otherwise this is an error.
 
+.Rules
 The configuration file then defines rules. Each rule consists in:
 
-- the name of the file to scan
-- an optional scanning period in seconds (default 60.0, min 0.1)
-- an optional tail size to scan (default 100 lines, 0 for infinite)
-- an optional number of past seconds to scan (default 1 hour, 0 for infinite)
+- scanning criteria
+
+* the name of the file to scan
+* the criteria (regular expression) to match
+* an optional scanning period in seconds (default 60.0, min 0.1)
+* an optional tail size to scan (default 100 lines, 0 for infinite)
+* an optional number of past seconds to scan (default 1 hour, 0 for infinite)
 and the format of time (expected at a fixed offset in each line of the file).
 See Date_Text for the definition of format used to scan dates and times.
-- a history of alerts to store (default 100)
-- the name of the action to execute
-- the latency between two successive executions of the action
-- the criteria (regular expression) to match
+
+- execution definition
+
+* the name of the action to execute
+* a history of alerts to store (default 100) in order to avoid repeating an
+action for the same reason
+* the latency between two successive executions of the action
 
 All the definitions of the configuration (variable definition, action name,
 rule name and options), can refer to existing variables (defined previously in
 the configuration or in the environment, otherwise this is an error).
 
-NOTE: If a variable is used for the definition and reference of an action,
-then the definitions of attributes Action:Name and Rule:Action must be modified
-in the DTD file, from ID and IDREF to CDATA.
+Example:
 
 .......................................
 
 <?xml version="1.0" encoding="Utf-8"?>
 <!DOCTYPE Sensor SYSTEM "Sensor.dtd">
+
 <Sensor>
-  <Vars>
-    <Var Name="Logfile">/root/log/login</Var>
-  </Vars>
+  <Var Name="OUTPUT" Value="/root/log/Sensor.log"/>
   <Actions>
-    <Action Name="RootLogin">echo -n "${Match}" >> ${Logfile}</Rule>
+    <Action Name="LogTrigger"
+            Command='/bin/echo -en "Got ${Match}" >>${OUTPUT}'>
+      <Repeat Number="3" During="2.0" Action="Repeat"/>
+    </Action>
+    <Action Name="Repeat"
+            Command='/bin/echo "Repeated ${Action}" >>${OUTPUT}'>
+    </Action>
   </Actions>
   <Rules>
-    <Rule File="/var/log/auth.log" Action="RootLogin" Latency="300.5">
-      <Past Seconds="3600">%b %d %H:%M:%S</Past>
-      <Criteria>pam_unix\((su|sshd):session\): session opened for user root by</Criteria>
+    <Rule>
+      <Scan File="${INPUT}" Criteria="${TRIGGER}" Period="60" Tail="10">
+      </Scan>
+      <Execute Action="LogTrigger" History="5" Latency="1.5"/>
     </Rule>
   </Rules>
 </Sensor>
@@ -71,7 +90,7 @@ in the DTD file, from ID and IDREF to CDATA.
 Processing
 ----------
 .Init
- * Parse the argument and the configuration file
+ * Parse the arguments and the configuration file
  * Check the expansion of each rule (variables) and store the actions in a
 unique list (by name)
  * Store the rules in a dynamic list (history is a circular queue), check
@@ -86,4 +105,6 @@ the regex
  * If found in the history then drop, otherwise store in the history
  * Store the matching lines until latency is reached, then expand and execute
 the action on all these lines together
+ * Store the occurences of the action (purge old occurences), check if
+repeated too often and trigger "repeat" actions.
 

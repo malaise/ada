@@ -4,13 +4,17 @@ with Argument, Basic_Proc, Sys_Calls, As.U, Timers, Event_Mng,
 with Debug, Actions, Rules, Executor;
 procedure Sensor is
 
-  Version : constant String := "V7.0";
+  Version : constant String := "V7.1";
 
   procedure Help is
   begin
     Basic_Proc.Put_Line_Error (Argument.Get_Program_Name
-        & " <configuration file> | -h | --help | -v | --version");
+        & " [ -c | --check ] <configuration file> | -h | --help | -v | --version");
   end Help;
+
+  -- File and option
+  File : As.U.Asu_Us;
+  Check_Only : Boolean;
 
   -- Xml parsing
   Ctx : Xml_Parser.Ctx_Type;
@@ -32,8 +36,9 @@ begin
   -------
   Debug.Logger.Init ("Sensor");
   Basic_Proc.Set_Error_Exit_Code;
-  -- Help mode
-  if Argument.Get_Nbre_Arg /= 1 then
+  Check_Only := False;
+  -- Help mode, version, option
+  if Argument.Get_Nbre_Arg = 0 or else Argument.Get_Nbre_Arg > 2 then
     Help;
     return;
   elsif Argument.Get_Parameter = "-h"
@@ -44,12 +49,20 @@ begin
   or else Argument.Get_Parameter = "--version" then
     Basic_Proc.Put_Line_Error (Argument.Get_Program_Name & " " & Version);
     return;
+  elsif Argument.Get_Nbre_Arg = 2 and then
+      (Argument.Get_Parameter = "-c"
+       or else Argument.Get_Parameter = "--check") then
+    Check_Only := True;
+  elsif Argument.Get_Nbre_Arg /= 1 then
+    Help;
+    return;
   end if;
 
   -- Parse configuration file
   ---------------------------
-  Debug.Log ("Parsing file " & Argument.Get_Parameter);
-  Ctx.Parse (Argument.Get_Parameter, Ok);
+  Argument.Get_Parameter (File, Occurence => (if Check_Only then 2 else 1) );
+  Debug.Log ("Parsing file " & File.Image);
+  Ctx.Parse (File.Image, Ok);
   if not Ok then
     Basic_Proc.Put_Line_Error ("Parse error in config: "
                                  & Ctx.Get_Parse_Error_Message);
@@ -277,6 +290,13 @@ begin
     end;
   end loop;
 
+  -- Only check config file
+  if Check_Only then
+    Debug.Log ("Check only");
+    Basic_Proc.Set_Ok_Exit_Code;
+    return;
+  end if;
+
   -- Init executor
   Executor.Init;
 
@@ -296,7 +316,7 @@ begin
 exception
   when Xml_Parser.File_Error =>
     Basic_Proc.Put_Line_Error (
-        "Cannot open config file: " & Argument.Get_Parameter & ".");
+        "Cannot open config file: " & File.Image & ".");
   when Error: others =>
     Basic_Proc.Put_Line_Error (
         "Exception " & Ada.Exceptions.Exception_Name (Error) & " raised.");
