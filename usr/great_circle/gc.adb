@@ -221,7 +221,7 @@ procedure Gc is
       Cursor := First_Fld;
       return;
     end if;
-    
+
     Great_Circle.Logger.Log_Debug ("Decoded point: " & Point_Txt.Image);
     if Mode = Sexa_Mode then
       -- Replace Nddomm'ssss"/Edddomm'ssss" by Ndd.mm.ssss/Eddd.mm.ssss
