@@ -61,14 +61,21 @@ package body X is
     -- Reset / Set backround color of input field
     if Status in B1 .. Ready
     and then (Prev_Status /= Status or else Force) then
-      -- Reset backround of Prev_Status
+      -- Reset background of Prev_Status
       if Prev_Status in Put_List then
-        Afpx.Reset_Field (Field_Of (Prev_Status), Reset_String => False);
+        if Prev_Status < Status then
+          -- Prev field is now set
+          Afpx.Set_Field_Colors (Field_Of (Prev_Status),
+                                 Background => Afpx.Get_Descriptor_Background);
+        else
+          -- Prev field is reset (Undo)
+          Afpx.Reset_Field (Field_Of (Prev_Status), Reset_String => False);
+        end if;
       end if;
       -- Set Background of new Status
       if Status in Put_List then
         Afpx.Set_Field_Colors (Field_Of (Status),
-                               Background => Con_Io.Color_Of ("Lime_Green"));
+                               Background => Con_Io.Color_Of ("White"));
       end if;
       Prev_Status := Status;
     end if;

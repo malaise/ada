@@ -19,38 +19,38 @@
     <!-- Base numbers (6) -->
     <Field Num="2" Kind="Put" Name="Base_Fs">
       <Geometry Up="${Field_1.Low}+2" Left="1" Height="1" Width="3"/>
-      <Colors Foreground="Black" Background="Light_Grey"/>
+      <Colors Foreground="Black" Background="Light_Blue"/>
     </Field>
     <Field Num="3" Kind="Put">
       <Geometry Up="${Field_1.Low}+2" Left="${Field_2.Right}+2" Height="1"
                 Width="3"/>
-      <Colors Foreground="Black" Background="Light_Grey"/>
+      <Colors Foreground="Black" Background="Light_Blue"/>
     </Field>
     <Field Num="4" Kind="Put">
       <Geometry Up="${Field_1.Low}+2" Left="${Field_3.Right}+2" Height="1"
                 Width="3"/>
-      <Colors Foreground="Black" Background="Light_Grey"/>
+      <Colors Foreground="Black" Background="Light_Blue"/>
     </Field>
     <Field Num="5" Kind="Put">
       <Geometry Up="${Field_1.Low}+2" Left="${Field_4.Right}+2" Height="1"
                 Width="3"/>
-      <Colors Foreground="Black" Background="Light_Grey"/>
+      <Colors Foreground="Black" Background="Light_Blue"/>
     </Field>
     <Field Num="6" Kind="Put">
       <Geometry Up="${Field_1.Low}+2" Left="${Field_5.Right}+2" Height="1"
                 Width="3"/>
-      <Colors Foreground="Black" Background="Light_Grey"/>
+      <Colors Foreground="Black" Background="Light_Blue"/>
     </Field>
     <Field Num="7" Kind="Put">
       <Geometry Up="${Field_1.Low}+2" Left="${Field_6.Right}+2" Height="1"
                 Width="3"/>
-      <Colors Foreground="Black" Background="Light_Grey"/>
+      <Colors Foreground="Black" Background="Light_Blue"/>
     </Field>
     <!-- Target number -->
     <Field Num="8" Kind="Put" Name="Target_F">
       <Geometry Up="${Field_1.Low}+2" Left="${Screen.Right}-3" Height="1"
                 Width="3"/>
-      <Colors Foreground="Black" Background="Light_Grey"/>
+      <Colors Foreground="Black" Background="Light_Blue"/>
     </Field>
 
     <!-- Buttons -->
@@ -170,7 +170,7 @@
     <Field Num="27" Kind="Put" Name="Result_F">
       <Geometry Up="${Field_14.Up}" Left="${Field_8.Left}-1" Height="1"
                 Width="4"/>
-      <Colors Foreground="Lime_Green" Background="Light_Grey"/>
+      <Colors Foreground="Dark_Green" Background="Light_Grey"/>
     </Field>
 
     <!-- Computation -->
