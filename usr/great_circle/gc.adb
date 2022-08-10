@@ -1,7 +1,9 @@
 with Ada.Characters.Latin_1;
 with As.U, As.B, Argument, Basic_Proc, Con_Io, Afpx.Utils, Str_Util, Language,
      Reg_Exp, Trilean;
-  use Trilean;
+--## rule off Use
+use Trilean;
+--## rule on Use
 with Units, Lat_Lon, String_Util, Great_Circle, Afpx_Xref;
 procedure Gc is
 
