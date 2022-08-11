@@ -14,7 +14,7 @@
   <period>30.0</period>
   <list_tags>True</list_tags>
   <history>0</history>
-  <last_dir>/home/malaise/ada/usr/agite</last_dir>
+  <last_dir>/home/user/ada/usr/agite</last_dir>
   <bookmarks>
     <bookmark Name="Ada">${HOME}/ada</bookmark>
     <bookmark Name="Reposit">${HOME}/ada/reposit</bookmark>
@@ -36,7 +36,7 @@
     <bookmark Name="Tmp"/>
     <bookmark Name="Rebase">${HOME}/AdaDevs/Rebase/usr/agite</bookmark>
     <bookmark Name="DictioConsist">${HOME}/AdaDevs/DictioConsist/usr/dictio</bookmark>
-    <bookmark Name="Rebase">/home/malaise/tmp/Rebase</bookmark>
+    <bookmark Name="Rebase">/home/user/tmp/Rebase</bookmark>
   </bookmarks>
   <comment></comment>
 </agite>

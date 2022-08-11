@@ -94,7 +94,7 @@
       </expect>
       <expect Crit="CONNECT( [0-9]+)?" Oper="match">
         <read TimeoutMs="30_000" Crit=".ogin" Oper="match"/>
-        <send>malaise</send>
+        <send>username</send>
         <read TimeoutMs="10_000" Crit=".{4\}word" Oper="match"/>
         <send>${$PASSWORD}</send>
         <send>Working: Please wait...</send>
@@ -117,7 +117,7 @@
     <send>CONNECT 56000</send>
     <wait DelayMs="1_000"/>
     <send>login</send>
-    <read Crit="malaise"/>
+    <read Crit="username"/>
     <send>password</send>
     <read Crit="${$PASSWORD}"/>
     <send>Working: Please wait...</send>
@@ -169,7 +169,7 @@
       <send>password:</send>
       <read Crit=".*" Oper="match" Assign="Passwd=${0}"/>
       <cond>
-        <if Expr="${User}" Crit="malaise">
+        <if Expr="${User}" Crit="username">
           <cond>
             <if Expr="${Passwd}" Crit="${$PASSWORD}">
               <set Var="Res" Expr="success"/>

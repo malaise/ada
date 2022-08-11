@@ -160,7 +160,7 @@ try $EXPECTED "GET${SPACE}http://localhost${PWD}/chats.XML${SPACE}HTTP/1.0" 0 "$
 
 # Ppp1 ok
 echo -n "Test ppp1 ok: "
-echo -en "AT\nATQ0 V1 E1 S0=0 &C1 &D2 +FCLASS=0\nATDT0860922000\nmalaise\n$PASSWORD\nWorking: Please wait...\nDone. Please logout.\n" > $EXPECTED
+echo -en "AT\nATQ0 V1 E1 S0=0 &C1 &D2 +FCLASS=0\nATDT0860922000\nusername\n$PASSWORD\nWorking: Please wait...\nDone. Please logout.\n" > $EXPECTED
 try $EXPECTED ppp1 0 OK 0 OK 0 CONNECT${SPACE}56000 0 login 0 password 3 logout
 
 # Ppp1 error
@@ -171,7 +171,7 @@ try $EXPECTED ppp1 0 OK 0 OK 0 NO${SPACE}DIALTONE
 # Ppp2
 echo -n "Test ppp2: "
 echo -en "OK\nOK\nCONNECT 56000\nlogin\npassword\nWorking: Please wait...\nDone. Please logout.\n" > $EXPECTED
-try $EXPECTED ppp2 0 AT 0 "ATQ0${SPACE}V1${SPACE}E1${SPACE}S0=0${SPACE}&C1${SPACE}&D2${SPACE}+FCLASS=0" 0 ATDT0860922000 4 malaise 0 $PASSWORD 3 logout
+try $EXPECTED ppp2 0 AT 0 "ATQ0${SPACE}V1${SPACE}E1${SPACE}S0=0${SPACE}&C1${SPACE}&D2${SPACE}+FCLASS=0" 0 ATDT0860922000 4 username 0 $PASSWORD 3 logout
 
 # Multi 1
 echo -n "Test Multi 1: "
@@ -200,8 +200,8 @@ try $EXPECTED testMulti 0 Login
 
 # Login OK
 echo -n "Test login ok: "
-echo -en "login:\npassword:\nlogin:\npassword:\nUser malaise logged in\nUser malaise logged out\n" > $EXPECTED
-try $EXPECTED login 0 user 0 password 0 malaise 0 ${PASSWORD} 1 logout
+echo -en "login:\npassword:\nlogin:\npassword:\nUser username logged in\nUser username logged out\n" > $EXPECTED
+try $EXPECTED login 0 user 0 password 0 username 0 ${PASSWORD} 1 logout
 
 # Login KO
 echo -n "Test login ko: "
