@@ -171,6 +171,14 @@ package body Mesu_Mng is
 
     end Check_Field;
 
+    -- Encode Date in After fields
+    procedure Encode_After (Date : in Str_Mng.Date_Str_Rec) is
+    begin
+      Afpx.Encode_Field (Afpx_Xref.Main.Day_After, (00, 00), Date.Day);
+      Afpx.Encode_Field (Afpx_Xref.Main.Month_After, (00, 00), Date.Month);
+      Afpx.Encode_Field (Afpx_Xref.Main.Year_After, (00, 00), Date.Year);
+    end Encode_After;
+
     use type Afpx.Absolute_Field_Range;
   begin
     Afpx.Use_Descriptor(Afpx_Xref.Main.Dscr_Num);
@@ -184,12 +192,7 @@ package body Mesu_Mng is
       Str_Mng.Current_Date_Rec (Current_Date, Nb_Month);
       if Afpx.Line_List.Is_Empty then
         -- List empty : Set Aft to current date - offset
-        Afpx.Encode_Field (Afpx_Xref.Main.Day_After, (00, 00),
-                           Current_Date.Day);
-        Afpx.Encode_Field (Afpx_Xref.Main.Month_After, (00, 00),
-                           Current_Date.Month);
-        Afpx.Encode_Field (Afpx_Xref.Main.Year_After, (00, 00),
-                           Current_Date.Year);
+        Encode_After (Current_Date);
       else
         -- List not empty : Set Bef to current date - offset
         Afpx.Encode_Field (Afpx_Xref.Main.Day_Before, (00, 00),
@@ -311,10 +314,29 @@ package body Mesu_Mng is
                 end if;
                 Allow_Undo := True;
               end if;
+            elsif Ptg_Result.Field_No = Afpx_Xref.Main.Clear then
+              -- Clear selec
+              Mesu_Sel.Clear_Selection;
+              Allow_Undo := True;
             elsif Ptg_Result.Field_No = Afpx_Xref.Main.Undo then
               -- Undo
               Mesu_Sel.Undo;
               Allow_Undo := False;
+
+            elsif Ptg_Result.Field_No = Afpx_Xref.Main.Last_Month then
+              -- Set After to one month ago
+              Str_Mng.Current_Date_Rec (Current_Date, 1);
+              Encode_After (Current_Date);
+            elsif Ptg_Result.Field_No = Afpx_Xref.Main.Clear_After then
+              -- Clear After fields
+              Afpx.Clear_Field (Afpx_Xref.Main.Day_After);
+              Afpx.Clear_Field (Afpx_Xref.Main.Month_After);
+              Afpx.Clear_Field (Afpx_Xref.Main.Year_After);
+            elsif Ptg_Result.Field_No = Afpx_Xref.Main.Clear_Before then
+              -- Clear Before fields
+              Afpx.Clear_Field (Afpx_Xref.Main.Day_Before);
+              Afpx.Clear_Field (Afpx_Xref.Main.Month_Before);
+              Afpx.Clear_Field (Afpx_Xref.Main.Year_Before);
             elsif Ptg_Result.Field_No = Afpx_Xref.Main.Db then
               -- Activiy Db
               Mesu_Sel.Save;
@@ -325,9 +347,6 @@ package body Mesu_Mng is
                 exit List;
               end if;
               exit Ptg;
-            elsif Ptg_Result.Field_No = Afpx_Xref.Main.Quit then
-              -- Exit
-              exit List;
             elsif Ptg_Result.Field_No = Afpx_Xref.Main.Unselect then
               -- Unselect
               Afpx.Line_List.Read (Line, Afpx.Line_List_Mng.Current);
@@ -369,14 +388,15 @@ package body Mesu_Mng is
               -- Delete
               Afpx.Line_List.Read (Line, Afpx.Line_List_Mng.Current);
               Str_Mng.Format_List_To_Mesure (Line, File_Name);
-
-              -- Delete
               Mesu_Edi.Delete (File_Name);
               if not Str_Mng.Is_Spaces (File_Name) then
                 Mesu_Sel.Rem_Selection (Line);
               end if;
               -- Edit screen called
               exit Ptg;
+            elsif Ptg_Result.Field_No = Afpx_Xref.Main.Quit then
+              -- Exit
+              exit List;
             end if; -- Test of buttons
         end case;
 

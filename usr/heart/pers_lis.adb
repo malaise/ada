@@ -250,11 +250,28 @@ package body Pers_Lis is
     loop
 
       List_Empty := Afpx.Line_List.Is_Empty;
+      -- Lock list if not in list
+      Afpx.Set_Field_Protection (Afpx.List_Field_No, State /= In_List);
+      -- Title
+      Afpx.Clear_Field (Afpx_Xref.Activity.Title);
+      case State is
+        when In_List =>
+          Afpx.Reset_Field (Afpx_Xref.Activity.Title, False);
+        when In_Create =>
+          Afpx.Encode_Field (Afpx_Xref.Activity.Title, (0, 0),
+                             "Creation of an Activity");
+       when In_Edit =>
+          Afpx.Encode_Field (Afpx_Xref.Activity.Title, (0, 0),
+                             "Edition of an Activity");
+       when In_Delete =>
+          Afpx.Encode_Field (Afpx_Xref.Activity.Title, (0, 0),
+                             "Deletion of an Activity");
+      end case;
       -- List and menu buttons, only in list
       Act := State = In_List;
-      Afpx.Set_Field_Activation (Afpx_Xref.Activity.Title, Act);
       Afpx.Set_Field_Activation (Afpx_Xref.Activity.Records, Act);
       Afpx.Set_Field_Activation (Afpx_Xref.Activity.Create, Act);
+      Afpx.Set_Field_Activation (Afpx_Xref.Activity.Quit, Act);
       -- Delete/edit if not empty and in list
       Act := Act and then not List_Empty;
       Afpx.Set_Field_Activation (Afpx_Xref.Activity.Delete, Act);
@@ -265,7 +282,7 @@ package body Pers_Lis is
             .. Afpx_Xref.Activity.Cancel loop
         Afpx.Set_Field_Activation (I, Act);
       end loop;
-      -- Un protect person name & activity if in create
+      -- Un-protect person name & activity if in create
       Act := State = In_Create;
       Set_Protection (Afpx_Xref.Activity.Person, not Act);
       Set_Protection (Afpx_Xref.Activity.Activity, not Act);
@@ -280,8 +297,6 @@ package body Pers_Lis is
       Afpx.Set_Field_Activation (Afpx_Xref.Activity.Compute, Act);
       -- Confirm if Valid
       Afpx.Set_Field_Activation (Afpx_Xref.Activity.Confirm, State = In_Delete);
-      -- Lock list if not in list
-      Afpx.Set_Field_Protection (Afpx.List_Field_No, State /= In_List);
 
       Afpx.Encode_Field (Afpx_Xref.Activity.Date, (00, 00),
                          Str_Mng.Current_Date_Printed);

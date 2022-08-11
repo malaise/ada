@@ -266,6 +266,16 @@ package body Mesu_Sel is
 
   end Rem_Selection;
 
+  -- Clear all selection
+  procedure Clear_Selection is
+  begin
+    -- Save list
+    Save_List;
+
+    -- for each in list
+    Line_List.Delete_List;
+  end Clear_Selection;
+
   -- Add a record to selection
   procedure Add_Selection (Name : in Mesu_Nam.File_Name_Str) is
     Line   : Afpx.Line_Rec;

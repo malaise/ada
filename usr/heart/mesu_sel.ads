@@ -19,6 +19,9 @@ package Mesu_Sel is
   -- Remove records from selection
   procedure Rem_Selection (Criteria : in Criteria_Rec);
 
+  -- Clear all selection
+  procedure Clear_Selection;
+
   -- Add a record to selection
   procedure Add_Selection (Name : in Mesu_Nam.File_Name_Str);
 
