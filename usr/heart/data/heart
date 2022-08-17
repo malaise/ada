@@ -1,3 +1,5 @@
 #!/bin/bash
-export AFPX_DATA_DIR=..
-../heart $*
+export HEART_DIR=${HOME}/ada/usr/heart
+export AFPX_DATA_DIR=${HEART_DIR}
+cd ${HEART_DIR}/data
+${HEART_DIR}/heart $*
