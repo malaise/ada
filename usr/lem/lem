@@ -10,5 +10,5 @@ while [ "$1" != "" ] ; do
   fi
   shift
 done
-land_lem -h $ARGS
+land_lem -H $ARGS
 
