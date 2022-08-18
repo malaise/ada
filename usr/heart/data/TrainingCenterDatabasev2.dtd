@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!ELEMENT TrainingCenterDatabase (Folders?, Activities?, Workouts?, Courses?, Author?, Extensions?)>
+<!ATTLIST TrainingCenterDatabase xsi:schemaLocation CDATA #REQUIRED
+                                 xmlns:ns5 CDATA #REQUIRED
+                                 xmlns:ns3 CDATA #REQUIRED
+                                 xmlns:ns2 CDATA #REQUIRED
+                                 xmlns CDATA #REQUIRED
+                                 xmlns:xsi CDATA #REQUIRED
+                                 xmlns:ns4 CDATA #REQUIRED>
+
+<!ELEMENT Folders (History?, Workouts?, Courses?)>
+<!ELEMENT History (Running, Biking, Other, MultiSport, Extensions?)>
+<!ELEMENT Running (Folder*, ActivityRef*, Week*, Notes?, Extensions?)>
+<!ATTLIST Running
+          Name CDATA #REQUIRED>
+<!ELEMENT Folder (Folder*, ActivityRef*, Week*, Notes?, Extensions?)>
+<!ATTLIST Folder
+          Name CDATA #REQUIRED>
+<!ELEMENT ActivityRef (Id)>
+<!ELEMENT Id (#PCDATA)>
+<!ELEMENT Week (Notes?)>
+<!ATTLIST Week
+          StartDay CDATA #REQUIRED>
+<!ELEMENT Notes EMPTY>
+<!ELEMENT Extensions ((Speed)*)>
+<!ELEMENT Speed (#PCDATA)>
+<!ELEMENT Biking (Folder*, ActivityRef*, Week*, Notes?, Extensions?)>
+<!ATTLIST Biking
+          Name CDATA #REQUIRED>
+<!ELEMENT Other (Folder*, ActivityRef*, Week*, Notes?, Extensions?)>
+<!ATTLIST Other
+          Name CDATA #REQUIRED>
+<!ELEMENT MultiSport (Folder*, MultisportActivityRef*, Week*, Notes?,
+                      Extensions?)>
+<!ATTLIST MultiSport
+          Name CDATA #REQUIRED>
+<!ELEMENT MultisportActivityRef (Id)>
+<!ELEMENT Workouts (Running, Biking, Other, Extensions?)>
+<!ELEMENT Courses (CourseFolder, Extensions?)>
+<!ELEMENT CourseFolder (Folder*, CourseNameRef*, Notes?, Extensions?)>
+<!ATTLIST CourseFolder
+          Name CDATA #REQUIRED>
+<!ELEMENT CourseNameRef (Id)>
+<!ELEMENT Activities (Activity*, MultiSportSession*)>
+<!ELEMENT Activity (Id, Lap+, Notes?, Training?, Creator?, Extensions?)>
+<!ATTLIST Activity
+          Sport CDATA #REQUIRED>
+<!ELEMENT Lap (TotalTimeSeconds, DistanceMeters, MaximumSpeed?, Calories?,
+               Intensity, TriggerMethod,MaximumHeartRateBpm?,
+               AverageHeartRateBpm?, Cadence?, Track*, Notes?, Extensions?)>
+<!ATTLIST Lap
+          StartTime CDATA #REQUIRED>
+<!ELEMENT TotalTimeSeconds (#PCDATA)>
+<!ELEMENT DistanceMeters (#PCDATA)>
+<!ELEMENT MaximumSpeed (#PCDATA)>
+<!ELEMENT Calories (#PCDATA)>
+<!ELEMENT AverageHeartRateBpm (Value)>
+<!ELEMENT Value (#PCDATA)>
+<!ELEMENT MaximumHeartRateBpm (Value)>
+<!ELEMENT Intensity (#PCDATA)>
+<!ELEMENT Cadence (#PCDATA)>
+<!ELEMENT TriggerMethod (#PCDATA)>
+<!ELEMENT Track (Trackpoint+)>
+<!ELEMENT Trackpoint (Time, Position?, AltitudeMeters?, DistanceMeters?,
+                      HeartRateBpm?, Cadence?, SensorState?, Extensions?)>
+<!ELEMENT Time (#PCDATA)>
+<!ELEMENT Position (LatitudeDegrees, LongitudeDegrees)>
+<!ELEMENT LatitudeDegrees (#PCDATA)>
+<!ELEMENT LongitudeDegrees (#PCDATA)>
+<!ELEMENT AltitudeMeters (#PCDATA)>
+<!ELEMENT HeartRateBpm (Value)>
+<!ELEMENT SensorState (#PCDATA)>
+<!ELEMENT Training (QuickWorkoutResults?, Plan?)>
+<!ATTLIST Training
+          VirtualPartner (true | false) #REQUIRED>
+<!ELEMENT QuickWorkoutResults (TotalTimeSeconds, DistanceMeters)>
+<!ELEMENT Plan (Name?, Extensions?)>
+<!ATTLIST Plan
+          Type CDATA #REQUIRED
+          IntervalWorkout (true | false) #REQUIRED>
+<!ELEMENT Name (#PCDATA)>
+<!ELEMENT Creator (Name)>
+<!ELEMENT MultiSportSession (Id, FirstSport, NextSport*, Notes?)>
+<!ELEMENT FirstSport (Activity)>
+<!ELEMENT NextSport (Transition?, Activity)>
+<!ELEMENT Transition (TotalTimeSeconds, DistanceMeters, MaximumSpeed?, Calories,
+                      AverageHeartRateBpm?, MaximumHeartRateBpm?, Intensity,
+                      Cadence?, TriggerMethod, Track*, Notes?, Extensions?)>
+<!ATTLIST Transition
+          StartTime CDATA #REQUIRED>
+<!ELEMENT Author (Name)>
+

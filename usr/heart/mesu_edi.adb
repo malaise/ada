@@ -1,15 +1,24 @@
-with Con_Io, Afpx, Get_Line;
-with As.U.Utils;
-with Pers_Def, Pers_Mng, Mesu_Def, Mesu_Fil, Str_Mng, Afpx_Xref;
+with Con_Io, Afpx;
+with Pers_Def, Pers_Mng, Mesu_Def, Mesu_Fil, Mesu_Imp, Str_Mng, Afpx_Xref;
 -- with Mesu_Nam;
 -- Edition, Creation, deletion of mesure
 package body Mesu_Edi is
 
-  subtype Import_File_Name_Str is String (1 ..22);
+  subtype Import_File_Name_Str is String (1 ..32);
+  Import_File_Name_Def : constant Import_File_Name_Str := (others => ' ');
+
+
+  procedure Encode_Date (Date : in Mesu_Def.Date_Str) is
+    Date_R : Str_Mng.Date_Str_Rec;
+  begin
+    Str_Mng.To_Rec (Date, Date_R);
+    Afpx.Encode_Field (Afpx_Xref.Records.Day, (00, 00), Date_R.Day);
+    Afpx.Encode_Field (Afpx_Xref.Records.Month, (00, 00), Date_R.Month);
+    Afpx.Encode_Field (Afpx_Xref.Records.Year, (00, 00), Date_R.Year);
+  end Encode_Date;
 
   procedure Encode (Person : in Pers_Def.Person_Rec;
                     Mesure : in Mesu_Def.Mesure_Rec) is
-    Date_R : Str_Mng.Date_Str_Rec;
     use type Afpx.Absolute_Field_Range;
   begin
     -- Person name and activity
@@ -23,10 +32,7 @@ package body Mesu_Edi is
                          Str_Mng.To_Str(Mesure.Tz(I)));
     end loop;
 
-    Str_Mng.To_Rec (Mesure.Date, Date_R);
-    Afpx.Encode_Field (Afpx_Xref.Records.Day, (00, 00), Date_R.Day);
-    Afpx.Encode_Field (Afpx_Xref.Records.Month, (00, 00), Date_R.Month);
-    Afpx.Encode_Field (Afpx_Xref.Records.Year, (00, 00), Date_R.Year);
+    Encode_Date (Mesure.Date);
     Afpx.Encode_Field (Afpx_Xref.Records.Comment, (00, 00), Mesure.Comment);
     Afpx.Encode_Field (Afpx_Xref.Records.Sampling, (00, 00),
                        Str_Mng.To_Str (Mesure.Sampling_Delta));
@@ -50,26 +56,14 @@ package body Mesu_Edi is
   procedure Import_Samples (Import_File_Name : in Import_File_Name_Str;
                             Mesure : in out Mesu_Def.Mesure_Rec;
                             Ok : out Boolean) is
-    Import_File_Name_Def : constant Import_File_Name_Str := (others => ' ');
     subtype Import_File_Name_Index is Integer range Import_File_Name_Str'Range;
     Import_File_Name_Last : Import_File_Name_Index;
-    Samples : Mesu_Def.Max_Sample_Array
-            := (others => Pers_Def.Bpm_Range'First);
-    Samples_Index : Mesu_Def.Sample_Nb_Range := Mesu_Def.Sample_Nb_Range'First;
-    package Get_Sample is new Get_Line (Comment => "#");
-    Sample_Line : As.U.Utils.Asu_Ua.Unbounded_Array;
   begin
     Ok := False;
     -- Check if file name is empty
     if Import_File_Name = Import_File_Name_Def then
       return;
     end if;
-    -- Check no ':' (file has to be on current drive)
-    for C of Import_File_Name loop
-      if C = ':' then
-        return;
-      end if;
-    end loop;
     -- Remove trailing spaces
     for I in reverse Import_File_Name'Range loop
       if Import_File_Name(I) /= ' ' then
@@ -79,49 +73,11 @@ package body Mesu_Edi is
       end if;
     end loop;
 
-    -- Open file
-    Get_Sample.Open(File_Name => Import_File_Name(Import_File_Name'First .. Import_File_Name_Last));
-
-    -- Read, decode, store in Samples
-    loop
-      -- Split line in words
-      Get_Sample.Get_Words (Sample_Line);
-      -- Not empty nor a comment
-      for I in 1 .. Get_Sample.Get_Word_Number loop
-        -- Decode a Bpm
-        Samples(Samples_Index) := Pers_Def.Bpm_Range'Value (
-                                     Sample_Line.Element(I).Image);
-        Samples_Index := Samples_Index + 1;
-      end loop;
-
-      -- Read next line and exit when end of file
-      begin
-        Get_Sample.Read_Next_Line;
-      exception
-        when Get_Sample.End_Error =>
-          exit;
-      end;
-    end loop;
-
-    -- Close file
-    Get_Sample.Close;
-
-    -- So far so good... Copy Samples in mesure
-    Mesure.Samples := Samples;
-
-    -- Done
-    Ok := True;
-  exception
-    when others =>
-      -- Ok is False. Close file if open.
-      begin
-        Get_Sample.Close;
-      exception
-        when others =>
-          null;
-      end;
+    Mesu_Imp.Import (Import_File_Name(Import_File_Name'First
+                                   .. Import_File_Name_Last),
+       Mesure,
+       Ok);
   end Import_Samples;
-
 
   -- Edit a mesure.
   -- If date or person changes, then the file name may be affected.
@@ -263,8 +219,20 @@ package body Mesu_Edi is
           end if;
 
         when Afpx_Xref.Records.Comment =>
-          -- In comment, no check
-          Mesure.Comment := Afpx.Decode_Field (Afpx_Xref.Records.Comment, 00);
+          -- In comment, replace non ASCII chars by '#'
+          declare
+            Unicodes : constant Afpx.Unicode_Sequence
+                     := Afpx.Decode_Field (Afpx_Xref.Records.Comment, 00);
+          begin
+            Mesure.Comment := (others => ' ');
+            for I in Unicodes'Range loop
+              if Unicodes(I) <= 127 then
+                Mesure.Comment(I) := Character'Val (Unicodes(I));
+              else
+                Mesure.Comment(I) := '#';
+              end if;
+            end loop;
+          end;
           Current_Field := Afpx_Xref.Records.Sampling;
 
         when Afpx_Xref.Records.Sampling =>
@@ -314,12 +282,21 @@ package body Mesu_Edi is
 
         when Afpx_Xref.Records.Import_File =>
           -- In import file name
-          Import_File_Name := Afpx.Decode_Field (Current_Field, 00);
-          -- Import data
-          Import_Samples (Import_File_Name, Mesure, Locok);
-          -- If ok, Encode samples and move to first sample,
+          -- Encode Sampling delta
+          Current_Field := Afpx_Xref.Records.Sampling;
+          Check_Field (Current_Field, True, Locok);
+          if Locok then
+            Current_Field := Afpx_Xref.Records.Import_File;
+            Import_File_Name := Import_File_Name_Def;
+            Import_File_Name(1 .. Afpx.Get_Field_Width (Current_Field)) :=
+                Afpx.Decode_Field (Current_Field, 00);
+            -- Import data
+            Import_Samples (Import_File_Name, Mesure, Locok);
+          end if;
+          -- If ok, Encode date samples and move to first sample,
           --  otherwise stay here
           if Locok then
+            Encode_Date (Mesure.Date);
             for I in Mesu_Def.Sample_Nb_Range loop
               Afpx.Encode_Field (
                   Afpx_Xref.Records.Rate_001 + Afpx.Field_Range(I) - 1,
@@ -458,7 +435,7 @@ package body Mesu_Edi is
             -- Valid: Clear import file name
             Afpx.Clear_Field (Afpx_Xref.Records.Import_Title);
 
-            -- Valid check all fields but import_file one by one
+            -- Valid check all fields except import_file one by one
             Get_Handle.Cursor_Field := Afpx_Xref.Records.Person;
             loop
               Check_Field (Get_Handle.Cursor_Field, True, Ok);
@@ -554,6 +531,14 @@ package body Mesu_Edi is
                  Afpx.Unicode_Sequence'(Afpx.Decode_Field(I + 1, 0)));
             end loop;
             Afpx.Clear_Field(Afpx_Xref.Records.Rate_100);
+
+          elsif Ptg_Result.Field_No = Afpx_Xref.Records.Clear then
+            -- Clear all the samples
+            for I in Afpx_Xref.Records.Rate_001
+                  .. Afpx_Xref.Records.Rate_100 - 1 loop
+              Afpx.Clear_Field(I);
+             end loop;
+             Get_Handle.Cursor_Field := Afpx_Xref.Records.Rate_001;
 
           elsif Ptg_Result.Field_No = Afpx_Xref.Records.Reset
                 and then Get_Handle.Cursor_Field >=  Afpx_Xref.Records.Tz1

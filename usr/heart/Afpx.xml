@@ -1322,54 +1322,61 @@
 
     <!-- Valid button -->
     <Field Num="125" Kind="Button" Name="Valid">
-      <Geometry Up="23" Left="30" Low="25" Right="38"/>
+      <Geometry Up="23" Left="59" Low="25" Right="67"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="01" Col="02">Valid</Init>
     </Field>
 
     <!-- Cancel button -->
     <Field Num="126" Kind="Button" Name="Cancel">
-      <Geometry Up="23" Left="42" Low="25" Right="51"/>
+      <Geometry Up="23" Left="70" Low="25" Right="79"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="01" Col="02">Cancel</Init>
     </Field>
 
     <!-- Import button -->
     <Field Num="127" Kind="Button" Name="Import">
-      <Geometry Up="23" Left="62" Low="23" Right="79"/>
+      <Geometry Up="23" Left="21" Low="23" Right="30"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="00" Col="02">Import samples</Init>
+      <Init Row="00" Col="02">Import</Init>
     </Field>
 
     <!-- Import tittle -->
     <Field Num="128" Kind="Put" Name="Import_Title">
-      <Geometry Up="25" Left="54" Low="25" Right="57"/>
+      <Geometry Up="25" Left="21" Low="25" Right="24"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="00" Col="00">File</Init>
     </Field>
 
     <!-- Import file name -->
     <Field Num="129" Kind="Get" Name="Import_File">
-      <Geometry Up="25" Left="58" Low="25" Right="79"/>
+      <Geometry Up="25" Left="26" Low="25" Right="57"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Insert button -->
     <Field Num="130" Kind="Button" Name="Ins">
-      <Geometry Up="23" Left="5" Low="25" Right="11"/>
+      <Geometry Up="23" Left="1" Low="23" Right="7"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="01" Col="02">Ins</Init>
+      <Init Row="00" Col="02">Ins</Init>
     </Field>
 
     <!-- Suppr button -->
     <Field Num="131" Kind="Button" Name="Del">
-      <Geometry Up="23" Left="13" Low="25" Right="21"/>
+      <Geometry Up="25" Left="1" Low="25" Right="7"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="01" Col="02">Suppr</Init>
+      <Init Row="00" Col="01">Suppr</Init>
+    </Field>
+
+    <!-- Clear_all button -->
+    <Field Num="132" Kind="Button" Name="Clear">
+      <Geometry Up="24" Left="9" Low="24" Right="19"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="00" Col="01">Clear all</Init>
     </Field>
 
     <!-- Reset TZs button -->
-    <Field Num="132" Kind="Button" Name="Reset">
+    <Field Num="133" Kind="Button" Name="Reset">
       <Geometry Up="7" Left="57" Low="7" Right="63"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="00" Col="01">Reset</Init>

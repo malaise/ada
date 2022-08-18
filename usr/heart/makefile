@@ -8,7 +8,7 @@ AFPX_XREF := afpx_xref
 
 EXES := heart
 
-CLIBS := $(X11_SLIBS)
+CLIBS := $(X11_SLIBS) $(PCRE_SLIBS)
 
 include $(TEMPLATES)/ada.mk
 
