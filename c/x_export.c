@@ -567,11 +567,10 @@ extern int x_get_bold_name (void *line_id, char *font_name, int font_len) {
     return (WAIT_OK);
 }
 
-
 /* Writes a char on a line (characteristics are previously set) */
 /* x is the number of pixels of vertical position (top down) for the */
 /*  reference line for the font, so you need to add the offset to it if */
-/*  you want to specify the upperleft pixel for the chat */
+/*  you want to specify the upperleft pixel for the char */
 /* y is the number of pixels of horizontal position (left right) */
 /* The output is not flushed */
 extern int x_put_char_pixels (void *line_id, int car, int x, int y) {
@@ -599,6 +598,39 @@ extern int x_put_char_pixels (void *line_id, int car, int x, int y) {
 
     local_server.modified = TRUE;
     return (WAIT_OK);
+}
+
+/* Writes a string on a line (characteristics are previously set) */
+/* x is the number of pixels of vertical position (top down) for the */
+/*  reference line for the font, so you need to add the offset to it if */
+/*  you want to specify the upperleft pixel for the char */
+/* y is the number of pixels of horizontal position (left right) */
+/* The output is not flushed */
+extern int x_put_string_pixels (void *line_id, const char *p_char, int number,
+                                int x, int y) {
+
+    t_window *win_id = (t_window*) line_id;
+
+    /* Check that window is open */
+    if (! lin_check(win_id)) {
+        return (WAIT_ERR);
+    }
+
+    /* Put string */
+    scr_put_string (win_id->server->x_server,
+      win_id->x_graphic_context, win_id->x_window,
+      win_id->server->x_font_set[lin_get_font(win_id)],
+      x, y, p_char, number, win_id->xor_mode);
+
+    /* Underline */
+    if (win_id->underline) {
+        scr_underline_string (win_id->server->x_server,
+          win_id->x_graphic_context, win_id->x_window, x, y, number);
+    }
+
+    local_server.modified = TRUE;
+    return (WAIT_OK);
+
 }
 
 /* Draw a point at x,y */

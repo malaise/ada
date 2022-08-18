@@ -99,6 +99,9 @@ extern int x_get_bold_name (void *line_id, char *font_name, int font_len);
 
 extern int x_put_char_pixels (void *line_id, int car, int x, int y);
 
+extern int x_put_string_pixels (void *line_id, const char *p_char, int number,
+                                int x, int y);
+
 extern int x_draw_point (void *line_id, int x, int y);
 
 extern int x_draw_line (void *line_id, int x1, int y1, int x2, int y2);

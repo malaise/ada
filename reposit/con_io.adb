@@ -1744,23 +1744,18 @@ package body Con_Io is
                  S   : in String;
                  X   : in X_Range;
                  Y   : in Y_Range) is
-    Lx : X_Range;
     Ly : Y_Range;
     Acc : access Console_Data;
   begin
     Check_Con (Con);
     Acc := Con.Get_Access;
     Set_Screen_Attributes (Con);
-    Lx := X;
     Ly := Y;
     if Acc.Y_Mode = Con_Io_Mode then
       Ly := Acc.Y_Max - Ly;
     end if;
     Ly := Ly + Con.Get_Access.Font_Offset;
-    for C of S loop
-      X_Mng.X_Put_Char_Pixels (Acc.Id, Character'Pos(C), Lx, Ly);
-      Lx := Lx + Acc.Font_Width;
-    end loop;
+    X_Mng.X_Put_String_Pixels (Acc.Id, S, X, Ly);
   end Put;
 
   procedure Draw_Point (Con : in Console;

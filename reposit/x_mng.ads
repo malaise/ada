@@ -196,12 +196,24 @@ package X_Mng is
   -- The X and Y are position of the character
   -- X is the number of pixels of vertical position (top down) for the
   --  reference line for the font, so you need to add the offset to it if
-  --  you want to specify the upperleft pixel for the chat
+  --  you want to specify the upperleft pixel for the char
   -- Y is the number of pixels of horizontal position (left right)
-
   procedure X_Put_Char_Pixels(Line_Id     : in Line;
                               Car         : in Byte;
                               X, Y        : in Natural);
+
+  -- Write a string on a line with current characteristics
+  --  attributes and xor mode
+  -- The current row and column are not affected
+  -- The character is the one to be written
+  -- The X and Y are position of the first character
+  -- X is the number of pixels of vertical position (top down) for the
+  --  reference line for the font, so you need to add the offset to it if
+  --  you want to specify the upperleft pixel for the char
+  -- Y is the number of pixels of horizontal position (left right)
+  procedure X_Put_String_Pixels(Line_Id     : in Line;
+                                Str         : in String;
+                                X, Y        : in Natural);
 
   -- Get graphic info of window
   -- Window size in pixels
@@ -269,7 +281,6 @@ package X_Mng is
                           X, Y          : in Natural;
                           Width, Height : in Natural;
                           Points        : in Byte_Array);
-
   -- Fill an area defined by several points (X, Y)
   -- The Xys is the (even) list of X, Y...
   -- The area MUST be convex otherwise the graphic result is undefined

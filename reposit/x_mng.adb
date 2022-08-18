@@ -210,6 +210,18 @@ package body X_Mng is
     with Import => True, Convention => C, External_Name => "x_put_char_pixels";
 
   ------------------------------------------------------------------
+  -- Puts a string with current characteristics
+  --  at specified position in pixels
+  -- int x_put_char_pixels (void *line_id, int car, int x, int y);
+  ------------------------------------------------------------------
+  function X_Put_String_Pixels(Line_Id : Line_For_C;
+                               Str_Addr    : System.Address;
+                               Length      : C_Types.Int;
+                               X, Y    : C_Types.Int) return Result
+    with Import => True, Convention => C,
+         External_Name => "x_put_string_pixels";
+
+  ------------------------------------------------------------------
   -- Gets the graphic characteristics of a line when it was created
   -- int x_get_graph_charact (void *line_id, int *p_w_width, int *p_w_height,
   --                  int *p_f_width, int *p_f_height, int *p_f_offset);
@@ -982,21 +994,39 @@ package body X_Mng is
     end if;
   end X_Draw_Area;
 
-
   ------------------------------------------------------------------
-  procedure X_Put_Char_Pixels(Line_Id : in Line; Car : in Byte;
+  procedure X_Put_Char_Pixels(Line_Id : in Line;
+                              Car : in Byte;
                               X, Y    : in Natural) is
     Line_For_C_Id : Line_For_C;
     Res : Boolean;
   begin
     Check (Line_Id);
     Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
-       Res := X_Put_Char_Pixels (Line_For_C_Id, C_Types.Int(Car), X, Y) = Ok;
+    Res := X_Put_Char_Pixels (Line_For_C_Id, C_Types.Int(Car), X, Y) = Ok;
     Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
     if not Res then
       raise X_Failure;
     end if;
   end X_Put_Char_Pixels;
+
+  ------------------------------------------------------------------
+  procedure X_Put_String_Pixels(Line_Id : in Line;
+                                Str : in String;
+                                X, Y    : in Natural) is
+    Line_For_C_Id : Line_For_C;
+    Res : Boolean;
+  begin
+    Check (Line_Id);
+    Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
+    Res := X_Put_String_Pixels (Line_For_C_Id,
+                         Str (Str'First)'Address, Str'Length,
+                         X, Y) = Ok;
+    Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
+    if not Res then
+      raise X_Failure;
+    end if;
+  end X_Put_String_Pixels;
 
   ------------------------------------------------------------------
   procedure X_Get_Graphic_Characteristics(Line_Id       : in Line;
