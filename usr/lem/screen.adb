@@ -126,17 +126,17 @@ package body Screen is
     -- Space last X leaves "Th Vs" (5) for Thrust and V speed
     First_X := 1;
     Last_X := Console.X_Max - Console.Font_Width * 5 - 2;
-    -- Space first Y leaves "Hs" for H speed and Fu for fuel
+    -- Space first Y leaves "Hs" for H speed and "Fu" for fuel
     First_Y := Console.Font_Height * 2 + 2;
     Last_Y := Console.Y_Max - 1;
     -- Compute conversion factors
     X_Factor := My_Math.Real (Last_X - First_X) / My_Math.Real (Space.X_Max);
     Y_Factor := My_Math.Real (Last_Y - First_Y) / My_Math.Real (Space.Y_Max);
     -- Compute position of gauge names
-    Thn := (Last_X + 2, First_Y + 1);
+    Fun := (First_X + 1, First_Y - 2);
+    Hsn := (Fun.X, Fun.Y - Console.Font_Height);
+    Thn := (Last_X + 2, Fun.Y + Console.Font_Height);
     Vsn := (Thn.X + Console.Font_Width * 3 - 4, Thn.Y);
-    Fun := (First_X + 1, First_Y - Console.Font_Height);
-    Hsn := (Fun.X, Fun.Y - Console.Font_Height + 1);
     -- Compute position and factor of gauges
     -- Thrust
     Thx := Thn.X + 6;
@@ -152,13 +152,13 @@ package body Screen is
     -- Fuel
     Fuxmin := Fun.X + Console.Font_Width * 4;
     Fuxmax := Last_X;
-    Fuy := Fun.Y + 1;
+    Fuy := Fun.Y - Console.Font_Height / 2;
     Fufactor := My_Math.Real(Fuxmax - Fuxmin) / Lem.Max_Fuel;
     -- Horizontal speed
     Hsxmin := Hsn.X + Console.Font_Width * 4;
     Hsxmax := Last_X;
     Hsxmid := (Hsxmin + Hsxmax) / 2;
-    Hsy := Hsn.Y + 1;
+    Hsy := Hsn.Y - Console.Font_Height / 2;
     Hsfactor := My_Math.Real(Hsxmax - Hsxmid) / My_Math.Real(Max_Hori_Speed);
     -- Put constant info
     Get_Pos := (23, 3);

@@ -1732,10 +1732,11 @@ package body Con_Io is
     Check_Con (Con);
     Acc := Con.Get_Access;
     Set_Screen_Attributes (Con);
-    Ly := Y + Con.Get_Access.Font_Offset;
+    Ly := Y;
     if Acc.Y_Mode = Con_Io_Mode then
       Ly := Acc.Y_Max - Ly;
     end if;
+    Ly := Ly + Con.Get_Access.Font_Offset;
     X_Mng.X_Put_Char_Pixels (Acc.Id, Character'Pos(C), X, Ly);
   end Put;
 
@@ -1751,10 +1752,11 @@ package body Con_Io is
     Acc := Con.Get_Access;
     Set_Screen_Attributes (Con);
     Lx := X;
-    Ly := Y + Con.Get_Access.Font_Offset;
+    Ly := Y;
     if Acc.Y_Mode = Con_Io_Mode then
       Ly := Acc.Y_Max - Ly;
     end if;
+    Ly := Ly + Con.Get_Access.Font_Offset;
     for C of S loop
       X_Mng.X_Put_Char_Pixels (Acc.Id, Character'Pos(C), Lx, Ly);
       Lx := Lx + Acc.Font_Width;
