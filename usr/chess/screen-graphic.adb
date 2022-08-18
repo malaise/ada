@@ -23,7 +23,7 @@ package body Graphic is
 
   -- For characters
   X_Offset : Natural;
-  Y_Offset : Natural;
+  Y_Offset : Integer;
 
   -- Bitmaps
   package Bitmaps is
@@ -157,8 +157,7 @@ package body Graphic is
     -- Compute offsets
     Y0 := Console.Y_Max - X0 - Len + Size;
     X_Offset := Console.Font_Width  / 2;
-    Y_Offset := (Console.Font_Height
-               - Console.Font_Offset) / 2 + 4;
+    Y_Offset := -Console.Font_Height /2;
     Promotion_Y_Offset := Y0 + Size;
 
     -- Print Rows/Cols names
