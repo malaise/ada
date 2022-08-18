@@ -515,10 +515,20 @@ package body Scanner is
           raise Invalid_Data;
         end if;
       end if;
-      if Idat = Data'Last and then Ifor /= Format'Last then
-        -- Check that end of format
-        Logger.Log_Debug ("Data shorter that Format");
-        raise Invalid_Data;
+      if Idat = Data'Last then
+        -- Check that end of format or only a remaining "%s"
+        if Ifor = Format'Last then
+          exit;
+        elsif Format(Ifor+1 .. Format'Last) = Esc & "s" then
+          -- Last renamining "%s" leads to empty string
+          Word := (Kind => Any_Def.Str_Kind,
+                   Str => As.U.Asu_Null);
+          Result.Append (Word);
+          exit;
+        else
+          Logger.Log_Debug ("Data shorter that Format");
+          raise Invalid_Data;
+        end if;
       end if;
       Ifor := Ifor + 1;
       Idat := Idat + 1;

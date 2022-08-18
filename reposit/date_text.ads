@@ -46,10 +46,14 @@ package Date_Text is
 
   -- Scan a String at a given format
   -- Any field of Date_Rec that is not set in Format is set to its default
+  -- If Strict is no set then the string can contain more characters than
+  --  required by the format (and they are ignored)
   -- Raise Invalid_Format if the format is not valid
   -- Raise Invalid_String if the string does not match the format or defines
   --  different values for the same field of Date_Rec
-  function Scan (Str : String; Format : String) return Date_Rec;
+  function Scan (Str    : String;
+                 Format : String;
+                 Strict : Boolean := True) return Date_Rec;
 
   -- Put a date at a given format
   -- Raise Invalid_Format if the format is not valid

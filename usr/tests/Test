@@ -713,15 +713,26 @@ fi
 # t_date_text
 if `match $arg t_date_text` ; then
   title t_date_text
-  t_date_text '%b %d %H:%M:%S' '%Y-%m-%dT%H:%M:%S:%s' 'Jul 21 10:45:54' >out 2>err
+  t_date_text -s '%b %d %H:%M:%S' '%Y-%m-%dT%H:%M:%S:%s' 'Jul 21 10:45:54' >out 2>err
   cat << EOF >exp
 Lengths:
-Scan:  15
+Scan:  15 Strict
 Put:   23
 Input: Jul 21 10:45:54  Dump: 1901-07-21T10:45:54.000  Put: 1901-07-21T10:45:54:000
 EOF
   comp err nul
   comp out exp
+
+  t_date_text  "%Y-%m-%dT%H:%M:%S" "%Y%m%d" "2022-08-17T16:53:19Z" >out 2>err
+  cat << EOF >exp
+Lengths:
+Scan:  19
+Put:   8
+Input: 2022-08-17T16:53:19Z  Dump: 2022-08-17T16:53:19.000  Put: 20220817
+EOF
+  comp err nul
+  comp out exp
+
   echo "OK"
 fi
 
@@ -1723,6 +1734,17 @@ Input: true  maybe 5.2 21.21 21 Try1-Try2 OK
 EOF
   comp err nul
   comp out exp
+
+  t_scanner "%4s%s" "toto" >out 2>err
+  cat << EOF >exp
+Length: Unknown
+Input: toto
+ > toto
+ > 
+EOF
+  comp err nul
+  comp out exp
+
   echo "OK"
 fi
 

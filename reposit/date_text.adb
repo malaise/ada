@@ -246,12 +246,16 @@ package body Date_Text is
     end loop;
   end Check_Format;
 
-  -- Scan a String at a given Format
-  -- Any field of Date_Rec that is not set n Format is set to its default
-  -- Raise Invalid_Format if the format is not valid (invalid %X or tailing %,
-  --  several occurences of the same field)
-  -- Raise Invalid_String if the string does not match the format
-  function Scan (Str : String; Format : String) return Date_Rec is
+  -- Scan a String at a given format
+  -- Any field of Date_Rec that is not set in Format is set to its default
+  -- If Strict is no set then the string can contain more characters than
+  --  required by the format (and they are ignored)
+  -- Raise Invalid_Format if the format is not valid
+  -- Raise Invalid_String if the string does not match the format or defines
+  --  different values for the same field of Date_Rec
+  function Scan (Str    : String;
+                 Format : String;
+                 Strict : Boolean := True) return Date_Rec is
     -- The format for Scanner
     Scan_Fmt : As.U.Asu_Us;
     -- The list of field descriptors
@@ -270,7 +274,8 @@ package body Date_Text is
   begin
     -- Init and check
     Init_Logger;
-    Logger.Log_Debug ("Scanning >" & Str & "< with format >" & Format & "<");
+    Logger.Log_Debug ("Scanning >" & Str & "< with format >" & Format & "<"
+                      & (if Strict then " Strict" else ""));
     Check_Format (Format, Scan_Fmt, Flds);
     if Format = "" then
       if Str = "" then
@@ -279,6 +284,10 @@ package body Date_Text is
         Logger.Log_Debug ("Expecting empty string");
         raise Invalid_String;
       end if;
+    end if;
+    -- If not strict, then allow scanning trailing characters
+    if not Strict then
+      Scan_Fmt.Append ("%s");
     end if;
     -- Check validity of scanning format
     Logger.Log_Debug ("Scan format >" & Scan_Fmt.Image & "<");
@@ -296,12 +305,20 @@ package body Date_Text is
 
     -- Scan
     Anys := Scanner.Scan (Str, Scan_Fmt.Image);
-    if Anys.Length /= Flds.Length then
+    if (Strict and then Anys.Length /= Flds.Length)
+    or else (not Strict and then Anys.Length /= Flds.Length + 1) then
       Logger.Log_Debug ("Got" & Anys.Length'Img
                       & " Anys for" & Flds.Length'Img & " Flds");
       raise Invalid_String;
     end if;
+
+    -- Convert
     for I in 1 .. Anys.Length loop
+      if not Strict and then I = Anys.Length then
+        -- Discard trailing characters
+        exit;
+      end if;
+
       -- Get the val
       Target := Flds.Element(I);
       if Fields(Flds.Element(I)).Kind = Enum then
@@ -339,16 +356,16 @@ package body Date_Text is
         -- Check, if already set, that same value
         if Set (Fields(Target).Index)
         and then Val /= Indexes.Get (Result, Fields(Target).Index) then
-            Logger.Log_Debug ("New value " & Images.Integer_Image (Val)
-                & " differs from previous "
-                & Images.Integer_Image (Indexes.Get (Result, Fields(Target).Index)));
-            raise Invalid_String;
-          end if;
-
-          -- Store value and set
-          Indexes.Set (Result, Fields(Target).Index, Val);
-          Set (Fields(Target).Index) := True;
+          Logger.Log_Debug ("New value " & Images.Integer_Image (Val)
+              & " differs from previous "
+              & Images.Integer_Image (Indexes.Get (Result, Fields(Target).Index)));
+          raise Invalid_String;
         end if;
+
+        -- Store value and set
+        Indexes.Set (Result, Fields(Target).Index, Val);
+        Set (Fields(Target).Index) := True;
+      end if;
     end loop;
     -- Done
     return Result;
