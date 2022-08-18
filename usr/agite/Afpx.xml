@@ -3,7 +3,7 @@
 <!-- For agite -->
 
 <Afpx_Descriptors Height="48" Width="55">
-  <Var Name="Version" Value="V41.07"/>
+  <Var Name="Version" Value="V41.08"/>
 
   <!-- List management setup -->
   <Var Name="LmWidth" Value="8"/>
@@ -1623,13 +1623,13 @@
       <Geometry Up="${Field_35.Low}+2" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="0" Col="2">Stash</Init>
+      <Init Row="0" Col="1" Half_Col_Offset="True">Stash</Init>
     </Field>
     <Field Num="37" Kind="Button" Name="Reset">
       <Geometry Up="${Field_36.Low}+2" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="0" Col="2">Reset</Init>
+      <Init Row="0" Col="1" Half_Col_Offset="True">Reset</Init>
     </Field>
     <Field Num="38" Kind="Put">
       <Geometry Up="${Field_2.Up}-1" Left="${LmLeft}" Height="1"
