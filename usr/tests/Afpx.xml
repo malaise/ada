@@ -196,114 +196,113 @@
   </Descriptor>
 
   <!-- File selection for t_select_file -->
-  <Descriptor Num="10">
+  <Descriptor Num="10" Background="Light_Grey" Name="Select_File">
 
-    <List>
-      <Geometry Up="2" Left="11" Low="21" Right="65"/>
-      <Colors Foreground="Cyan" Background="Brown" Selected="Red"/>
-    </List>
+  <List>
+    <Geometry Up="2" Left="12" Low="21" Right="66"/>
+    <Colors Foreground="Black" Background="Dark_Grey" Selected="Lime_Green"/>
+  </List>
 
-    <!-- Title -->
-    <Field Num="1" Kind="Put">
-      <Geometry Up="0" Left="25" Low="0" Right="48"/>
-      <Colors Foreground="Light_Grey" Background="Black"/>
-      <Init Row="0" Col="0">GENERIC TITLE</Init>
-    </Field>
+  <!-- Title -->
+  <Field Num="1" Kind="Put" Name="Title">
+    <Geometry Up="0" Left="25" Low="0" Right="48"/>
+    <Colors Foreground="Black" Background="Light_Grey"/>
+    <Init Row="0" Col="0">GENERIC TITLE</Init>
+  </Field>
 
-    <!-- Action title -->
-    <Field Num="2" Kind="Put">
-      <Geometry Up="1" Left="3" Low="1" Right="27"/>
-      <Colors Foreground="Cyan" Background="Black"/>
-    </Field>
+  <!-- Action title -->
+  <Field Num="2" Kind="Put" Name="Action">
+    <Geometry Up="1" Left="1" Low="1" Right="27"/>
+    <Colors Foreground="Blue" Background="Light_Grey"/>
+  </Field>
 
-    <!-- File -->
-    <Field Num="3" Kind="Put">
-      <Geometry Up="1" Left="33" Low="1" Right="37"/>
-      <Colors Foreground="Light_Grey" Background="Black"/>
-      <Init Row="0" Col="0">File:</Init>
-    </Field>
+  <!-- File -->
+  <Field Num="3" Kind="Put">
+    <Geometry Up="1" Left="29" Low="1" Right="32"/>
+    <Colors Foreground="Black" Background="Light_Grey"/>
+    <Init Row="0" Col="0">Dir:</Init>
+  </Field>
 
-    <Field Num="4" Kind="Put">
-      <Geometry Up="1" Left="39" Low="1" Right="65"/>
-      <Colors Foreground="Cyan" Background="Black"/>
-    </Field>
+  <Field Num="4" Kind="Put" Name="Dir">
+    <Geometry Up="1" Left="33" Low="1" Right="78"/>
+    <Colors Foreground="Black" Background="Light_Grey"/>
+  </Field>
 
-    <!-- Get -->
-    <Field Num="5" Kind="Get">
-      <Geometry Up="23" Left="1" Low="23" Right="33"/>
-      <Colors Foreground="Cyan" Background="Brown" Selected="Brown"/>
-    </Field>
+  <!-- Get -->
+  <Field Num="5" Kind="Get" Name="File">
+    <Geometry Up="23" Left="27" Low="23" Right="78"/>
+    <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
+  </Field>
 
-    <!-- Messages -->
-    <Field Num="6" Kind="Put">
-      <Geometry Up="23" Left="35" Low="23" Right="78"/>
-      <Colors Foreground="Light_Grey" Background="Black"/>
-    </Field>
+  <!-- Message, 25 characters needed -->
+  <Field Num="6" Kind="Put" Name="Message">
+    <Geometry Up="23" Left="1" Low="23" Right="25"/>
+    <Colors Foreground="Black" Background="Light_Grey"/>
+  </Field>
 
-    <!-- List actions -->
-    <Field Num="7" Kind="Button">
-      <Geometry Up="3" Left="69" Low="3" Right="77"/>
-      <Colors Foreground="Cyan" Background="Brown"/>
-      <Init Row="0" Col="3">Top</Init>
-    </Field>
+  <!-- List actions -->
+  <Field Num="7" Kind="Button">
+    <Geometry Up="3" Left="69" Low="3" Right="77"/>
+    <Colors Foreground="Black" Background="Dark_Grey"/>
+    <Init Row="0" Col="3">Top</Init>
+  </Field>
 
-    <Field Num="8" Kind="Button">
-      <Geometry Up="5" Left="69" Low="7" Right="77"/>
-      <Colors Foreground="Cyan" Background="Brown"/>
-      <Init Row="1" Col="2">Pg Up</Init>
-    </Field>
+  <Field Num="8" Kind="Button">
+    <Geometry Up="5" Left="69" Low="7" Right="77"/>
+    <Colors Foreground="Black" Background="Dark_Grey"/>
+    <Init Row="1" Col="2">Pg Up</Init>
+  </Field>
 
-    <Field Num="9" Kind="Button">
-      <Geometry Up="9" Left="69" Low="9" Right="77"/>
-      <Colors Foreground="Cyan" Background="Brown"/>
-      <Init Row="0" Col="3">Up</Init>
-    </Field>
+  <Field Num="9" Kind="Button">
+    <Geometry Up="9" Left="69" Low="9" Right="77"/>
+    <Colors Foreground="Black" Background="Dark_Grey"/>
+    <Init Row="0" Col="3" Half_Col_Offset="True" >Up</Init>
+  </Field>
 
-    <Field Num="10" Kind="Button">
-      <Geometry Up="12" Left="69" Low="12" Right="77"/>
-      <Colors Foreground="Cyan" Background="Brown"/>
-      <Init Row="0" Col="1">Center</Init>
-    </Field>
+  <Field Num="10" Kind="Button">
+    <Geometry Up="12" Left="69" Low="12" Right="77"/>
+    <Colors Foreground="Black" Background="Dark_Grey"/>
+    <Init Row="0" Col="1" Half_Col_Offset="True" >Center</Init>
+  </Field>
 
-    <Field Num="11" Kind="Button">
-      <Geometry Up="15" Left="69" Low="15" Right="77"/>
-      <Colors Foreground="Cyan" Background="Brown"/>
-      <Init Row="0" Col="2">Down</Init>
-    </Field>
+  <Field Num="11" Kind="Button">
+    <Geometry Up="15" Left="69" Low="15" Right="77"/>
+    <Colors Foreground="Black" Background="Dark_Grey"/>
+    <Init Row="0" Col="2" Half_Col_Offset="True" >Down</Init>
+  </Field>
 
-    <Field Num="12" Kind="Button">
-      <Geometry Up="17" Left="69" Low="19" Right="77"/>
-      <Colors Foreground="Cyan" Background="Brown"/>
-      <Init Row="1" Col="1">Pg Down</Init>
-    </Field>
+  <Field Num="12" Kind="Button">
+    <Geometry Up="17" Left="69" Low="19" Right="77"/>
+    <Colors Foreground="Black" Background="Dark_Grey"/>
+    <Init Row="1" Col="1">Pg Down</Init>
+  </Field>
 
-    <Field Num="13" Kind="Button">
-      <Geometry Up="21" Left="69" Low="21" Right="77"/>
-      <Colors Foreground="Cyan" Background="Brown"/>
-      <Init Row="0" Col="1">Bottom</Init>
-    </Field>
+  <Field Num="13" Kind="Button">
+    <Geometry Up="21" Left="69" Low="21" Right="77"/>
+    <Colors Foreground="Black" Background="Dark_Grey"/>
+    <Init Row="0" Col="1" Half_Col_Offset="True">Bottom</Init>
+  </Field>
 
-    <!-- Reread -->
-    <Field Num="14" Kind="Button">
-      <Geometry Up="11" Left="2" Low="13" Right="9"/>
-      <Colors Foreground="Cyan" Background="Brown"/>
-      <Init Row="1" Col="1">REREAD</Init>
-    </Field>
+  <!-- Reread -->
+  <Field Num="14" Kind="Button">
+    <Geometry Up="11" Left="2" Low="13" Right="9"/>
+    <Colors Foreground="Black" Background="Dark_Grey"/>
+    <Init Row="1" Col="1">Reread</Init>
+  </Field>
 
-    <!-- Ok Cancel -->
-    <Field Num="15" Kind="Button">
-      <Geometry Up="15" Left="2" Low="17" Right="9"/>
-      <Colors Foreground="Cyan" Background="Brown"/>
-      <Init Row="1" Col="3">OK</Init>
-    </Field>
+  <!-- Cancel -->
+  <Field Num="15" Kind="Button">
+    <Geometry Up="15" Left="2" Low="17" Right="9"/>
+    <Colors Foreground="Black" Background="Dark_Grey"/>
+    <Init Row="1" Col="3">OK</Init>
+  </Field>
 
-    <Field Num="16" Kind="Button">
-      <Geometry Up="19" Left="2" Low="21" Right="9"/>
-      <Colors Foreground="Cyan" Background="Brown"/>
-      <Init Row="1" Col="1">CANCEL</Init>
-    </Field>
-
-    <!-- Any other field here -->
+  <!-- Cancel -->
+  <Field Num="16" Kind="Button">
+    <Geometry Up="19" Left="2" Low="21" Right="9"/>
+    <Colors Foreground="Black" Background="Dark_Grey"/>
+    <Init Row="1" Col="1">CANCEL</Init>
+  </Field>
 
   </Descriptor>
 
@@ -311,7 +310,7 @@
   <Descriptor Num="15">
     <List>
       <Geometry Up="2" Left="11" Low="21" Right="65"/>
-      <Colors Foreground="Cyan" Background="Brown" Selected="Red"/>
+      <Colors Foreground="Black" Background="Brown" Selected="Red"/>
     </List>
     <!-- A comment -->
   </Descriptor>
@@ -319,7 +318,7 @@
   <Descriptor Num="16">
     <List>
       <Geometry Up="2" Left="11" Low="21" Right="65"/>
-      <Colors Foreground="Cyan" Background="Brown" Selected="Red"/>
+      <Colors Foreground="Black" Background="Brown" Selected="Red"/>
     </List>
     <!-- A comment -->
   </Descriptor>
@@ -328,14 +327,14 @@
     <Var Name="Dummy" Value="dummy"/>
     <List>
       <Geometry Up="2" Left="11" Low="21" Right="65"/>
-      <Colors Foreground="Cyan" Background="Brown" Selected="Red"/>
+      <Colors Foreground="Black" Background="Brown" Selected="Red"/>
     </List>
   </Descriptor>
 
   <Descriptor Num="18">
     <List>
       <Geometry Up="2" Left="11" Low="21" Right="65"/>
-      <Colors Foreground="Cyan" Background="Brown" Selected="Red"/>
+      <Colors Foreground="Black" Background="Brown" Selected="Red"/>
     </List>
     <Var Name="Dummy" Value="dummy"/>
   </Descriptor>
