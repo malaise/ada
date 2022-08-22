@@ -200,41 +200,48 @@
 
     <!-- Unselect button -->
     <Field Num="26" Kind="Button" Name="Unselect">
-      <Geometry Up="07" Left="68" Low="09" Right="79"/>
+      <Geometry Up="07" Left="68" Low="07" Right="79"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="01" Col="02">Unselect</Init>
+      <Init Row="00" Col="02">Unselect</Init>
     </Field>
 
     <!-- Draw button -->
     <Field Num="27" Kind="Button" Name="Draw">
-      <Geometry Up="11" Left="68" Low="13" Right="79"/>
+      <Geometry Up="09" Left="68" Low="11" Right="79"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="01" Col="04">Draw</Init>
     </Field>
 
     <!-- Print button -->
     <Field Num="28" Kind="Button" Name="Print">
-      <Geometry Up="15" Left="68" Low="15" Right="79"/>
+      <Geometry Up="13" Left="68" Low="13" Right="79"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="00" Col="03" Half_Col_Offset="True">Print</Init>
     </Field>
 
     <!-- Create button -->
     <Field Num="29" Kind="Button" Name="Create">
-      <Geometry Up="17" Left="68" Low="19" Right="79"/>
+      <Geometry Up="15" Left="68" Low="17" Right="79"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="01" Col="03">Create</Init>
     </Field>
 
+    <!-- Clone button -->
+    <Field Num="30" Kind="Button" Name="Clone">
+      <Geometry Up="19" Left="68" Low="19" Right="79"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="00" Col="03">Clone</Init>
+    </Field>
+
     <!-- Edit button -->
-    <Field Num="30" Kind="Button" Name="Edit">
+    <Field Num="31" Kind="Button" Name="Edit">
       <Geometry Up="21" Left="68" Low="21" Right="79"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="00" Col="04">Edit</Init>
     </Field>
 
     <!-- Delete button -->
-    <Field Num="31" Kind="Button" Name="Delete">
+    <Field Num="32" Kind="Button" Name="Delete">
       <Geometry Up="23" Left="68" Low="23" Right="79"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="00" Col="03">Delete</Init>

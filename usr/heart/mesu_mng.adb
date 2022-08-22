@@ -242,6 +242,8 @@ package body Mesu_Mng is
         Afpx.Set_Field_Activation (Afpx_Xref.Main.Print,
                                    not Pers_Empty and then not List_Empty);
         Afpx.Set_Field_Activation (Afpx_Xref.Main.Create, not Pers_Empty);
+        Afpx.Set_Field_Activation (Afpx_Xref.Main.Clone,
+                                   not Pers_Empty and then not List_Empty);
         Afpx.Set_Field_Activation (Afpx_Xref.Main.Edit,
                                    not Pers_Empty and then not List_Empty);
         Afpx.Set_Field_Activation (Afpx_Xref.Main.Delete,
@@ -370,13 +372,21 @@ package body Mesu_Mng is
               end if;
               -- Edit screen called
               exit Ptg;
+            elsif Ptg_Result.Field_No = Afpx_Xref.Main.Clone then
+              -- Clone
+              Afpx.Line_List.Read (Line, Afpx.Line_List_Mng.Current);
+              Str_Mng.Format_List_To_Mesure (Line, File_Name);
+              Mesu_Edi.Clone (File_Name);
+              if not Str_Mng.Is_Spaces (File_Name) then
+                Mesu_Sel.Add_Selection (File_Name);
+              end if;
+              -- Clone screen called
+              exit Ptg;
             elsif Ptg_Result.Field_No = 0
             or else Ptg_Result.Field_No = Afpx_Xref.Main.Edit then
               -- Edit
               Afpx.Line_List.Read (Line, Afpx.Line_List_Mng.Current);
               Str_Mng.Format_List_To_Mesure (Line, File_Name);
-
-              -- Edit
               Mesu_Edi.Edit (File_Name);
               if not Str_Mng.Is_Spaces (File_Name) then
                 Mesu_Sel.Rem_Selection (Line);

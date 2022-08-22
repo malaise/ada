@@ -353,10 +353,6 @@ package body Mesu_Edi is
       Person.Pid := Pers_Def.Pid_Range'Value(Pid_S);
       Pers_Mng.Search (Pers_Def.The_Persons, Person.Pid, Pos_Pers);
       Pers_Def.The_Persons.Read (Person, Pers_Def.Person_List_Mng.Current);
-      -- Disable import button
-      Afpx.Set_Field_Activation (Afpx_Xref.Records.Import, False);
-      Afpx.Set_Field_Activation (Afpx_Xref.Records.Import_Title, False);
-      Afpx.Set_Field_Activation (Afpx_Xref.Records.Import_File, False);
     end if;
 
     -- Set mesure
@@ -553,6 +549,32 @@ package body Mesu_Edi is
 
   end Edit;
 
+  -- Clone a mesure: create a new file name an edit it
+  procedure Clone (File_Name : in out Mesu_Nam.File_Name_Str) is
+    Mesure : Mesu_Def.Mesure_Rec;
+    No_S   : Mesu_Nam.File_No_Str;
+    Pid_S  : Mesu_Nam.File_Pid_Str;
+
+  begin
+    -- Fill data from origin
+    Mesure := Mesu_Fil.Load (File_Name);
+    -- Set date and reset samples
+    Mesure.Date := Str_Mng.Current_Date;
+    Mesure.Samples := (others => Pers_Def.Bpm_Range'First);
+    -- Create new file
+    Pid_S := Str_Mng.Pid_Str(Mesure.Pid);
+    No_S := Mesu_Nam.Find_Slot (Mesure.Date, Pid_S);
+    -- Ok if an empty slot is found. Build file name
+    if No_S = Mesu_Nam.Wild_No_Str then
+      File_Name := (others => ' ');
+      return;
+    end if;
+    File_Name := Mesu_Nam.Build_File_Name (Mesure.Date, No_S, Pid_S);
+    -- Save and edit
+    Mesu_Fil.Save (No_S, Mesure);
+    Edit (File_Name);
+  end Clone;
+
   -- Delete a mesure
   procedure Delete (File_Name : in out Mesu_Nam.File_Name_Str) is
     Person : Pers_Def.Person_Rec;
@@ -605,9 +627,10 @@ package body Mesu_Edi is
     Afpx.Set_Field_Activation (Afpx_Xref.Records.Import_Title, False);
     Afpx.Set_Field_Activation (Afpx_Xref.Records.Import_File, False);
 
-    -- Disable Ins, Suppr and TZReset
+    -- Disable Ins, Suppr, ClearAll and TZReset
     Afpx.Set_Field_Activation (Afpx_Xref.Records.Ins, False);
     Afpx.Set_Field_Activation (Afpx_Xref.Records.Del, False);
+    Afpx.Set_Field_Activation (Afpx_Xref.Records.Clear, False);
     Afpx.Set_Field_Activation (Afpx_Xref.Records.Reset, False);
 
 
