@@ -6,26 +6,13 @@ package body Mesu_Sel is
   use Afpx;
 
   Saved_List : Afpx.Line_List_Mng.List_Type;
+  Backuped_List : Afpx.Line_List_Mng.List_Type;
 
   List_File_Name : constant String := "SELECTIO.LST";
 
   List_File : Text_Line.File_Type;
 
-  procedure Copy_List (From, To : in out Afpx.Line_List_Mng.List_Type) is
-  begin
-    -- Delete dest list
-    To.Delete_List;
-    if not From.Is_Empty then
-      To.Insert_Copy (From);
-      -- Set same pos
-      To.Move_At (From.Get_Position);
-    end if;
-  end Copy_List;
-
-  procedure Save_List is
-  begin
-    Copy_List (From => Line_List, To => Saved_List);
-  end Save_List;
+  procedure Save_List;
 
   function Date_Match (Date, After, Before : Mesu_Def.Date_Str)
                       return Boolean is
@@ -480,11 +467,40 @@ package body Mesu_Sel is
     List_File.Close_All;
   end Save;
 
+  -- Copy a Afpx list (for undo or restore)
+  procedure Copy_List (From, To : in out Afpx.Line_List_Mng.List_Type) is
+  begin
+    -- Delete dest list
+    To.Delete_List;
+    if not From.Is_Empty then
+      To.Insert_Copy (From);
+      -- Set same pos
+      To.Move_At (From.Get_Position);
+    end if;
+  end Copy_List;
+
+  -- Save list for undo
+  procedure Save_List is
+  begin
+    Copy_List (From => Line_List, To => Saved_List);
+  end Save_List;
+
   -- Undo (if possible) previous action on selection
   procedure Undo is
   begin
     Copy_List (From => Saved_List, To => Line_List);
   end Undo;
+
+  -- Backup / restore Afpx list
+  procedure Backup_List is
+  begin
+    Copy_List (From => Line_List, To => Backuped_List);
+  end Backup_List;
+
+  procedure Restore_List is
+  begin
+    Copy_List (From => Backuped_List, To => Line_List);
+  end Restore_List;
 
 end Mesu_Sel;
 

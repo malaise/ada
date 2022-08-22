@@ -179,30 +179,34 @@ package body Mesu_Mng is
       Afpx.Encode_Field (Afpx_Xref.Main.Year_After, (00, 00), Date.Year);
     end Encode_After;
 
+    procedure Init is
+    begin
+      Afpx.Use_Descriptor(Afpx_Xref.Main.Dscr_Num);
+      Get_Handle.Cursor_Field := Afpx_Xref.Main.Person;
+      Get_Handle.Cursor_Col := 0;
+      Get_Handle.Insert := False;
+      Mesu_Sel.Load;
+      Afpx.Update_List (Afpx.Center_Selected);
+      if Nb_Month /= 0 then
+        Str_Mng.Current_Date_Rec (Current_Date, Nb_Month);
+        if Afpx.Line_List.Is_Empty then
+          -- List empty : Set Aft to current date - offset
+          Encode_After (Current_Date);
+        else
+          -- List not empty : Set Bef to current date - offset
+          Afpx.Encode_Field (Afpx_Xref.Main.Day_Before, (00, 00),
+                             Current_Date.Day);
+          Afpx.Encode_Field (Afpx_Xref.Main.Month_Before, (00, 00),
+                             Current_Date.Month);
+          Afpx.Encode_Field (Afpx_Xref.Main.Year_Before, (00, 00),
+                             Current_Date.Year);
+        end if;
+      end if;
+    end Init;
+
     use type Afpx.Absolute_Field_Range;
   begin
-    Afpx.Use_Descriptor(Afpx_Xref.Main.Dscr_Num);
-    Get_Handle.Cursor_Field := Afpx_Xref.Main.Person;
-    Get_Handle.Cursor_Col := 0;
-    Get_Handle.Insert := False;
-    Mesu_Sel.Load;
-    Afpx.Update_List (Afpx.Center_Selected);
-
-    if Nb_Month /= 0 then
-      Str_Mng.Current_Date_Rec (Current_Date, Nb_Month);
-      if Afpx.Line_List.Is_Empty then
-        -- List empty : Set Aft to current date - offset
-        Encode_After (Current_Date);
-      else
-        -- List not empty : Set Bef to current date - offset
-        Afpx.Encode_Field (Afpx_Xref.Main.Day_Before, (00, 00),
-                           Current_Date.Day);
-        Afpx.Encode_Field (Afpx_Xref.Main.Month_Before, (00, 00),
-                           Current_Date.Month);
-        Afpx.Encode_Field (Afpx_Xref.Main.Year_Before, (00, 00),
-                           Current_Date.Year);
-      end if;
-    end if;
+    Init;
 
     List:
     loop
@@ -357,18 +361,23 @@ package body Mesu_Mng is
               Allow_Undo := True;
             elsif Ptg_Result.Field_No = Afpx_Xref.Main.Draw then
               -- Draw
+              Mesu_Sel.Save;
               Mesu_Gra.Graphic;
               exit Ptg;
             elsif Ptg_Result.Field_No = Afpx_Xref.Main.Print then
               -- Print
+              Mesu_Sel.Save;
               Mesu_Prt.Print;
               exit Ptg;
             elsif Ptg_Result.Field_No = Afpx_Xref.Main.Create then
               -- Create
               File_Name := (others => ' ');
+              Mesu_Sel.Backup_List;
               Mesu_Edi.Edit (File_Name);
+              Mesu_Sel.Restore_List;
               if not Str_Mng.Is_Spaces (File_Name) then
                 Mesu_Sel.Add_Selection (File_Name);
+                Mesu_Sel.Save;
               end if;
               -- Edit screen called
               exit Ptg;
@@ -376,9 +385,12 @@ package body Mesu_Mng is
               -- Clone
               Afpx.Line_List.Read (Line, Afpx.Line_List_Mng.Current);
               Str_Mng.Format_List_To_Mesure (Line, File_Name);
+              Mesu_Sel.Backup_List;
               Mesu_Edi.Clone (File_Name);
+              Mesu_Sel.Restore_List;
               if not Str_Mng.Is_Spaces (File_Name) then
                 Mesu_Sel.Add_Selection (File_Name);
+                Mesu_Sel.Save;
               end if;
               -- Clone screen called
               exit Ptg;
@@ -387,10 +399,13 @@ package body Mesu_Mng is
               -- Edit
               Afpx.Line_List.Read (Line, Afpx.Line_List_Mng.Current);
               Str_Mng.Format_List_To_Mesure (Line, File_Name);
+              Mesu_Sel.Backup_List;
               Mesu_Edi.Edit (File_Name);
+              Mesu_Sel.Restore_List;
               if not Str_Mng.Is_Spaces (File_Name) then
                 Mesu_Sel.Rem_Selection (Line);
                 Mesu_Sel.Add_Selection (File_Name);
+                Mesu_Sel.Save;
               end if;
               -- Edit screen called
               exit Ptg;
@@ -398,9 +413,13 @@ package body Mesu_Mng is
               -- Delete
               Afpx.Line_List.Read (Line, Afpx.Line_List_Mng.Current);
               Str_Mng.Format_List_To_Mesure (Line, File_Name);
+              Mesu_Sel.Backup_List;
+              -- This will delete the mesure file
               Mesu_Edi.Delete (File_Name);
+              Mesu_Sel.Restore_List;
               if not Str_Mng.Is_Spaces (File_Name) then
                 Mesu_Sel.Rem_Selection (Line);
+                Mesu_Sel.Save;
               end if;
               -- Edit screen called
               exit Ptg;
@@ -412,7 +431,7 @@ package body Mesu_Mng is
 
       end loop Ptg;
       -- Another screen called
-      Afpx.Use_Descriptor(1);
+      Init;
     end loop List;
 
     Mesu_Sel.Save;

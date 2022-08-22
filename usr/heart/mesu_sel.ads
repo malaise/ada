@@ -4,7 +4,6 @@ with Pers_Def, Mesu_Def, Mesu_Nam;
 -- Mesure selection management
 package Mesu_Sel is
 
-
   -- Criteria for adding to / removing from selection
   type Criteria_Rec is record
     Name     : Pers_Def.Person_Name_Str;
@@ -40,8 +39,9 @@ package Mesu_Sel is
   -- Undo (if possible) previous action on selection
   procedure Undo;
 
-  -- Copy of afpx list
-  procedure Copy_List (From, To : in out Afpx.Line_List_Mng.List_Type);
+  -- Backup / restore Afpx list
+  procedure Backup_List;
+  procedure Restore_List;
 
 end Mesu_Sel;
 

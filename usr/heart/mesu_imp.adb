@@ -1,11 +1,15 @@
 with Ada.Calendar, Ada.Exceptions;
-with As.U.Utils, Directory, Upper_Str, Basic_Proc, Sys_Calls,
+with As.U.Utils, Directory, Upper_Str, Basic_Proc, Sys_Calls, Select_File,
      Trace.Loggers, Images, Dynamic_List, Xml_Parser, Date_Text, Get_Line;
-with Pers_Def;
+with Afpx_Xref, Pers_Def;
 package body Mesu_Imp is
 
+  -- Log import
   Logger : Trace.Loggers.Logger;
 
+  package My_Select_File is new Select_File (
+      Descriptor => Afpx_Xref.Select_File.Dscr_Num,
+      Read_Title => "");
 
   -- Import Tcx file
   -- Import Date, and Samples according to Sampling_Delta, from .tcx file
@@ -38,6 +42,7 @@ package body Mesu_Imp is
   begin
     Logger.Init ("Import");
     -- Init result
+    Ok := False;
     Res := Mesure;
     Res.Samples := (others => Pers_Def.Bpm_Range'First);
     -- Parse
@@ -49,7 +54,6 @@ package body Mesu_Imp is
                                    & Ctx.Get_Parse_Error_Message);
       return;
     end if;
-    Ok := False;
     Root := Ctx.Get_Root_Element;
     -- Root is TrainingCenterDatabase and must have a child Activities
     for C of Ctx.Get_Children (Root) loop
@@ -218,19 +222,33 @@ package body Mesu_Imp is
       end;
   end Import_Txt;
 
+
+  -- Select file name, then:
   -- Import Date, and Samples according to Sampling_Delta, from .tcx file
   -- Import all Samples from .txt file
-  procedure Import (File_Name : in String;
-                    Mesure : in out Mesu_Def.Mesure_Rec;
+  procedure Import (Mesure : in out Mesu_Def.Mesure_Rec;
                     Ok : out Boolean) is
+    -- Selected file name
+    File_Name : As.U.Asu_Us;
   begin
-    if Upper_Str (Directory.File_Suffix (File_Name)) = ".TCX" then
-      Import_Tcx (File_Name, Mesure, Ok);
-    elsif Upper_Str (Directory.File_Suffix (File_Name)) = ".TXT" then
-      Import_Txt (File_Name, Mesure, Ok);
+    -- Goto Default or previous dir
+    -- @@@
+    -- Select file name
+    File_Name := As.U.Tus (My_Select_File.Get_File  ("", True, False));
+    if File_Name.Is_Null then
+      Ok := False;
+      return;
+    end if;
+    if Upper_Str (Directory.File_Suffix (File_Name.Image)) = ".TCX" then
+      Import_Tcx (File_Name.Image, Mesure, Ok);
+    elsif Upper_Str (Directory.File_Suffix (File_Name.Image)) = ".TXT" then
+      Import_Txt (File_Name.Image, Mesure, Ok);
     else
       Ok := False;
     end if;
+  exception
+    when My_Select_File.Exit_Requested =>
+      Ok := False;
   end Import;
 
 end Mesu_Imp;

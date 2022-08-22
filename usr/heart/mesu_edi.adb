@@ -4,10 +4,6 @@ with Pers_Def, Pers_Mng, Mesu_Def, Mesu_Fil, Mesu_Imp, Str_Mng, Afpx_Xref;
 -- Edition, Creation, deletion of mesure
 package body Mesu_Edi is
 
-  subtype Import_File_Name_Str is String (1 ..32);
-  Import_File_Name_Def : constant Import_File_Name_Str := (others => ' ');
-
-
   procedure Encode_Date (Date : in Mesu_Def.Date_Str) is
     Date_R : Str_Mng.Date_Str_Rec;
   begin
@@ -53,30 +49,11 @@ package body Mesu_Edi is
   end Protect;
 
   -- Import sample data from ascii file
-  procedure Import_Samples (Import_File_Name : in Import_File_Name_Str;
-                            Mesure : in out Mesu_Def.Mesure_Rec;
+  procedure Import_Samples (Mesure : in out Mesu_Def.Mesure_Rec;
                             Ok : out Boolean) is
-    subtype Import_File_Name_Index is Integer range Import_File_Name_Str'Range;
-    Import_File_Name_Last : Import_File_Name_Index;
   begin
     Ok := False;
-    -- Check if file name is empty
-    if Import_File_Name = Import_File_Name_Def then
-      return;
-    end if;
-    -- Remove trailing spaces
-    for I in reverse Import_File_Name'Range loop
-      if Import_File_Name(I) /= ' ' then
-        -- Always occures cause Import_File_Name /= Import_File_Name_Def
-        Import_File_Name_Last := I;
-        exit;
-      end if;
-    end loop;
-
-    Mesu_Imp.Import (Import_File_Name(Import_File_Name'First
-                                   .. Import_File_Name_Last),
-       Mesure,
-       Ok);
+    Mesu_Imp.Import (Mesure, Ok);
   end Import_Samples;
 
   -- Edit a mesure.
@@ -121,7 +98,6 @@ package body Mesu_Edi is
       Date_R : Str_Mng.Date_Str_Rec;
       Delta_Str : String (1 .. 3);
       Locok : Boolean;
-      Import_File_Name : Import_File_Name_Str;
       use type Afpx.Absolute_Field_Range;
     begin
       case Current_Field is
@@ -280,32 +256,6 @@ package body Mesu_Edi is
             end if;
           end if;
 
-        when Afpx_Xref.Records.Import_File =>
-          -- In import file name
-          -- Encode Sampling delta
-          Current_Field := Afpx_Xref.Records.Sampling;
-          Check_Field (Current_Field, True, Locok);
-          if Locok then
-            Current_Field := Afpx_Xref.Records.Import_File;
-            Import_File_Name := Import_File_Name_Def;
-            Import_File_Name(1 .. Afpx.Get_Field_Width (Current_Field)) :=
-                Afpx.Decode_Field (Current_Field, 00);
-            -- Import data
-            Import_Samples (Import_File_Name, Mesure, Locok);
-          end if;
-          -- If ok, Encode date samples and move to first sample,
-          --  otherwise stay here
-          if Locok then
-            Encode_Date (Mesure.Date);
-            for I in Mesu_Def.Sample_Nb_Range loop
-              Afpx.Encode_Field (
-                  Afpx_Xref.Records.Rate_001 + Afpx.Field_Range(I) - 1,
-                  (00, 00),
-                  Str_Mng.To_Str(Mesure.Samples(I)) );
-            end loop;
-            Current_Field := Afpx_Xref.Records.Rate_001;
-          end if;
-
         when others =>
           null;
 
@@ -335,47 +285,49 @@ package body Mesu_Edi is
                                       Enter_Field_Cause);
     end Cursor_Set_Col_Cb;
 
+    procedure Init (Reset : in Boolean) is
+    begin
+      -- Use descriptor
+      Afpx.Use_Descriptor (Afpx_Xref.Records.Dscr_Num);
+      In_Create := Str_Mng.Is_Spaces (File_Name);
+      -- Title and cursor field
+      if In_Create then
+        Afpx.Encode_Field (Afpx_Xref.Records.Title, (00,00), "Creation");
+        -- Person name
+        Get_Handle.Cursor_Field := Afpx_Xref.Records.Person;
+      else
+        Afpx.Encode_Field (Afpx_Xref.Records.Title, (00,00), " Edition");
+        -- Date
+        Get_Handle.Cursor_Field := Afpx_Xref.Records.Day;
+      end if;
+      Afpx.Set_Field_Activation (Afpx_Xref.Records.Reset, False);
+      Get_Handle.Cursor_Col := 0;
+      Get_Handle.Insert := False;
+
+      if Reset then
+        -- Reset / reload data
+        if In_Create then
+          -- Set person and mesure
+          Person.Name := (others => ' ');
+          Person.Activity := (others => ' ');
+          Mesure.Date := Str_Mng.Current_Date;
+        else
+          -- Load person
+          Mesu_Nam.Split_File_Name (File_Name, Date_S, No_S, Pid_S);
+          Person.Pid := Pers_Def.Pid_Range'Value(Pid_S);
+          Pers_Mng.Search (Pers_Def.The_Persons, Person.Pid, Pos_Pers);
+          Pers_Def.The_Persons.Read (Person, Pers_Def.Person_List_Mng.Current);
+          -- Load mesure
+          Mesure := Mesu_Fil.Load (File_Name);
+        end if;
+      end if;
+
+      Encode (Person, Mesure);
+    end Init;
+
     use type Afpx.Absolute_Field_Range;
   begin
-    -- Use descriptor
-    Afpx.Use_Descriptor (Afpx_Xref.Records.Dscr_Num);
-    In_Create := Str_Mng.Is_Spaces (File_Name);
-
-    if In_Create then
-      -- Set person
-      Afpx.Encode_Field (Afpx_Xref.Records.Title, (00,00), "Creation");
-      Person.Name := (others => ' ');
-      Person.Activity := (others => ' ');
-    else
-      -- Load person
-      Afpx.Encode_Field (Afpx_Xref.Records.Title, (00,00), " Edition");
-      Mesu_Nam.Split_File_Name (File_Name, Date_S, No_S, Pid_S);
-      Person.Pid := Pers_Def.Pid_Range'Value(Pid_S);
-      Pers_Mng.Search (Pers_Def.The_Persons, Person.Pid, Pos_Pers);
-      Pers_Def.The_Persons.Read (Person, Pers_Def.Person_List_Mng.Current);
-    end if;
-
-    -- Set mesure
-    if In_Create then
-      -- Init date to current
-      Mesure.Date := Str_Mng.Current_Date;
-    else
-      -- Load
-      Mesure := Mesu_Fil.Load (File_Name);
-    end if;
-
-    Encode (Person, Mesure);
-
-    if In_Create then
-      -- Person name
-      Get_Handle.Cursor_Field := Afpx_Xref.Records.Person;
-    else
-      -- Date
-      Get_Handle.Cursor_Field := Afpx_Xref.Records.Day;
-    end if;
-    Afpx.Set_Field_Activation (Afpx_Xref.Records.Reset, False);
-    Get_Handle.Cursor_Col := 0;
-    Get_Handle.Insert := False;
+    Init (True);
 
     -- Loop of Ptgs
     loop
@@ -421,17 +373,40 @@ package body Mesu_Edi is
         when Afpx.Mouse_Button =>
           if Ptg_Result.Field_No = Afpx_Xref.Records.Import then
             -- Import samples
-            Get_Handle.Cursor_Field := Afpx_Xref.Records.Import_File;
-            Check_Field (Get_Handle.Cursor_Field, False, Ok);
+            -- Valid check all fields one by one from person to 1st sample
+            Get_Handle.Cursor_Field := Afpx_Xref.Records.Person;
+            loop
+              Check_Field (Get_Handle.Cursor_Field, True, Ok);
+              exit when not Ok
+              or else Get_Handle.Cursor_Field = Afpx_Xref.Records.Rate_001;
+            end loop;
+            -- Default for import
+            Get_Handle.Cursor_Field := Afpx_Xref.Records.Sampling;
+            Check_Field (Get_Handle.Cursor_Field, True, Ok);
+            if Ok then
+              Import_Samples (Mesure, Ok);
+              Init (False);
+              Encode (Person, Mesure);
+            end if;
+            -- If ok, Encode person, date samples and move to first sample,
+            --  otherwise stay here
+            if Ok then
+              Encode_Date (Mesure.Date);
+              for I in Mesu_Def.Sample_Nb_Range loop
+                Afpx.Encode_Field (
+                    Afpx_Xref.Records.Rate_001 + Afpx.Field_Range(I) - 1,
+                    (00, 00),
+                    Str_Mng.To_Str(Mesure.Samples(I)) );
+              end loop;
+              Get_Handle.Cursor_Field := Afpx_Xref.Records.Rate_001;
+            end if;
+
           elsif Ptg_Result.Field_No = Afpx_Xref.Records.Cancel then
             -- Cancel
             File_Name := Mesu_Nam.File_Name_Str'((others => ' '));
             exit;
           elsif Ptg_Result.Field_No = Afpx_Xref.Records.Valid then
-            -- Valid: Clear import file name
-            Afpx.Clear_Field (Afpx_Xref.Records.Import_Title);
-
-            -- Valid check all fields except import_file one by one
+            -- Valid check all fields one by one
             Get_Handle.Cursor_Field := Afpx_Xref.Records.Person;
             loop
               Check_Field (Get_Handle.Cursor_Field, True, Ok);
@@ -624,8 +599,6 @@ package body Mesu_Edi is
 
     -- Disable import
     Afpx.Set_Field_Activation (Afpx_Xref.Records.Import, False);
-    Afpx.Set_Field_Activation (Afpx_Xref.Records.Import_Title, False);
-    Afpx.Set_Field_Activation (Afpx_Xref.Records.Import_File, False);
 
     -- Disable Ins, Suppr, ClearAll and TZReset
     Afpx.Set_Field_Activation (Afpx_Xref.Records.Ins, False);
@@ -657,7 +630,6 @@ package body Mesu_Edi is
             Mesu_Fil.Delete (File_Name);
             exit;
           end if; -- Ptg_Result.Field_No = valid or cancel
-
       end case; -- Result.Event
 
     end loop;
