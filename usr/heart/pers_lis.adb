@@ -272,9 +272,10 @@ package body Pers_Lis is
       Afpx.Set_Field_Activation (Afpx_Xref.Activity.Records, Act);
       Afpx.Set_Field_Activation (Afpx_Xref.Activity.Create, Act);
       Afpx.Set_Field_Activation (Afpx_Xref.Activity.Quit, Act);
-      -- Delete/edit if not empty and in list
+      -- Delete/clone/edit if not empty and in list
       Act := Act and then not List_Empty;
       Afpx.Set_Field_Activation (Afpx_Xref.Activity.Delete, Act);
+      Afpx.Set_Field_Activation (Afpx_Xref.Activity.Clone, Act);
       Afpx.Set_Field_Activation (Afpx_Xref.Activity.Edit, Act);
       -- Edit if edit
       Act := State /= In_List;
@@ -357,6 +358,16 @@ package body Pers_Lis is
               Person.Name := (others => ' ');
               Person.Activity := (others => ' ');
               Person.Tz := (others => Pers_Def.Bpm_Range'First);
+              Encode_Person;
+            when Afpx_Xref.Activity.Clone =>
+              -- Clone
+              State := In_Create;
+              First_Field := Afpx_Xref.Activity.Activity;
+              Get_Handle.Cursor_Field := First_Field;
+              Get_Handle.Cursor_Col := 0;
+              Get_Handle.Insert := False;
+              Read (Pers_Def.The_Persons, Person,
+                    Pers_Def.Person_List_Mng.Current);
               Encode_Person;
             when Afpx.List_Field_No | Afpx_Xref.Activity.Edit =>
               -- Edit
