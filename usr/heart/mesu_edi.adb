@@ -380,24 +380,11 @@ package body Mesu_Edi is
               exit when not Ok
               or else Get_Handle.Cursor_Field = Afpx_Xref.Records.Rate_001;
             end loop;
-            -- Default for import
-            Get_Handle.Cursor_Field := Afpx_Xref.Records.Sampling;
-            Check_Field (Get_Handle.Cursor_Field, True, Ok);
             if Ok then
               Import_Samples (Mesure, Ok);
+              -- Restore screen
               Init (False);
               Encode (Person, Mesure);
-            end if;
-            -- If ok, Encode person, date samples and move to first sample,
-            --  otherwise stay here
-            if Ok then
-              Encode_Date (Mesure.Date);
-              for I in Mesu_Def.Sample_Nb_Range loop
-                Afpx.Encode_Field (
-                    Afpx_Xref.Records.Rate_001 + Afpx.Field_Range(I) - 1,
-                    (00, 00),
-                    Str_Mng.To_Str(Mesure.Samples(I)) );
-              end loop;
               Get_Handle.Cursor_Field := Afpx_Xref.Records.Rate_001;
             end if;
 
