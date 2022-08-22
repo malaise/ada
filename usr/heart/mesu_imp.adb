@@ -1,5 +1,6 @@
 with Ada.Calendar, Ada.Exceptions;
 with As.U.Utils, Directory, Upper_Str, Basic_Proc, Sys_Calls, Select_File,
+     Environ,
      Trace.Loggers, Images, Dynamic_List, Xml_Parser, Date_Text, Get_Line;
 with Afpx_Xref, Pers_Def;
 package body Mesu_Imp is
@@ -7,6 +8,31 @@ package body Mesu_Imp is
   -- Log import
   Logger : Trace.Loggers.Logger;
 
+  -- Default / previous directory
+  Import_Dir_Env_Name : constant String := "HEART_IMPORT_DIR";
+  Import_Dir : As.U.Asu_Us;
+  function Get_Import_Dir return String is
+  begin
+    if not Import_Dir.Is_Null then
+      -- Previous dir
+      return Import_Dir.Image;
+    end if;
+    -- From getenv or "."
+    Import_Dir.Set (".");
+    declare
+      Env : constant String := Environ.Getenv (Import_Dir_Env_Name);
+    begin
+      if Env /= "" and then Directory.Is_Dir (Env) then
+        Import_Dir.Set (Env);
+      end if;
+    end;
+    return Import_Dir.Image;
+  exception
+    when Directory.Name_Error | Directory.Access_Error =>
+      return Import_Dir.Image;
+  end Get_Import_Dir;
+
+  -- File name selection
   package My_Select_File is new Select_File (
       Descriptor => Afpx_Xref.Select_File.Dscr_Num,
       Read_Title => "");
@@ -228,15 +254,21 @@ package body Mesu_Imp is
   -- Import all Samples from .txt file
   procedure Import (Mesure : in out Mesu_Def.Mesure_Rec;
                     Ok : out Boolean) is
+    -- Current dir
+    Curdir : constant String := Directory.Get_Current;
     -- Selected file name
     File_Name : As.U.Asu_Us;
   begin
     -- Goto Default or previous dir
-    -- @@@
+    Directory.Change_Current (Get_Import_Dir);
     -- Select file name
     File_Name := As.U.Tus (My_Select_File.Get_File  ("", True, False));
+    -- Save import  dir for next time
+    Import_Dir.Set (Directory.Get_Current);
+    -- Import this file if set
     if File_Name.Is_Null then
       Ok := False;
+      Directory.Change_Current (Curdir);
       return;
     end if;
     if Upper_Str (Directory.File_Suffix (File_Name.Image)) = ".TCX" then
@@ -246,9 +278,14 @@ package body Mesu_Imp is
     else
       Ok := False;
     end if;
+    Directory.Change_Current (Curdir);
   exception
     when My_Select_File.Exit_Requested =>
       Ok := False;
+      Directory.Change_Current (Curdir);
+    when others =>
+      Directory.Change_Current (Curdir);
+      raise;
   end Import;
 
 end Mesu_Imp;
