@@ -210,21 +210,18 @@ package body Directory is
 
   -- Is it a file, a dir, a symbolic link
   function Is_File (File_Name : String) return Boolean is
-    use type Sys_Calls.File_Kind_List;
   begin
-    return Sys_Calls.File_Stat (File_Name).Kind = Sys_Calls.File;
+    return File_Kind (File_Name) = File;
   end Is_File;
 
   function Is_Dir (File_Name : String) return Boolean is
-    use type Sys_Calls.File_Kind_List;
   begin
-    return Sys_Calls.File_Stat (File_Name).Kind = Sys_Calls.Dir;
+    return File_Kind (File_Name) = Dir;
   end Is_Dir;
 
   function Is_Link (File_Name : String) return Boolean is
-    use type Sys_Calls.File_Kind_List;
   begin
-    return Sys_Calls.File_Stat (File_Name).Kind = Sys_Calls.Link;
+    return File_Kind (File_Name) = Link;
   end Is_Link;
 
   -- Follow a link

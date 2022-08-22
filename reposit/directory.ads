@@ -26,32 +26,34 @@ package Directory is
   type Dir_Desc is tagged private;
 
   -- Opens a directory for list of entries
-  function Open (Dir_Name : in String) return Dir_Desc;
-  procedure Open (Desc : in out Dir_Desc; Dir_Name : in String);
   -- May raise Open_Error if dir desc is already open
   -- May raise Name_Error if not found
   -- May raise Access_Error
+  function Open (Dir_Name : in String) return Dir_Desc;
+  procedure Open (Desc : in out Dir_Desc; Dir_Name : in String);
 
   -- Gets next entry of the opened directory
-  function Next_Entry (Desc : Dir_Desc) return String;
-  procedure Next_Entry (Desc : in Dir_Desc; Dir_Entry : in out As.U.Asu_Us);
   -- May raise Open_Error if dir desc is not open
   -- Will raise End_Error if no more entry
   -- May raise Access_Error
+  function Next_Entry (Desc : Dir_Desc) return String;
+  procedure Next_Entry (Desc : in Dir_Desc; Dir_Entry : in out As.U.Asu_Us);
 
   -- Reset entries for the first
-  procedure Rewind (Desc : in Dir_Desc);
   -- May raise Open_Error if dir desc is not open
+  procedure Rewind (Desc : in Dir_Desc);
 
   -- Closes a directory
-  procedure Close (Desc : in out Dir_Desc);
   -- May raise Open_Error if dir desc is not open
+  procedure Close (Desc : in out Dir_Desc);
 
   -- File kind
+  -- May raise Name_Error or Access_Error
   type File_Kind_List is new Sys_Calls.File_Kind_List;
   function File_Kind (File_Name : String) return File_Kind_List;
 
   -- Is it a file, a directory, a symbolic link
+  -- May raise Name_Error or Access_Error
   function Is_File (File_Name : String) return Boolean;
   function Is_Dir  (File_Name : String) return Boolean;
   function Is_Link (File_Name : String) return Boolean;
@@ -60,16 +62,16 @@ package Directory is
   --  if Recursive then follow the successive links
   -- Target becomes an absolute path as soon as File_Name or one followed link
   --  contains a path
-  function Read_Link (File_Name : String; Recursive : Boolean := True)
-                      return String;
-  procedure Read_Link (File_Name : in String;
-                       Target : out As.U.Asu_Us;
-                       Recursive : in Boolean := True);
   -- May raise Name_Error if File_Name does not exist
   --           Access_Error if File_Name cannot be read
   --           Open_Error if File_Name is not a link
   --           Recursive_Link if Recursive and if links points on itself
   --            (indirectly or not)
+  function Read_Link (File_Name : String; Recursive : Boolean := True)
+                      return String;
+  procedure Read_Link (File_Name : in String;
+                       Target : out As.U.Asu_Us;
+                       Recursive : in Boolean := True);
 
   -- Recursively follow links until sucess or error
   -- Set Target on the final or faulty element
