@@ -91,7 +91,7 @@ package Afpx_Typ is
     -- Width, height
     Height : Height_Range;
     Width  : Width_Range;
-    -- Colors
+    -- Colors, either all to No_Color, or all set
     Colors : Colors_Rec;
     -- Index in Char_Str of start of field content
     Char_Index : Char_Str_Range;

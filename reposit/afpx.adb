@@ -290,6 +290,7 @@ package body Afpx is
     Af_Dscr.Load_Dscr (Descriptor_No);
     if not Console.Is_Open then
       -- Done only once at first descriptor
+      -- All colors are set, or none
       if Af_Dscr.Current_Dscr.Colors (Con_Io.Effective_Colors'First)
          /= Afpx_Typ.No_Color then
         -- If necessary, Set the colors when using the first descriptor

@@ -46,8 +46,8 @@
 <!ATTLIST Var Name  NMTOKEN #REQUIRED
               Value CDATA   #REQUIRED>
 
-<!-- This ENTITY is informative. It defines the default colors, (if not -->
-<!--  re-defined in ColorDefinitions). -->
+<!-- This ENTITY is informative. It indicates the default colors as defined in -->
+<!--  Con_Io, which are used if not re-defined in ColorDefinitions. -->
 <!ENTITY % Default_Colors "Light_Grey | Blue | Dark_Green | Cyan |
                            Red | Magenta | Brown | White |
                            Dark_Grey | Light_Blue | Lime_Green | Orange |
@@ -56,6 +56,8 @@
 <!ELEMENT Color_Definition EMPTY>
 <!ATTLIST Color_Definition Id ID #REQUIRED
                            Color CDATA #REQUIRED>
+<!-- From Color01 to Color14 -->
+<!-- Ex: Id="Color02" Color="Tomato" will replace "Blue"-->
 <!ELEMENT Default_Background EMPTY>
 <!ATTLIST Default_Background Color CDATA #REQUIRED>
 
