@@ -209,7 +209,7 @@ package body Mesu_Gra is
       Console.Draw_Line (Xs_First - 2, Y, Xs_First + 2, Y);
       Console.Put (Normal (Integer(Bpm), 3),
                            1,
-                           Y - Font_Offset_Height);
+                           Y + Font_Offset_Height);
     end loop;
 
   end Draw_Layout;
@@ -241,7 +241,7 @@ package body Mesu_Gra is
         Draw_Line (Xs_First, Y, Xs_Last - 4 * Console.Font_Width, Y);
         Console.Put (Normal(Integer(Bpm), 3),
                      Console.X_Max - 3 * Console.Font_Width,
-                     Y - Font_Offset_Height);
+                     Y + Font_Offset_Height);
       end if;
     end loop;
   end Draw_Tz;
@@ -457,7 +457,7 @@ package body Mesu_Gra is
 
     -- Compute Y factor
     Y_Factor := Float(Ys_First - Ys_Last) / Float(Y_First - Y_Last);
-    Font_Offset_Height := Console.Font_Height / 3;
+    Font_Offset_Height := Console.Font_Height / 2;
 
     -- Compute last X
     X_Last := 0;
