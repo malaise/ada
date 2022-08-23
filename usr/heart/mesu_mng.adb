@@ -16,7 +16,33 @@ package body Mesu_Mng is
     File_Name    : Mesu_Nam.File_Name_Str;
     Exit_Program : Boolean;
     Current_Date : Str_Mng.Date_Str_Rec;
+    Person : Pers_Def.Person_Rec;
+    Date_Aft, Date_Bef : Mesu_Def.Date_Str;
 
+    -- Encode person namle and activity
+    procedure Encode_Person is
+    begin
+      Afpx.Encode_Field (Afpx_Xref.Main.Person, (00, 00), Person.Name);
+      Afpx.Encode_Field (Afpx_Xref.Main.Activity, (00, 00), Person.Activity);
+    end Encode_Person;
+    -- Encode Date in Before fields
+    procedure Encode_After is
+      Rec : Str_Mng.Date_Str_Rec;
+    begin
+      Str_Mng.To_Rec (Date_Aft, Rec);
+      Afpx.Encode_Field (Afpx_Xref.Main.Day_After, (00, 00), Rec.Day);
+      Afpx.Encode_Field (Afpx_Xref.Main.Month_After, (00, 00), Rec.Month);
+      Afpx.Encode_Field (Afpx_Xref.Main.Year_After, (00, 00), Rec.Year);
+    end Encode_After;
+    -- Encode Date in After fields
+    procedure Encode_Before is
+      Rec : Str_Mng.Date_Str_Rec;
+    begin
+      Str_Mng.To_Rec (Date_Bef, Rec);
+      Afpx.Encode_Field (Afpx_Xref.Main.Day_Before, (00, 00), Rec.Day);
+      Afpx.Encode_Field (Afpx_Xref.Main.Month_Before, (00, 00), Rec.Month);
+      Afpx.Encode_Field (Afpx_Xref.Main.Year_Before, (00, 00), Rec.Year);
+    end Encode_Before;
 
     -- Check a field
     procedure Check_Field (Current_Field : in out Afpx.Absolute_Field_Range;
@@ -25,8 +51,6 @@ package body Mesu_Mng is
       Locok : Boolean;
       Date_Aft_R, Date_Bef_R : Str_Mng.Date_Str_Rec;
       Pos_Pers : Integer;
-      Person : Pers_Def.Person_Rec;
-      Date_Aft, Date_Bef : Mesu_Def.Date_Str;
       use type Afpx.Absolute_Field_Range;
     begin
       case Current_Field is
@@ -54,8 +78,7 @@ package body Mesu_Mng is
           else
             Pers_Mng.Expand (Pers_Def.The_Persons,
                              Person.Name, Person.Activity, Pos_Pers);
-            Afpx.Encode_Field (Afpx_Xref.Main.Person, (00, 00), Person.Name);
-            Afpx.Encode_Field (Afpx_Xref.Main.Activity, (00, 00), Person.Activity);
+            Encode_Person;
 
             -- Set pos in case of end
             if For_Valid then
@@ -115,12 +138,7 @@ package body Mesu_Mng is
             if Locok then
               Current_Field := Afpx_Xref.Main.Day_Before;
               Str_Mng.To_Rec (Date_Aft, Date_Aft_R);
-              Afpx.Encode_Field (Afpx_Xref.Main.Day_After, (00, 00),
-                                 Date_Aft_R.Day);
-              Afpx.Encode_Field (Afpx_Xref.Main.Month_After, (00, 00),
-                                 Date_Aft_R.Month);
-              Afpx.Encode_Field (Afpx_Xref.Main.Year_After, (00, 00),
-                                 Date_Aft_R.Year);
+              Encode_After;
             end if;
           end if;
           if Locok and then For_Valid then
@@ -149,12 +167,7 @@ package body Mesu_Mng is
             if Locok then
               Current_Field := Afpx_Xref.Main.Person;
               Str_Mng.To_Rec (Date_Bef, Date_Bef_R);
-              Afpx.Encode_Field (Afpx_Xref.Main.Day_Before, (00, 00),
-                                 Date_Bef_R.Day);
-              Afpx.Encode_Field (Afpx_Xref.Main.Month_Before, (00, 00),
-                                 Date_Bef_R.Month);
-              Afpx.Encode_Field (Afpx_Xref.Main.Year_Before, (00, 00),
-                                 Date_Bef_R.Year);
+              Encode_Before;
             end if;
           end if;
           if Locok and then For_Valid then
@@ -171,15 +184,8 @@ package body Mesu_Mng is
 
     end Check_Field;
 
-    -- Encode Date in After fields
-    procedure Encode_After (Date : in Str_Mng.Date_Str_Rec) is
-    begin
-      Afpx.Encode_Field (Afpx_Xref.Main.Day_After, (00, 00), Date.Day);
-      Afpx.Encode_Field (Afpx_Xref.Main.Month_After, (00, 00), Date.Month);
-      Afpx.Encode_Field (Afpx_Xref.Main.Year_After, (00, 00), Date.Year);
-    end Encode_After;
-
-    procedure Init is
+    procedure Init (Reset : in Boolean) is
+      Dummy_Res : Boolean;
     begin
       Afpx.Use_Descriptor(Afpx_Xref.Main.Dscr_Num);
       Get_Handle.Cursor_Field := Afpx_Xref.Main.Person;
@@ -187,26 +193,46 @@ package body Mesu_Mng is
       Get_Handle.Insert := False;
       Mesu_Sel.Load;
       Afpx.Update_List (Afpx.Center_Selected);
-      if Nb_Month /= 0 then
-        Str_Mng.Current_Date_Rec (Current_Date, Nb_Month);
-        if Afpx.Line_List.Is_Empty then
-          -- List empty : Set Aft to current date - offset
-          Encode_After (Current_Date);
-        else
-          -- List not empty : Set Bef to current date - offset
-          Afpx.Encode_Field (Afpx_Xref.Main.Day_Before, (00, 00),
-                             Current_Date.Day);
-          Afpx.Encode_Field (Afpx_Xref.Main.Month_Before, (00, 00),
-                             Current_Date.Month);
-          Afpx.Encode_Field (Afpx_Xref.Main.Year_Before, (00, 00),
-                             Current_Date.Year);
+      if Reset then
+        if Nb_Month /= 0 then
+          Str_Mng.Current_Date_Rec (Current_Date, Nb_Month);
+          if Afpx.Line_List.Is_Empty then
+            -- List empty : Set Aft to current date - offset
+            Str_Mng.Check_Date (Current_Date, True, Date_Aft, Dummy_Res);
+            Encode_After;
+          else
+            -- List not empty : Set Bef to current date - offset
+            Str_Mng.Check_Date (Current_Date, False, Date_Bef, Dummy_Res);
+            Encode_Before;
+          end if;
         end if;
       end if;
     end Init;
 
+    -- Save ad reload citeria and list
+    procedure Save is
+      Field : Afpx.Absolute_Field_Range;
+      Ok : Boolean;
+    begin
+       Field := Afpx_Xref.Main.Activity;
+       Check_Field (Field, True, Ok);
+       Field := Afpx_Xref.Main.Day_After;
+       Check_Field (Field, True, Ok);
+       Field := Afpx_Xref.Main.Day_Before;
+       Check_Field (Field, True, Ok);
+       Mesu_Sel.Backup_List;
+    end Save;
+    procedure Load is
+    begin
+       Encode_Person;
+       Encode_After;
+       Encode_Before;
+       Mesu_Sel.Restore_List;
+    end Load;
+
     use type Afpx.Absolute_Field_Range;
   begin
-    Init;
+    Init (True);
 
     List:
     loop
@@ -332,7 +358,8 @@ package body Mesu_Mng is
             elsif Ptg_Result.Field_No = Afpx_Xref.Main.Last_Month then
               -- Set After to one month ago
               Str_Mng.Current_Date_Rec (Current_Date, 1);
-              Encode_After (Current_Date);
+              Str_Mng.Check_Date (Current_Date, True, Date_Aft, Ok);
+              Encode_After;
             elsif Ptg_Result.Field_No = Afpx_Xref.Main.Clear_After then
               -- Clear After fields
               Afpx.Clear_Field (Afpx_Xref.Main.Day_After);
@@ -345,10 +372,8 @@ package body Mesu_Mng is
               Afpx.Clear_Field (Afpx_Xref.Main.Year_Before);
             elsif Ptg_Result.Field_No = Afpx_Xref.Main.Db then
               -- Activiy Db
-              Mesu_Sel.Save;
+              Save;
               Pers_Lis.List (Exit_Program);
-              Mesu_Sel.Load;
-              Afpx.Update_List(Afpx.Center_Selected);
               if Exit_Program then
                 exit List;
               end if;
@@ -361,21 +386,21 @@ package body Mesu_Mng is
               Allow_Undo := True;
             elsif Ptg_Result.Field_No = Afpx_Xref.Main.Draw then
               -- Draw
-              Mesu_Sel.Save;
+              Save;
               Mesu_Gra.Graphic;
               exit Ptg;
             elsif Ptg_Result.Field_No = Afpx_Xref.Main.Print then
               -- Print
-              Mesu_Sel.Save;
+              Save;
               Mesu_Prt.Print;
               exit Ptg;
             elsif Ptg_Result.Field_No = Afpx_Xref.Main.Create then
               -- Create
+              Save;
               File_Name := (others => ' ');
-              Mesu_Sel.Backup_List;
               Mesu_Edi.Edit (File_Name);
-              Mesu_Sel.Restore_List;
               if not Str_Mng.Is_Spaces (File_Name) then
+                Mesu_Sel.Restore_List;
                 Mesu_Sel.Add_Selection (File_Name);
                 Mesu_Sel.Save;
               end if;
@@ -383,12 +408,12 @@ package body Mesu_Mng is
               exit Ptg;
             elsif Ptg_Result.Field_No = Afpx_Xref.Main.Clone then
               -- Clone
+              Save;
               Afpx.Line_List.Read (Line, Afpx.Line_List_Mng.Current);
               Str_Mng.Format_List_To_Mesure (Line, File_Name);
-              Mesu_Sel.Backup_List;
               Mesu_Edi.Clone (File_Name);
-              Mesu_Sel.Restore_List;
               if not Str_Mng.Is_Spaces (File_Name) then
+                Mesu_Sel.Restore_List;
                 Mesu_Sel.Add_Selection (File_Name);
                 Mesu_Sel.Save;
               end if;
@@ -397,12 +422,12 @@ package body Mesu_Mng is
             elsif Ptg_Result.Field_No = 0
             or else Ptg_Result.Field_No = Afpx_Xref.Main.Edit then
               -- Edit
+              Save;
               Afpx.Line_List.Read (Line, Afpx.Line_List_Mng.Current);
               Str_Mng.Format_List_To_Mesure (Line, File_Name);
-              Mesu_Sel.Backup_List;
               Mesu_Edi.Edit (File_Name);
-              Mesu_Sel.Restore_List;
               if not Str_Mng.Is_Spaces (File_Name) then
+                Mesu_Sel.Restore_List;
                 Mesu_Sel.Rem_Selection (Line);
                 Mesu_Sel.Add_Selection (File_Name);
                 Mesu_Sel.Save;
@@ -411,13 +436,13 @@ package body Mesu_Mng is
               exit Ptg;
             elsif Ptg_Result.Field_No = Afpx_Xref.Main.Delete then
               -- Delete
+              Save;
               Afpx.Line_List.Read (Line, Afpx.Line_List_Mng.Current);
               Str_Mng.Format_List_To_Mesure (Line, File_Name);
-              Mesu_Sel.Backup_List;
               -- This will delete the mesure file
               Mesu_Edi.Delete (File_Name);
-              Mesu_Sel.Restore_List;
               if not Str_Mng.Is_Spaces (File_Name) then
+                Mesu_Sel.Restore_List;
                 Mesu_Sel.Rem_Selection (Line);
                 Mesu_Sel.Save;
               end if;
@@ -431,7 +456,8 @@ package body Mesu_Mng is
 
       end loop Ptg;
       -- Another screen called
-      Init;
+      Init (False);
+      Load;
     end loop List;
 
     Mesu_Sel.Save;
