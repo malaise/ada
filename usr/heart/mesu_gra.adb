@@ -255,7 +255,7 @@ package body Mesu_Gra is
                5 => Con_Io.Color_Of ("Orange"),
                6 => Con_Io.Color_Of ("Blue"),
                7 => Con_Io.Color_Of ("Magenta"),
-               8 => Con_Io.Color_Of ("Yellow"),
+               8 => Con_Io.Color_Of ("Tomato"),
                9 => Con_Io.Color_Of ("White"));
     Sec1, Sec2 : Natural;
     Bpm1, Bpm2 : Pers_Def.Bpm_Range;

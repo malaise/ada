@@ -3,6 +3,7 @@
 
 <Afpx_Descriptors Width="81" Height="27">
  <Color_Definitions>
+    <Color_Definition Id="Color13" Color="Tomato"/>
     <Default_Background Color="Light_Grey"/>
   </Color_Definitions>
 
