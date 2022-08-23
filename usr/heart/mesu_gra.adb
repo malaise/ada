@@ -43,8 +43,6 @@ package body Mesu_Gra is
   subtype Mesure_Range is Natural range 0 .. Max_Nb_Mesure;
   Mesure_Array : array (1 .. Max_Nb_Mesure) of Mesure_Cell;
   Nb_Mesure : Mesure_Range;
-  -- No of mesure of last Tz drawn
-  Prev_Tz : Mesure_Range;
 
   use type Pers_Def.Bpm_Range;
 
@@ -162,6 +160,9 @@ package body Mesu_Gra is
       null;
   end Draw_Line;
 
+  -- General refresh
+  procedure Refresh (Tz : in Boolean);
+
   -- Graphic layout (help, scales, Tz)
   procedure Draw_Layout is
     Help_Color  : constant Con_Io.Effective_Colors := Con_Io.Color_Of ("Black");
@@ -214,49 +215,50 @@ package body Mesu_Gra is
   end Draw_Layout;
 
   procedure Draw_Tz (Show : in Boolean) is
-    Tz_Color    : constant Con_Io.Effective_Colors := Con_Io.Color_Of ("White");
+    Tz_Color    : constant Con_Io.Effective_Colors := Con_Io.Color_Of ("Black");
     Y : Con_Io.Y_Range;
     Mesure_Index : Mesure_Range;
   begin
-    Screen.Set_Foreground (Tz_Color);
     if not Show then
-      Mesure_Index := Prev_Tz;
-    else
-      -- First drawn mesure if any (else first mesure)
-      Mesure_Index := 1;
-      for Mesu in 1 .. Nb_Mesure loop
-        if Mesure_Array(Mesu).Drown then
-          Mesure_Index := Mesu;
-          exit;
-        end if;
-      end loop;
-      Prev_Tz := Mesure_Index;
+      Screen.Clear;
+      Refresh (False);
+      return;
     end if;
+    Screen.Set_Foreground (Tz_Color);
+    -- First drawn mesure if any (else first mesure)
+    Mesure_Index := 1;
+    for Mesu in 1 .. Nb_Mesure loop
+      if Mesure_Array(Mesu).Drown then
+        Mesure_Index := Mesu;
+        exit;
+      end if;
+    end loop;
 
+    -- Then drawn Tz
     for Bpm of Mesure_Array(Mesure_Index).Mesure.Tz loop
       if Bpm >= Y_First then
         Y := Y_To_Screen(Bpm);
         Draw_Line (Xs_First, Y, Xs_Last - 4 * Console.Font_Width, Y);
-        Console.Put (
-                    Normal(Integer(Bpm), 3),
-                    Console.X_Max - 3 * Console.Font_Width,
-                    Y - Font_Offset_Height);
+        Console.Put (Normal(Integer(Bpm), 3),
+                     Console.X_Max - 3 * Console.Font_Width,
+                     Y - Font_Offset_Height);
       end if;
     end loop;
   end Draw_Tz;
 
   -- Draw one record
   procedure Draw_Mesure (No : in Mesure_Range) is
+    -- These are the colors in use for the samples names and graphs
     Colors : constant array (1 .. Max_Nb_Mesure) of Con_Io.Effective_Colors
-           := (1 => Con_Io.Color_Of ("Dark_Grey"),
+           := (1 => Con_Io.Color_Of ("Light_Grey"),
                2 => Con_Io.Color_Of ("Cyan"),
-               3 => Con_Io.Color_Of ("Light_Blue"),
+               3 => Con_Io.Color_Of ("White"),
                4 => Con_Io.Color_Of ("Lime_Green"),
                5 => Con_Io.Color_Of ("Orange"),
                6 => Con_Io.Color_Of ("Blue"),
                7 => Con_Io.Color_Of ("Magenta"),
                8 => Con_Io.Color_Of ("Tomato"),
-               9 => Con_Io.Color_Of ("White"));
+               9 => Con_Io.Color_Of ("Brown"));
     Sec1, Sec2 : Natural;
     Bpm1, Bpm2 : Pers_Def.Bpm_Range;
     Mesure : Mesu_Def.Mesure_Rec renames Mesure_Array(No).Mesure;
@@ -303,6 +305,22 @@ package body Mesu_Gra is
     end loop;
 
   end Draw_Mesure;
+
+  procedure Refresh (Tz : in Boolean) is
+  begin
+    Screen.Clear;
+    Draw_Layout;
+    -- Redraw mesures
+    for I in 1 .. Nb_Mesure loop
+      if Mesure_Array(I).Drown then
+        Draw_Mesure (I);
+      end if;
+    end loop;
+    -- Tz_Drown is already up to date
+    if Tz then
+      Draw_Tz(True);
+    end if;
+  end Refresh;
 
   -- The main
   procedure Graphic is
@@ -356,6 +374,7 @@ package body Mesu_Gra is
     Console := Afpx.Get_Console;
     Screen.Set_To_Screen (Console'Access);
     Console.Set_Y_Mode (Con_Io.Con_Io_Mode);
+    Screen.Set_Background (Con_Io.Color_Of ("Dark_Grey"));
 
     -- Screen scale
     Xs_First := 4 * Console.Font_Width;
@@ -465,7 +484,6 @@ package body Mesu_Gra is
     Draw_Layout;
     Tz_Drown := False;
 
-    Screen.Set_Xor_Mode (Con_Io.Xor_On);
     -- Draw all mesures
     for I in 1 .. Nb_Mesure loop
       Mesure_Array(I).Drown := True;
@@ -533,32 +551,17 @@ package body Mesu_Gra is
         end if;
       elsif Get_Res.Mvt = Con_Io.Refresh then
         -- Refresh
-        Screen.Clear;
-        Screen.Set_Xor_Mode (Con_Io.Xor_Off);
-        Draw_Layout;
-        Screen.Set_Xor_Mode (Con_Io.Xor_On);
-        -- Redraw mesures
-        for I in 1 .. Nb_Mesure loop
-          if Mesure_Array(I).Drown then
-            Draw_Mesure (I);
-          end if;
-        end loop;
-        -- Tz_Drown is already up to date
-        if Tz_Drown then
-          Draw_Tz(True);
-        end if;
+        Refresh (Tz_Drown);
       end if;
     end loop Main_Loop;
 
     -- Back to Afpx
-    Screen.Set_Xor_Mode (Con_Io.Xor_Off);
     Screen.Clear;
     Afpx.Redisplay;
   exception
     when Error:others =>
       Basic_Proc.Put_Line_Error ("Exception "
        & Ada.Exceptions.Exception_Name (Error) & " raised.");
-      Screen.Set_Xor_Mode (Con_Io.Xor_Off);
       Screen.Clear;
   end Graphic;
 
