@@ -250,15 +250,15 @@ package body Mesu_Gra is
   procedure Draw_Mesure (No : in Mesure_Range) is
     -- These are the colors in use for the samples names and graphs
     Colors : constant array (1 .. Max_Nb_Mesure) of Con_Io.Effective_Colors
-           := (1 => Con_Io.Color_Of ("Light_Grey"),
+           := (1 => Con_Io.Color_Of ("Blue"),
                2 => Con_Io.Color_Of ("Cyan"),
                3 => Con_Io.Color_Of ("White"),
-               4 => Con_Io.Color_Of ("Lime_Green"),
-               5 => Con_Io.Color_Of ("Orange"),
-               6 => Con_Io.Color_Of ("Blue"),
+               4 => Con_Io.Color_Of ("Brown"),
+               5 => Con_Io.Color_Of ("Tomato"),
+               6 => Con_Io.Color_Of ("Red"),
                7 => Con_Io.Color_Of ("Magenta"),
-               8 => Con_Io.Color_Of ("Tomato"),
-               9 => Con_Io.Color_Of ("Brown"));
+               8 => Con_Io.Color_Of ("Dark_Green");
+               9 => Con_Io.Color_Of ("Medium_Spring_Green"));
     Sec1, Sec2 : Natural;
     Bpm1, Bpm2 : Pers_Def.Bpm_Range;
     Mesure : Mesu_Def.Mesure_Rec renames Mesure_Array(No).Mesure;
@@ -536,17 +536,20 @@ package body Mesu_Gra is
               end if;
             end if;
             Nb_Drown := Nb_Drown + 1;
+            -- Draw this mesure
+            Draw_Mesure (No_Mesure);
           else
             -- Hidding a record
             Mesure_Array(No_Mesure).Drown := False;
             Nb_Drown := Nb_Drown - 1;
           end if;
-          -- Draw/hide this mesure
-          Draw_Mesure (No_Mesure);
-          -- Hide Tz if no mesure
           if Nb_Drown = 0 and then Tz_Drown then
+            -- Hide Tz if no mesure
             Draw_Tz (False);
             Tz_Drown := False;
+          elsif not Mesure_Array(No_Mesure).Drown then
+            -- Hide this mesure
+            Refresh (Tz_Drown);
           end if;
         end if;
       elsif Get_Res.Mvt = Con_Io.Refresh then

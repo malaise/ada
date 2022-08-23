@@ -3,6 +3,7 @@
 
 <Afpx_Descriptors Width="81" Height="27">
  <Color_Definitions>
+    <Color_Definition Id="Color12" Color="Medium_Spring_Green"/>
     <Color_Definition Id="Color13" Color="Tomato"/>
     <Default_Background Color="Light_Grey"/>
   </Color_Definitions>
@@ -23,9 +24,9 @@
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="00" Col="00">Person</Init>
       <Init Row="00" Col="21">Activity</Init>
-      <Init Row="00" Col="37">After</Init>
-      <Init Row="00" Col="46">And</Init>
-      <Init Row="00" Col="52">Before</Init>
+      <Init Row="00" Col="37">From</Init>
+      <Init Row="00" Col="45">and</Init>
+      <Init Row="00" Col="53">To</Init>
     </Field>
 
     <!-- Date -->
