@@ -422,8 +422,12 @@ package body Mesu_Sel is
       begin
         exit when Str = "";
         File_Name := Text_Line.Trim (Str);
+        Add_Selection (File_Name);
+      exception
+        when Mesu_Fil.File_Not_Found_Error =>
+          -- Mesure file has disappeared => Ignore
+          null;
       end;
-      Add_Selection (File_Name);
     end loop;
 
     List_File.Close_All;
