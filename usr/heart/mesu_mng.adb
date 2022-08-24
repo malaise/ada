@@ -375,6 +375,11 @@ package body Mesu_Mng is
             Mesu_Sel.Save;
             Allow_Undo := False;
 
+          elsif Ptg_Result.Field_No = Afpx_Xref.Main.Today then
+            -- Set After to today
+            Str_Mng.Current_Date_Rec (Current_Date);
+            Str_Mng.Check_Date (Current_Date, True, Date_Aft, Ok);
+            Encode_After;
           elsif Ptg_Result.Field_No = Afpx_Xref.Main.Last_Month then
             -- Set After to one month ago
             Str_Mng.Current_Date_Rec (Current_Date, 1);

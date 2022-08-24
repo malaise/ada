@@ -119,78 +119,85 @@
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
-    <!-- Set tfter to one month ago -->
-    <Field Num="15" Kind="Button" Name="Last_Month">
+    <!-- Set after to one today -->
+    <Field Num="15" Kind="Button" Name="Today">
+      <Geometry Up="03" Left="1" Low="03" Right="14"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="00" Col="04" Half_Col_Offset="True">Today</Init>
+    </Field>
+
+    <!-- Set after to one month ago -->
+    <Field Num="16" Kind="Button" Name="Last_Month">
       <Geometry Up="03" Left="17" Low="03" Right="30"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="00" Col="02">Last month</Init>
     </Field>
 
     <!-- Clear After -->
-    <Field Num="16" Kind="Button" Name="Clear_After">
+    <Field Num="17" Kind="Button" Name="Clear_After">
       <Geometry Up="03" Left="35" Low="03" Right="44"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="00" Col="02" Half_Col_Offset="True">Clear</Init>
     </Field>
 
     <!-- Clear Before -->
-    <Field Num="17" Kind="Button" Name="Clear_Before">
+    <Field Num="18" Kind="Button" Name="Clear_Before">
       <Geometry Up="03" Left="51" Low="03" Right="60"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="00" Col="02" Half_Col_Offset="True">Clear</Init>
     </Field>
 
     <!-- Add to selection button -->
-    <Field Num="18" Kind="Button" Name="Add">
+    <Field Num="19" Kind="Button" Name="Add">
       <Geometry Up="05" Left="01" Low="07" Right="14"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="01" Col="02">Add Select</Init>
     </Field>
 
     <!-- Remove from selection button -->
-    <Field Num="19" Kind="Button" Name="Remove">
+    <Field Num="20" Kind="Button" Name="Remove">
       <Geometry Up="05" Left="17" Low="07" Right="30"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="01" Col="02">Rem Select</Init>
     </Field>
 
     <!-- Clear selection button -->
-    <Field Num="20" Kind="Button" Name="Clear">
+    <Field Num="21" Kind="Button" Name="Clear">
       <Geometry Up="05" Left="33" Low="07" Right="45"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="01" Col="02">Clr Select</Init>
     </Field>
 
     <!-- Undo button -->
-    <Field Num="21" Kind="Button" Name="Undo">
+    <Field Num="22" Kind="Button" Name="Undo">
       <Geometry Up="05" Left="48" Low="07" Right="55"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="01" Col="02">Undo</Init>
     </Field>
 
     <!-- Activity data base button -->
-    <Field Num="22" Kind="Button" Name="Db">
+    <Field Num="23" Kind="Button" Name="Db">
       <Geometry Up="02" Left="68" Low="04" Right="79"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="01" Col="01">Activities</Init>
     </Field>
 
     <!-- Exit button -->
-    <Field Num="23" Kind="Button" Name="Quit">
+    <Field Num="24" Kind="Button" Name="Quit">
       <Geometry Up="25" Left="68" Low="25" Right="79"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="00" Col="04">EXIT</Init>
     </Field>
 
     <!-- Number of recors in list -->
-    <Field Num="24" Kind="Put" Name="Nb_Selected">
+    <Field Num="25" Kind="Put" Name="Nb_Selected">
       <Geometry Up="06" Left="58" Low="06" Right="79"/>
       <Colors Foreground="Brown" Background="Light_Grey"/>
       <Init Row="00" Col="00">xxxxx records selected</Init>
     </Field>
 
     <!-- Tittle of list -->
-    <Field Num="25" Kind="Put">
+    <Field Num="26" Kind="Put">
       <Geometry Up="08" Left="01" Low="08" Right="52"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="00" Col="00">Person</Init>
@@ -200,49 +207,49 @@
     </Field>
 
     <!-- Unselect button -->
-    <Field Num="26" Kind="Button" Name="Unselect">
+    <Field Num="27" Kind="Button" Name="Unselect">
       <Geometry Up="07" Left="68" Low="07" Right="79"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="00" Col="02">Unselect</Init>
     </Field>
 
     <!-- Draw button -->
-    <Field Num="27" Kind="Button" Name="Draw">
+    <Field Num="28" Kind="Button" Name="Draw">
       <Geometry Up="09" Left="68" Low="11" Right="79"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="01" Col="04">Draw</Init>
     </Field>
 
     <!-- Print button -->
-    <Field Num="28" Kind="Button" Name="Print">
+    <Field Num="29" Kind="Button" Name="Print">
       <Geometry Up="13" Left="68" Low="13" Right="79"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="00" Col="03" Half_Col_Offset="True">Print</Init>
     </Field>
 
     <!-- Create button -->
-    <Field Num="29" Kind="Button" Name="Create">
+    <Field Num="30" Kind="Button" Name="Create">
       <Geometry Up="15" Left="68" Low="17" Right="79"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="01" Col="03">Create</Init>
     </Field>
 
     <!-- Clone button -->
-    <Field Num="30" Kind="Button" Name="Clone">
+    <Field Num="31" Kind="Button" Name="Clone">
       <Geometry Up="19" Left="68" Low="19" Right="79"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="00" Col="03">Clone</Init>
     </Field>
 
     <!-- Edit button -->
-    <Field Num="31" Kind="Button" Name="Edit">
+    <Field Num="32" Kind="Button" Name="Edit">
       <Geometry Up="21" Left="68" Low="21" Right="79"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="00" Col="04">Edit</Init>
     </Field>
 
     <!-- Delete button -->
-    <Field Num="32" Kind="Button" Name="Delete">
+    <Field Num="33" Kind="Button" Name="Delete">
       <Geometry Up="23" Left="68" Low="23" Right="79"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="00" Col="03">Delete</Init>
