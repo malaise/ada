@@ -54,10 +54,41 @@ package body Mesu_Sel is
   function File_Search is new Line_List_Mng.Search (Same_File);
   procedure File_Sort   is new Line_List_Mng.Sort   (Less_Than);
 
+  -- Current line and pos to try to move back to
+  Curr_Line : Afpx.Line_Rec;
+  Curr_Pos : Line_List_Mng.Ll_Natural;
+
+  procedure Save_Curr is
+  begin
+    -- Save current line
+    if Line_List.Is_Empty then
+      Curr_Line.Len := 0;
+      Curr_Pos := 0;
+    else
+      Line_List.Read (Curr_Line, Line_List_Mng.Current);
+      Curr_Pos := Line_List.Get_Position;
+    end if;
+  end Save_Curr;
+
+  procedure Move_To_Curr is
+    use type Afpx.Line_List_Mng.Ll_Natural;
+  begin
+    if not File_Search (Line_List, Curr_Line,
+                    Line_List_Mng.Next, 1,
+                    Line_List_Mng.Absolute) then
+      -- Prev line not found, try to move at prev pos
+      if Curr_Pos <= Line_List.List_Length then
+        Line_List.Move_At (Curr_Pos);
+      elsif not Line_List.Is_Empty then
+        -- End of list
+        Line_List.Rewind (Line_List_Mng.Prev);
+      end if;
+    end if;
+  end Move_To_Curr;
+
+
   -- Add records to selection
   procedure Add_Selection (Criteria : in Criteria_Rec) is
-    Saved_Pos : Afpx.Line_List_Mng.Ll_Natural;
-    Pos       : Afpx.Line_List_Mng.Ll_Positive;
     First_Pers, Last_Pers : Natural;
     The_Files : Dir_Mng.File_List_Mng.List_Type;
     File : Dir_Mng.File_Entry_Rec;
@@ -69,18 +100,13 @@ package body Mesu_Sel is
     Ok     : Boolean;
     Mesure : Mesu_Def.Mesure_Rec;
     Line   : Afpx.Line_Rec;
-    use type Afpx.Line_List_Mng.Ll_Natural;
   begin
     if Pers_Def.The_Persons.Is_Empty then
       return;
     end if;
 
-    -- Save current position
-    if Line_List.Is_Empty then
-      Saved_Pos := 0;
-    else
-      Saved_Pos := Line_List.Get_Position;
-    end if;
+    -- Save current line
+    Save_Curr;
     -- Save list
     Save_List;
 
@@ -140,10 +166,8 @@ package body Mesu_Sel is
         Str_Mng.Format_Mesure_To_List (Person, Mesure, No_S, Line);
 
         if not Line_List.Is_Empty then
-          Pos := Line_List.Get_Position;
           Ok := not File_Search (Line_List, Line, Line_List_Mng.Next, 1,
                                  Line_List_Mng.Absolute);
-          Line_List.Move_At (Pos);
         end if;
       end if;
 
@@ -157,16 +181,11 @@ package body Mesu_Sel is
       The_Files.Move_To;
     end loop;
 
-    -- sort by name activity date
+    -- Sort by name activity date
     File_Sort (Line_List);
 
-    -- restore / set pos
-    if Saved_Pos /= 0 then
-      Line_List.Move_At (Saved_Pos);
-    elsif not Line_List.Is_Empty then
-      -- List was empty, move to first
-      Line_List.Rewind;
-    end if;
+    -- Restore / set pos
+    Move_To_Curr;
 
     -- Delete files list
     The_Files.Delete_List;
@@ -174,7 +193,6 @@ package body Mesu_Sel is
 
   -- Remove records from selection
   procedure Rem_Selection (Criteria : in Criteria_Rec) is
-    Saved_Pos, Curr_Pos : Afpx.Line_List_Mng.Ll_Positive;
     Line   : Afpx.Line_Rec;
     Ok : Boolean;
     File_Name : Mesu_Nam.File_Name_Str;
@@ -183,14 +201,9 @@ package body Mesu_Sel is
     Pid_S  : Mesu_Nam.File_Pid_Str;
     Pos_Pers : Positive;
     Person : Pers_Def.Person_Rec;
-    use type Afpx.Line_List_Mng.Ll_Natural;
   begin
-    -- Save current position
-    if Line_List.Is_Empty then
-      return;
-    else
-      Saved_Pos := Line_List.Get_Position;
-    end if;
+    -- Save current line
+    Save_Curr;
     -- Save list
     Save_List;
 
@@ -220,36 +233,20 @@ package body Mesu_Sel is
         Ok := Date_Match (Date_S, Criteria.Date_Aft, Criteria.Date_Bef);
       end if;
 
-      -- Delete line. Update saved pos if deleting initial current line
+      -- Delete line, move to next
       if Ok then
-        Curr_Pos := Line_List.Get_Position;
-        if Curr_Pos /= Line_List.List_Length then
-          Line_List.Delete;
-          if Curr_Pos < Saved_Pos then
-            Saved_Pos := Saved_Pos - 1;
-          elsif Curr_Pos = Saved_Pos then
-            Saved_Pos := Line_List.Get_Position;
-          end if;
-        else
-          Line_List.Delete (Line_List_Mng.Prev);
-          if Curr_Pos = Saved_Pos and then not Line_List.Is_Empty then
-            Saved_Pos := Line_List.Get_Position;
-          end if;
-          exit;
-        end if;
+        Line_List.Delete (Moved => Ok);
+        exit when Line_List.Is_Empty or else not Ok;
       else
         -- Next line except if list empty or end of list
-        exit when Line_List.Is_Empty
-        or else not Line_List.Check_Move;
+        exit when Line_List.Is_Empty or else not Line_List.Check_Move;
         Line_List.Move_To;
       end if;
 
     end loop;
 
     -- Restore pos
-    if not Line_List.Is_Empty then
-      Line_List.Move_At (Saved_Pos);
-    end if;
+    Move_To_Curr;
 
   end Rem_Selection;
 
@@ -272,7 +269,6 @@ package body Mesu_Sel is
     Pos_Pers : Positive;
     Person : Pers_Def.Person_Rec;
     Mesure : Mesu_Def.Mesure_Rec;
-    Dummy : Boolean;
   begin
 
     Mesu_Nam.Split_File_Name (Name, Date_S, No_S, Pid_S);
@@ -288,18 +284,17 @@ package body Mesu_Sel is
 
     -- Insert
     Line_List.Insert (Line);
+    Save_Curr;
 
     -- Sort by name activity date
     File_Sort (Line_List);
 
     -- Current set to inserted
-    Dummy := File_Search (Line_List, Line, Line_List_Mng.Next, 1,
-                          Line_List_Mng.Absolute);
+    Move_To_Curr;
   end Add_Selection;
 
   -- Remove a record from selection
   procedure Rem_Selection (Name : in Mesu_Nam.File_Name_Str) is
-    Saved_Pos, Curr_Pos : Afpx.Line_List_Mng.Ll_Positive;
     Line   : Afpx.Line_Rec;
     Date_S : Mesu_Nam.File_Date_Str;
     No_S   : Mesu_Nam.File_No_Str;
@@ -307,14 +302,10 @@ package body Mesu_Sel is
     Pos_Pers : Positive;
     Person : Pers_Def.Person_Rec;
     Mesure : Mesu_Def.Mesure_Rec;
-    use type Afpx.Line_List_Mng.Ll_Natural;
+    Dummy : Boolean;
   begin
-    -- Save current position
-    if Line_List.Is_Empty then
-      return;
-    else
-      Saved_Pos := Line_List.Get_Position;
-    end if;
+    -- Save current line
+    Save_Curr;
 
     -- Save list
     Save_List;
@@ -334,42 +325,22 @@ package body Mesu_Sel is
     -- Search record
     if not File_Search (Line_List, Line, Line_List_Mng.Next, 1,
                         Line_List_Mng.Absolute) then
-      Line_List.Move_At (Saved_Pos);
+      Move_To_Curr;
       return;
     end if;
 
-    -- Delete line. Update saved pos if deleting initial current line
-    Curr_Pos := Line_List.Get_Position;
-    if Curr_Pos /= Line_List.List_Length then
-      Line_List.Delete;
-      if Curr_Pos < Saved_Pos then
-        Saved_Pos := Saved_Pos - 1;
-      elsif Curr_Pos = Saved_Pos then
-        Saved_Pos := Line_List.Get_Position;
-      end if;
-    else
-      Line_List.Delete (Line_List_Mng.Prev);
-      if Curr_Pos = Saved_Pos and then not Line_List.Is_Empty then
-        Saved_Pos := Line_List.Get_Position;
-      end if;
-    end if;
-    if not Line_List.Is_Empty then
-      Line_List.Move_At (Saved_Pos);
-    end if;
+    -- Delete line. Update current
+    Line_List.Delete (Moved => Dummy);
+    Move_To_Curr;
 
   end Rem_Selection;
 
   -- Remove a record from selection
   procedure Rem_Selection (Line : in Afpx.Line_Rec) is
-    Saved_Pos, Curr_Pos : Afpx.Line_List_Mng.Ll_Positive;
-    use type Afpx.Line_List_Mng.Ll_Natural;
+    Dummy : Boolean;
   begin
-    -- Save current position
-    if Line_List.Is_Empty then
-      return;
-    else
-      Saved_Pos := Line_List.Get_Position;
-    end if;
+    -- Save current line
+    Save_Curr;
 
     -- Save list
     Save_List;
@@ -377,28 +348,13 @@ package body Mesu_Sel is
     -- Search record
     if not File_Search (Line_List, Line, Line_List_Mng.Next, 1,
                         Line_List_Mng.Absolute) then
-      Line_List.Move_At (Saved_Pos);
+      Move_To_Curr;
       return;
     end if;
 
-    -- Delete line. Update saved pos if deleting initial current line
-    Curr_Pos := Line_List.Get_Position;
-    if Curr_Pos /= Line_List.List_Length then
-      Line_List.Delete;
-      if Curr_Pos < Saved_Pos then
-        Saved_Pos := Saved_Pos - 1;
-      elsif Curr_Pos = Saved_Pos then
-        Saved_Pos := Line_List.Get_Position;
-      end if;
-    else
-      Line_List.Delete (Line_List_Mng.Prev);
-      if Curr_Pos = Saved_Pos and then not Line_List.Is_Empty then
-        Saved_Pos := Line_List.Get_Position;
-      end if;
-    end if;
-    if not Line_List.Is_Empty then
-      Line_List.Move_At (Saved_Pos);
-    end if;
+    -- Delete line
+    Line_List.Delete (Moved => Dummy);
+    Move_To_Curr;
 
   end Rem_Selection;
 
@@ -492,7 +448,9 @@ package body Mesu_Sel is
   -- Undo (if possible) previous action on selection
   procedure Undo is
   begin
+    Save_Curr;
     Copy_List (From => Saved_List, To => Line_List);
+    Move_To_Curr;
   end Undo;
 
 end Mesu_Sel;
