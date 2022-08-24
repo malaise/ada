@@ -59,7 +59,8 @@ package body Mesu_Edi is
 
   -- Edit a mesure.
   -- If date or person changes, then the file name may be affected.
-  -- If File_Name is empty as input, then it is a creation and file_name
+  -- New file may be created but previous file is not deleted
+  -- If File_Name is empty as input, then it is a creation and file name
   --  is affected
   procedure Edit (File_Name : in out Mesu_Nam.File_Name_Str) is
     In_Create : Boolean;
@@ -439,12 +440,6 @@ package body Mesu_Edi is
             -- Delete if needed, then find slot if needed
             if Ok then
               -- Check if file to be deleted
-              if not In_Create and then
-                (        Mesure.Date /= Date_S
-                 or else Pid_S /= Str_Mng.Pid_Str(Mesure.Pid)) then
-                -- Necessity to change file_name. Delete previous.
-                Mesu_Fil.Delete (File_Name);
-              end if;
               if      In_Create
               or else Mesure.Date /= Date_S
               or else Pid_S /= Str_Mng.Pid_Str(Mesure.Pid) then
@@ -540,6 +535,7 @@ package body Mesu_Edi is
   end Clone;
 
   -- Delete a mesure
+  -- File is not deleted
   procedure Delete (File_Name : in out Mesu_Nam.File_Name_Str) is
     Person : Pers_Def.Person_Rec;
     Pos_Pers : Integer;

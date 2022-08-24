@@ -14,6 +14,7 @@ package body Mesu_Mng is
     Criteria     : Mesu_Sel.Criteria_Rec;
     Line         : Afpx.Line_Rec;
     File_Name    : Mesu_Nam.File_Name_Str;
+    Prev_Name    : Mesu_Nam.File_Name_Str;
     Exit_Program : Boolean;
     Current_Date : Str_Mng.Date_Str_Rec;
     Person : Pers_Def.Person_Rec;
@@ -439,10 +440,15 @@ package body Mesu_Mng is
             Save;
             Afpx.Line_List.Read (Line, Afpx.Line_List_Mng.Current);
             Str_Mng.Format_List_To_Mesure (Line, File_Name);
+            Prev_Name := File_Name;
             Mesu_Edi.Edit (File_Name);
             Init (False);
             if not Str_Mng.Is_Spaces (File_Name) then
               Mesu_Sel.Rem_Selection (Line);
+              if File_Name /= Prev_Name then
+                -- File has been renamed
+              Mesu_Fil.Delete (Prev_Name);
+              end if;
               Mesu_Sel.Add_Selection (File_Name);
             end if;
           elsif Ptg_Result.Field_No = Afpx_Xref.Main.Delete then
