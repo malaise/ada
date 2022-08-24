@@ -6,7 +6,6 @@ package body Mesu_Sel is
   use Afpx;
 
   Saved_List : Afpx.Line_List_Mng.List_Type;
-  Backuped_List : Afpx.Line_List_Mng.List_Type;
 
   List_File_Name : constant String := "SELECTIO.LST";
 
@@ -490,17 +489,6 @@ package body Mesu_Sel is
   begin
     Copy_List (From => Saved_List, To => Line_List);
   end Undo;
-
-  -- Backup / restore Afpx list
-  procedure Backup_List is
-  begin
-    Copy_List (From => Line_List, To => Backuped_List);
-  end Backup_List;
-
-  procedure Restore_List is
-  begin
-    Copy_List (From => Backuped_List, To => Line_List);
-  end Restore_List;
 
 end Mesu_Sel;
 

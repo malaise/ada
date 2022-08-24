@@ -10,10 +10,11 @@ package Mesu_Edi is
   -- If File_Name is set to empty, the edition has been canceled
   procedure Edit (File_Name : in out Mesu_Nam.File_Name_Str);
 
-  -- Clone a mesure: create a new file name an edit it
+  -- Clone a mesure: create a new file name and edit it
   procedure Clone (File_Name : in out Mesu_Nam.File_Name_Str);
 
   -- Delete a mesure.
+  -- NOTE: The mesure file is NOT deleted yet
   -- If File_Name is set to empty, the edition has been canceled
   procedure Delete (File_Name : in out Mesu_Nam.File_Name_Str);
 

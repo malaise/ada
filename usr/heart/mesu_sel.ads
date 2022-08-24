@@ -39,9 +39,5 @@ package Mesu_Sel is
   -- Undo (if possible) previous action on selection
   procedure Undo;
 
-  -- Backup / restore Afpx list
-  procedure Backup_List;
-  procedure Restore_List;
-
 end Mesu_Sel;
 

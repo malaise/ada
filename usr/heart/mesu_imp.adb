@@ -252,13 +252,15 @@ package body Mesu_Imp is
   -- Select file name, then:
   -- Import Date, and Samples according to Sampling_Delta, from .tcx file
   -- Import all Samples from .txt file
-  procedure Import (Mesure : in out Mesu_Def.Mesure_Rec;
-                    Ok : out Boolean) is
+  procedure Import (Mesure   : in out Mesu_Def.Mesure_Rec;
+                    Ok       : out Boolean;
+                    Date_Set : out Boolean) is
     -- Current dir
     Curdir : constant String := Directory.Get_Current;
     -- Selected file name
     File_Name : As.U.Asu_Us;
   begin
+    Ok := False;
     -- Goto Default or previous dir
     Directory.Change_Current (Get_Import_Dir);
     -- Select file name
@@ -273,15 +275,16 @@ package body Mesu_Imp is
     end if;
     if Upper_Str (Directory.File_Suffix (File_Name.Image)) = ".TCX" then
       Import_Tcx (File_Name.Image, Mesure, Ok);
+      Ok := True;
+      Date_Set := True;
     elsif Upper_Str (Directory.File_Suffix (File_Name.Image)) = ".TXT" then
       Import_Txt (File_Name.Image, Mesure, Ok);
-    else
-      Ok := False;
+      Ok := True;
+      Date_Set := False;
     end if;
     Directory.Change_Current (Curdir);
   exception
     when My_Select_File.Exit_Requested =>
-      Ok := False;
       Directory.Change_Current (Curdir);
     when others =>
       Directory.Change_Current (Curdir);

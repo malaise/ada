@@ -49,11 +49,12 @@ package body Mesu_Edi is
   end Protect;
 
   -- Import sample data from ascii file
-  procedure Import_Samples (Mesure : in out Mesu_Def.Mesure_Rec;
-                            Ok : out Boolean) is
+  procedure Import_Samples (Mesure   : in out Mesu_Def.Mesure_Rec;
+                            Ok       : out Boolean;
+                            Date_Set : out Boolean) is
   begin
     Ok := False;
-    Mesu_Imp.Import (Mesure, Ok);
+    Mesu_Imp.Import (Mesure, Ok, Date_Set);
   end Import_Samples;
 
   -- Edit a mesure.
@@ -69,7 +70,7 @@ package body Mesu_Edi is
     Pid_S  : Mesu_Nam.File_Pid_Str;
     Bpm_S  : Str_Mng.Bpm_Str;
     Mesure : Mesu_Def.Mesure_Rec;
-    Valid_Date : Boolean;
+    Date_Set : Boolean;
     Space_Found : Boolean;
 
     Get_Handle : Afpx.Get_Handle_Rec;
@@ -187,8 +188,7 @@ package body Mesu_Edi is
           -- Check date : valid
           if Locok then
             Current_Field := Afpx_Xref.Records.Day;
-            Str_Mng.Check_Date (Date_R, True, Mesure.Date, Valid_Date);
-            Locok := Valid_Date;
+            Str_Mng.Check_Date (Date_R, True, Mesure.Date, Locok);
           end if;
           if Locok then
             Current_Field := Afpx_Xref.Records.Comment;
@@ -381,11 +381,13 @@ package body Mesu_Edi is
               or else Get_Handle.Cursor_Field = Afpx_Xref.Records.Rate_001;
             end loop;
             if Ok then
-              Import_Samples (Mesure, Ok);
+              Import_Samples (Mesure, Ok, Date_Set);
               -- Restore screen
               Init (False);
               Encode (Person, Mesure);
-              Get_Handle.Cursor_Field := Afpx_Xref.Records.Rate_001;
+              Get_Handle.Cursor_Field :=
+                  (if Date_Set then Afpx_Xref.Records.Day
+                   else Afpx_Xref.Records.Rate_001);
             end if;
 
           elsif Ptg_Result.Field_No = Afpx_Xref.Records.Cancel then
@@ -613,8 +615,8 @@ package body Mesu_Edi is
             File_Name := Mesu_Nam.File_Name_Str'((others => ' '));
             exit;
           elsif Ptg_Result.Field_No = Afpx_Xref.Records.Valid then
-            -- Delete
-            Mesu_Fil.Delete (File_Name);
+            -- OK. The caller will have to delete the file
+            --  (after unselecting it)
             exit;
           end if; -- Ptg_Result.Field_No = valid or cancel
       end case; -- Result.Event
