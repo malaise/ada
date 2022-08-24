@@ -16,15 +16,16 @@ package body Mesu_Sel is
   function Date_Match (Date, After, Before : Mesu_Def.Date_Str)
                       return Boolean is
      -- No criteria : date matches
-    (if Str_Mng.Is_Spaces (After) and then Str_Mng.Is_Spaces (Before) then True
-     -- Only before : Date has to be < before
-    elsif Str_Mng.Is_Spaces (After) then Date < Before
+    (if Str_Mng.Is_Spaces (After) and then Str_Mng.Is_Spaces (Before) then
+      True
+     -- Only before : Date has to be <= before
+    elsif Str_Mng.Is_Spaces (After) then Date <= Before
      -- Only after : date has to be >= after
     elsif Str_Mng.Is_Spaces (Before) then Date >= After
      -- After <= Before : has to be after <= date < before
-    elsif After <= Before then Date >= After and then Date < Before
-     -- After > Before : has to be after >= date or  date < before
-    else Date >= After or else Date < Before);
+    elsif After <= Before then Date >= After and then Date <= Before
+     -- After => Before : has to be after >= date or  date <= before
+    else Date >= After or else Date <= Before);
 
   function Same_File (L1, L2 : Line_Rec) return Boolean is
     F1, F2 : Mesu_Nam.File_Name_Str;
@@ -127,7 +128,7 @@ package body Mesu_Sel is
       File_Name := File.Name.Image;
       Mesu_Nam.Split_File_Name (File_Name, Date_S, No_S, Pid_S);
       -- check date
-     Ok := Date_Match (Date_S, Criteria.Date_Aft, Criteria.Date_Bef);
+      Ok := Date_Match (Date_S, Criteria.Date_Aft, Criteria.Date_Bef);
 
       if Ok then
         -- check pairs

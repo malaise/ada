@@ -5,6 +5,8 @@ with Pers_Def, Mesu_Def, Mesu_Nam;
 package Mesu_Sel is
 
   -- Criteria for adding to / removing from selection
+  -- Date_Aft and Date_Bef are themselves included
+  --  (they ar reather "From included" and "To included" criteria)
   type Criteria_Rec is record
     Name     : Pers_Def.Person_Name_Str;
     Activity : Pers_Def.Person_Activity_Str;
