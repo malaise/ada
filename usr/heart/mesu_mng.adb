@@ -452,7 +452,7 @@ package body Mesu_Mng is
               Mesu_Sel.Rem_Selection (Line);
               if File_Name /= Prev_Name then
                 -- File has been renamed
-              Mesu_Fil.Delete (Prev_Name);
+                Mesu_Fil.Delete (Prev_Name);
               end if;
               Mesu_Sel.Add_Selection (File_Name);
             end if;
