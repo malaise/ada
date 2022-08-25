@@ -601,13 +601,13 @@ package body History is
     -- Move according to click row in scroll field
     procedure Move_At_Scroll (Row : in Con_Io.Row_Range) is
       Percent : Afpx.Percent_Range;
-      Saved_Position, Position : Afpx.Line_List_Mng.Ll_Natural;
+      Position : Afpx.Line_List_Mng.Ll_Natural;
+      Saved_Position : Afpx.Utils.Backup_Context;
       use type Afpx.Line_List_Mng.Ll_Natural;
     begin
       if Afpx.Line_List.Is_Empty then
         return;
       end if;
-      Saved_Position := Afpx.Line_List.Get_Position;
       -- 0 <-> 1% and Height-1 <-> 100%
       -- (Percent-1)/99 = Row/(Height-1)
       Percent :=
@@ -618,9 +618,11 @@ package body History is
       if Position = 0 then
         return;
       end if;
+      -- Center to selected index but keep unchanged selected line
+      Saved_Position.Backup;
       Afpx.Line_List.Move_At (Position);
       Afpx.Update_List (Afpx.Top_Selected);
-      Afpx.Line_List.Move_At (Saved_Position);
+      Saved_Position.Restore (Force_Position => True);
     end Move_At_Scroll;
 
     -- Reread history
