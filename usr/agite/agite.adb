@@ -70,7 +70,7 @@ procedure Agite is
   Search_Dir : Boolean;
 
   -- Position in list
-  Position : Afpx.Line_List_Mng.Ll_Positive;
+  Position : Afpx.Utils.Backup_Context;
 
   -- List width and encoding
   List_Width : Afpx.Width_Range := Afpx.Width_Range'First;
@@ -495,10 +495,9 @@ procedure Agite is
   package body Timer is separate;
 
   -- Init screen
-  procedure Init (Pos : in Afpx.Line_List_Mng.Ll_Natural;
+  procedure Init (Reset_List : in Boolean;
                   Dir : in String := "";
                   Is_Current : in Boolean := True) is
-    use type Afpx.Line_List_Mng.Ll_Natural;
   begin
     -- Init Afpx
     Init_Afpx;
@@ -514,11 +513,10 @@ procedure Agite is
     end if;
 
     -- Init list
-    if Pos /= 0 and then Pos <= Afpx.Line_List.List_Length then
-      Afpx.Line_List.Move_At (Pos);
-    else
-      Afpx.Line_List.Rewind;
+    if Reset_List then
+      Position.Reset;
     end if;
+    Position.Restore (Force_Position => True);
     Afpx.Update_List (Afpx.Center_Selected);
 
   end Init;
@@ -532,25 +530,25 @@ procedure Agite is
   procedure Do_History (Name : in String; Is_File : in Boolean) is
   begin
     -- Call history and restore current entry
-    Position := Afpx.Line_List.Get_Position;
+    Position.Backup;
     History.List (Root.Image, "", Path.Image, Name, Is_File,
                   True, True);
-    Init (Position);
+    Position.Restore (Force_Position => True);
   end Do_History;
 
   procedure Do_Tree (Name : in String; Is_File : in Boolean) is
   begin
     -- Call tree and restore current entry
-    Position := Afpx.Line_List.Get_Position;
+    Position.Backup;
     Tree.List (Root.Image, "", Path.Image, Name, Is_File);
-    Init (Position);
+    Init (False);
   end Do_Tree;
 
   procedure List_Tags is
   begin
-    Position := Afpx.Line_List.Get_Position;
+    Position.Backup;
     Tags.List (Root.Image);
-    Init (Position);
+    Init (False);
   end List_Tags;
 
   -- Add a dir or file
@@ -576,10 +574,18 @@ procedure Agite is
     Dummy : Boolean;
     use type Afpx.Line_List_Mng.Ll_Natural;
 
+    -- Move to prev in case we are last (restore would rewind)
+    procedure Move_Back is
+    begin
+      if Afpx.Line_List.Get_Position /= 1 then
+        Afpx.Line_List.Move_To (Afpx.Line_List_Mng.Prev);
+        Position.Backup;
+      end if;
+    end Move_Back;
   begin
     -- Call Confirm and restore current entry
-    Position := Afpx.Line_List.Get_Position;
-    Files.Move_At (Position);
+    Position.Backup;
+    Files.Move_At (Afpx.Line_List.Get_Position);
     Files.Read (File, Git_If.File_Mng.Current);
 
     if File.Kind = '/' then
@@ -592,7 +598,6 @@ procedure Agite is
                      Directory.Build_File_Name (Path.Image, Name, "")) then
         begin
           Directory.Remove (Name);
-          Position := Position - 1;
         exception
           when Directory.Access_Error =>
             -- Directory not empty
@@ -603,6 +608,7 @@ procedure Agite is
             -- Very unlikely but maybe the dir has disappeared meanwhile
             null;
         end;
+        Move_Back;
       end if;
     elsif File.Kind = '?' then
       if File.S2 = ' ' and then File.S3 = 'D' then
@@ -633,7 +639,7 @@ procedure Agite is
       if Confirm ("Ready to remove:",
                   Directory.Build_File_Name (Path.Image, Name, "")) then
         Sys_Calls.Unlink (Name);
-        Position := Position - 1;
+        Move_Back;
       end if;
     elsif File.S2 /= ' ' then
       if File.S2 = 'R' then
@@ -671,6 +677,7 @@ procedure Agite is
       if Confirm ("Ready to remove for Git:",
                   Directory.Build_File_Name (Path.Image, Name, "")) then
         Git_If.Do_Rm (Name);
+        Move_Back;
       end if;
     else
       -- File is staged and has unstaged changes, reset
@@ -679,49 +686,49 @@ procedure Agite is
         Git_If.Do_Reset (Name);
       end if;
     end if;
-    Init (Position);
+    Init (False);
   end Do_Revert;
 
   procedure Do_Branch is
     Curr_Dir : constant String := Directory.Get_Current;
   begin
-    Position := Afpx.Line_List.Get_Position;
+    Position.Backup;
     Branch.Handle (Root.Image);
-    Init (Position, Curr_Dir);
+    Init (False, Curr_Dir);
   end Do_Branch;
 
   procedure Do_Commit is
     Curr_Dir : constant String := Directory.Get_Current;
   begin
-    Position := Afpx.Line_List.Get_Position;
+    Position.Backup;
     Commit.Handle (Root.Image);
-    Init (Position, Curr_Dir);
+    Init (False, Curr_Dir);
   end Do_Commit;
 
   procedure Do_Reset is
     Curr_Dir : constant String := Directory.Get_Current;
     Dummy : Boolean;
   begin
-    Position := Afpx.Line_List.Get_Position;
+    Position.Backup;
     Dummy := Reset (Root.Image, "", Allow_Clean => True);
-    Init (Position, Curr_Dir);
+    Init (False, Curr_Dir);
   end Do_Reset;
 
   procedure Do_Stash is
     Curr_Dir : constant String := Directory.Get_Current;
   begin
-    Position := Afpx.Line_List.Get_Position;
+    Position.Backup;
     Stash.Handle (Root.Image);
-    Init (Position, Curr_Dir);
+    Init (False, Curr_Dir);
   end Do_Stash;
 
   procedure Do_Pull is
     Curr_Dir : constant String := Directory.Get_Current;
     Dummy : Boolean;
   begin
-    Position := Afpx.Line_List.Get_Position;
+    Position.Backup;
     Dummy := Push_Pull.Handle (Root.Image, Pull => True);
-    Init (Position, Curr_Dir);
+    Init (False, Curr_Dir);
   end Do_Pull;
 
   -- List action on File or Dir:
@@ -743,11 +750,11 @@ procedure Agite is
           null;
         when Diff =>
           if File_Name /= ".." then
-            Position := Afpx.Line_List.Get_Position;
+            Position.Backup;
             if Confirm_Diff_Dir (Path.Image, File_Name) then
               Git_If.Launch_Diff (Differator.Image, File_Name);
             end if;
-            Init (Position);
+            Init (False);
           end if;
         when History =>
           if File_Name = "." then
@@ -1035,7 +1042,7 @@ begin -- Agite
   Commit.Set_Comment (Config.Get_Comment);
 
   -- Init Afpx (dir, files..) and Timer
-  Init (0);
+  Init (True);
   Timer.Start (Periodic => True);
 
   -- Now we can reset this env variables for our children
@@ -1099,7 +1106,7 @@ begin -- Agite
               declare
                 New_Dir : constant String := Bookmarks.Handle;
               begin
-                Init (0, New_Dir, False);
+                Init (True, New_Dir, False);
               end;
             when Afpx_Xref.Main.Pushd =>
               -- PushD
@@ -1138,18 +1145,18 @@ begin -- Agite
               declare
                 Curr_Dir : constant String := Directory.Get_Current;
               begin
-                Position := Afpx.Line_List.Get_Position;
+                Position.Backup;
                 List_Action (History);
-                Init (Position, Curr_Dir);
+                Init (False, Curr_Dir);
               end;
             when Afpx_Xref.Main.Tree =>
               -- Tree
               declare
                 Curr_Dir : constant String := Directory.Get_Current;
               begin
-                Position := Afpx.Line_List.Get_Position;
+                Position.Backup;
                 List_Action (Tree);
-                Init (Position, Curr_Dir);
+                Init (False, Curr_Dir);
               end;
             when Afpx_Xref.Main.Tags =>
               -- Tags

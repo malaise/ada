@@ -81,12 +81,12 @@ procedure List (Root : in String) is
 
   -- Checkout current tag
   function Do_Checkout return Boolean is
-    Pos : Afpx.Line_List_Mng.Ll_Positive;
+    Pos : Afpx.Utils.Backup_Context;
     Tag : Git_If.Tag_Entry_Rec;
   begin
     -- Save position in List and read it
-    Pos := Afpx.Line_List.Get_Position;
-    Tags_List.Move_At (Pos);
+    Pos.Backup;
+    Tags_List.Move_At (Afpx.Line_List.Get_Position);
     Tags_List.Read (Tag, Git_If.Tag_Mng.Current);
 
     -- Checkout (success will lead to return to Directory)
@@ -97,7 +97,7 @@ procedure List (Root : in String) is
       -- Restore screen
       Init;
       Init_List (Tags_List);
-      Afpx.Line_List.Move_At (Pos);
+      Pos.Restore;
       Afpx.Update_List (Afpx.Center_Selected);
       return False;
     end if;

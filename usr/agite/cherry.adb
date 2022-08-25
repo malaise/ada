@@ -338,7 +338,7 @@ package body Cherry is
   -- - a Wipe is folowed, possibly by Fixup, then a Squash, otherwise (EmptyCmt)
   type Valid_List is (Ok, Empty, Foldprev, Emptycmt);
   function Valid_Cherries return Valid_List is
-    Pos : Afpx.Line_List_Mng.Ll_Positive;
+    Pos : Afpx.Utils.Backup_Context;
     First_Set : Boolean;
     After_Wipe : Boolean;
     Status : Cherry_Status_List;
@@ -348,7 +348,7 @@ package body Cherry is
     end if;
 
     -- Save position
-    Pos := Cherries.Get_Position;
+    Pos.Backup;
 
     -- Loop for checks
     First_Set := False;
@@ -364,7 +364,7 @@ package body Cherry is
         if not First_Set then
           -- First status must not be fixup or squash
           if Status = Fixup or else Status = Squash then
-            Cherries.Move_At (Pos);
+            Pos.Restore (Force_Position => True);
             return Foldprev;
           end if;
           First_Set := True;
@@ -376,7 +376,7 @@ package body Cherry is
             -- Ok (so far)
             After_Wipe := False;
           elsif Status /= Wipe then
-            Cherries.Move_At (Pos);
+            Pos.Restore (Force_Position => True);
             return Emptycmt;
           end if;
         elsif Status = Wipe then
@@ -390,7 +390,7 @@ package body Cherry is
     end loop;
 
     -- Restore position
-    Cherries.Move_At (Pos);
+    Pos.Restore (Force_Position => True);
 
     -- List ended without a squash after a wipe
     if After_Wipe then

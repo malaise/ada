@@ -44,14 +44,11 @@ package body Stash is
 
   -- Re assess the list of stashes
   procedure Reread (Keep : in Boolean) is
-    Pos : Afpx.Line_List_Mng.Ll_Natural;
-    use type Afpx.Line_List_Mng.Ll_Natural;
+    Pos : Afpx.Utils.Backup_Context;
   begin
     -- Save current selection
     if Keep and then not Afpx.Line_List.Is_Empty then
-      Pos := Afpx.Line_List.Get_Position;
-    else
-      Pos := 0;
+      Pos.Backup;
     end if;
 
     -- Get list of changes
@@ -60,18 +57,8 @@ package body Stash is
     -- Encode the list
     Init_List (Stashes);
 
-    -- Move back to the same entry as before (if possible)
-    if not  Afpx.Line_List.Is_Empty then
-      if Pos /= 0 then
-        if Pos <= Afpx.Line_List.List_Length then
-          Afpx.Line_List.Move_At (Pos);
-        else
-          Afpx.Line_List.Rewind (Where => Afpx.Line_List_Mng.Prev);
-        end if;
-      else
-        Afpx.Line_List.Rewind;
-      end if;
-    end if;
+    -- Move back to the same entry as before
+    Pos.Restore;
     -- Center
     Afpx.Update_List (Afpx.Center_Selected);
 
