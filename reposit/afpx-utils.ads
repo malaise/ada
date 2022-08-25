@@ -22,6 +22,20 @@ package Afpx.Utils is
   procedure Init_List (From : in out Element_List.List_Type);
 
 
+  -- Backup current line of Afpx list in a context, and later restore it
+  --  for example after comming back from another descriptor
+  type Backup_Context is tagged private;
+  -- Save Current line content and position
+  procedure Backup (In_Context : in out Backup_Context);
+  -- Restore: If saved position content matches then this one
+  --          If one line content match then this one
+  --          If multiple or no content match then default
+  -- If Force_Position is set then try to restore saved position
+  procedure Restore (From_Context   : in Backup_Context;
+                     Default_To_Top : in Boolean := True;
+                     Force_Position : in Boolean := False);
+
+
   -- If Str fits Width then return Str, padded with space if no Align_Left
   -- elsif Show_Cut return ">>" & tail to match Width (if Keep_Tail)
   --             or return head to match Width and "<<" (if not Keep_Tail)
@@ -37,6 +51,7 @@ package Afpx.Utils is
   --  its Activation status)
   procedure Protect_Field (Field_No : in Afpx.Absolute_Field_Range;
                            Protect  : in Boolean);
+
 
   -- Clean (fill with spaces) the Str field of the line
   procedure Clean_Line (Line : in out Afpx.Line_Rec);
@@ -56,6 +71,7 @@ package Afpx.Utils is
                          Keep_Head : in Boolean := True;
                          Show_Cut : Boolean := True);
 
+
   -- Encode Text in 1st column of Row of Field, procuste,
   --  preserve tail or head
   procedure Encode_Field (Text : in String;
@@ -73,6 +89,11 @@ package Afpx.Utils is
                           Keep_Head : in Boolean := True;
                           Show_Cut : Boolean := True;
                           Offset : Integer := 0);
-
+private
+  -- A backup context
+  type Backup_Context is tagged record
+    Content : Afpx.Line_Rec;
+    Position : Afpx.Line_List_Mng.Ll_Natural := 0;
+  end record;
 end Afpx.Utils;
 

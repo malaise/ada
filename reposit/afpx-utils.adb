@@ -1,4 +1,4 @@
-with Aski.Unicode, Str_Util;
+with Aski.Unicode, Str_Util, Long_Longs;
 package body Afpx.Utils is
 
   -- Scroll the list according to button
@@ -46,6 +46,62 @@ package body Afpx.Utils is
     From.Move_At (Pos);
     Line_List.Move_At (Pos);
   end Init_List;
+
+  -- Backup current line of Afpx list in a context, and later restore it
+  procedure Backup (In_Context : in out Backup_Context) is
+  begin
+    if Afpx.Line_List.Is_Empty then
+      In_Context.Content.Len := 0;
+      In_Context.Position := 0;
+    else
+      In_Context.Content := Afpx.Line_List.Access_Current.all;
+      In_Context.Position := Afpx.Line_List.Get_Position;
+    end if;
+  end Backup;
+
+  -- Restore based on line content and position
+  function Line_Search is new Afpx.Line_List_Mng.Search ("=");
+  procedure Restore (From_Context : in Backup_Context;
+                     Default_To_Top : in Boolean := True;
+                     Force_Position : in Boolean := False) is
+    use type Long_Longs.Llu_Natural;
+  begin
+    if Afpx.Line_List.Is_Empty or else From_Context.Position = 0 then
+      return;
+    end if;
+    if Force_Position then
+      -- Restore position or default
+      if From_Context.Position <= Afpx.Line_List.List_Length then
+        Afpx.Line_List.Move_At (From_Context.Position);
+      else
+        Afpx.Line_List.Rewind ( (if Default_To_Top then Afpx.Line_List_Mng.Next
+                                 else Afpx.Line_List_Mng.Prev));
+      end if;
+      return;
+    end if;
+    -- Quick win if saved position matches
+    if From_Context.Position <= Afpx.Line_List.List_Length then
+      Afpx.Line_List.Move_At (From_Context.Position);
+      if Afpx.Line_List.Access_Current.all = From_Context.Content then
+        return;
+      end if;
+    end if;
+    -- Search first occurence
+    if Line_Search (Afpx.Line_List, From_Context.Content,
+                    Afpx.Line_List_Mng.Next, 1,
+                    Afpx.Line_List_Mng.Current_Absolute) then
+      -- Search second occurence
+      if not Line_Search  (Afpx.Line_List, From_Context.Content,
+                           Afpx.Line_List_Mng.Next, 1,
+                           Afpx.Line_List_Mng.Skip_Current) then
+        -- Only one occurence => this one
+        return;
+      end if;
+    end if;
+    -- Multiple or no match => Default
+    Afpx.Line_List.Rewind ( (if Default_To_Top then Afpx.Line_List_Mng.Next
+                             else Afpx.Line_List_Mng.Prev));
+  end Restore;
 
   -- If Str fits Width then return Str, padded with space if no Align_Left
   -- else return ">>" & tail to match Width (if Keep_Tail)

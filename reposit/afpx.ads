@@ -18,6 +18,7 @@ package Afpx is
   -- The content of one row of one field (encode, decode)
   subtype Unicode_Number is Unicode.Unicode_Number;
   subtype Unicode_Sequence is Unicode.Unicode_Sequence;
+  use type Unicode_Sequence;
 
   -- Width and height of the screen
   procedure Get_Screen_Size (Height : out Height_Range;
@@ -294,9 +295,11 @@ package Afpx is
   subtype Line_Len_Range is Natural range 0 .. Con_Io.Col_Range'Last + 1;
   type Line_Rec is record
     Str : Unicode_Sequence (1 .. Line_Len_Range'Last);
-    Len : Line_Len_Range;
+    Len : Line_Len_Range := 0;
   end record;
   procedure Set (To : out Line_Rec; Val : in Line_Rec);
+  overriding function "=" (L1, L2 : Line_Rec) return Boolean is
+    (L1.Str(1 .. L1.Len) = L2.Str(1 .. L2.Len));
 
   -- Encode a string in a line for the list
   -- Exceptions : String_Too_Long
