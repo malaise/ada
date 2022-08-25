@@ -1,5 +1,6 @@
 with Ada.Exceptions;
-with Afpx, Con_Io, Normal, My_Math, As.B, Language, Basic_Proc;
+with Afpx.Utils, Con_Io, Normal, My_Math, As.B, Language, Basic_Proc,
+     Upper_Char;
 with Mesu_Def, Str_Mng, Mesu_Nam, Pers_Mng, Pers_Def, Mesu_Fil;
 package body Mesu_Gra is
   use type My_Math.Real;
@@ -179,8 +180,8 @@ package body Mesu_Gra is
     -- Help
     Screen.Move (Screen.Row_Range_Last, 5);
     Screen.Set_Foreground (Help_Color);
-    Screen.Put ("Escape to quit, '1' to '" & Normal(Nb_Mesure,1)
-       & "' to draw/hide a record, T for Training Zones.");
+    Screen.Put ("'1' - '" & Normal(Nb_Mesure,1) & "', 'S', 'H': Show/hide  "
+              & "/  T: Training zones  /  Esc: Quit");
     -- Axes of scale
     Screen.Set_Foreground (Scale_Color);
     Console.Draw_Line (Xs_First, Ys_First, Xs_Last, Ys_First);
@@ -324,7 +325,7 @@ package body Mesu_Gra is
 
   -- The main
   procedure Graphic is
-    Saved_Pos : Afpx.Line_List_Mng.Ll_Natural;
+    Bkp_Ctx   : Afpx.Utils.Backup_Context;
     Line      : Afpx.Line_Rec;
     File_Name : Mesu_Nam.File_Name_Str;
     Date_S    : Mesu_Nam.File_Date_Str;
@@ -385,7 +386,7 @@ package body Mesu_Gra is
 
     -- Init array of mesures
     -- List is not empty
-    Saved_Pos := Afpx.Line_List.Get_Position;
+    Bkp_Ctx.Backup;
     Nb_Mesure := 0;
     -- for each in list : store in array
     Afpx.Line_List.Rewind;
@@ -410,7 +411,7 @@ package body Mesu_Gra is
 
       Afpx.Line_List.Move_To;
     end loop;
-    Afpx.Line_List.Move_At (Saved_Pos);
+    Bkp_Ctx.Restore (False);
 
     -- Find Y min and max
     Y_First := Pers_Def.Bpm_Range'Last;
@@ -496,7 +497,7 @@ package body Mesu_Gra is
       -- Get key
       Get_Res := Screen.Get;
       if Get_Res.Mvt = Con_Io.Full then
-        Char := Language.Unicode_To_Char (Get_Res.Char);
+        Char := Upper_Char (Language.Unicode_To_Char (Get_Res.Char));
       else
         Char := '#';
       end if;
@@ -506,7 +507,7 @@ package body Mesu_Gra is
         exit Main_Loop;
       elsif Get_Res.Mvt = Con_Io.Break then
         exit Main_Loop;
-      elsif Char = 'T' or else Char = 't' then
+      elsif Char = 'T' then
         if Tz_Drown then
           -- Hide Tzs
           Draw_Tz(False);
@@ -552,6 +553,12 @@ package body Mesu_Gra is
             Refresh (Tz_Drown);
           end if;
         end if;
+      elsif Char = 'S' or else Char = 'H' then
+        -- Show or hide all mesures
+        for I in 1 .. Nb_Mesure loop
+          Mesure_Array(I).Drown := Char = 'S';
+        end loop;
+        Refresh (Tz_Drown);
       elsif Get_Res.Mvt = Con_Io.Refresh then
         -- Refresh
         Refresh (Tz_Drown);

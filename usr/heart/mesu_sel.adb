@@ -1,4 +1,4 @@
-with Dir_Mng, Text_Line, Sys_Calls;
+with Dir_Mng, Text_Line, Sys_Calls, Afpx.Utils;
 with Pers_Mng, Str_Mng, Mesu_Fil;
 
 -- Mesure selection management
@@ -54,38 +54,8 @@ package body Mesu_Sel is
   function File_Search is new Line_List_Mng.Search (Same_File);
   procedure File_Sort   is new Line_List_Mng.Sort   (Less_Than);
 
-  -- Current line and pos to try to move back to
-  Curr_Line : Afpx.Line_Rec;
-  Curr_Pos : Line_List_Mng.Ll_Natural;
-
-  procedure Save_Curr is
-  begin
-    -- Save current line
-    if Line_List.Is_Empty then
-      Curr_Line.Len := 0;
-      Curr_Pos := 0;
-    else
-      Line_List.Read (Curr_Line, Line_List_Mng.Current);
-      Curr_Pos := Line_List.Get_Position;
-    end if;
-  end Save_Curr;
-
-  procedure Move_To_Curr is
-    use type Afpx.Line_List_Mng.Ll_Natural;
-  begin
-    if not File_Search (Line_List, Curr_Line,
-                    Line_List_Mng.Next, 1,
-                    Line_List_Mng.Absolute) then
-      -- Prev line not found, try to move at prev pos
-      if Curr_Pos <= Line_List.List_Length then
-        Line_List.Move_At (Curr_Pos);
-      elsif not Line_List.Is_Empty then
-        -- End of list
-        Line_List.Rewind (Line_List_Mng.Prev);
-      end if;
-    end if;
-  end Move_To_Curr;
-
+  -- Current context of line and pos to try to move back to
+  Bkp_Ctx : Afpx.Utils.Backup_Context;
 
   -- Add records to selection
   procedure Add_Selection (Criteria : in Criteria_Rec) is
@@ -106,7 +76,7 @@ package body Mesu_Sel is
     end if;
 
     -- Save current line
-    Save_Curr;
+    Bkp_Ctx.Backup;
     -- Save list
     Save_List;
 
@@ -185,7 +155,7 @@ package body Mesu_Sel is
     File_Sort (Line_List);
 
     -- Restore / set pos
-    Move_To_Curr;
+    Bkp_Ctx.Restore (False);
 
     -- Delete files list
     The_Files.Delete_List;
@@ -203,7 +173,7 @@ package body Mesu_Sel is
     Person : Pers_Def.Person_Rec;
   begin
     -- Save current line
-    Save_Curr;
+    Bkp_Ctx.Backup;
     -- Save list
     Save_List;
 
@@ -246,7 +216,7 @@ package body Mesu_Sel is
     end loop;
 
     -- Restore pos
-    Move_To_Curr;
+    Bkp_Ctx.Restore (False);
 
   end Rem_Selection;
 
@@ -284,13 +254,13 @@ package body Mesu_Sel is
 
     -- Insert
     Line_List.Insert (Line);
-    Save_Curr;
+    Bkp_Ctx.Backup;
 
     -- Sort by name activity date
     File_Sort (Line_List);
 
     -- Current set to inserted
-    Move_To_Curr;
+    Bkp_Ctx.Restore (False);
   end Add_Selection;
 
   -- Remove a record from selection
@@ -305,7 +275,7 @@ package body Mesu_Sel is
     Dummy : Boolean;
   begin
     -- Save current line
-    Save_Curr;
+    Bkp_Ctx.Backup;
 
     -- Save list
     Save_List;
@@ -325,13 +295,15 @@ package body Mesu_Sel is
     -- Search record
     if not File_Search (Line_List, Line, Line_List_Mng.Next, 1,
                         Line_List_Mng.Absolute) then
-      Move_To_Curr;
+      Bkp_Ctx.Restore (False);
       return;
     end if;
 
-    -- Delete line. Update current
+    -- Delete line
     Line_List.Delete (Moved => Dummy);
-    Move_To_Curr;
+
+    -- Try to remain at current position
+    Bkp_Ctx.Restore (False, Force_Position => True);
 
   end Rem_Selection;
 
@@ -340,7 +312,7 @@ package body Mesu_Sel is
     Dummy : Boolean;
   begin
     -- Save current line
-    Save_Curr;
+    Bkp_Ctx.Backup;
 
     -- Save list
     Save_List;
@@ -348,13 +320,13 @@ package body Mesu_Sel is
     -- Search record
     if not File_Search (Line_List, Line, Line_List_Mng.Next, 1,
                         Line_List_Mng.Absolute) then
-      Move_To_Curr;
+      Bkp_Ctx.Restore (False);
       return;
     end if;
 
     -- Delete line
     Line_List.Delete (Moved => Dummy);
-    Move_To_Curr;
+    Bkp_Ctx.Restore (False);
 
   end Rem_Selection;
 
@@ -392,7 +364,6 @@ package body Mesu_Sel is
 
   -- Save the selection to file
   procedure Save is
-    Saved_Pos  : Afpx.Line_List_Mng.Ll_Positive;
     Line   : Afpx.Line_Rec;
     File_Name : Mesu_Nam.File_Name_Str;
   begin
@@ -402,13 +373,14 @@ package body Mesu_Sel is
     -- Create file
     List_File.Create_All (List_File_Name);
 
-    -- Save current position
+    -- Done if empty
     if Line_List.Is_Empty then
       List_File.Close_All;
       return;
-    else
-      Saved_Pos := Line_List.Get_Position;
     end if;
+
+    -- Save current position
+    Bkp_Ctx.Backup;
 
     Line_List.Rewind;
     -- Copy items
@@ -421,8 +393,8 @@ package body Mesu_Sel is
       Line_List.Move_To;
     end loop;
 
-    -- Restore pos, set it in saved_list
-    Line_List.Move_At (Saved_Pos);
+    -- Restore pos
+    Bkp_Ctx.Restore (False);
 
     List_File.Close_All;
   end Save;
@@ -435,7 +407,9 @@ package body Mesu_Sel is
     if not From.Is_Empty then
       To.Insert_Copy (From);
       -- Set same pos
-      To.Move_At (From.Get_Position);
+      if not From.Is_Empty then
+        To.Move_At (From.Get_Position);
+      end if;
     end if;
   end Copy_List;
 
@@ -448,9 +422,9 @@ package body Mesu_Sel is
   -- Undo (if possible) previous action on selection
   procedure Undo is
   begin
-    Save_Curr;
+    Bkp_Ctx.Backup;
     Copy_List (From => Saved_List, To => Line_List);
-    Move_To_Curr;
+    Bkp_Ctx.Restore (False);
   end Undo;
 
 end Mesu_Sel;

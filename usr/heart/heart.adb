@@ -33,6 +33,8 @@ begin
   End_Of_Program;
 
 exception
+  when Pers_Fil.Io_Error =>
+    Basic_Proc.Put_Line_Error ("File PERSONS.LST not found. Wrong directory?");
   when others =>
     End_Of_Program;
     raise;

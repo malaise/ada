@@ -1,4 +1,4 @@
-with Aski, Normal, Afpx, Sys_Calls, Text_Line, As.U, Temp_File;
+with Aski, Normal, Afpx.Utils, Sys_Calls, Text_Line, As.U, Temp_File;
 with Str_Mng, Mesu_Fil, Pers_Def, Mesu_Def, Mesu_Nam, Pers_Mng, Afpx_Xref;
 package body Mesu_Prt is
 
@@ -50,7 +50,7 @@ package body Mesu_Prt is
 
   procedure Print is
     Printer_Name : As.U.Asu_Us;
-    Saved_Pos : Afpx.Line_List_Mng.Ll_Natural;
+    Bkp_Ctx   : Afpx.Utils.Backup_Context;
     Line      : Afpx.Line_Rec;
     File_Name : Mesu_Nam.File_Name_Str;
     Date_S    : Mesu_Nam.File_Date_Str;
@@ -65,7 +65,7 @@ package body Mesu_Prt is
     Printer_Name.Set (Temp_File.Create (".", "prt"));
     Printer.Create_All (Printer_Name.Image);
     -- List is not empty
-    Saved_Pos := Afpx.Line_List.Get_Position;
+    Bkp_Ctx.Backup;
 
     -- for each in list
     Afpx.Line_List.Rewind;
@@ -102,12 +102,12 @@ package body Mesu_Prt is
     Dummy := Sys_Calls.Call_System(Printer_Command & " " & Printer_Name.Image);
 
     -- Restore pos
-    Afpx.Line_List.Move_At (Saved_Pos);
+    Bkp_Ctx.Restore (False);
 
     Sys_Calls.Unlink (Printer_Name.Image);
   exception
     when others =>
-      Afpx.Line_List.Move_At (Saved_Pos);
+      Bkp_Ctx.Restore (False);
   end Print;
 
 end Mesu_Prt;
