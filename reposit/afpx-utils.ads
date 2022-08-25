@@ -34,6 +34,8 @@ package Afpx.Utils is
   procedure Restore (From_Context   : in Backup_Context;
                      Default_To_Top : in Boolean := True;
                      Force_Position : in Boolean := False);
+  -- Reset context
+  procedure Reset (Context : in out Backup_Context);
 
 
   -- If Str fits Width then return Str, padded with space if no Align_Left

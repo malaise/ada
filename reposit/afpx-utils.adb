@@ -103,6 +103,12 @@ package body Afpx.Utils is
                              else Afpx.Line_List_Mng.Prev));
   end Restore;
 
+  -- Reset context
+  procedure Reset (Context : in out Backup_Context) is
+  begin
+    Context := (others => <>);
+  end Reset;
+
   -- If Str fits Width then return Str, padded with space if no Align_Left
   -- else return ">>" & tail to match Width (if Keep_Tail)
   --   or return head to match Width and "<<" (if not Keep_Tail)
