@@ -1,7 +1,7 @@
 -- Search for words matching criteria (au:o.obile) or regexp (au.*bile)
 -- Or search anagrams
-with As.U.Utils, Argument, Con_Io, Afpx, Basic_Proc, Language, Many_Strings,
-     Str_Util, Lower_Str, Environ, Images, Event_Mng, Afpx_Xref,
+with As.U.Utils, Argument, Con_Io, Afpx.Utils, Basic_Proc, Language,
+     Many_Strings, Str_Util, Lower_Str, Environ, Images, Event_Mng, Afpx_Xref,
      Mutexes, Protected_Var, Trilean, Rounds, Normal, Reg_Exp;
 with Cmd, Analist, Icon;
 procedure Xwords is
@@ -201,13 +201,13 @@ procedure Xwords is
   -- Scroll list according to row (of scroll button) clicked
   procedure Do_Scroll (Row : in Con_Io.Row_Range)is
     Percent : Afpx.Percent_Range;
-    Saved_Position, Position : Afpx.Line_List_Mng.Ll_Natural;
+    Position : Afpx.Line_List_Mng.Ll_Natural;
+    Saved_Position : Afpx.Utils.Backup_Context;
     use type Afpx.Line_List_Mng.Ll_Natural;
   begin
     if Afpx.Line_List.Is_Empty then
       return;
     end if;
-    Saved_Position := Afpx.Line_List.Get_Position;
     -- 0 <-> 1% and Height-1 <-> 100%
     -- (Percent-1)/99 = Row/(Height-1)
     Percent := Rounds.Roundiv (
@@ -217,10 +217,11 @@ procedure Xwords is
     if Position = 0 then
       return;
     end if;
+    -- Center to selected index but keep unchanged selected line
+    Saved_Position.Backup;
     Afpx.Line_List.Move_At (Position);
     Afpx.Update_List (Afpx.Top_Selected);
-    Afpx.Line_List.Move_At (Saved_Position);
-
+    Saved_Position.Restore (Force_Position => True);
   end Do_Scroll;
 
   -- Is Ananouns set
