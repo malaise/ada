@@ -13,7 +13,7 @@ procedure Pingpong is
   -- Argument parsing
   Keys : constant Argument_Parser.The_Keys_Type := (
     1 => (False, 'h', As.U.Tus ("help"), False),
-    2 => (True,  'i', As.U.Tus ("interface"), False, True, As.U.Asu_Null),
+    2 => (True,  'i', As.U.Tus ("iface_name"), False, True, As.U.Asu_Null),
     3 => (True,  'p', As.U.Tus ("period"), False, True, As.U.Asu_Null),
     4 => (False, 'r', As.U.Tus ("reply"), False),
     5 => (False, 's', As.U.Tus ("send"), False),
@@ -39,7 +39,7 @@ procedure Pingpong is
     Basic_Proc.Put_Line_Error ("   or: " & Argument.Get_Program_Name
       & " " & Argument_Parser.Image (Keys(1)));
     Basic_Proc.Put_Line_Error (
-        "  <option>    ::= <interface> | <period>");
+        "  <option>    ::= <interface> | <period> | <average> | <debug>");
     Basic_Proc.Put_Line_Error (
         "  <interface> ::= " & Argument_Parser.Image (Keys(2)));
     Basic_Proc.Put_Line_Error (
