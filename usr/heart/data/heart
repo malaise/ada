@@ -2,4 +2,8 @@
 export HEART_DIR=${HOME}/ada/usr/heart
 export AFPX_DATA_DIR=${HEART_DIR}
 cd ${HEART_DIR}/data
+if [ \( "$1" = "-t" \) -o \( "$1" = "--tmp" \) ] ; then
+  export HEART_IMPORT_DIR=${HOME}/tmp
+  shift
+fi
 ${HEART_DIR}/heart $*
