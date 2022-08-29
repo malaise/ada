@@ -64,7 +64,7 @@ package body Mesu_Imp is
     Points : Point_List_Mng.Dyn_List.List_Type;
     Point : Point_Rec;
     Res_Index : Mesu_Def.Sample_Nb_Range;
-    use type Ada.Calendar.Time;
+    use type Ada.Calendar.Time, Pers_Def.Bpm_Range;
   begin
     Logger.Init ("Import");
     -- Init result
@@ -149,8 +149,9 @@ package body Mesu_Imp is
                                         "%Y-%m-%dT%H:%M:%S");
                 Point.Time := Date_Text.Pack (Date);
                 -- Avoid duplicated successive times
-                if Points.Is_Empty
-                or else Point.Time /= Points.Access_Current.Time then
+                if (Points.Is_Empty
+                    or else Point.Time /= Points.Access_Current.Time)
+                and then Point.Bmp /= 0 then
                   Points.Insert (Point);
                   Logger.Log_Debug ("  Got point " & Txt.Image & Point.Bmp'Img);
                 end if;
