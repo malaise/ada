@@ -44,7 +44,7 @@ package Utils is
     -- Get intermediate time (end of potentially long operation)
     procedure Ended;
     -- Is current time not far enough after intermediate time (so calling
-    --  again the potentially long operation should ve avoided)
+    --  again the potentially long operation should be avoided)
     function Overload return Boolean;
   end Chrono;
 
