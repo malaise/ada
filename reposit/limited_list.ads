@@ -328,26 +328,38 @@ package Limited_List is
 
   -- Iteration
   ------------
-  -- Called with each matching element, which can be updated.
+  -- Called with each matching element, which can be updated but must
+  --  remain current.
   -- Processing of Iterate can be stopped by resetting Go_On to False
   --  (it is initialised to True).
   type Iteration_Access is new My_List.Iteration_Access;
 
-  -- Search the next item matching the provided criteria and
-  --  call Iteration with this item.
+  -- Search the next item matching the provided criteria (next/prev if
+  --  Match is null) and call Iteration with this item.
   -- Starts from current, skipping it or not (usefull if current is the result
   --  of a previous search), or from begin/end of list
   -- Does not raise Empty_List.
   procedure Iterate (List      : in out List_Type;
                      Match     : access
-                function (Current, Criteria : Element_Type) return Boolean;
+                 function (Current, Criteria : Element_Type) return Boolean;
                      Criteria  : in Element_Type;
                      Where     : in Direction := Next;
                      From      : in Search_Kind_List;
                      Iteration : access
-    procedure (Current : in Element_Type;
-               Go_On   : in out Boolean));
+                 procedure (Current : in Element_Type;
+                            Go_On   : in out Boolean));
 
+  -- Simple iteration on the whole list
+  -- Rewinds, iterates on all elements and stops on the last element
+  -- Does not raise Empty_List.
+  procedure Iterate_All (List : in out List_Type;
+                         Iteration : access
+                     procedure (Current : in Element_Type;
+                                Go_On   : in out Boolean));
+
+
+  -- Sorting
+  ----------
   generic
     -- Comparison function for sorting
     -- WARNING : Less_Than must be strict
@@ -359,6 +371,8 @@ package Limited_List is
   procedure Sort (List : in out List_Type);
 
 
+  -- Exceptions
+  -------------
   -- When reading, getting, moving, permuting, getting position
   Empty_List : exception renames My_List.Empty_List;
   Full_List : exception renames My_List.Full_List;

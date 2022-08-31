@@ -976,13 +976,13 @@ package body Long_Long_Limited_List is
   -- Iterate
   procedure Iterate (List      : in out List_Type;
                      Match     : access
-                function (Current, Criteria : Element_Type) return Boolean;
+                 function (Current, Criteria : Element_Type) return Boolean;
                      Criteria  : in Element_Type;
                      Where     : in Direction := Next;
                      From      : in Search_Kind_List;
                      Iteration : access
-    procedure (Current : in Element_Type;
-               Go_On   : in out Boolean)) is
+                 procedure (Current : in Element_Type;
+                            Go_On   : in out Boolean)) is
     Found : Boolean;
     Go_On : Boolean;
   begin
@@ -1027,6 +1027,20 @@ package body Long_Long_Limited_List is
       List.In_Cb := False;
       raise;
   end Iterate;
+
+  -- Simple iteration on the whole list
+  procedure Iterate_All (List : in out List_Type;
+                         Iteration : access
+                     procedure (Current : in Element_Type;
+                                Go_On   : in out Boolean)) is
+    Crit : Element_Type;
+  begin
+    if List.Is_Empty then
+      return;
+    end if;
+    Set (Crit, List.First.Value);
+    Iterate (List, null, Crit, Next, Absolute, Iteration);
+  end Iterate_All;
 
 
   -- Sort

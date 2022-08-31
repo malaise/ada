@@ -386,9 +386,18 @@ package body Limited_List is
                        My_List.Search_Kind_List (From), Iteration);
   end Iterate;
 
-  --     -- Comparison function for sorting
-  --     -- WARNING : Less_Than must be strict
-  --     --  (i.e. Less_Than(El1, El1) = False)
+  -- Simple iteration on the whole list
+  -- Rewinds, iterates on all elements and stops on the last element
+  -- Does not raise Empty_List.
+  procedure Iterate_All (List : in out List_Type;
+                         Iteration : access
+                     procedure (Current : in Element_Type;
+                                Go_On   : in out Boolean)) is
+  begin
+    List.List.Iterate_All (Iteration);
+  end Iterate_All;
+
+
   -- Sort all the list in crescent order
   -- Current position is reset to first
   procedure Sort (List : in out List_Type) is

@@ -9,6 +9,9 @@ procedure T_Arbi_List is
   function My_Search is new My_List.Search ("=");   -- ("=" of Integer)
   procedure My_Search_Raise is new My_List.Search_Raise ("=");
   procedure My_Sort is new My_List.Sort ("<");  -- ("<" of Integer)
+  function My_Match (Current, Dummy : Integer) return Boolean is
+    (Current < 10);
+
 
   List : My_List.List_Type;
   List1 : My_List.List_Type;
@@ -218,8 +221,10 @@ begin
 
   -- Iterator
   Basic_Proc.Put_Line_Output ("Iteration");
-  List.Iterate (null, 1, My_List.Next, My_List.Absolute,
-                Iteration'Access);
+ List.Iterate (My_Match'Access, 1, My_List.Next, My_List.Absolute,
+                   Iteration'Access);
+  Basic_Proc.Put_Line_Output ("Whole iteration");
+  List.Iterate_All (Iteration'Access);
 
   -- Complete delete
   Basic_Proc.Put_Line_Output ("Delete fully the list");

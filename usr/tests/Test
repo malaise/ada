@@ -246,7 +246,7 @@ EOF
 fi
 
 # t_arbi_list
-if `match $arg t_dyn_list` ; then
+if `match $arg t_arbi_list` ; then
   title t_arbi_list
   try t_arbi_list --auto
   cat << EOF >exp
@@ -273,6 +273,14 @@ Pos from first: 09 Pos from last: 01 Can go to next: FALSE Current item, go to n
 Pos from first: 09 Pos from last: 01 Current item, stay: 10 
 Current item, stay: 10 
 Iteration
+04  is odd
+02  is odd
+01  is even
+06  is odd
+07  is even
+08  is odd
+09  is even
+Whole iteration
 04  is odd
 02  is odd
 01  is even
@@ -856,6 +864,14 @@ Pos from first: 09 Pos from last: 01 Can go to next: FALSE Current item, go to n
 Pos from first: 09 Pos from last: 01 Current item, stay: 10 
 Current item, stay: 10 
 Iteration
+04  is odd
+02  is odd
+01  is even
+06  is odd
+07  is even
+08  is odd
+09  is even
+Whole iteration
 04  is odd
 02  is odd
 01  is even

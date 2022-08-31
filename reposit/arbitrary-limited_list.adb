@@ -1056,6 +1056,20 @@ package body Arbitrary.Limited_List is
       raise;
   end Iterate;
 
+  -- Simple iteration on the whole list
+  procedure Iterate_All (List : in out List_Type;
+                         Iteration : access
+                     procedure (Current : in Element_Type;
+                                Go_On   : in out Boolean)) is
+    Crit : Element_Type;
+  begin
+    if List.Is_Empty then
+      return;
+    end if;
+    Set (Crit, List.First.Value);
+    Iterate (List, null, Crit, Next, Absolute, Iteration);
+  end Iterate_All;
+
 
   -- Sort
   procedure Sort (List : in out List_Type) is
