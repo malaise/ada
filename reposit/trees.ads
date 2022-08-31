@@ -249,9 +249,9 @@ package Trees is
     -- Nothing if tree is empty
     -- Level is 0 on current item
     procedure Iterate (The_Tree   : in out Tree_Type;
-                       Do_One_Acc : not null access function
-                           (Element : in out Element_Type;
-                            Level   : Natural) return Iteration_Policy;
+                       Do_One_Acc : not null access
+                   function (Element : in out Element_Type;
+                             Level   : Natural) return Iteration_Policy;
                        Elder      : in Boolean := True);
 
   private

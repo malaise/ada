@@ -976,8 +976,8 @@ package body Trees is
 
     procedure Iterate (The_Tree   : in out Tree_Type;
                        Do_One_Acc : not null access
-        function (Element : in out Element_Type;
-                  Level : Natural) return Iteration_Policy;
+                   function (Element : in out Element_Type;
+                             Level : Natural) return Iteration_Policy;
                        Elder      : in Boolean := True) is
 
       Saved_Curr, Cell_Acc : Cell_Access;

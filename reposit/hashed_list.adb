@@ -236,8 +236,8 @@ package body Hashed_List is
   -- Call Iteration on all items
   procedure Iterate (List      : in out List_Type;
                      Iteration : access
-     procedure (Current : in Element_Type;
-                Go_On   : in out Boolean);
+                 procedure (Current : in Element_Type;
+                            Go_On   : in out Boolean);
                      From      : in Reference := From_First) is
     Item : Element_Type;
     Moved : Boolean;
@@ -258,10 +258,12 @@ package body Hashed_List is
           Item,
           (if From = From_First then List_Mng.Next else List_Mng.Prev),
           Moved => Moved);
-      List.In_Cb := True;
-      Iteration (Item, Go_On);
-      List.In_Cb := False;
-      -- Callback requests to stop or en of list
+      if Iteration /= null then
+        List.In_Cb := True;
+        Iteration (Item, Go_On);
+        List.In_Cb := False;
+      end if;
+      -- Callback requests to stop or end of list
       exit when not Go_On or else not Moved;
     end loop;
   exception
