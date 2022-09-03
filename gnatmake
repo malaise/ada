@@ -3,7 +3,7 @@
 # Only "-noview" for gnatls is handled here
 #  other args are passed
 if [ -z "$GNATPATH" ] ; then
-  export GNATPATH=/usr/local/gnat/bin
+  export GNATPATH="/usr/bin"
 fi
 
 # Like makefiles
