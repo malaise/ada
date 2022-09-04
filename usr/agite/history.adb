@@ -16,7 +16,7 @@ package body History is
   function Image2 (Log : Git_If.Log_Entry_Rec) return String is
     -- 1 or 2 lines of comment
     (Log.Comment(1).Image
-   & (if not Log.Comment(2).Is_Null then "$" & Log.Comment(2).Image
+   & (if not Log.Comment(2).Is_Null then " " & Log.Comment(2).Image
       else "") );
 
   -- Encode a commit on a given length

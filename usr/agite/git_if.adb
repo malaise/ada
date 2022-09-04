@@ -596,8 +596,7 @@ package body Git_If is
     loop
       Flow.Read (Line, Moved => Moved);
       exit when Line.Length = 0;
-      Ind := Ind + 1;
-      if Ind = 1 and then Line.Length >= 2
+      if Ind = 0 and then Line.Length >= 2
       and then Line.Slice (1, 2) /= "  " then
         -- No Comment at all in short mode (=> notes or next commit)
         -- No Comment at all in detailed mode (=> notes or modified files)
@@ -611,12 +610,14 @@ package body Git_If is
       end if;
       Assert (Line.Length >= 4);
       Assert (Line.Slice (1, 4) = "    ");
-      -- Copy first comments
-      if Ind <= Comments'Last then
-        Comments(Ind) := Line.Uslice (5,  Line.Length);
-        Logger.Log (Debug1, "  Block got Comment: " & Comments(Ind).Image);
+      Line.Delete_Nb (1, 4);
+      -- Copy first non empty lines of comment
+      if Ind < Comments'Last and then not Line.Is_Null then
+        Ind := Ind + 1;
+        Comments(Ind) := Line;
+        Logger.Log (Debug1, "  Block got comment: " & Comments(Ind).Image);
       else
-        Logger.Log (Debug1, "  Block skip " & Line.Image);
+        Logger.Log (Debug1, "  Block skip comment: " & Line.Image);
       end if;
       exit when not Moved;
     end loop;

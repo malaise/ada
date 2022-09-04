@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V41.09
+V41.10
 
 General purpose
 ---------------
@@ -1072,7 +1072,7 @@ Below is a "H:" tagged get field in which you can enter (or paste), up to
 
 Content::
 The list shows, for each commit, the date (format YYMMDD:HHMM), a space, then
-the comment (up to two lines, separated by \'$\'). +
+the comment (up to two lines, separated by a space). +
 If the commit is a merge, then the separator between the date and the comment
 becomes a ''>''. +
 If the commit contains a renaming of current file, then the separator becomes
