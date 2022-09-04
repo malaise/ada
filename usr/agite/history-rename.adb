@@ -111,7 +111,7 @@ begin
     end if;
 
   end loop;
-  Log.Rewind;
+  Log.Rewind (Check_Empty => False);
   return First_Index;
 end Rename;
 
