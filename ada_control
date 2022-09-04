@@ -1,6 +1,6 @@
 #!/bin/bash
 if [ -z "$ADACONTROL_PATH" ] ; then
-  export ADACONTROL_PATH=/usr/local/src/adactl/src/adactl
+  export ADACONTROL_PATH=/usr/bin/adactl
 fi
 if [ -z "$GNATPATH" ] ; then
   export GNATPATH=/usr/local/gnat/bin
