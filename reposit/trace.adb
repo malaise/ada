@@ -1,6 +1,6 @@
 with Ada.Calendar;
 with Environ, Argument, Sys_Calls, Images, Hexa_Utils, Bit_Ops, Upper_Str,
-     Str_Util, Gets, Parser, Ada_Words;
+     Str_Util, Gets, Parser, Ada_Words, Directory;
 package body Trace is
 
   -- Public utilities
@@ -125,7 +125,7 @@ package body Trace is
   begin
     if Process.Is_Null then
       -- Init process name
-      Process := As.U.Tus (Argument.Get_Program_Name);
+      Process := As.U.Tus (Directory.Basename (Argument.Get_Program_Name));
       -- Same as Process except non alphanum characters replaced by '_'
       Env_Proc := Process;
       for I in 1 .. Env_Proc.Length loop
