@@ -536,7 +536,7 @@ package body Directory is
     I : Natural;
     File : constant String := Basename (File_Name);
   begin
-    I := Str_Util.Locate (File, Dot);
+    I := Str_Util.Locate (File, Dot, Forward => False);
     return (if I = 0 then
               -- No '.', return full file name
               File
@@ -549,7 +549,7 @@ package body Directory is
     I : Natural;
     File : constant String := Basename (File_Name);
   begin
-    I := Str_Util.Locate (File, Dot);
+    I := Str_Util.Locate (File, Dot, Forward => False);
     -- No '.', return no suffix
     return (if I = 0 then "" else File (I .. File'Last));
   end File_Suffix;

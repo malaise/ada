@@ -100,9 +100,9 @@ package Directory is
   -- Get file name from a complete file name (from the last / excluded),
   --  then remove the end of it if it matches Suffix (. is not necessary)
   function Basename (File_Name : String; Suffix : String := "") return String;
-  -- Extract the file name, then its prefix (up to the first . excluded)
+  -- Extract the file name, then its prefix (up to the last . excluded)
   function File_Prefix (File_Name : String) return String;
-  -- Extract the file name, then its suffix (from the first . included)
+  -- Extract the file name, then its suffix (from the last . included)
   function File_Suffix (File_Name : String) return String;
 
   -- Build a complete file name
