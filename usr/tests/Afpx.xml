@@ -256,19 +256,19 @@
     <Field Num="9" Kind="Button">
       <Geometry Up="9" Left="69" Low="9" Right="77"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="0" Col="3" Half_Col_Offset="True" >Up</Init>
+      <Init Row="0" Col="3" Half_Col_Offset="True">Up</Init>
     </Field>
 
     <Field Num="10" Kind="Button">
       <Geometry Up="12" Left="69" Low="12" Right="77"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="0" Col="1" Half_Col_Offset="True" >Center</Init>
+      <Init Row="0" Col="1" Half_Col_Offset="True">Center</Init>
     </Field>
 
     <Field Num="11" Kind="Button">
       <Geometry Up="15" Left="69" Low="15" Right="77"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="0" Col="2" Half_Col_Offset="True" >Down</Init>
+      <Init Row="0" Col="2" Half_Col_Offset="True">Down</Init>
     </Field>
 
     <Field Num="12" Kind="Button">
