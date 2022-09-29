@@ -1,9 +1,10 @@
 #!/bin/bash
 error() {
   echo "Usage: $1 <num1> [ { <oper> <num2> } ]"
-  echo " <oper> ::= + | - | * | /"
+  echo " <oper> ::= + | - | x | * | /"
   echo " <num1> is in Hours.MinutesSecondsMiliseconds"
   echo " <num2> is in Hours.MinutesSecondsMiliseconds if <oper> is + or -"
+  echo " <num1> (and <num2> if <oper> is + or -) can also be \"now\""
   exit 1
 }
 
@@ -11,8 +12,18 @@ if [ $# -lt 1 ] ; then
   error `basename $0`
 fi
 
-# Save first arg
-num1=$1
+# Adjust the format of a input time, process "now"
+function adjust {
+  if [ "$1" = "now" ] ; then
+    res="clock :%H.%M%S: dateimg strreal degfr"
+  else
+    res="$1 toreal $2"
+  fi
+  echo -n $res
+}
+
+# Process first arg
+str=`adjust $1 degfr`
 shift
 
 # Loop on pairs (op, num2)
@@ -21,19 +32,30 @@ while [ "$1" != "" ] ; do
   if [ "$2" = "" ] ; then
     error `basename $0`
   fi
-  case "$1" in
+  op="$1"
+  case "$op" in
     "+" | "-" )
-      num2="$2 toreal degfr"
+      # Num is a time
+      numadj="degfr"
     ;;
-    "*" | "/" )
-      num2="$2 toreal"
+    "*" | "x" | "/" )
+      # "x" is "*"
+      if [ "$op" = "x" ] ; then
+        op="*"
+      fi
+      # Num is a number
+      numadj=""
     ;;
     * )
+      echo default
       error `basename $0`
   esac
-  num="$num $num2 $1"
+  num=`adjust $2 $numadj`
+  str="$str $num $op"
   shift
   shift
 done
-echo "$num1" toreal degfr "$num" :format_time.mcd: readfile strprog call putl | mcd
+
+# Process input and format output
+echo "$str :format_time.mcd: readfile strprog call putl" | mcd
 
