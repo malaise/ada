@@ -1,0 +1,83 @@
+# One argument string: <num1> [ { <oper> <num2> } ]
+# <oper> ::= + | - | x | * | /"
+#  <num1> ::= <dur>"
+#  <dur>  ::= Hours[.MinutesSecondsMiliseconds] | now"
+#  <num2> is <dur> if <oper> is + or -, otherwise an int or float"
+
+# Debug if active
+false d popr
+# true d popr
+[ d pushr [ putl ] [ pop ] ifte call ] D popr
+
+# Put error msg in Tos, put help, and exit
+[ "Error: " put putl
+"Expect a string: <num1> [ { <oper> <num2> } ]" putl
+" <oper> ::= + | - | x | * | /" putl
+" <num1> ::= <dur>" putl
+" <dur>  ::= Hours[.MinutesSecondsMiliseconds] | now" putl
+" <num2> is <dur> if <oper> is + or -, otherwise an int or float" putl
+1 setexit ssize popn retall ] E popr
+
+ssize 1 /= [ "Invalid argument" E pushr call ] ifcall
+
+# Function to convert Tos (string) to a real
+[ dup canreal [ strreal 2 retn ] ifcall
+  dup caninte [ strinte toreal 2 retn ] ifcall
+"Invalid operand " swap strcat E pushr call ] C popr
+
+# Function to process ToS as one operand
+# If a is true then the operand is "now" or a time (apply degfr)
+[ a pushr
+dup "Time " swap strof strcat D pushr call
+# Operand is "now" or a time
+[ dup "now" = [ pop clock :%H.%M%S: dateimg strreal ] 
+              [ C pushr call ] ifte call degfr ]
+# Operand is factor
+[ C pushr call ]
+ifte call ] P popr
+
+# Function to extract from string in ToS
+#  an operand (in n) and possibly an operation (in o), as strings
+[
+# Look for operator
+copye "[x*/+-]" regmatch dup isnull
+# Last operand
+[ pop pushle n popr "" o popr 2 retn ] ifcall
+# Extract operand and op
+dup 1 pushle copye swap3 strsub pope
+# Remove operand and op from ToS
+1 pushfe swap3 strdel 
+# Extract operand
+pushle copye strlen dup pushle copye swap dup strsub o popr
+pushle swap dup strdel n popr
+] X popr
+
+# Main loop of extraction and processing until no operator
+0.0 v popr
+"+" p popr
+true a popr
+[
+# Extract operand and operator
+"Extracting" D pushr call
+X pushr call
+# Check operand
+"Got n=" n pushr strof strcat " and o=" strcat o pushr strcat D pushr call
+p pushr "[+-]" regmatch isntnull a popr
+n pushr P pushr call n popr
+"Got operand " n pushr strof strcat D pushr call
+# Apply prev_value operand prev_operator
+v pushr n pushr p pushr strprog call v popr
+"Tmp result " v pushr strof strcat D pushr call
+# Check and store operator (or exit)
+o pushr "" = ifret
+o pushr "[x*/+-]" regmatch isnull
+  [ "Invalid operator " o pushr strcat E pushr call ] ifcall
+o pushr "x" = [ "*" o popr ] ifcall
+# Store operator for nex operand
+o pushr p popr
+# Loop
+L pushr retacal ] L copyr call
+
+# Format resul that is in vt
+v pushr :format_time.mcd: readfile strprog call putl
+
