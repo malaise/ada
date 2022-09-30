@@ -1,18 +1,26 @@
 #!/bin/bash
+
+# Function to log a debug message
+export DEBUG=0
+function debug {
+  if [ $DEBUG -eq 1 ] ; then
+    echo "$*"
+  fi
+}
+
+
+# Function to log an error, help and exit
 error() {
-  echo "Usage: $1 <num1> [ { <oper> <num2> } ]"
+  echo "Error: $*" 1>&2
+  echo "Usage: `basename $0` <num1> [ { <oper> <num2> } ]"
   echo " <oper> ::= + | - | x | * | /"
-  echo " <num1> is in Hours.MinutesSecondsMiliseconds"
-  echo " <num2> is in Hours.MinutesSecondsMiliseconds if <oper> is + or -"
-  echo " <num1> (and <num2> if <oper> is + or -) can also be \"now\""
+  echo " <num1> ::= <dur>"
+  echo " <dur>  ::= Hours[.MinutesSecondsMiliseconds] | now"
+  echo " <num2> is <dur> if <oper> is + or -, otherwise an int or float"
   exit 1
 }
 
-if [ $# -lt 1 ] ; then
-  error `basename $0`
-fi
-
-# Adjust the format of a input time, process "now"
+# Function to adjust the format of a input time, process "now"
 function adjust {
   if [ "$1" = "now" ] ; then
     res="clock :%H.%M%S: dateimg strreal degfr"
@@ -22,39 +30,74 @@ function adjust {
   echo -n $res
 }
 
-# Process first arg
-str=`adjust $1 degfr`
-shift
-
-# Loop on pairs (op, num2)
+# Function to extract an operand then an operator from arg
 num=""
-while [ "$1" != "" ] ; do
-  if [ "$2" = "" ] ; then
-    error `basename $0`
-  fi
-  op="$1"
-  case "$op" in
-    "+" | "-" )
-      # Num is a time
+op=""
+function extract {
+   # Operand, split based on operators
+   num=`echo -n "$arg" | awk ' {
+     n = split ($0, a, "[x*/+-]")
+     print a[1]
+   } '`
+   debug "  Num is >$num<"
+   if [ -z "$num" ] ; then
+     error "Missing operand"
+   fi
+   numlen=`expr length $num`
+   arg=${arg:$numlen}
+   debug "  Arg becomes >$arg<"
+   # Operator
+   if [ -z "$arg" ] ; then
+     debug "  End"
+     op=""
+     return
+   fi
+   op=${arg:0:1}
+   arg=${arg:1};
+   debug "  Op is >$op<"
+   debug "  Arg becomes >$arg<"
+}
+
+# Init processing: Remove spaces and tabs
+arg=`echo -n $* | sed "s/[ \t]//g"`
+if [ -z "$arg" ] ; then
+  error "Invalid argument"
+fi
+debug "Arg is >$arg<"
+
+str=""
+# First operand is a time
+prevop=""
+# Process args
+while true ; do
+  extract
+  case "$prevop" in
+    "+" | "-" | "" )
       numadj="degfr"
     ;;
     "*" | "x" | "/" )
       # "x" is "*"
-      if [ "$op" = "x" ] ; then
-        op="*"
+      if [ "$prevop" = "x" ] ; then
+        prevop="*"
       fi
       # Num is a number
       numadj=""
     ;;
     * )
-      echo default
-      error `basename $0`
+      error "Invalid operator"
+    ;;
   esac
-  num=`adjust $2 $numadj`
-  str="$str $num $op"
-  shift
-  shift
+  num=`adjust $num $numadj`
+  debug "Appending $num $prevop"
+  str="$str $num $prevop"
+  if [ -z "$op" ] ; then
+    # Last operand
+    break
+  fi
+  prevop="$op"
 done
+
+debug "Str is $str"
 
 # Process input and format output
 echo "$str :format_time.mcd: readfile strprog call putl" | mcd
