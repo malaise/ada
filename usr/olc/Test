@@ -94,7 +94,6 @@ while true ; do
   let L=$L+1
 done
 
-
 # Decode
 echo Decode
 # For each line
@@ -137,16 +136,16 @@ while true ; do
   fi
   prec=`readarg $TDIR/Decode $L 2`
   # Get status
-  result=`t_olc -s $code`
+  result=`t_olc -S $code`
   if [ $? -ne 0 ] ; then
-    error "t_olc -s $code has failed"
+    error "t_olc -S $code has failed"
   fi
   # Parse result: precision status
   res=`check "-s" "$result"  "$prec Full"`
   if [ "$res" != "0" ] ; then
     error "t_olc -s $code => $result instead of $prec Full"
   fi
-  echo "t_olc -s $code => $prec Full"
+  echo "t_olc -S $code => $prec Full"
   let L=$L+1
 done
 echo OK.
@@ -164,9 +163,9 @@ while true ; do
   stat1=`readarg $TDIR/Status $L 2`
   stat2=`readarg $TDIR/Status $L 3`
   # Get status
-  result=`t_olc -s $code`
+  result=`t_olc -S $code`
   if [ $? -ne 0 ] ; then
-    error "t_olc -s $code has failed"
+    error "t_olc -S $code has failed"
   fi
   # Parse result: status
   if [ "$stat1" = "Invalid" ] ; then
@@ -175,9 +174,53 @@ while true ; do
     res=`check "-s" "$result"  "$stat1 $stat2"`
   fi
   if [ "$res" != "0" ] ; then
-    error "t_olc -s $code => $result instead of $stat1 $stat2"
+    error "t_olc -S $code => $result instead of $stat1 $stat2"
   fi
-  echo "t_olc -s $code => $stat1 $stat2"
+  echo "t_olc -S $code => $stat1 $stat2"
+  let L=$L+1
+done
+echo OK.
+
+# Short
+echo Short
+# For each line
+let L=1
+while true ; do
+  # Read code lat, Lon Short and Kind (R, S or B)
+  code=`readarg $TDIR/Short $L 1`
+  if [ -z "$code" ] ; then
+    break;
+  fi
+  lat=`readarg $TDIR/Short $L 2`
+  lon=`readarg $TDIR/Short $L 3`
+  short=`readarg $TDIR/Short $L 4`
+  kind=`readarg $TDIR/Short $L 5`
+  # Test shorten
+  if [ \( "$kind" = "S" \) -o \( "$kind" = "B" \) ] ; then
+    result=`t_olc -s $code $lat $lon`
+    if [ $? -ne 0 ] ; then
+      error "t_olc -s $code $lat $lon has failed"
+    fi
+    # Parse result: short
+    res=`check "-s" "$result" "$short"`
+    if [ "$res" != "0" ] ; then
+      error "t_olc -s $code $lat $lon => $result instead of $short"
+    fi
+    echo "t_olc -s $code $lat $lon => $short"
+  fi
+  # Test nearest
+  if [ \( "$kind" = "R" \) -o \( "$kind" = "B" \) ] ; then
+    result=`t_olc -n $short $lat $lon`
+    if [ $? -ne 0 ] ; then
+      error "t_olc -n $short $lat $lon has failed"
+    fi
+    # Parse result: full code
+    res=`check "-s" "$result" "$code"`
+    if [ "$res" != "0" ] ; then
+      error "t_olc -n $short $lat $lon => $result instead of $code"
+    fi
+    echo "t_olc -n $short $lat $lon => $short"
+  fi
   let L=$L+1
 done
 echo OK.

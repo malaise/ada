@@ -1,4 +1,4 @@
-with Trace.Loggers, Upper_Char, Str_Util;
+with Trace.Loggers, Upper_Char, Upper_Str, Str_Util;
 package body Olc is
 
   subtype Inte is My_Math.Inte;
@@ -121,6 +121,9 @@ package body Olc is
     return Res (1 .. Ind);
   end Clean_Code;
 
+  -- Local: Lenght of Clean_Code
+  function Clean_Length (Code : Code_Type) return Natural is
+    (Clean_Code (Code)'Length);
 
   -- Precision (number of digits) can be 2, 4, 6, 8, 10, 11, 12, 13, 14, 15
   -- subtype Precision_Range is Positive range 2 .. 15;
@@ -344,7 +347,7 @@ package body Olc is
   procedure Decode (Code : in Code_Type;
                     South_West, North_East: out Coordinate) is
     -- This also checks the validity
-    Letters : constant String (1 .. Precision_Of (Code)) := Clean_Code (Code);
+    Letters : constant String := Clean_Code (Code);
     -- Int Lat and Lon
     Norm_Lat, Norm_Lon, Extr_Lat, Extr_Lon : Inte;
     Precision : Precision_Range;
@@ -454,13 +457,13 @@ package body Olc is
     if not Is_Valid (Code) then
       raise Invalid_Code;
     end if;
-    -- Code is XxYy "+" Zz <prec>   or XxYy <padding> "+"
+    -- Code is XxYy "+" Zz <prec>   or   XxYy <padding> "+"
     if Sep_Index /= Code'Length then
       -- After Sep, 2 letters then extra precision (above 10)
       return Natural (Pair_Precision) + Code'Length - Sep_Index - 2;
     elsif Pad_Index = 0 then
       -- No padding
-      return Natural (Sep_Index - 1);
+      return Sep_Pos - 1;
     else
       return Pad_Index - 1;
     end if;
@@ -469,19 +472,58 @@ package body Olc is
   -----------------
   -- Short codes --
   -----------------
-  Not_Implemented : exception;
   -- Shorten the code (remove 2, 4 or 6 first digits) so that the resulting code
   --  is the closest matching code to the passed location
   -- Return the input code if it cannot be shorten
   -- Raises, if Code is invalid: Invalid_Code
-  -- Factor 1 removes 2 digits, factor 3 removes 6 digits
   -- type Factor_Range is new Positive range 1 .. 3;
   function Shorten (Code : Code_Type;
-                    Factor : Factor_Range;
                     Reference : Coordinate) return Code_Type is
+    Sw, Ne, Cc : Coordinate;
+    Lat, Lon, Dist, D2, Area_Edge : Real;
+    Result : String (1 .. Code'Length);
+    Safety_Factor : constant := 0.3;
+    Removable_Length : Positive;
   begin
-    raise Not_Implemented; --## rule line off dead
-    return Shorten (Code, Factor, Reference);
+    Init_Logger;
+    Logger.Log_Debug ("Shortening: " & Code
+                   &  " to Lat: " & Reference.Lat'Img
+                   & "  Lon: " & Reference.Lon'Img);
+    -- Code must be a valid full code
+    if not Is_Full (Code) then
+      raise Invalid_Code;
+    end if;
+    -- Padded codes cannnot be shorten
+    if Str_Util.Locate (Code, Pad & "") /= 0 then
+      return Code;
+    end if;
+    -- Decode and find center
+    Decode (Code, Sw, Ne);
+    Cc := Center_Of (Sw, Ne);
+    Logger.Log_Debug ("  Center Lat: " & Cc.Lat'Img
+                    & "  Lon: " & Cc.Lon'Img);
+    -- Ensure that latitude and longitude are valid
+    Lat := Adjust_Lat (Reference.Lat, Precision_Of (Code));
+    Lon := Normalize_Lon (Reference.Lon);
+    -- How close are the latitude and longitude to the code center
+    Dist := abs (Cc.Lat - Lat);
+    D2 := abs (Cc.Lon - Lon);
+    if Dist < D2 then
+      Dist := D2;
+    end if;
+    Logger.Log_Debug ("  Dist: " & Dist'Img);
+
+    -- Shorten if possible
+    Result := Code;
+    for I in 1 .. 3 loop
+       Removable_Length := Positive (Pair_Precision - 2 * Inte (I));
+       Area_Edge := Precision_Of (Removable_Length) * Safety_Factor;
+       Logger.Log_Debug ("    Area edge: " & Area_Edge'Img);
+       if Dist < Area_Edge then
+         return Result (Removable_Length + 1 .. Result'Last);
+       end if;
+     end loop;
+     return Result;
   end Shorten;
 
   -- Verify the syntaxic validity of a short code, i.e. a full code, possibliy
@@ -501,11 +543,64 @@ package body Olc is
 
   -- Return the nearest full code matching the provided short code and location
   -- Raises, if Code is invalid or not short: Invalid_Code
-  function Nearest (Code : Code_Type; Reference : Coordinate) return Code_Type
-  is
+  function Nearest (Code : Code_Type; Reference : Coordinate)
+           return Code_Type is
+    Lat, Lon, Resolution, Half_Res : Real;
+    Padding_Len : Natural;
+    Padding_Code : Code_Type (1 .. Default_Precision + 1);
+    -- This checks the validity of Code
+    Padded_Code : Code_Type (1 .. Precision_Of (Code) + 1);
+    Sw, Ne, Ce : Coordinate;
   begin
-    raise Not_Implemented; --## rule line off dead
-    return Nearest (Code, Reference);
+    Init_Logger;
+    Logger.Log_Debug ("Nearest of: " & Code
+                   &  " to Lat: " & Reference.Lat'Img
+                   & "  Lon: " & Reference.Lon'Img);
+    -- Full code => To upper
+    if not Is_Short (Code) then
+      return Upper_Str (Code);
+    end if;
+    -- Ensure that latitude and longitude are valid
+    Lat := Adjust_Lat (Reference.Lat, Precision_Of (Code));
+    Lon := Normalize_Lon (Reference.Lon);
+
+    -- Compute the number of digits we need to recover
+    Padding_Len := Sep_Pos - Str_Util.Locate (Code, Sep & "") ;
+    Logger.Log_Debug ("Padding len: " & Padding_Len'Img);
+    -- The resolution (height and width) of the padded area in degrees
+    Resolution := Real (Base) ** (2 - Padding_Len / 2);
+    Logger.Log_Debug ("Resolution: " & Resolution'Img);
+    -- Distance from the center to an edge (in degrees)
+    Half_Res := Resolution / 2.0;
+    -- Use the reference location to pad the supplied short code and decode it
+    Padding_Code := Encode ( (Lat, Lon) );
+    Logger.Log_Debug ("Padding code: " & Padding_Code);
+    Padded_Code(1 .. Padding_Len) := Padding_Code (1 .. Padding_Len);
+    Padded_Code(Padding_Len + 1 .. Padded_Code'Last) := Code;
+    Logger.Log_Debug ("Padded code: " & Padded_Code);
+    Decode (Padded_Code, Sw, Ne);
+
+    -- How many degrees latitude is the code from the reference? If it is more
+    -- than half the resolution, we need to move it north or south but keep it
+    -- within -90 to 90 degrees.
+    Ce := Center_Of (Sw, Ne);
+    if Lat + Half_Res < Ce.Lat
+    and then Ce.Lat - Resolution > -Real (Max_Lat) then
+      Ce.Lat := Ce.Lat - Resolution;
+    elsif Lat - Half_Res > Ce.Lat
+    and then Ce.Lat + Resolution < Max_Lat then
+      Ce.Lat := Ce.Lat + Resolution;
+    end if;
+
+    -- How many degrees longitude is the code from the reference
+    if Lon + Half_Res < Ce.Lon then
+      Ce.Lon := Ce.Lon - Resolution;
+    elsif Lon - Half_Res > Ce.Lon then
+      Ce.Lon := Ce.Lon + Resolution;
+    end if;
+
+    -- Encode the new reference
+    return Encode(Ce, Clean_Length (Code) + Padding_Len);
   end Nearest;
 
 end Olc;

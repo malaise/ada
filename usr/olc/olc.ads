@@ -67,10 +67,8 @@ package Olc is
   --  is the closest matching code to the passed location
   -- Return the input code if it cannot be shorten
   -- Raises, if Code is invalid: Invalid_Code
-  -- Factor 1 removes 2 digits, factor 3 removes 6 digits
   type Factor_Range is new Positive range 1 .. 3;
   function Shorten (Code : Code_Type;
-                    Factor : Factor_Range;
                     Reference : Coordinate) return Code_Type;
 
   -- Verify the syntaxic validity of a short code, i.e. a full code, possibliy
