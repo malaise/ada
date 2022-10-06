@@ -30,7 +30,7 @@ ssize 1 /= [ "Invalid argument" E pushr call ] ifcall
 [ a pushr
 dup "Time " swap strof strcat D pushr call
 # Operand is "now" or a time
-[ dup "now" = [ pop clock :%H.%M%S: dateimg strreal ] 
+[ dup "now" = [ pop clock :%H.%M%S: dateimg strreal ]
               [ C pushr call ] ifte call degfr ]
 # Operand is factor
 [ C pushr call ]
@@ -46,7 +46,7 @@ copye "[x*/+-]" regmatch dup isnull
 # Extract operand and op
 dup 1 pushle copye swap3 strsub pope
 # Remove operand and op from ToS
-1 pushfe swap3 strdel 
+1 pushfe swap3 strdel
 # Extract operand
 pushle copye strlen dup pushle copye swap dup strsub o popr
 pushle swap dup strdel n popr
