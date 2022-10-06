@@ -1,0 +1,50 @@
+# Format: code <status>
+# <status> :: "Invalid" | <size> <kind>
+# <kind> ::= "Short" | "Full" | "Not_full")
+8FVC2222+222 11 Full
+8FVC2222+22  10 Full
+7FG49QCJ+     8 Full
+7FG49Q00+     6 Full
+7FG40000+     4 Full
+7F000000+     2 Full
+8FWC2345+G6  10 Full
+8FWC2345+G6G 11 Full
+8fwc2345+     8 Full
+8FWCX400+     6 Full
+8FVC2222+2222222 15 Full
+849VGJQF+VX7QR3J 15 Full
+8FVC22+22    10 Short
+8FVC22+       6 Short
+8F+VC        10 Short
+8FVC+         4 Short
+8F+           2 Short
+WC2345+G6g   11 Short
+2345+G6      10 Short
+45+G6        10 Short
++G6          10 Short
+7FG49Q00+22  Invalid
+7FG4900Q+22  Invalid
+7FG49QV0+22  Invalid
+7FG49QV0+    Invalid
+7FG49QV+     Invalid
+8FVC2222+2   Invalid
+8FVC2+22+22  Invalid
+8FVC222222+  Invalid
+2+           Invalid
+234F         Invalid
+8FVC2222+22123456 Invalid
+8FVC222A+22       Invalid
+849VGJQF+VX7QR3U  Invalid
+849VGJQF+VX7QR3JU Invalid
+G+           Invalid
++            Invalid
+8FWC2345+G   Invalid
+8FWC2_45+G6  Invalid
+8FWC2η45+G6  Invalid
+8FWC2345+G6+ Invalid
+8FWC2345G6+  Invalid
+8FWC2300+G6  Invalid
+WC2300+G6g   Invalid
+WC2345+G     Invalid
+WC2300+      Invalid
+

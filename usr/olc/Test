@@ -1,0 +1,185 @@
+#!/bin/bash
+
+# Test dir
+export TDIR=test
+
+# Report an error
+function error {
+  echo "ERROR: $1." 1>&2
+  exit 1
+}
+
+
+# Read field $3 of line $2 of file $1
+function readarg {
+  res="`awk -vLINE=$2 -vFIELD=$3 '
+    BEGIN {
+      NL=0
+    }
+    (NF == 0 || $1 ~ /^#/) {
+      # Skip empty lines and comment
+      next
+    }
+    {
+      # Count significant lines
+      NL=NL+1
+      if (NL == LINE) {
+        printf "%s",$FIELD
+        exit 0
+      }
+    } 
+  ' $1`"
+  echo "$res"
+}
+
+# Check that $2 = $3
+# if $1 is -d then compare floats modulo Espilon
+# Echo 0 if OK and 1 otherwise
+function check {
+  if [ "$1" = "-d" ] ; then
+    echo $2 | awk -v EXPECT="$3" -v EPS="1.0E-7" '
+    function abs(v) {return v < 0 ? -v : v}
+    {
+      NEXPECT=split(EXPECT, EXPECTS)
+      NOUTPUT=split($0, OUTPUTS);
+      if (NEXPECT != NOUTPUT) {print "1"; exit}
+      for (i = 1; i < NEXPECT+1; i++) {
+        E = 0.0+EXPECTS[i]
+        O = 0.0+OUTPUTS[i]
+        D = abs(E - O)
+        if (D > EPS) {
+          if (E < 0.0) E += 360.0
+          if (O < 0.0) O += 360.0
+          D = abs(E - O)
+          if (D > EPS) {
+            print "1"
+          }
+        }
+      }
+      print "0"
+    }
+    '
+  else
+    if [ "$2" = "$3" ] ; then
+      echo 0
+    else
+      echo 1
+    fi
+  fi
+}
+
+# Encode
+echo Encode
+# For each line
+let L=1
+while true ; do
+  # Read lat lon precision expected
+  lat=`readarg $TDIR/Encode $L 1`
+  if [ -z "$lat" ] ; then
+    break;
+  fi
+  lon=`readarg $TDIR/Encode $L 2`
+  prec=`readarg $TDIR/Encode $L 3`
+  exp=`readarg $TDIR/Encode $L 4`
+  # Encode
+  result=`t_olc -c $lat $lon $prec`
+  if [ $? -ne 0 ] ; then
+    error "t_olc -c $lat $lon $prec has failed"
+  fi
+  # Parse result: Code
+  if [ "$result" != "$exp" ] ; then
+    error "t_olc -c $lat $lon $prec returned $result instead of $exp"
+  fi
+  echo "t_olc -c $lat $lon $prec => $result"
+  let L=$L+1
+done
+
+
+# Decode
+echo Decode
+# For each line
+let L=1
+while true ; do
+  # Read code precision lat1 lon1 lat2 lon2
+  code=`readarg $TDIR/Decode $L 1`
+  if [ -z "$code" ] ; then
+    break;
+  fi
+  prec=`readarg $TDIR/Decode $L 2`
+  lat1=`readarg $TDIR/Decode $L 3`
+  lon1=`readarg $TDIR/Decode $L 4`
+  lat2=`readarg $TDIR/Decode $L 5`
+  lon2=`readarg $TDIR/Decode $L 6`
+  # Decode
+  result=`t_olc -d $code`
+  if [ $? -ne 0 ] ; then
+    error "t_olc -d $code has failed"
+  fi
+  # Parse result: lat1 lon1 lat 2 lon2
+  res=`check "-d" "$result"  "$lat1 $lon1 $lat2 $lon2"`
+  if [ "$res" != "0" ] ; then
+    error "t_olc -d $code => $result instead of $lat1 $lon1 $lat2 $lon2"
+  fi
+  echo "t_olc -d $code => $lat1 $lon1 $lat 2 $lon2"
+  let L=$L+1
+done
+echo OK.
+
+# Size and Full status
+echo Size
+# For each line
+let L=1
+while true ; do
+  # Read code precision
+  code=`readarg $TDIR/Decode $L 1`
+  if [ -z "$code" ] ; then
+    break;
+  fi
+  prec=`readarg $TDIR/Decode $L 2`
+  # Get status
+  result=`t_olc -s $code`
+  if [ $? -ne 0 ] ; then
+    error "t_olc -s $code has failed"
+  fi
+  # Parse result: precision status
+  res=`check "-s" "$result"  "$prec Full"`
+  if [ "$res" != "0" ] ; then
+    error "t_olc -s $code => $result instead of $prec Full"
+  fi
+  echo "t_olc -s $code => $prec Full"
+  let L=$L+1
+done
+echo OK.
+
+# Various status 
+echo Status
+# For each line
+let L=1
+while true ; do
+  # Read code and status (2 fields max)
+  code=`readarg $TDIR/Status $L 1`
+  if [ -z "$code" ] ; then
+    break;
+  fi
+  stat1=`readarg $TDIR/Status $L 2`
+  stat2=`readarg $TDIR/Status $L 3`
+  # Get status
+  result=`t_olc -s $code`
+  if [ $? -ne 0 ] ; then
+    error "t_olc -s $code has failed"
+  fi
+  # Parse result: status
+  if [ "$stat1" = "Invalid" ] ; then
+    res=`check "-s" "$result"  "$stat1"`
+  else
+    res=`check "-s" "$result"  "$stat1 $stat2"`
+  fi
+  if [ "$res" != "0" ] ; then
+    error "t_olc -s $code => $result instead of $stat1 $stat2"
+  fi
+  echo "t_olc -s $code => $stat1 $stat2"
+  let L=$L+1
+done
+echo OK.
+
+
