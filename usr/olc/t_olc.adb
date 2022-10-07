@@ -2,6 +2,23 @@ with Basic_Proc, Argument, Images;
 with Olc;
 procedure T_Olc is
 
+  procedure Help is
+  begin
+    Basic_Proc.Put_Line_Output (
+        "Usage: " & Argument.Get_Program_Name & " <command>");
+    Basic_Proc.Put_Line_Output (
+        "  <commnd> ::= <encode> | <decode> | <center> | <status> |"
+                    & " <shorten> | <nearest> | <help>");
+    Basic_Proc.Put_Line_Output ("  <encode>  ::= -c <coord> <precision>");
+    Basic_Proc.Put_Line_Output ("  <coord>   ::= <lat> <lon>");
+    Basic_Proc.Put_Line_Output ("  <decode>  ::= -d <code>");
+    Basic_Proc.Put_Line_Output ("  <center>  ::= -C <coord> <coord>");
+    Basic_Proc.Put_Line_Output ("  <status>  ::= -S <code>");
+    Basic_Proc.Put_Line_Output ("  <shorten> ::= -s <code> <coord>");
+    Basic_Proc.Put_Line_Output ("  <nearest> ::= -n <code> <coord>");
+    Basic_Proc.Put_Line_Output ("  <help>    ::= -h");
+  end Help;
+
   procedure Encode (C : in Olc.Coordinate;
                     P : in Olc.Precision_Range) is
     Code : constant String := Olc.Encode (C, P);
@@ -79,9 +96,15 @@ begin
         Argument.Get_Parameter (Occurence => 2),
         (Lat => Olc.Real'Value (Argument.Get_Parameter (Occurence => 3)),
          Lon => Olc.Real'Value (Argument.Get_Parameter (Occurence => 4))));
+  elsif Argument.Get_Parameter (Occurence => 1) = "-h" then
+    Help;
   else
-    Basic_Proc.Put_Line_Error ("Invalid argument");
-    Basic_Proc.Set_Error_Exit_Code;
+    raise Constraint_Error;
   end if;
+exception
+  when others =>
+    Basic_Proc.Put_Line_Error ("ERROR: Invalid argument");
+    Help;
+    Basic_Proc.Set_Error_Exit_Code;
 end T_Olc;
 
