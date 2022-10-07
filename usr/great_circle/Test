@@ -155,8 +155,30 @@ t_hp_gc -a AU-WA:NP.D0J-7D       246.400547894 7882.119197km \
   "8L5DK.GH60-K3"
 t_hp_gc -a AU-WA:NP.D0J-7        246.400547894 7882.119197km \
   "8L5DK.GH60-L"
-t_hp_gc -a AU-WA:NP.D0J           246.400547894 7882.119197km \
+t_hp_gc -a AU-WA:NP.D0J          246.400547894 7882.119197km \
   "8L5DK.GH60"
+
+# Open location codes
+t_hp_gc -c 8F000000+        8FP3R47X+X98 \
+  "H:  309.307533427, D:   486.928182Nm   901.790992km."
+t_hp_gc -c 8FM30000+        8FP3R47X+X98 \
+  "H:  349.264324475, D:    80.386949Nm   148.876630km."
+t_hp_gc -c 8FM3G600+        8FP3R47X+X98 \
+  "H:  357.589289661, D:    77.517161Nm   143.561783km."
+t_hp_gc -c 8FM3G6GP+        8FP3R47X+X98 \
+  "H:  357.232845290, D:    77.464309Nm   143.463900km."
+t_hp_gc -c 8FM3G6GP+P5      8FP3R47X+X98 \
+  "H:  357.257217693, D:    77.428875Nm   143.398277km."
+t_hp_gc -c 8FM3G6GP+P5J     8FP3R47X+X98 \
+  "H:  357.258640306, D:    77.427278Nm   143.395319km."
+t_hp_gc -c 8FM3G6JP+P5JQ    8FP3R47X+X98 \
+  "H:  357.247594915, D:    77.127145Nm   142.839473km."
+t_hp_gc -c 8FM3G6JP+P5JQ2   8FP3R47X+X98 \
+  "H:  357.247691791, D:    77.127259Nm   142.839683km."
+t_hp_gc -c 8FM3G6JP+P5JQ25  8FP3R47X+X98 \
+  "H:  357.247669499, D:    77.127284Nm   142.839731km."
+t_hp_gc -c 8FM3G6JP+P5JQ252 8FP3R47X+X98 \
+  "H:  357.247675457, D:    77.127289Nm   142.839739km."
 
 echo
 echo "5s of random high precision tests"

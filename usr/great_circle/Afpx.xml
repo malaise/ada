@@ -1,7 +1,7 @@
 <?xml version="1.1"?>
 <!DOCTYPE Afpx_Descriptors SYSTEM "../../reposit/Afpx.dtd">
 
-<Afpx_Descriptors Height="12" Width="80">
+<Afpx_Descriptors Height="13" Width="80">
 
   <Descriptor Num="1" Name="Main">
     <!-- Title -->
@@ -288,39 +288,61 @@
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
+    <!-- Point A and B open location codes -->
+    <Field Num="47" Kind="Get" Name="A_Olc">
+      <Geometry Up="7" Left="1" Height="1" Width="16"/>
+      <Get_Tuning Move_Prev="False" Move_Next="True"/>
+      <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
+    </Field>
+
+    <Field Num="48" Kind="Get" Name="B_Olc">
+      <Geometry Up="7" Left="28" Height="1" Width="16"/>
+      <Get_Tuning Move_Prev="False" Move_Next="True"/>
+      <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
+    </Field>
+
     <!-- Switch, Compute and Exit buttons -->
-    <Field Num="47" Kind="Button" Name="To_Sexa">
-      <Geometry Up="8" Left="${Field_9.Left}" Height="3" Width="9"/>
+    <Field Num="49" Kind="Button" Name="To_Sexa">
+      <Geometry Up="9" Left="${Field_9.Left}" Height="3" Width="9"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="1">To Sexa</Init>
     </Field>
-    <Field Num="48" Kind="Button" Name="To_Deci">
-      <Geometry Up="${Field_47.Up}" Left="${Field_47.Right}+2" Height="3"
+
+    <Field Num="50" Kind="Button" Name="To_Deci">
+      <Geometry Up="${Field_49.Up}" Left="${Field_49.Right}+2" Height="3"
                 Width="9"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="1">To Deci</Init>
     </Field>
-    <Field Num="49" Kind="Button" Name="To_Map">
-      <Geometry Up="${Field_47.Up}" Left="${Field_48.Right}+2" Height="3"
+
+    <Field Num="51" Kind="Button" Name="To_Map">
+      <Geometry Up="${Field_49.Up}" Left="${Field_50.Right}+2" Height="3"
                 Width="8"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="1">To Map</Init>
     </Field>
 
-    <Field Num="50" Kind="Button" Name="Compute">
-      <Geometry Up="8" Left="${Field_49.Right}+8" Height="3" Width="9"/>
+    <Field Num="52" Kind="Button" Name="To_Olc">
+      <Geometry Up="${Field_49.Up}" Left="${Field_51.Right}+2" Height="3"
+                Width="8"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="1" Col="1">To Olc</Init>
+    </Field>
+
+    <Field Num="53" Kind="Button" Name="Compute">
+      <Geometry Up="9" Left="${Field_52.Right}+8" Height="3" Width="9"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="1">Compute</Init>
     </Field>
 
-    <Field Num="51" Kind="Button" Name="Clear">
-      <Geometry Up="8" Left="${Field_50.Right}+10" Height="3" Width="7"/>
+    <Field Num="54" Kind="Button" Name="Clear">
+      <Geometry Up="9" Left="${Field_53.Right}+6" Height="3" Width="7"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="1">Clear</Init>
     </Field>
 
-    <Field Num="52" Kind="Button" Name="Quit">
-      <Geometry Up="8" Right="${Screen.Right}-2" Height="3" Width="6"/>
+    <Field Num="55" Kind="Button" Name="Quit">
+      <Geometry Up="9" Right="${Screen.Right}-1" Height="3" Width="6"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="1">Exit</Init>
     </Field>

@@ -162,7 +162,17 @@ package body Lat_Lon is
     return Lat_Lon_Rad;
   end Dec2Rad;
 
-  -- Str is [ <Context>: ] <mapcode>
+  function To_Degree (R : Units.Rad_Coord_Range) return My_Math.Real is
+    Res : My_Math.Real := My_Math.Real (Complexes.To_Degree (R));
+    use type My_Math.Real;
+  begin
+    if Res >= 180.0 then
+      Res := -(360.0 - Res);
+    end if;
+    return Res;
+  end To_Degree;
+
+  -- Mapcode <-> Rad
   function Mapcode2Rad (Str : String) return Lat_Lon.Lat_Lon_Rad_Rec is
 
     -- Convert a Mapcode real cooordinate (Real fraction of degrees), into
@@ -191,28 +201,39 @@ package body Lat_Lon is
             Y => To_Radian (Coord.Lat));
   end Mapcode2Rad;
 
-  function To_Degree (R : Units.Rad_Coord_Range) return Mapcodes.Real is
-    Res : Mapcodes.Real := Mapcodes.Real (Complexes.To_Degree (R));
-    use type Mapcodes.Real;
-  begin
-    if Res >= 180.0 then
-      Res := -(360.0 - Res);
-    end if;
-  return Res;
-  end To_Degree;
+  function To_Map_Degree (R : Units.Rad_Coord_Range) return Mapcodes.Real is
+      (Mapcodes.Real (To_Degree (R) ) );
 
   -- Return the international mapcode
   function Rad2Mapcode (Coord : Lat_Lon.Lat_Lon_Rad_Rec;
-                        Precision : Precisions := Default_Precision)
+                        Precision : Map_Precisions := Default_Map_Precision)
            return String is
-    C : constant Mapcodes.Coordinate
-      := (Lat => To_Degree (Coord.Y),
-          Lon => To_Degree (Coord.X));
+    C : constant Mapcodes.Coordinate := (Lat => To_Map_Degree (Coord.Y),
+                                         Lon => To_Map_Degree (Coord.X));
     Codes : constant Mapcodes.Mapcode_Infos
           := Mapcodes.Encode (C, Shortest => True, Precision => Precision);
   begin
     return Codes(Codes'Last).Mapcode.Image;
   end Rad2Mapcode;
+
+  -- Open Loc Code <-> Rad
+  function Olc2Rad (Str : Olc.Code_Type) return Lat_Lon.Lat_Lon_Rad_Rec is
+    Sw, Ne, Center : Olc.Coordinate;
+  begin
+    Olc.Decode (Str, Sw, Ne);
+    Center := Olc.Center_Of (Sw, Ne);
+    return (X => Complexes.To_Radian (Complexes.Degree (Center.Lon)),
+            Y => Complexes.To_Radian (Complexes.Degree (Center.Lat)));
+  end Olc2Rad;
+
+  function Rad2Olc (Coord : Lat_Lon.Lat_Lon_Rad_Rec;
+                    Precision : Olc_Precisions := Default_Olc_Precision)
+           return Olc.Code_Type is
+    C : constant Olc.Coordinate := (Lat => To_Degree (Coord.Y),
+                                    Lon => To_Degree (Coord.X));
+  begin
+    return Olc.Encode (C, Precision);
+  end Rad2Olc;
 
 end Lat_Lon;
 

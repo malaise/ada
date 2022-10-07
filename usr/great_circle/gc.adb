@@ -15,6 +15,8 @@ procedure Gc is
       & " add.ijklmn/oddd.ijklmn add.ijklmn/oddd.ijklmn");
     Basic_Proc.Put_Line_Output ("   or: " & Argument.Get_Program_Name
       & " [<context>:]<mapcode> [<context>:]<mapcode>");
+    Basic_Proc.Put_Line_Output ("   or: " & Argument.Get_Program_Name
+      & " <open_location_code> <open_location_code>");
     Basic_Proc.Put_Line_Output (" where a is N or S and o is E or W.");
   end Usage;
 
@@ -41,25 +43,32 @@ procedure Gc is
       "[NnSs][0-9]{2}\.[0-9]{2}\.[0-9]{4}/[EeWw][0-9]{3}\.[0-9]{2}\.[0-9]{4}";
   Deci_Pattern : constant String :=
       "[NnSs][0-9]{2}\.[0-9]{6}/[EeWw][0-9]{3}\.[0-9]{6}";
+  Map_Pattern : constant String :=
+      "([A-Z-]+:)?(.*[A-Z].*\..+|.+\..*[A-Z].*)";
+  Olc_Pattern : constant String :=
+      "[A-Z0-9]+\+[A-Z0-9]*";
 
   Mode_Field  : constant Afpx.Field_Range := Afpx_Xref.Main.Mode;
   subtype A_Flds is Afpx.Field_Range
                     range Afpx_Xref.Main.A_First .. Afpx_Xref.Main.A_Last;
   subtype B_Flds is Afpx.Field_Range
                     range Afpx_Xref.Main.B_First .. Afpx_Xref.Main.B_Last;
-  subtype Code_Flds is Afpx.Field_Range
+  subtype Map_Flds is Afpx.Field_Range
                     range Afpx_Xref.Main.A_Ctx .. Afpx_Xref.Main.B_Code;
+  subtype Olc_Flds is Afpx.Field_Range
+                    range Afpx_Xref.Main.A_Olc .. Afpx_Xref.Main.B_Olc;
   Heading_Ab_Field  : constant Afpx.Field_Range := Afpx_Xref.Main.Heading;
   Distance_Field  : constant Afpx.Field_Range := Afpx_Xref.Main.Distance;
   Heading_Ba_Field  : constant Afpx.Field_Range := Afpx_Xref.Main.Revert;
   Sexa_Field : constant Afpx.Field_Range := Afpx_Xref.Main.To_Sexa;
   Deci_Field : constant Afpx.Field_Range := Afpx_Xref.Main.To_Deci;
   Map_Field : constant Afpx.Field_Range := Afpx_Xref.Main.To_Map;
+  Olc_Field : constant Afpx.Field_Range := Afpx_Xref.Main.To_Olc;
   Clear_Field  : constant Afpx.Field_Range := Afpx_Xref.Main.Clear;
   Compute_Field  : constant Afpx.Field_Range := Afpx_Xref.Main.Compute;
   Exit_Field  : constant Afpx.Field_Range := Afpx_Xref.Main.Quit;
 
-  type Mode_List is (Sexa_Mode, Deci_Mode, Map_Mode);
+  type Mode_List is (Sexa_Mode, Deci_Mode, Map_Mode, Olc_Mode);
   Mode : Mode_List := Sexa_Mode;
   Need_Clean : Boolean := False;
 
@@ -100,16 +109,28 @@ procedure Gc is
   procedure Reset is
   begin
     -- Deactivate / clear fields
-    if Mode = Map_Mode then
+    if Mode = Map_Mode or else Mode = Olc_Mode then
       for Field in A_Flds loop
         Afpx.Set_Field_Activation (Field, False);
       end loop;
       for Field in B_Flds loop
         Afpx.Set_Field_Activation (Field, False);
       end loop;
-      for Field in Code_Flds loop
-        Reset_Field (Field);
-      end loop;
+      if Mode = Map_Mode then
+        for Field in Map_Flds loop
+          Reset_Field (Field);
+        end loop;
+        for Field in Olc_Flds loop
+          Afpx.Set_Field_Activation (Field, False);
+        end loop;
+      else
+        for Field in Map_Flds loop
+          Afpx.Set_Field_Activation (Field, False);
+        end loop;
+        for Field in Olc_Flds loop
+          Reset_Field (Field);
+        end loop;
+      end if;
     else
       for Field in A_Flds loop
         Reset_Field (Field);
@@ -117,13 +138,16 @@ procedure Gc is
       for Field in B_Flds loop
         Reset_Field (Field);
       end loop;
-      for Field in Code_Flds loop
+      for Field in Map_Flds loop
+        Afpx.Set_Field_Activation (Field, False);
+      end loop;
+      for Field in Olc_Flds loop
         Afpx.Set_Field_Activation (Field, False);
       end loop;
     end if;
     Clear_Result;
     -- Update Mode text and Switch buttons
-    for Field in Sexa_Field .. Map_Field loop
+    for Field in Sexa_Field .. Olc_Field loop
       Afpx.Utils.Protect_Field (Field, False);
     end loop;
     case Mode is
@@ -136,11 +160,16 @@ procedure Gc is
       when Map_Mode =>
         Afpx.Encode_Field (Mode_Field, (0, 0), "Mapcode mode    ");
         Afpx.Utils.Protect_Field (Map_Field, True);
+      when Olc_Mode =>
+        Afpx.Encode_Field (Mode_Field, (0, 0), "Open Loc mode   ");
+        Afpx.Utils.Protect_Field (Olc_Field, True);
     end case;
-    if Mode /= Map_Mode then
-      Get_Handle.Cursor_Field := A_Flds'First;
+    if Mode = Map_Mode then
+      Get_Handle.Cursor_Field := Map_Flds'First;
+    elsif Mode = Olc_Mode then
+      Get_Handle.Cursor_Field := Olc_Flds'First;
     else
-      Get_Handle.Cursor_Field := Code_Flds'First;
+      Get_Handle.Cursor_Field := A_Flds'First;
     end if;
     Get_Handle.Cursor_Col := 0;
     Get_Handle.Insert := False;
@@ -289,17 +318,52 @@ procedure Gc is
       Cursor := First_Fld;
   end Decode_Mapcode;
 
-  -- Decode points or mapcodes, set A and B. Return
+  -- Decode an open localtion code
+  subtype Olc_Txt is As.B.Asb_Bs(16);
+  procedure Decode_Olc (Field : in Afpx.Field_Range;
+                        Point : out Lat_Lon.Lat_Lon_Rad_Rec;
+                        Code : out Olc_Txt;
+                        Status : out Trilean.Trilean;
+                        Cursor : in out Afpx.Field_Range) is
+    Default_Content : Boolean;
+  begin
+    Code.Set_Null;
+    Default_Content := True;
+    if Afpx.Decode_Field  (Field, 0, False)
+        /= Afpx.Get_Init_Field (Field, 0, False) then
+      Default_Content := False;
+    end if;
+    Code.Set (Str_Util.Strip (
+          Afpx.Decode_Field(Field, 0, False), Str_Util.Both));
+    if Default_Content then
+      Great_Circle.Logger.Log_Debug ("Olc is empty");
+      Status := Other;
+      Cursor := Field;
+      return;
+    end if;
+    Great_Circle.Logger.Log_Debug ("Parsed Olc: " & Code.Image);
+    Point := Lat_Lon.Olc2Rad (Code.Image);
+    Great_Circle.Logger.Log_Debug ("Got point OK");
+    Status := True;
+  exception
+    when others =>
+      Great_Circle.Logger.Log_Debug ("Decode olc Exception");
+      Status := False;
+      Cursor := Field;
+  end Decode_Olc;
+
+  -- Decode points, mapcodes or olcs, set A and B. Return
   -- Ok if both are OK, Empty if one is Ok and the other is empty
   function Decode return Decode_Status_Rec is
     Status : Decode_Status_Rec;
     Mapa, Mapb : Mapcode_Txt;
+    Olca, Olcb : Olc_Txt;
   begin
     Get_Handle.Cursor_Col := 0;
     Get_Handle.Insert := False;
     Clear_Result;
     -- Decode both points/maps in order to set Default_Content
-    if Mode /= Map_Mode then
+    if Mode /= Map_Mode and then Mode /= Olc_Mode then
       Get_Handle.Cursor_Field := A_Flds'First;
       Decode_Point (A_Flds'First, A_Flds'Last, A, Status.Data1,
                     Get_Handle.Cursor_Field);
@@ -308,17 +372,29 @@ procedure Gc is
         Decode_Point (B_Flds'First, B_Flds'Last, B, Status.Data2,
                       Get_Handle.Cursor_Field);
       end if;
-    else
-      Get_Handle.Cursor_Field := Code_Flds'First;
-      Decode_Mapcode (Code_Flds'First, Code_Flds'First + 2, A, Mapa,
+    elsif Mode = Map_Mode then
+      Get_Handle.Cursor_Field := Map_Flds'First;
+      Decode_Mapcode (Map_Flds'First, Map_Flds'First + 2, A, Mapa,
                       Status.Data1, Get_Handle.Cursor_Field);
       if Status.Data1 /= False then
-        Get_Handle.Cursor_Field := Code_Flds'First + 3;
-        Decode_Mapcode (Code_Flds'First + 3, Code_Flds'Last, B, Mapb,
+        Get_Handle.Cursor_Field := Map_Flds'First + 3;
+        Decode_Mapcode (Map_Flds'First + 3, Map_Flds'Last, B, Mapb,
                         Status.Data2, Get_Handle.Cursor_Field);
       end if;
       if Status.Data1 = True and then Status.Data2 = True then
         Afpx.Set_Selection (Mapa.Image & " " & Mapb.Image);
+      end if;
+    else
+      Get_Handle.Cursor_Field := Olc_Flds'First;
+      Decode_Olc (Olc_Flds'First, A, Olca,
+                  Status.Data1, Get_Handle.Cursor_Field);
+      if Status.Data1 /= False then
+        Get_Handle.Cursor_Field := Olc_Flds'Last;
+        Decode_Olc (Olc_Flds'Last, B, Olca,
+                    Status.Data2, Get_Handle.Cursor_Field);
+      end if;
+      if Status.Data1 = True and then Status.Data2 = True then
+        Afpx.Set_Selection (Olca.Image & " " & Olcb.Image);
       end if;
     end if;
     Great_Circle.Logger.Log_Debug (
@@ -380,22 +456,37 @@ procedure Gc is
     Afpx.Encode_Field (Last_Fld, (0, 0), Code);
   end Encode_Mapcode;
 
+  -- Encode a mlc
+  procedure Encode_Olc (First_Fld, Unused_Last_Fld : in Afpx.Field_Range;
+                        Point : in Lat_Lon.Lat_Lon_Rad_Rec) is
+    Code : constant String := Lat_Lon.Rad2olc (Point);
+  begin
+    Afpx.Encode_Field (First_Fld, (0, 0), Code);
+  end Encode_Olc;
+
   -- Encode A and B as points or mapcodes
   procedure Encode (Encode1, Encode2 : in Boolean) is
   begin
-    if Mode /= Map_Mode then
+    if Mode = Map_Mode then
+      if Encode1 then
+        Encode_Mapcode (Map_Flds'First,     Map_Flds'First + 2, A);
+      end if;
+      if Encode2 then
+        Encode_Mapcode (Map_Flds'First + 3, Map_Flds'Last,      B);
+      end if;
+    elsif Mode = Olc_Mode then
+      if Encode1 then
+        Encode_Olc (Olc_Flds'First, Olc_Flds'First, A);
+      end if;
+      if Encode2 then
+        Encode_Olc (Olc_Flds'last,  Olc_Flds'Last,  B);
+      end if;
+    else
       if Encode1 then
         Encode_Point (A_Flds'First, A_Flds'Last, A);
       end if;
       if Encode2 then
         Encode_Point (B_Flds'First, B_Flds'Last, B);
-      end if;
-    else
-      if Encode1 then
-        Encode_Mapcode (Code_Flds'First,     Code_Flds'First + 2, A);
-      end if;
-      if Encode2 then
-        Encode_Mapcode (Code_Flds'First + 3, Code_Flds'Last,      B);
       end if;
     end if;
   end Encode;
@@ -463,8 +554,14 @@ begin
     elsif Reg_Exp.Match (Deci_Pattern, Argument.Get_Parameter(1), True)
     and then Reg_Exp.Match (Deci_Pattern, Argument.Get_Parameter(2), True) then
       Mode := Deci_Mode;
-    else
+    elsif Reg_Exp.Match (Map_Pattern, Argument.Get_Parameter(1), True)
+    and then Reg_Exp.Match (Map_Pattern, Argument.Get_Parameter(2), True) then
       Mode := Map_Mode;
+    elsif Reg_Exp.Match (Olc_Pattern, Argument.Get_Parameter(1), True)
+    and then Reg_Exp.Match (Olc_Pattern, Argument.Get_Parameter(2), True) then
+      Mode := Olc_Mode;
+    else
+      raise String_Util.Format_Error;
     end if;
     Great_Circle.Logger.Log_Debug ("Mode: " & Mode'Img);
     begin
@@ -475,10 +572,14 @@ begin
       elsif Mode = Deci_Mode then
         A := Lat_Lon.Dec2Rad (String_Util.Str2Dec(Argument.Get_Parameter(1)));
         B := Lat_Lon.Dec2Rad (String_Util.Str2Dec(Argument.Get_Parameter(2)));
-      else
+      elsif Mode = Map_Mode then
         -- Coordinates of mapcodes
         A := Lat_Lon.Mapcode2Rad (Argument.Get_Parameter(1));
         B := Lat_Lon.Mapcode2Rad (Argument.Get_Parameter(2));
+      elsif Mode = Olc_Mode then
+        -- Coordinates of open location codes
+        A := Lat_Lon.Olc2Rad (Argument.Get_Parameter(1));
+        B := Lat_Lon.Olc2Rad (Argument.Get_Parameter(2));
       end if;
       Great_Circle.Logger.Log_Debug ("Got point A:" & A.X'Img & A.Y'Img);
       Great_Circle.Logger.Log_Debug ("Got point B:" & B.X'Img & B.Y'Img);
@@ -555,6 +656,8 @@ begin
               Mode := Deci_Mode;
             when Map_Field =>
               Mode := Map_Mode;
+            when Olc_Field =>
+              Mode := Olc_Mode;
             when others =>
               null;
           end case;
