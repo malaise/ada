@@ -140,29 +140,30 @@ package body My_Math is
 
   function Trunc (X : Real) return Inte is
     Int : Inte;
-    Fra : Real;
+    Rea : Real;
   begin
-    if      X > Real(Inte'Last)
-    or else X < Real(Inte'First) then
+    if      X > Real (Inte'Last)
+    or else X < Real (Inte'First) then
       raise Math_Error;
     end if;
 
-    Int := Inte(X);
-    Fra := Frac(X);
+    Int := Inte (X);
+    Rea := Real (Int);
+
+    -- If round leads to a delta of less than Eps, then it is correct
+    if abs Rea - X < Real'Model_Epsilon then
+      return Int;
+    end if;
 
     -- Adjust +/- 1 due to conversion to Inte
-    -- When X (positive) is I-Eps, then Inte(X) may round to I
-    --  and Frac(X) will lead to -Eps
-    --  In this case the rounding to I+1 (>X) is valid
-    -- Similarly when X (negative) is I+Eps
     if X > 0.0 then
       -- if x > 0 error by exceed
-      if Real(Int) > X and then Fra >= 0.0 then
+      if Rea > X then
         Int := Int - 1;
       end if;
     elsif X < 0.0 then
       -- if x < 0 error by default
-      if Real(Int) < X and then Fra <= 0.0 then
+      if Rea < X then
         Int := Int + 1;
       end if;
     else
