@@ -226,14 +226,11 @@ package body Lat_Lon is
             Y => Complexes.To_Radian (Complexes.Degree (Center.Lat)));
   end Olc2Rad;
 
-  function To_Olc_Degree (R : Units.Rad_Coord_Range) return Olc.Real is
-      (Olc.Real (To_Degree (R) ) );
-
   function Rad2Olc (Coord : Lat_Lon_Rad_Rec;
                     Precision : Olc_Precisions := Default_Olc_Precision)
            return Olc.Code_Type is
-    C : constant Olc.Coordinate := (Lat => To_Olc_Degree (Coord.Y),
-                                    Lon => To_Olc_Degree (Coord.X));
+    C : constant Olc.Coordinate := (Lat => To_Degree (Coord.Y),
+                                    Lon => To_Degree (Coord.X));
   begin
     return Olc.Encode (C, Precision);
   end Rad2Olc;
