@@ -9,29 +9,6 @@ function error {
   exit 1
 }
 
-
-# Read field $3 of line $2 of file $1
-function readarg {
-  res="`awk -vLINE=$2 -vFIELD=$3 '
-    BEGIN {
-      NL=0
-    }
-    (NF == 0 || $1 ~ /^#/) {
-      # Skip empty lines and comment
-      next
-    }
-    {
-      # Count significant lines
-      NL=NL+1
-      if (NL == LINE) {
-        printf "%s",$FIELD
-        exit 0
-      }
-    } 
-  ' $1`"
-  echo "$res"
-}
-
 # Check that $2 = $3
 # if $1 is -d then compare floats modulo Espilon
 # Echo 0 if OK and 1 otherwise
@@ -70,45 +47,30 @@ function check {
 
 # Encode
 echo Encode
-# For each line
-let L=1
-while true ; do
-  # Read lat lon precision expected
-  lat=`readarg $TDIR/Encode $L 1`
-  if [ -z "$lat" ] ; then
-    break;
+# For each line, read code precision lat lon precision code
+while IFS=' ' read -r lat lon prec code ; do
+  if [[ $lat =~ ^#|^$ ]] ; then
+    continue
   fi
-  lon=`readarg $TDIR/Encode $L 2`
-  prec=`readarg $TDIR/Encode $L 3`
-  exp=`readarg $TDIR/Encode $L 4`
   # Encode
   result=`t_olc -c $lat $lon $prec`
   if [ $? -ne 0 ] ; then
     error "t_olc -c $lat $lon $prec has failed"
   fi
   # Parse result: Code
-  if [ "$result" != "$exp" ] ; then
-    error "t_olc -c $lat $lon $prec returned $result instead of $exp"
+  if [ "$result" != "$code" ] ; then
+    error "t_olc -c $lat $lon $prec returned $result instead of $code"
   fi
   echo "t_olc -c $lat $lon $prec => $result"
-  let L=$L+1
-done
+done <$TDIR/Encode
 
 # Decode
 echo Decode
-# For each line
-let L=1
-while true ; do
-  # Read code precision lat1 lon1 lat2 lon2
-  code=`readarg $TDIR/Decode $L 1`
-  if [ -z "$code" ] ; then
-    break;
+# For each line, read code precision lat1 lon1 lat2 lon2
+while IFS=' ' read -r code prec lat1 lon1 lat2 lon2  ; do
+  if [[ $code =~ ^#|^$ ]] ; then
+    continue
   fi
-  prec=`readarg $TDIR/Decode $L 2`
-  lat1=`readarg $TDIR/Decode $L 3`
-  lon1=`readarg $TDIR/Decode $L 4`
-  lat2=`readarg $TDIR/Decode $L 5`
-  lon2=`readarg $TDIR/Decode $L 6`
   # Decode
   result=`t_olc -d $code`
   if [ $? -ne 0 ] ; then
@@ -120,21 +82,16 @@ while true ; do
     error "t_olc -d $code => $result instead of $lat1 $lon1 $lat2 $lon2"
   fi
   echo "t_olc -d $code => $lat1 $lon1 $lat 2 $lon2"
-  let L=$L+1
-done
+done <$TDIR/Decode
 echo OK.
 
 # Size and Full status
 echo Size
-# For each line
-let L=1
-while true ; do
-  # Read code precision
-  code=`readarg $TDIR/Decode $L 1`
-  if [ -z "$code" ] ; then
-    break;
+# For each line, read code precision
+while IFS=' ' read -r code prec tail ; do
+  if [[ $code =~ ^#|^$ ]] ; then
+    continue
   fi
-  prec=`readarg $TDIR/Decode $L 2`
   # Get status
   result=`t_olc -S $code`
   if [ $? -ne 0 ] ; then
@@ -146,22 +103,16 @@ while true ; do
     error "t_olc -s $code => $result instead of $prec Full"
   fi
   echo "t_olc -S $code => $prec Full"
-  let L=$L+1
-done
+done <$TDIR/Decode
 echo OK.
 
 # Various status 
 echo Status
-# For each line
-let L=1
-while true ; do
-  # Read code and status (2 fields max)
-  code=`readarg $TDIR/Status $L 1`
-  if [ -z "$code" ] ; then
-    break;
+# For each line, read code and status ((2 fields max)
+while IFS=' ' read -r code stat1 stat2 ; do
+  if [[ $code =~ ^#|^$ ]] ; then
+    continue
   fi
-  stat1=`readarg $TDIR/Status $L 2`
-  stat2=`readarg $TDIR/Status $L 3`
   # Get status
   result=`t_olc -S $code`
   if [ $? -ne 0 ] ; then
@@ -177,24 +128,16 @@ while true ; do
     error "t_olc -S $code => $result instead of $stat1 $stat2"
   fi
   echo "t_olc -S $code => $stat1 $stat2"
-  let L=$L+1
-done
+done <$TDIR/Status
 echo OK.
 
 # Short
 echo Short
-# For each line
-let L=1
-while true ; do
-  # Read code lat, Lon Short and Kind (R, S or B)
-  code=`readarg $TDIR/Short $L 1`
-  if [ -z "$code" ] ; then
-    break;
+# For each line, read code lat, Lon Short and Kind (R, S or B)
+while IFS=' ' read -r code lat lon short kind ; do
+  if [[ $code =~ ^#|^$ ]] ; then
+    continue
   fi
-  lat=`readarg $TDIR/Short $L 2`
-  lon=`readarg $TDIR/Short $L 3`
-  short=`readarg $TDIR/Short $L 4`
-  kind=`readarg $TDIR/Short $L 5`
   # Test shorten
   if [ \( "$kind" = "S" \) -o \( "$kind" = "B" \) ] ; then
     result=`t_olc -s $code $lat $lon`
@@ -221,8 +164,7 @@ while true ; do
     fi
     echo "t_olc -n $short $lat $lon => $short"
   fi
-  let L=$L+1
-done
+done <$TDIR/Short 
 echo OK.
 
 

@@ -87,28 +87,6 @@ fi
 echo Precision $PRECISION
 PRECISION=P${PRECISION}
 
-# Read field $3 of line $2 of file $1
-function readarg {
-res="`awk -vLINE=$2 -vFIELD=$3 '
-  BEGIN {
-    NL=0
-  }
-  (NF == 0 || $1 ~ /^#/) {
-    # Skip empty lines and comment
-    next
-  }
-  {
-    # Count significant lines
-    NL=NL+1
-    if (NL == LINE) {
-      printf "%s",$FIELD
-      exit 0
-    }
-  } 
-' $1`"
-echo "$res"
-}
-
 # Check that $2 = $3
 # if $1 is -d then compare floats modulo EPS ($4) (1.0E-4, 1.0E-5, 1.0E-6)
 # Echo 0 if OK and 1 otherwise
@@ -148,36 +126,36 @@ function check {
 # Play Scenario
 echo Scenario:
 # For each line
-let L=1
-while true ; do
-  # Read line until end of file
+# Read line until end of file
+while IFS=' ' read -r a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 ; do
+  if [[ $a1 =~ ^#|^$ ]] ; then
+     continue
+  fi
+  # Process the line
   let I=1
   INPUT=""
   OUTPUT=""
   let ININ=1
   CMD=""
   while true ; do
-    arg=`readarg $TDIR/Scenario $L $I`
-    if [ "$arg" = "" ] ; then
+    declare arg="a$I"
+    if [ "${!arg}" = "" ] ; then
       # End of line
       break
     fi
     if [ -z "$CMD" ] ; then
-      CMD=$arg;
+      CMD=${!arg};
     fi
-    if [ "$arg" = "=>" ] ; then
+    if [ "${!arg}" = "=>" ] ; then
       # Switch to output
       let ININ=0
     elif [ $ININ -eq 1 ] ; then
-      INPUT=$INPUT$arg" "
+      INPUT=$INPUT${!arg}" "
     else
-      OUTPUT=$OUTPUT$arg" "
+      OUTPUT=$OUTPUT${!arg}" "
     fi
     let I=$I+1
   done
-  if [ "$INPUT" = "" ] ; then
-    break
-  fi
   # Do test and save exit status
   export result=`t_mapcode $INPUT`
   export code=$?
@@ -198,8 +176,7 @@ while true ; do
   else
     error "$INPUT => $result instead of $OUTPUT"
   fi
-  let L=$L+1
-done
+done < $TDIR/Scenario
 echo OK.
 if [ "$SCENARIO_ONLY" = "1" ] ; then
   exit 0
@@ -217,27 +194,28 @@ else
   let I=1
 fi
 PrevLang=x
-while true ; do
+let L=1
+while IFS=' ' read -r Lang Input Output Back ; do
   if [ $TEST -eq 1 ] ; then
     # Some specific effective lines
     if [ -n "${TESTS[$I]}" ] ; then
-      let L=${TESTS[$I]}
+      let TL=${TESTS[$I]}
     else
       # Last item of the list has been reached
-      let L=${L}+1
+      let TL=${TL}+1
     fi
   else
     # All the lines
-    let L=$I
+    let TL=$I
   fi
-  # En of file
-  Lang=`readarg $TDIR/Alphabets $L 1`
-  if [ -z "$Lang" ] ; then
-    break;
+  if [ $TL -ne $L ] ; then
+    let L=$L+1
+    continue
   fi
-  Input=`readarg $TDIR/Alphabets $L 2`
-  Output=`readarg $TDIR/Alphabets $L 3`
-  Back=`readarg $TDIR/Alphabets $L 4`
+  # End of file
+  if [[ $Lang =~ ^#|^$ ]] ; then
+    continue
+  fi
   if [ -n "$DEBUG" ] ; then
     echo -l "$Input" "$Lang"
   elif [ "$Lang" != "$PrevLang" ] ; then
@@ -267,7 +245,8 @@ while true ; do
     error "$Output => $Got_Back instead of $Back"
   fi
   let I=$I+1
-done
+  let L=$L+1
+done <$TDIR/Alphabets
 if [ -z "$DEBUG" ] ; then
   echo
 fi
@@ -294,20 +273,16 @@ if [ $TEST -eq 0 ] ; then
   territory_failure "Toto"
   territory_failure AL Toto
   # For each line
-  let L=1
-  while true ; do
-    ctx=`readarg $TDIR/TerritoryFailures $L 1`
-    if [ -z "$ctx" ] ; then
-      break;
+  while IFS=' ' read -r ctx ter ; do
+    if [[ $ctx =~ ^#|^$ ]] ; then
+      continue
     fi
-    ter=`readarg $TDIR/TerritoryFailures $L 2`
     if [ -z "$ter" ] ; then
       ter=$ctx
       ctx=""
     fi
     territory_failure $ter $ctx
-    let L=$L+1
-  done
+  done <$TDIR/TerritoryFailures
   echo OK.
 fi
 
@@ -329,34 +304,29 @@ if [ $TEST -eq 0 ] ; then
   decode_failure "QD3CL.PX8J-K3'"
   decode_failure "QD3CL.P'X8J-K3"
   # For each line
-  let L=1
-  while true ; do
-    ctx=`readarg $TDIR/DecodeFailures $L 1`
-    if [ -z "$ctx" ] ; then
-      break;
+  while IFS=' ' read -r ctx cod ; do
+    if [[ $ctx =~ ^#|^$ ]] ; then
+      continue
     fi
-    cod=`readarg $TDIR/DecodeFailures $L 2`
     if [ -z "$cod" ] ; then
       cod=$ctx
       ctx=""
     fi
     decode_failure $ctx $cod
-    let L=$L+1
-  done
+  done < $TDIR/DecodeFailures
   echo OK.
 fi
 
 # EncodeOk
 echo Encode
 # For each line
-let L=1
-while true ; do
-  # Read lat and lon
-  lat=`readarg $TDIR/EncodeOk $L 1`
+while IFS=' ' read -r lat lon ; do
+  if [[ $lat =~ ^#|^$ ]] ; then
+    continue
+  fi
   if [ -z "$lat" ] ; then
     break;
   fi
-  lon=`readarg $TDIR/EncodeOk $L 2`
   # Encode
   result=`t_mapcode -c $lat $lon $PRECISION`
   if [ $? -ne 0 ] ; then
@@ -394,9 +364,7 @@ while true ; do
       echo "$lat $lon => $result => $dec"
     fi
   fi
-
-  let L=$L+1
-done
+done <$TDIR/EncodeOk
 echo OK.
 
 # Decode
@@ -459,8 +427,8 @@ decode "" "ZZ0Z0.Z1YG"    "90.000000000000" "179.999999999999" 1 1
 # Read ctx cod lat lon loc glo
 let L=0
 let R=0
-while read -r ctx cod lat lon loc glo || [[ -n "$ctx" ]]; do
-  if [ \( -z "$ctx" \) -o \( "$ctx" = "#" \) ] ; then
+while IFS=' ' read -r ctx cod lat lon loc glo ; do
+  if [[ $ctx =~ ^#|^$ ]] ; then
     continue
   fi
   # Process each line, or 1% in test mode

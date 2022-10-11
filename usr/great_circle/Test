@@ -243,29 +243,23 @@ INTER_DME=`intercept --dme | cut -d ' ' -f1`
 export BETA_DME=21
 echo -n "" > experr
 let L=1
-while true ; do
-  QFU=`readarg interceptions.txt $L 1`
-  if [ "QFU" = "#" ] ; then
-    continue;
+while IFS=' ' read -r QFU HEADING KIND a4 a5 a6 a7 a8 a9 a10 a11 a12 a13 ; do
+  if [[ $QFU =~ ^#|^$ ]] ; then
+    continue
   fi
-  if [ -z "$QFU" ] ; then
-    break;
-  fi
-  HEADING=`readarg interceptions.txt $L 2`
-  KIND=`readarg interceptions.txt $L 3`
   case "$KIND" in
     ("Final")
       KIND="Final"
       echo  "You are in final heading $QFU." > expout
     ;;
     ("Direct")
-      TD1=`readarg interceptions.txt $L  4`
-      HD1=`readarg interceptions.txt $L  5`
-      TA1=`readarg interceptions.txt $L  6`
-      HA1=`readarg interceptions.txt $L  7`
-      MA2=`readarg interceptions.txt $L  8`
-      TA2=`readarg interceptions.txt $L  9`
-      HA2=`readarg interceptions.txt $L 10`
+      TD1=$a4
+      HD1=$a5
+      TA1=$a6
+      HA1=$a7
+      MA2=$a8
+      TA2=$a9
+      HA2=$a10
     cat > expout << EOF
 Direct interception
 At DME $INTER_DME turn $TD1 heading $HD1 to intercept final heading $QFU.
@@ -275,16 +269,16 @@ at DME $BETA_DME QDM $MA2 turn $TA2 heading $HA2 to intercept final heading $QFU
 EOF
     ;;  
     ("Indirect")
-      TI1=`readarg interceptions.txt $L  4`
-      HI1=`readarg interceptions.txt $L  5`
-      MI2=`readarg interceptions.txt $L  6`
-      TI2=`readarg interceptions.txt $L  7`
-      HI2=`readarg interceptions.txt $L  8`
-      TA1=`readarg interceptions.txt $L  9`
-      HA1=`readarg interceptions.txt $L 10`
-      MA2=`readarg interceptions.txt $L 11`
-      TA2=`readarg interceptions.txt $L 12`
-      HA2=`readarg interceptions.txt $L 13`
+      TI1=$a4
+      HI1=$a5
+      MI2=$a6
+      TI2=$a7
+      HI2=$a8
+      TA1=$a9
+      HA1=$a10
+      MA2=$a11
+      TA2=$a12
+      HA2=$a13
     cat > expout << EOF
 Indirect interception
 At DME $INTER_DME turn $TI1 heading $HI1,
@@ -295,7 +289,7 @@ at DME $BETA_DME QDM $MA2 turn $TA2 heading $HA2 to intercept final heading $QFU
 EOF
     ;;
     (*)
-      echo "Invalid kind $LIND" 1>&2
+      echo "Invalid kind $KIND" 1>&2
       exit 1
     ;;
   esac
@@ -307,7 +301,7 @@ EOF
   comp out expout
   comp err experr
   let L=$L+1
-done
+done <interceptions.txt
 
 # Intercept debug Fpl
 function debug {
