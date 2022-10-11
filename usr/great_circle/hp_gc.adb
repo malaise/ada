@@ -18,32 +18,13 @@ procedure Hp_Gc is
   D : String_Util.Distance;
   Str, Unit : As.U.Asu_Us;
   R : My_Math.Real;
+  Degs : Lat_Lon.Deg_Rec;
   I : Integer;
   Map_Precision : Lat_Lon.Map_Precisions;
   Olc_Precision : Lat_Lon.Olc_Precisions;
   Frac_Len : constant := 9;
   Km_In_Nm : constant := 1.852;
   use type My_Math.Real;
-
-  function Set_Lalo (Lat, Lon : Units.Degree) return Lat_Lon.Lat_Lon_Rad_Rec is
-    Llat, Llon : Units.Degree;
-    use type Units.Degree;
-  begin
-    Llat := Lat;
-    Llon := Lon;
-    if Llat < 0.0 and then Llat > -90.0 then
-      Llat := Units.Reduct (Llat);
-    end if;
-    if Llon < 0.0 and then Llon > -180.0 then
-      Llon := Units.Reduct (Llon);
-    end if;
-    -- Set Lalo
-    return Lalo : Lat_Lon.Lat_Lon_Rad_Rec do
-      Lalo.X := Units.Deg2Rad (Llon);
-      Lalo.Y := Units.Deg2Rad (Llat);
-      Great_Circle.Logger.Log_Debug ("Got point OK:" & Lalo.X'Img & Lalo.Y'Img);
-    end return;
-  end Set_Lalo;
 
   -- Is input a mapcode or Olc, or raise Constraint_Error
   function Is_Mapcode (Str : String) return Boolean is
@@ -89,8 +70,8 @@ begin
             Argument.Get_Parameter (Occurence => 4)));
         Lon2 := Units.Degree (Gets.Get_Int_Real (
             Argument.Get_Parameter (Occurence => 5)));
-        A := Set_Lalo (Lat1, Lon1);
-        B := Set_Lalo (Lat2, Lon2);
+        A := Lat_Lon.Deg2Rad ( (Lat1, Lon1) );
+        B := Lat_Lon.Deg2Rad ( (Lat2, Lon2) );
       end if;
     elsif    Argument.Get_Nbre_Arg = 4
     or else Argument.Get_Nbre_Arg = 5 then
@@ -130,7 +111,7 @@ begin
             Argument.Get_Parameter (Occurence => 2)));
         Lon1 := Units.Degree (Gets.Get_Int_Real (
             Argument.Get_Parameter (Occurence => 3)));
-        A := Set_Lalo (Lat1, Lon1);
+        A := Lat_Lon.Deg2Rad ( (Lat1, Lon1) );
         I := 4;
         Mode := Apply_Lalo;
       end if;
@@ -224,20 +205,13 @@ begin
     -- Lat and lon of B
     if Mode = Apply_Lalo then
       -- Display Lat Long of destination
-      R := My_Math.Real (Units.Rad2Deg (B.Y));
-      -- Latitude from -90 to 90
-      if R > 180.0 then
-        R := -360.0 + R;
-      end if;
+      Degs := Lat_Lon.Rad2Deg (B);
       Basic_Proc.Put_Output (
-        Normalization.Normal_Fixed (R, Frac_Len + 5, 4, '0') & " ");
-      R := My_Math.Real (Units.Rad2Deg (B.X));
-      -- Longitude from -180 to 180
-      if R > 180.0 then
-        R := -360.0 + R;
-      end if;
+        Normalization.Normal_Fixed (
+          My_Math.Real (Degs.Lat), Frac_Len + 5, 4, '0') & " ");
       Basic_Proc.Put_Line_Output (
-        Normalization.Normal_Fixed (R, Frac_Len + 5, 4, '0'));
+        Normalization.Normal_Fixed (
+          My_Math.Real (Degs.Lon), Frac_Len + 5, 4, '0'));
     elsif Mode = Apply_Mapcode then
       -- Display Mapcode of destination
       Basic_Proc.Put_Line_Output (Lat_Lon.Rad2Mapcode (B, Map_Precision));

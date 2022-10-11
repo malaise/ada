@@ -59,22 +59,29 @@ package Lat_Lon is
 
   -- Mapcode <-> Rad
   -- Str is [ <Context>: ] <mapcode>
-  function Mapcode2Rad (Str : String) return Lat_Lon.Lat_Lon_Rad_Rec;
+  function Mapcode2Rad (Str : String) return Lat_Lon_Rad_Rec;
   -- Return the international mapcode
   subtype Map_Precisions is Mapcodes.Precisions;
   Default_Map_Precision : constant Map_Precisions := 2;
-  function Rad2Mapcode (Coord : Lat_Lon.Lat_Lon_Rad_Rec;
+  function Rad2Mapcode (Coord : Lat_Lon_Rad_Rec;
                         Precision : Map_Precisions := Default_Map_Precision)
            return String;
 
   -- Open Loc Code <-> Rad
-  function Olc2Rad (Str : Olc.Code_Type) return Lat_Lon.Lat_Lon_Rad_Rec;
+  function Olc2Rad (Str : Olc.Code_Type) return Lat_Lon_Rad_Rec;
   -- Return the Olc
   subtype Olc_Precisions is Olc.Precision_Range;
   Default_Olc_Precision : constant Olc_Precisions := Olc.Default_Precision;
-  function Rad2Olc (Coord : Lat_Lon.Lat_Lon_Rad_Rec;
+  function Rad2Olc (Coord : Lat_Lon_Rad_Rec;
                     Precision : Olc_Precisions := Default_Olc_Precision)
            return Olc.Code_Type;
+
+  -- Signed Deg <-> Rad
+  type Deg_Rec is record
+    Lat, Lon : Units.Degree;
+  end record;
+  function Deg2Rad (Coord : Deg_Rec) return Lat_Lon_Rad_Rec;
+  function Rad2Deg (Coord : Lat_Lon_Rad_Rec) return Deg_Rec;
 
 end Lat_Lon;
 

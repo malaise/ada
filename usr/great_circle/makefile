@@ -7,12 +7,10 @@ SUBUNITS := intercept.fpl
 AFPX := true
 AFPX_XREF := afpx_xref
 
-EXES := gc hp_gc intercept
+EXES := gc hp_gc intercept conv
 
-CLIBS := $(UTILS_SLIBS)
+CLIBS := $(UTILS_SLIBS) $(PCRE_SLIBS)
 CLIBS_gc := $(PCRE_SLIBS) $(X11_SLIBS)
-CLIBS_hp_gc := $(PCRE_SLIBS)
-CLIBS_intercept := $(PCRE_SLIBS)
 
 include $(TEMPLATES)/ada.mk
 

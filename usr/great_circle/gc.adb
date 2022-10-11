@@ -459,7 +459,7 @@ procedure Gc is
   -- Encode a mlc
   procedure Encode_Olc (First_Fld, Unused_Last_Fld : in Afpx.Field_Range;
                         Point : in Lat_Lon.Lat_Lon_Rad_Rec) is
-    Code : constant String := Lat_Lon.Rad2olc (Point);
+    Code : constant String := Lat_Lon.Rad2Olc (Point);
   begin
     Afpx.Encode_Field (First_Fld, (0, 0), Code);
   end Encode_Olc;
@@ -479,7 +479,7 @@ procedure Gc is
         Encode_Olc (Olc_Flds'First, Olc_Flds'First, A);
       end if;
       if Encode2 then
-        Encode_Olc (Olc_Flds'last,  Olc_Flds'Last,  B);
+        Encode_Olc (Olc_Flds'Last,  Olc_Flds'Last,  B);
       end if;
     else
       if Encode1 then
