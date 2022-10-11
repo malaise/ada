@@ -17,26 +17,6 @@ if [ "$1" = "clean" ]  ; then
   exit 0
 fi
 
-# Compare 2 files
-function comp {
-  local ok=1
-  if [ $1 = "-n" ] ; then
-    ok=0
-    shift
-  fi
-  cmp $1 $2 2> /dev/null
-  res=$?
-  if [ $ok -eq 1 ] ; then
-    if [ $res -ne 0 ] ; then
-      error "File $1 differs from expected $2."
-    fi
-  else
-    if [ $res -eq 0 ] ; then
-      error "File $1 should differs from expected $2."
-    fi
-  fi
-}
-
 # Regenerate interception scenario
 if [ "$1" = "generate_intercept" ] ; then
   awk '
@@ -211,10 +191,52 @@ if [ $res -ne 0 ] ; then
   error "Random test failed"
 fi
 sleep 1
-echo ""
 
 # Intercept
 # ---------
+# Compare 2 files
+function comp {
+  local ok=1
+  if [ $1 = "-n" ] ; then
+    ok=0
+    shift
+  fi
+  cmp $1 $2 2> /dev/null
+  res=$?
+  if [ $ok -eq 1 ] ; then
+    if [ $res -ne 0 ] ; then
+      error "File $1 differs from expected $2."
+    fi
+  else
+    if [ $res -eq 0 ] ; then
+      error "File $1 should differs from expected $2."
+    fi
+  fi
+}
+
+
+# Read field $3 of line $2 of file $1
+function readarg {
+res="`awk -vLINE=$2 -vFIELD=$3 '
+  BEGIN {
+    NL=0
+  }
+  (NF == 0 || $1 ~ /^#/) {
+    # Skip empty lines and comment
+    next
+  }
+  {
+    # Count significant lines
+    NL=NL+1
+    if (NL == LINE) {
+      printf "%s",$FIELD
+      exit 0
+    }
+  } 
+' $1`"
+echo "$res"
+}
+
 # Get constant Intercept DME
 INTER_DME=`intercept --dme | cut -d ' ' -f1`
 # Manually use the second output field to set Beta DME
@@ -289,6 +311,7 @@ function debug {
   comp err /dev/null
 }
 
+
 # Positive and negative lat and lon
 # Innsbruck
 cat <<EOF >expout
@@ -329,41 +352,7 @@ debug 276 200 --debug   28.000000 -22.805090 -43.256699 W22
 # Done
 echo ""
 
-#############
-# Conv tool #
-#############
-cat <<EOF >expout
-N50.03.5900/W005.42.5300
-50.066388889/-5.714722222
-VH05L.WLQG-6WVFHMKY
-9C2P378P+H42HPRH
-EOF
-echo -n "" >experr
 
-echo conv 50.066388889/-5.714722222
-conv 50.066388889/-5.714722222 >out 2>err
-comp out expout 
-comp err experr 
-echo conv VH05L.WLQG-6WVFHMKY
-conv VH05L.WLQG-6WVFHMKY >out 2>err
-comp out expout 
-comp err experr 
-
-echo conv VH05L.WLQG-6WVFHMKY
-conv VH05L.WLQG-6WVFHMKY >out 2>err
-comp out expout 
-comp err experr 
-
-echo conv N50.03.5900/W005.42.5300
-cat <<EOF >expout
-N50.03.5900/W005.42.5300
-50.066388889/-5.714722222
-VH05L.WLQG-6WVFHMKG
-9C2P378P+H42HPRH
-EOF
-conv N50.03.5900/W005.42.5300 >out 2>err
-comp out expout 
-comp err experr 
 clean
 echo "OK."
 

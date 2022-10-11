@@ -1,22 +1,7 @@
 #!/bin/bash
 
-# Default values for local test
+# Test dir
 export TDIR=test
-export SEP=" "
-export TRUNC=0
-export ENCODE_FILE="$TDIR/Encode"
-export DECODE_FILE="$TDIR/Decode"
-export STATUS_FILE="$TDIR/Status"
-export SHORT_FILE="$TDIR/Status"
-if [ -n "$1" ] ; then
-  export TDIR="$1"
-  export SEP=","
-  export TRUNC=1
-  export ENCODE_FILE="$TDIR/encoding.csv"
-  export DECODE_FILE="$TDIR/decoding.csv"
-  export STATUS_FILE="$TDIR/validityTests.csv"
-  export SHORT_FILE="$TDIR/shortCodeTests.csv"
-fi
 
 # Report an error
 function error {
@@ -60,55 +45,12 @@ function check {
   fi
 }
 
-# Adjust lat and long
-function adj_lat {
-  echo $1 | awk '
-  ($1 > 90) {
-    printf 90
-    next
-  }
-  ($1 < -90) {
-    printf -90
-    next
-  }
-  {
-    printf $1
-  }
-  '
-}
-
-function adj_lon {
-  echo $1 | awk '
-  {
-    while ($1 >= 180) {
-      $1-=360
-    }
-    while ($1 < -180) {
-      $1+=360
-    }
-    if (int($1) == $1) {
-      printf $1
-    } else {
-      printf "%.9f", $1
-    }
-  }
-  '
-}
-
 # Encode
 echo Encode
 # For each line, read code precision lat lon precision code
-while IFS="$SEP" read -r lat lon prec code ; do
+while IFS=' ' read -r lat lon prec code ; do
   if [[ $lat =~ ^#|^$ ]] ; then
     continue
-  fi
-  if [ $TRUNC -eq 1 ] ; then
-    lat=`adj_lat $lat`
-    lon=`adj_lon $lon`
-    code=${code:0:16}
-    if [ $prec -gt 15 ] ; then
-      prec=15
-    fi
   fi
   # Encode
   result=`t_olc -c $lat $lon $prec`
@@ -120,17 +62,14 @@ while IFS="$SEP" read -r lat lon prec code ; do
     error "t_olc -c $lat $lon $prec returned $result instead of $code"
   fi
   echo "t_olc -c $lat $lon $prec => $result"
-done <"$ENCODE_FILE"
+done <$TDIR/Encode
 
 # Decode
 echo Decode
 # For each line, read code precision lat1 lon1 lat2 lon2
-while IFS="$SEP" read -r code prec lat1 lon1 lat2 lon2  ; do
+while IFS=' ' read -r code prec lat1 lon1 lat2 lon2  ; do
   if [[ $code =~ ^#|^$ ]] ; then
     continue
-  fi
-  if [ $TRUNC -eq 1 ] ; then
-    code=${code:0:16}
   fi
   # Decode
   result=`t_olc -d $code`
@@ -143,18 +82,15 @@ while IFS="$SEP" read -r code prec lat1 lon1 lat2 lon2  ; do
     error "t_olc -d $code => $result instead of $lat1 $lon1 $lat2 $lon2"
   fi
   echo "t_olc -d $code => $lat1 $lon1 $lat 2 $lon2"
-done <"$DECODE_FILE"
+done <$TDIR/Decode
 echo OK.
 
 # Size and Full status
 echo Size
 # For each line, read code precision
-while IFS="$SEP" read -r code prec tail ; do
+while IFS=' ' read -r code prec tail ; do
   if [[ $code =~ ^#|^$ ]] ; then
     continue
-  fi
-  if [ $TRUNC -eq 1 ] ; then
-    code=${code:0:16}
   fi
   # Get status
   result=`t_olc -S $code`
@@ -164,63 +100,41 @@ while IFS="$SEP" read -r code prec tail ; do
   # Parse result: precision status
   res=`check "-s" "$result"  "$prec Full"`
   if [ "$res" != "0" ] ; then
-    error "t_olc -S $code => $result instead of $prec Full"
+    error "t_olc -s $code => $result instead of $prec Full"
   fi
   echo "t_olc -S $code => $prec Full"
-done <$DECODE_FILE
+done <$TDIR/Decode
 echo OK.
 
 # Various status 
 echo Status
 # For each line, read code and status ((2 fields max)
-while IFS="$SEP" read -r code stat1 stat2 stat3 ; do
+while IFS=' ' read -r code stat1 stat2 ; do
   if [[ $code =~ ^#|^$ ]] ; then
     continue
   fi
-  if [ $TRUNC -eq 1 ] ; then
-    tcode=${code:0:16}
-    if [ $stat1 = false ] ; then
-      stat1="Invalid"
-    elif [ $stat2 = true ] ; then
-      stat1="Short"
-    elif [ $stat3 = true ] ; then
-      stat1="Full"
-    else
-      stat1="No_Full"
-    fi
-  else
-    tcode=${code}
-  fi
   # Get status
-  result=`t_olc -S $tcode`
+  result=`t_olc -S $code`
   if [ $? -ne 0 ] ; then
-    error "t_olc -S $tcode has failed"
+    error "t_olc -S $code has failed"
   fi
   # Parse result: status
   if [ "$stat1" = "Invalid" ] ; then
     res=`check "-s" "$result"  "$stat1"`
   else
-    if [ $TRUNC -eq 1 ] ; then
-      result=`echo -n $result | cut -d ' ' -f2`
-      res=`check "-s" "$result"  "$stat1"`
-    else
-      res=`check "-s" "$result"  "$stat1 $stat2"`
-    fi
+    res=`check "-s" "$result"  "$stat1 $stat2"`
   fi
   if [ "$res" != "0" ] ; then
-    if [ ${#code} -le 16 ] ; then
-      # After truncation, test can be OK despite input code was invalid
-      error "t_olc -S $tcode => $result instead of $stat1 $stat2"
-    fi
+    error "t_olc -S $code => $result instead of $stat1 $stat2"
   fi
-  echo "t_olc -S $tcode => $stat1"
-done <$STATUS_FILE
+  echo "t_olc -S $code => $stat1 $stat2"
+done <$TDIR/Status
 echo OK.
 
 # Short
 echo Short
 # For each line, read code lat, Lon Short and Kind (R, S or B)
-while IFS="$SEP" read -r code lat lon short kind ; do
+while IFS=' ' read -r code lat lon short kind ; do
   if [[ $code =~ ^#|^$ ]] ; then
     continue
   fi
@@ -250,6 +164,7 @@ while IFS="$SEP" read -r code lat lon short kind ; do
     fi
     echo "t_olc -n $short $lat $lon => $short"
   fi
-done <$SHORT_FILE
+done <$TDIR/Short 
 echo OK.
+
 
