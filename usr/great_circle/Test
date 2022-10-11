@@ -341,16 +341,16 @@ EOF
 echo -n "" >experr
 
 echo conv 50.066388889/-5.714722222
-conv 50.066388889/-5.714722222 >out 2>err
+./conv 50.066388889/-5.714722222 >out 2>err
 comp out expout 
 comp err experr 
 echo conv VH05L.WLQG-6WVFHMKY
-conv VH05L.WLQG-6WVFHMKY >out 2>err
+./conv VH05L.WLQG-6WVFHMKY >out 2>err
 comp out expout 
 comp err experr 
 
 echo conv VH05L.WLQG-6WVFHMKY
-conv VH05L.WLQG-6WVFHMKY >out 2>err
+./conv VH05L.WLQG-6WVFHMKY >out 2>err
 comp out expout 
 comp err experr 
 
@@ -361,7 +361,7 @@ N50.03.5900/W005.42.5300
 VH05L.WLQG-6WVFHMKG
 9C2P378P+H42HPRH
 EOF
-conv N50.03.5900/W005.42.5300 >out 2>err
+./conv N50.03.5900/W005.42.5300 >out 2>err
 comp out expout 
 comp err experr 
 clean
