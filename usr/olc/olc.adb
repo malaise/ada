@@ -1,5 +1,4 @@
-with Ada.Text_Io, Ada.Characters.Handling, Ada.Strings.Fixed,
-     Ada.Environment_Variables;
+with Ada.Text_Io, Ada.Characters.Handling, Ada.Strings.Fixed;
 package body Olc is
 
   subtype Inte is Long_Long_Integer;
@@ -10,19 +9,11 @@ package body Olc is
     procedure Log_Debug (Msg : in String);
   end Logger;
   package body Logger is
-    Inited :  Boolean := False;
-    Debug :  Boolean := False;
     procedure Init (Unused_Name : String) is
-      Trace_Name : constant String := "OLC_TRACE";
     begin
-      if Inited then
-        -- Init only once
-        return;
-      end if;
-      Debug := Ada.Environment_Variables.Exists (Trace_Name)
-               and then Ada.Environment_Variables.Value (Trace_Name) = "Debug";
-      Inited := True;
+      null;
     end Init;
+    Debug : constant Boolean := False;
     procedure Log_Debug (Msg : in String) is
     begin
       if Debug then
@@ -660,7 +651,7 @@ package body Olc is
     -- within -90 to 90 degrees.
     Ce := Center_Of (Sw, Ne);
     if Lat + Half_Res < Ce.Lat
-    and then Ce.Lat - Resolution > -Max_Lat then
+    and then Ce.Lat - Resolution > -Real (Max_Lat) then
       Ce.Lat := Ce.Lat - Resolution;
     elsif Lat - Half_Res > Ce.Lat
     and then Ce.Lat + Resolution < Max_Lat then
