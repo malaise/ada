@@ -1,13 +1,11 @@
 -- Open Location Codes
-with My_Math;
 package Olc is
 
   -----------
   -- Types --
   -----------
   -- Real type (for latitude and longitude)
-  subtype Real is My_Math.Real;
-  use type Real;
+  type Real is digits 15 range -1.79E308 .. 1.79E308;
 
   -- Coordinate in fraction of degrees
   subtype Lat_Range is Real range  -90.0 ..  90.0;

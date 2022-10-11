@@ -1,36 +1,42 @@
-with Basic_Proc, Argument, Images;
+with Ada.Command_Line, Ada.Text_Io;
 with Olc;
 procedure T_Olc is
 
   procedure Help is
   begin
-    Basic_Proc.Put_Line_Output (
-        "Usage: " & Argument.Get_Program_Name & " <command>");
-    Basic_Proc.Put_Line_Output (
+    Ada.Text_Io.Put_Line (
+        "Usage: " & Ada.Command_Line.Command_Name & " <command>");
+    Ada.Text_Io.Put_Line (
         "  <commnd> ::= <encode> | <decode> | <center> | <status> |"
                     & " <shorten> | <nearest> | <help>");
-    Basic_Proc.Put_Line_Output ("  <encode>  ::= -c <coord> <precision>");
-    Basic_Proc.Put_Line_Output ("  <coord>   ::= <lat> <lon>");
-    Basic_Proc.Put_Line_Output ("  <decode>  ::= -d <code>");
-    Basic_Proc.Put_Line_Output ("  <center>  ::= -C <coord> <coord>");
-    Basic_Proc.Put_Line_Output ("  <status>  ::= -S <code>");
-    Basic_Proc.Put_Line_Output ("  <shorten> ::= -s <code> <coord>");
-    Basic_Proc.Put_Line_Output ("  <nearest> ::= -n <code> <coord>");
-    Basic_Proc.Put_Line_Output ("  <help>    ::= -h");
+    Ada.Text_Io.Put_Line ("  <encode>  ::= -c <coord> <precision>");
+    Ada.Text_Io.Put_Line ("  <coord>   ::= <lat> <lon>");
+    Ada.Text_Io.Put_Line ("  <decode>  ::= -d <code>");
+    Ada.Text_Io.Put_Line ("  <center>  ::= -C <coord> <coord>");
+    Ada.Text_Io.Put_Line ("  <status>  ::= -S <code>");
+    Ada.Text_Io.Put_Line ("  <shorten> ::= -s <code> <coord>");
+    Ada.Text_Io.Put_Line ("  <nearest> ::= -n <code> <coord>");
+    Ada.Text_Io.Put_Line ("  <help>    ::= -h");
   end Help;
+
+  function Positive_Image (P : Integer) return String is
+    Str : constant String := P'Img;
+  begin
+    return Str(2 .. Str'Last);
+  end Positive_Image;
 
   procedure Encode (C : in Olc.Coordinate;
                     P : in Olc.Precision_Range) is
     Code : constant String := Olc.Encode (C, P);
   begin
-    Basic_Proc.Put_Line_Output (Code);
+    Ada.Text_Io.Put_Line (Code);
   end Encode;
 
   procedure Decode (C : Olc.Code_Type) is
     Se, Nw : Olc.Coordinate;
   begin
     Olc.Decode (C, Se, Nw);
-    Basic_Proc.Put_Line_Output (Se.Lat'Img & " " & Se.Lon'Img
+    Ada.Text_Io.Put_Line (Se.Lat'Img & " " & Se.Lon'Img
                         & " " & Nw.Lat'Img & " " & Nw.Lon'Img);
   end Decode;
 
@@ -39,24 +45,24 @@ procedure T_Olc is
   begin
     Olc.Decode (C, Se, Nw);
     Ce := Olc.Center_Of (Se, Nw);
-    Basic_Proc.Put_Line_Output (Ce.Lat'Img & " " & Ce.Lon'Img);
+    Ada.Text_Io.Put_Line (Ce.Lat'Img & " " & Ce.Lon'Img);
   end Center;
 
   procedure Status (C : in Olc.Code_Type) is
   begin
     if not Olc.Is_Valid (C) then
-      Basic_Proc.Put_Line_Output ("Invalid");
+      Ada.Text_Io.Put_Line ("Invalid");
       return;
     end if;
-    Basic_Proc.Put_Output (Images.Integer_Image (Olc.Precision_Of (C)) & " ");
+    Ada.Text_Io.Put (Positive_Image (Olc.Precision_Of (C)) & " ");
     if Olc.Is_Short (C) then
-      Basic_Proc.Put_Line_Output ("Short");
+      Ada.Text_Io.Put_Line ("Short");
       return;
     end if;
     if Olc.Is_Full (C) then
-      Basic_Proc.Put_Line_Output ("Full");
+      Ada.Text_Io.Put_Line ("Full");
     else
-      Basic_Proc.Put_Line_Output ("Not_full");
+      Ada.Text_Io.Put_Line ("Not_full");
     end if;
   end Status;
 
@@ -64,47 +70,47 @@ procedure T_Olc is
                      Coord : in Olc.Coordinate) is
     Short : constant String := Olc.Shorten (Code, Coord);
   begin
-    Basic_Proc.Put_Line_Output (Short);
+    Ada.Text_Io.Put_Line (Short);
   end Shorten;
 
   procedure Nearest (Code : in Olc.Code_Type;
                      Coord : in Olc.Coordinate) is
     Full : constant String := Olc.Nearest (Code, Coord);
   begin
-    Basic_Proc.Put_Line_Output (Full);
+    Ada.Text_Io.Put_Line (Full);
   end Nearest;
 
 begin
-  if Argument.Get_Parameter (Occurence => 1) = "-c" then
+  if Ada.Command_Line.Argument (1) = "-c" then
     Encode (
-        C => (Lat => Olc.Real'Value (Argument.Get_Parameter (Occurence => 2)),
-              Lon => Olc.Real'Value (Argument.Get_Parameter (Occurence => 3))),
-        P => Olc.Precision_Range'Value (Argument.Get_Parameter (Occurence => 4)));
-  elsif Argument.Get_Parameter (Occurence => 1) = "-d" then
-    Decode (Argument.Get_Parameter (Occurence => 2));
-  elsif Argument.Get_Parameter (Occurence => 1) = "-C" then
-    Center (Argument.Get_Parameter (Occurence => 2));
-  elsif Argument.Get_Parameter (Occurence => 1) = "-S" then
-    Status (Argument.Get_Parameter (Occurence => 2));
-  elsif Argument.Get_Parameter (Occurence => 1) = "-s" then
+        C => (Lat => Olc.Real'Value (Ada.Command_Line.Argument (2)),
+              Lon => Olc.Real'Value (Ada.Command_Line.Argument (3))),
+        P => Olc.Precision_Range'Value (Ada.Command_Line.Argument (4)));
+  elsif Ada.Command_Line.Argument (1) = "-d" then
+    Decode (Ada.Command_Line.Argument (2));
+  elsif Ada.Command_Line.Argument (1) = "-C" then
+    Center (Ada.Command_Line.Argument (2));
+  elsif Ada.Command_Line.Argument (1) = "-S" then
+    Status (Ada.Command_Line.Argument (2));
+  elsif Ada.Command_Line.Argument (1) = "-s" then
     Shorten (
-        Argument.Get_Parameter (Occurence => 2),
-        (Lat => Olc.Real'Value (Argument.Get_Parameter (Occurence => 3)),
-         Lon => Olc.Real'Value (Argument.Get_Parameter (Occurence => 4))));
-  elsif Argument.Get_Parameter (Occurence => 1) = "-n" then
+        Ada.Command_Line.Argument (2),
+        (Lat => Olc.Real'Value (Ada.Command_Line.Argument (3)),
+         Lon => Olc.Real'Value (Ada.Command_Line.Argument (4))));
+  elsif Ada.Command_Line.Argument (1) = "-n" then
     Nearest (
-        Argument.Get_Parameter (Occurence => 2),
-        (Lat => Olc.Real'Value (Argument.Get_Parameter (Occurence => 3)),
-         Lon => Olc.Real'Value (Argument.Get_Parameter (Occurence => 4))));
-  elsif Argument.Get_Parameter (Occurence => 1) = "-h" then
+        Ada.Command_Line.Argument (2),
+        (Lat => Olc.Real'Value (Ada.Command_Line.Argument (3)),
+         Lon => Olc.Real'Value (Ada.Command_Line.Argument (4))));
+  elsif Ada.Command_Line.Argument (1) = "-h" then
     Help;
   else
     raise Constraint_Error;
   end if;
 exception
   when others =>
-    Basic_Proc.Put_Line_Error ("ERROR: Invalid argument");
+    Ada.Text_Io.Put_Line ("ERROR: Invalid argument");
     Help;
-    Basic_Proc.Set_Error_Exit_Code;
+    Ada.Command_Line.Set_Exit_Status (1);
 end T_Olc;
 

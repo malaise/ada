@@ -1,8 +1,74 @@
-with Trace.Loggers, Upper_Char, Upper_Str, Str_Util;
+with Ada.Text_Io, Ada.Characters.Handling, Ada.Strings.Fixed;
 package body Olc is
 
-  subtype Inte is My_Math.Inte;
-  Logger : Trace.Loggers.Logger;
+  subtype Inte is Long_Long_Integer;
+
+  -- Log traces
+  package Logger is
+    procedure Init (Unused_Name : String);
+    procedure Log_Debug (Msg : in String);
+  end Logger;
+  package body Logger is
+    procedure Init (Unused_Name : String) is
+    begin
+      null;
+    end Init;
+    Debug : constant Boolean := False;
+    procedure Log_Debug (Msg : in String) is
+    begin
+      if Debug then
+        Ada.Text_Io.Put_Line ("OLC ==> " & Msg);
+      end if;
+    end Log_Debug;
+  end Logger;
+
+  -- Convertion to upper char and string
+  function Upper_Char (Item : in Character) return Character
+           renames Ada.Characters.Handling.To_Upper;
+  function Upper_Str (Item : in String) return String
+           renames Ada.Characters.Handling.To_Upper;
+
+  -- Locate a char in a string
+  function Locate (Within     : String;
+                   Char       : Character;
+                   From_Index : Positive := 1) return Natural is
+    (Ada.Strings.Fixed.Index (Within, Char & "", From_Index));
+
+  -- Trunk Real into Inte
+  function Trunc (X : Real) return Inte is
+    Int : Inte;
+    Rea : Real;
+  begin
+    if      X > Real (Inte'Last)
+    or else X < Real (Inte'First) then
+      raise Constraint_Error;
+    end if;
+
+    Int := Inte (X);
+    Rea := Real (Int);
+
+    -- If round leads to a delta of less than Eps, then it is correct
+    if abs Rea - X < Real'Model_Epsilon then
+      return Int;
+    end if;
+
+    -- Adjust +/- 1 due to conversion to Inte
+    if X > 0.0 then
+      -- if x > 0 error by exceed
+      if Rea > X then
+        Int := Int - 1;
+      end if;
+    elsif X < 0.0 then
+      -- if x < 0 error by default
+      if Rea < X then
+        Int := Int + 1;
+      end if;
+    else
+      Int := 0;
+    end if;
+
+    return Int;
+  end Trunc;
 
   -- Max lat and long
   Min_Lat : constant Lat_Range := Lat_Range'First;
@@ -168,8 +234,8 @@ package body Olc is
     -- Convert to int at the last stage to prserve precision
     Ilat := Inte (Max_Lat) * Grid_Lat_Precision_Inverse;
     Ilon := Inte (Max_Lon) * Grid_Lon_Precision_Inverse;
-    Ilat := My_Math.Trunc (Real (Ilat) + Lat * Real (Grid_Lat_Precision_Inverse));
-    Ilon := My_Math.Trunc (Real (Ilon) + Lon * Real (Grid_Lon_Precision_Inverse));
+    Ilat := Trunc (Real (Ilat) + Lat * Real (Grid_Lat_Precision_Inverse));
+    Ilon := Trunc (Real (Ilon) + Lon * Real (Grid_Lon_Precision_Inverse));
     Logger.Log_Debug ("  Ints Lat: " & Ilat'Img & "  Lon: " & Ilon'Img);
 
     -- Compute the full grid part of the code if necessary
@@ -245,12 +311,12 @@ package body Olc is
       return False;
     end if;
     -- Separator is required and unique
-    Sep_Index := Str_Util.Locate (Code, Sep & "");
+    Sep_Index := Locate (Code, Sep);
     if Sep_Index = 0 then
       Logger.Log_Debug ("  No separator");
       return False;
     end if;
-    if Str_Util.Locate (Code, Sep & "", Sep_Index + 1) /= 0 then
+    if Locate (Code, Sep, Sep_Index + 1) /= 0 then
       Logger.Log_Debug ("  Several separators");
       return False;
     end if;
@@ -268,7 +334,7 @@ package body Olc is
     end if;
 
     -- If padding before the separator, then it is even and separator is last
-    Pad_Index := Str_Util.Locate (Code, Pad & "");
+    Pad_Index := Locate (Code, Pad);
     if Pad_Index /= 0 then
       -- Short codes cannot have padding
       if Sep_Index < Sep_Pos then
@@ -376,8 +442,8 @@ package body Olc is
     -- Initialise the values for each section. We work them out as integers and
     -- convert them to floats at the end
     --## rule off Parentheses
-    Norm_Lat := -(My_Math.Trunc (Max_Lat) * Pair_Precision_Inverse);
-    Norm_Lon := -(My_Math.Trunc (Max_Lon) * Pair_Precision_Inverse);
+    Norm_Lat := -(Trunc (Max_Lat) * Pair_Precision_Inverse);
+    Norm_Lon := -(Trunc (Max_Lon) * Pair_Precision_Inverse);
     --## rule on Parentheses
     Extr_Lat := 0;
     Extr_Lon := 0;
@@ -450,8 +516,8 @@ package body Olc is
 
   -- Return the precision of a code (full or short)
   function Precision_Of (Code : Code_Type) return Precision_Range is
-     Sep_Index : constant Natural := Str_Util.Locate (Code, Sep & "");
-     Pad_Index : constant Natural := Str_Util.Locate (Code, Pad & "");
+     Sep_Index : constant Natural := Locate (Code, Sep);
+     Pad_Index : constant Natural := Locate (Code, Pad);
   begin
     -- Must be valid
     if not Is_Valid (Code) then
@@ -494,7 +560,7 @@ package body Olc is
       raise Invalid_Code;
     end if;
     -- Padded codes cannnot be shorten
-    if Str_Util.Locate (Code, Pad & "") /= 0 then
+    if Locate (Code, Pad) /= 0 then
       return Code;
     end if;
     -- Decode and find center
@@ -538,7 +604,7 @@ package body Olc is
       raise Invalid_Code;
     end if;
     -- Short if there are less characters than expected before the separator
-    return Str_Util.Locate (Code, Sep & "") < Sep_Pos;
+    return Locate (Code, Sep) < Sep_Pos;
   end Is_Short;
 
   -- Return the nearest full code matching the provided short code and location
@@ -565,7 +631,7 @@ package body Olc is
     Lon := Normalize_Lon (Reference.Lon);
 
     -- Compute the number of digits we need to recover
-    Padding_Len := Sep_Pos - Str_Util.Locate (Code, Sep & "") ;
+    Padding_Len := Sep_Pos - Locate (Code, Sep) ;
     Logger.Log_Debug ("Padding len: " & Padding_Len'Img);
     -- The resolution (height and width) of the padded area in degrees
     Resolution := Real (Base) ** (2 - Padding_Len / 2);
