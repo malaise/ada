@@ -1,7 +1,7 @@
 with As.U, Argument, Basic_Proc, Directory, My_Math, Reg_Exp,
      Str_Util, Normalization;
 with Units, Lat_Lon, String_Util;
-procedure Conv is
+procedure Geo_Conv is
 
   -- Display help
   procedure Help is
@@ -121,5 +121,5 @@ begin
   -- Open Location Code
   Basic_Proc.Put_Line_Output (Lat_Lon.Rad2Olc (Point, Olc_Precision));
 
-end Conv;
+end Geo_Conv;
 

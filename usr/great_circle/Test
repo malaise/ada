@@ -329,9 +329,9 @@ debug 276 200 --debug   28.000000 -22.805090 -43.256699 W22
 # Done
 echo ""
 
-#############
-# Conv tool #
-#############
+#################
+# Geo_Conv tool #
+#################
 cat <<EOF >expout
 N50.03.5900/W005.42.5300
 50.066388889/-5.714722222
@@ -340,28 +340,28 @@ VH05L.WLQG-6WVFHMKY
 EOF
 echo -n "" >experr
 
-echo conv 50.066388889/-5.714722222
-./conv 50.066388889/-5.714722222 >out 2>err
+echo geo_conv 50.066388889/-5.714722222
+geo_conv 50.066388889/-5.714722222 >out 2>err
 comp out expout 
 comp err experr 
-echo conv VH05L.WLQG-6WVFHMKY
-./conv VH05L.WLQG-6WVFHMKY >out 2>err
-comp out expout 
-comp err experr 
-
-echo conv VH05L.WLQG-6WVFHMKY
-./conv VH05L.WLQG-6WVFHMKY >out 2>err
+echo geo_conv VH05L.WLQG-6WVFHMKY
+geo_conv VH05L.WLQG-6WVFHMKY >out 2>err
 comp out expout 
 comp err experr 
 
-echo conv N50.03.5900/W005.42.5300
+echo geo_conv VH05L.WLQG-6WVFHMKY
+geo_conv VH05L.WLQG-6WVFHMKY >out 2>err
+comp out expout 
+comp err experr 
+
+echo geo_conv N50.03.5900/W005.42.5300
 cat <<EOF >expout
 N50.03.5900/W005.42.5300
 50.066388889/-5.714722222
 VH05L.WLQG-6WVFHMKG
 9C2P378P+H42HPRH
 EOF
-./conv N50.03.5900/W005.42.5300 >out 2>err
+geo_conv N50.03.5900/W005.42.5300 >out 2>err
 comp out expout 
 comp err experr 
 clean
