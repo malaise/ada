@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V41.11
+V41.12
 
 General purpose
 ---------------
@@ -894,7 +894,7 @@ The list shows for each reference:
 * The date
 * Two letters of operation
 ** Co for Commit
-** Ch for Checkout
+** Ck for Checkout
 ** Re for Reset
 ** Cp for Cherry-Pick
 ** Me for Merge

@@ -2168,7 +2168,7 @@ package body Git_If is
           Sub := "Co";
         elsif Ref.Comment.Slice (1, I1) = "checkout:" then
           I1 := I1 + 1;
-          Sub := "Ch";
+          Sub := "Ck";
         elsif Ref.Comment.Slice (1, I1) = "cherry-pick:" then
           I1 := I1 + 1;
           Sub := "Cp";
