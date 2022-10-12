@@ -20,7 +20,7 @@ as invalid.
 
 # Test program
 
-The t_olc program take various commands and arguments in the command line and
+The t_olc program takes various commands and arguments in the command line and
 displays the result produced by the library.
 
 ```
