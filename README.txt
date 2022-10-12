@@ -263,7 +263,7 @@ Misc::
 - Udp_Spy (2) displays udp/ipm packets received on a port.
 - Wake (1) sends a "Wake On LAN" packet on the local network or to a host:port.
 
-Mmind (2)::
+Mmind (2d)::
      Mastermind game on 'Con_Io'.
 
 Navig (2)::
@@ -271,6 +271,9 @@ Navig (2)::
 
 Nimmari (2)::
      Nim and Marienbad game on 'Afpx'.
+
+Olc (1)::
+     Open Location Code encoding and decoding.
 
 Pexec (1)::
      Recursive execution on directories of commands.
@@ -285,7 +288,7 @@ Regex (2)::
 Renardeau (2)::
      Computes a target number by combining base numbers.
 
-Sensor (1d)::
+Sensor (2d)::
      Scans several log files and raises alerts on some events (matching
 filters).
 

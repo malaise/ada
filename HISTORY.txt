@@ -4,6 +4,10 @@ Main changes
 
 [horizontal]
 
+*2022/10*:: Add Open Location Code library
+
+*2022/08*:: Add Agite tree and reflog
+
 *2019/12*:: Add X_Mng.Cards, and lapeau and freecell games
 
 *2018/05*:: Add mapcodes library
