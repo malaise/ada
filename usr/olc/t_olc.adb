@@ -12,7 +12,7 @@ procedure T_Olc is
     Ada.Text_Io.Put_Line ("  <encode>  ::= -c <coord> <precision>");
     Ada.Text_Io.Put_Line ("  <coord>   ::= <lat> <lon>");
     Ada.Text_Io.Put_Line ("  <decode>  ::= -d <code>");
-    Ada.Text_Io.Put_Line ("  <center>  ::= -C <coord> <coord>");
+    Ada.Text_Io.Put_Line ("  <center>  ::= -C <code>");
     Ada.Text_Io.Put_Line ("  <status>  ::= -S <code>");
     Ada.Text_Io.Put_Line ("  <shorten> ::= -s <code> <coord>");
     Ada.Text_Io.Put_Line ("  <nearest> ::= -n <code> <coord>");
