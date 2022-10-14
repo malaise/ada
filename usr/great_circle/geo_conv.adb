@@ -53,10 +53,8 @@ procedure Geo_Conv is
 
   -- Index of '/' in input
   Slash : Natural;
-  -- Lon (X) and lat (Y) in radian, from input
-  Point : Lat_Lon.Lat_Lon_Rad_Rec;
-  -- Same in signed degrees
-  Degs : Lat_Lon.Deg_Rec;
+  -- Signed lat lon
+  Point : Lat_Lon.Signed_Deg_Rec;
 
   -- Precision of outputs (fraction of degrees, mapcode, olc)
   Frac_Len : constant := 9;
@@ -71,7 +69,6 @@ procedure Geo_Conv is
           My_Math.Real (D), Frac_Len + 5, 4, '0'),
        From => Str_Util.Head);
   end Format_Degree;
-
 
 begin
   if Argument.Get_Nbre_Arg /= 1 then
@@ -94,32 +91,32 @@ begin
     return;
   end if;
 
-  -- Set Point in radians
+  -- Set Point
   case Kind is
     when Sexa =>
-      Point := Lat_Lon.Geo2Rad (String_Util.Str2Geo(Arg.Image));
+      Point :=
+          Lat_Lon.Geo2Sig (String_Util.Str2Geo(Arg.Image));
     when Deci =>
       Slash := Str_Util.Locate (Arg.Image, "/");
-      Point := Lat_Lon.Deg2Rad ( (
+      Point := (
          Lat => Units.Degree'Value (Arg.Slice (1, Slash - 1)),
-         Lon => Units.Degree'Value (Arg.Slice (Slash + 1, Arg.Length))) );
+         Lon => Units.Degree'Value (Arg.Slice (Slash + 1, Arg.Length)) );
     when Map =>
-      Point := Lat_Lon.Mapcode2Rad (Arg.Image);
+      Point := Lat_Lon.Mapcode2Deg (Arg.Image);
     when Olc =>
-      Point := Lat_Lon.Olc2Rad (Arg.Image);
+      Point := Lat_Lon.Olc2Deg (Arg.Image);
    end case;
 
    -- Display the 4 values
    -- Sexa,
-   Basic_Proc.Put_Line_Output (String_Util.Geo2Str (Lat_Lon.Rad2Geo (Point)));
+   Basic_Proc.Put_Line_Output (String_Util.Geo2Str (Lat_Lon.Sig2Geo (Point)));
    -- Deci
-   Degs := Lat_Lon.Rad2Deg (Point);
-   Basic_Proc.Put_Line_Output (Format_Degree (Degs.Lat)
-                       & "/" & Format_Degree (Degs.Lon));
+   Basic_Proc.Put_Line_Output (Format_Degree (Point.Lat)
+                       & "/" & Format_Degree (Point.Lon));
   -- Mapcode
-  Basic_Proc.Put_Line_Output (Lat_Lon.Rad2Mapcode (Point, Map_Precision));
+  Basic_Proc.Put_Line_Output (Lat_Lon.Deg2Mapcode (Point, Map_Precision));
   -- Open Location Code
-  Basic_Proc.Put_Line_Output (Lat_Lon.Rad2Olc (Point, Olc_Precision));
+  Basic_Proc.Put_Line_Output (Lat_Lon.Deg2Olc (Point, Olc_Precision));
 
 end Geo_Conv;
 

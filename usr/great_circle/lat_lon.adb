@@ -79,6 +79,45 @@ package body Lat_Lon is
     return Lat_Lon_Rad;
   end Geo2Rad;
 
+  function Sig2Geo (Coord : Signed_Deg_Rec) return Lat_Lon_Geo_Rec is
+    Llat, Llon : Units.Degree;
+    Res : Lat_Lon_Geo_Rec;
+  begin
+    Res.Lat.North := True;
+    Res.Lon.East := True;
+    -- Latitude from 0 to 90
+    Llat := Coord.Lat;
+    if Llat < 0.0 then
+      Llat := -Llat;
+      Res.Lat.North := False;
+    end if;
+    Res.Lat.Coord := Units.Deg2Geo (Llat);
+    -- Longitude from 0 to 180
+    Llon := Coord.Lon;
+    if Llon < 0.0 then
+      Llon := -Llon;
+      Res.Lon.East := False;
+    end if;
+    Res.Lon.Coord := Units.Deg2Geo (Llon);
+    return Res;
+  end Sig2Geo;
+
+  function Geo2Sig (Coord : Lat_Lon_Geo_Rec) return Signed_Deg_Rec is
+    Llat, Llon : Units.Degree;
+  begin
+    Llat := Units.Geo2Deg (Coord.Lat.Coord);
+    Llon := Units.Geo2Deg (Coord.Lon.Coord);
+    -- Latitude from -90 to 90
+    if not Coord.Lat.North then
+      Llat := -Llat;
+    end if;
+    -- Longitude from -180 to 180
+    if not Coord.Lon.East then
+      Llon := -Llon;
+    end if;
+    return (Llat, Llon);
+  end Geo2Sig;
+
   --  00.0000 <= Lat.Coord <=  90.0000
   -- 000.0000 <= Lon.Coord <= 180.0000
   function Is_Lat_Lon_Ok (Lat_Lon_Dec : Lat_Lon_Dec_Rec) return Boolean is
@@ -162,30 +201,10 @@ package body Lat_Lon is
     return Lat_Lon_Rad;
   end Dec2Rad;
 
-  function To_Degree (R : Units.Rad_Coord_Range) return My_Math.Real is
-    Res : My_Math.Real := My_Math.Real (Complexes.To_Degree (R));
-    use type My_Math.Real;
-  begin
-    if Res >= 180.0 then
-      Res := -(360.0 - Res);
-    end if;
-    return Res;
-  end To_Degree;
-
-  -- Mapcode <-> Rad
-  function Mapcode2Rad (Str : String) return Lat_Lon_Rad_Rec is
-
-    -- Convert a Mapcode real cooordinate (Real fraction of degrees), into
-    --   Radian in -180 .. 180
-    function To_Radian (R : Mapcodes.Real) return Units.Rad_Coord_Range is
-    begin
-      -- In 0 .. 2*PI
-      return Complexes.To_Radian (Complexes.Degree (R));
-    end To_Radian;
-
+  -- Mapcode <-> Deg
+  function Mapcode2Deg (Str : String) return Signed_Deg_Rec is
     I : Natural;
     Coord : Mapcodes.Coordinate;
-
   begin
     -- Extract Mapcode and leading optional Context, get Coordinates
     I := Str_Util.Locate (Str, ":");
@@ -197,51 +216,70 @@ package body Lat_Lon is
       Coord :=  Mapcodes.Decode (Str(I + 1 .. Str'Last),
                                  Str(Str'First .. I - 1));
     end if;
-    return (X => To_Radian (Coord.Lon),
-            Y => To_Radian (Coord.Lat));
-  end Mapcode2Rad;
-
-  function To_Map_Degree (R : Units.Rad_Coord_Range) return Mapcodes.Real is
-      (Mapcodes.Real (To_Degree (R) ) );
+    return (Lat => Signed_Deg (Coord.Lat),
+            Lon => Signed_Deg (Coord.Lon) );
+  end Mapcode2Deg;
 
   -- Return the international mapcode
-  function Rad2Mapcode (Coord : Lat_Lon_Rad_Rec;
+  function Deg2Mapcode (Coord : Signed_Deg_Rec;
                         Precision : Map_Precisions := Default_Map_Precision)
            return String is
-    C : constant Mapcodes.Coordinate := (Lat => To_Map_Degree (Coord.Y),
-                                         Lon => To_Map_Degree (Coord.X));
+    C : constant Mapcodes.Coordinate := (Lat => Mapcodes.Real (Coord.Lat),
+                                         Lon => Mapcodes.Real (Coord.Lon));
     Codes : constant Mapcodes.Mapcode_Infos
           := Mapcodes.Encode (C, Shortest => True, Precision => Precision);
   begin
     return Codes(Codes'Last).Mapcode.Image;
+  end Deg2Mapcode;
+
+  -- Mapcode <-> Rad
+  function Mapcode2Rad (Str : String) return Lat_Lon_Rad_Rec is
+  begin
+    return Deg2Rad (Mapcode2Deg (Str));
+  end Mapcode2Rad;
+
+  function Rad2Mapcode (Coord : Lat_Lon_Rad_Rec;
+                        Precision : Map_Precisions := Default_Map_Precision)
+           return String is
+  begin
+    return Deg2Mapcode (Rad2Deg (Coord), Precision);
   end Rad2Mapcode;
 
-  -- Open Loc Code <-> Rad
-  function Olc2Rad (Str : Olc.Code_Type) return Lat_Lon_Rad_Rec is
+  -- Olc <-> Deg
+  function Olc2Deg (Code : Olc.Code_Type) return Signed_Deg_Rec is
     Sw, Ne, Center : Olc.Coordinate;
   begin
-    Olc.Decode (Str, Sw, Ne);
+    Olc.Decode (Code, Sw, Ne);
     Center := Olc.Center_Of (Sw, Ne);
-    return (X => Complexes.To_Radian (Complexes.Degree (Center.Lon)),
-            Y => Complexes.To_Radian (Complexes.Degree (Center.Lat)));
-  end Olc2Rad;
+    return (Lat => Signed_Deg (Center.Lat),
+            Lon => Signed_Deg (Center.Lon) );
+  end Olc2Deg;
 
-  function To_Olc_Degree (R : Units.Rad_Coord_Range) return Olc.Real is
-      (Olc.Real (To_Degree (R) ) );
+  function Deg2Olc (Coord : Signed_Deg_Rec;
+                    Precision : Olc_Precisions := Default_Olc_Precision)
+           return Olc.Code_Type is
+    C : constant Olc.Coordinate := (Lat => Olc.Real (Coord.Lat),
+                                    Lon => Olc.Real (Coord.Lon));
+  begin
+    return Olc.Encode (C, Precision);
+  end Deg2Olc;
+
+  -- Open Loc Code <-> Rad
+  function Olc2Rad (Code : Olc.Code_Type) return Lat_Lon_Rad_Rec is
+  begin
+    return Deg2Rad (Olc2Deg (Code));
+  end Olc2Rad;
 
   function Rad2Olc (Coord : Lat_Lon_Rad_Rec;
                     Precision : Olc_Precisions := Default_Olc_Precision)
            return Olc.Code_Type is
-    C : constant Olc.Coordinate := (Lat => To_Olc_Degree (Coord.Y),
-                                    Lon => To_Olc_Degree (Coord.X));
   begin
-    return Olc.Encode (C, Precision);
+    return Deg2Olc (Rad2Deg (Coord), Precision);
   end Rad2Olc;
 
   -- Signed Deg <-> Rad
-  function Deg2Rad (Coord : Deg_Rec) return Lat_Lon_Rad_Rec is
+  function Deg2Rad (Coord : Signed_Deg_Rec) return Lat_Lon_Rad_Rec is
     Llat, Llon : Units.Degree;
-    use type Units.Degree;
   begin
     Llat := Coord.Lat;
     Llon := Coord.Lon;
@@ -258,23 +296,22 @@ package body Lat_Lon is
     end return;
   end Deg2Rad;
 
-  function Rad2Deg (Coord : Lat_Lon_Rad_Rec) return Deg_Rec is
-    use type Units.Degree;
+  function Rad2Deg (Coord : Lat_Lon_Rad_Rec) return Signed_Deg_Rec is
+    Llat, Llon : Units.Degree;
   begin
-    return Degs : Deg_Rec do
-      Degs.Lat := Units.Rad2Deg (Coord.Y);
-      -- Latitude from -90 to 90
-      if Degs.Lat > 90.0 then
-        Degs.Lat := -360.0 + Degs.Lat;
-      elsif Degs.Lat < -90.0 then
-        Degs.Lat := 360.0 + Degs.Lat;
-      end if;
-      Degs.Lon := Units.Rad2Deg (Coord.X);
-      -- Longitude from -180 to 180
-      if Degs.Lon > 180.0 then
-        Degs.Lon := -360.0 + Degs.Lon;
-      end if;
-    end return;
+    Llat := Units.Rad2Deg (Coord.Y);
+    -- Latitude from -90 to 90
+    if Llat > 90.0 then
+      Llat := -360.0 + Llat;
+    elsif Llat < -90.0 then
+      Llat := 360.0 + Llat;
+    end if;
+    Llon := Units.Rad2Deg (Coord.X);
+    -- Longitude from -180 to 180
+    if Llon > 180.0 then
+      Llon := -360.0 + Llon;
+    end if;
+    return (Llat, Llon);
   end Rad2Deg;
 
 end Lat_Lon;

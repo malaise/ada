@@ -25,13 +25,7 @@ package Lat_Lon is
     Y : Units.Rad_Coord_Range;
   end record;
 
-  --  00.00.00 <= Lat.Coord <=  90.00.00
-  -- 000.00.00 <= Lon.Coord <= 180.00.00
-  function Is_Lat_Lon_Ok (Lat_Lon_Geo : Lat_Lon_Geo_Rec) return Boolean;
-
-  function Rad2Geo (Coord : Lat_Lon_Rad_Rec) return Lat_Lon_Geo_Rec;
-  function Geo2Rad (Coord : Lat_Lon_Geo_Rec) return Lat_Lon_Rad_Rec;
-
+  -- Positive fractions of degree
   type Lat_Dec_Rec is record
     North : Boolean;
     Coord : Units.Dec_Coord_Rec;
@@ -47,41 +41,63 @@ package Lat_Lon is
     Lon : Lon_Dec_Rec;
   end record;
 
-  --  00.0000 <= Lat.Coord <=  90.0000
-  -- 000.0000 <= Lon.Coord <= 180.0000
+  -- Signed degrees (-180 .. 180)
+  use type Units.Degree;
+  subtype Signed_Deg is Units.Degree range -180.0 .. 180.0;
+  type Signed_Deg_Rec is record
+    Lat : Signed_Deg;
+    Lon : Signed_Deg;
+  end record;
+
+  --  00.00.00 <= Lat.Coord <=  90.00.00
+  -- 000.00.00 <= Lon.Coord <= 180.00.00
+  function Is_Lat_Lon_Ok (Lat_Lon_Geo : Lat_Lon_Geo_Rec) return Boolean;
   function Is_Lat_Lon_Ok (Lat_Lon_Dec : Lat_Lon_Dec_Rec) return Boolean;
+
+  function Rad2Geo (Coord : Lat_Lon_Rad_Rec) return Lat_Lon_Geo_Rec;
+  function Geo2Rad (Coord : Lat_Lon_Geo_Rec) return Lat_Lon_Rad_Rec;
 
   function Dec2Geo (Coord : Lat_Lon_Dec_Rec) return Lat_Lon_Geo_Rec;
   function Geo2Dec (Coord : Lat_Lon_Geo_Rec) return Lat_Lon_Dec_Rec;
 
+  function Sig2Geo (Coord : Signed_Deg_Rec) return Lat_Lon_Geo_Rec;
+  function Geo2Sig (Coord : Lat_Lon_Geo_Rec) return Signed_Deg_Rec;
+
   function Rad2Dec (Coord : Lat_Lon_Rad_Rec) return Lat_Lon_Dec_Rec;
   function Dec2Rad (Coord : Lat_Lon_Dec_Rec) return Lat_Lon_Rad_Rec;
 
-  -- Mapcode <-> Rad
-  -- Str is [ <Context>: ] <mapcode>
-  function Mapcode2Rad (Str : String) return Lat_Lon_Rad_Rec;
-  -- Return the international mapcode
+  -- Mapcodes
+  -- Input Str is [ <Context>: ] <mapcode>, output is the international mapcode
   subtype Map_Precisions is Mapcodes.Precisions;
   Default_Map_Precision : constant Map_Precisions := 2;
+  -- Mapcode <-> Deg
+  function Mapcode2Deg (Str : String) return Signed_Deg_Rec;
+  function Deg2Mapcode (Coord : Signed_Deg_Rec;
+                        Precision : Map_Precisions := Default_Map_Precision)
+           return String;
+  -- Mapcode <-> Rad
+  function Mapcode2Rad (Str : String) return Lat_Lon_Rad_Rec;
   function Rad2Mapcode (Coord : Lat_Lon_Rad_Rec;
                         Precision : Map_Precisions := Default_Map_Precision)
            return String;
 
-  -- Open Loc Code <-> Rad
-  function Olc2Rad (Str : Olc.Code_Type) return Lat_Lon_Rad_Rec;
-  -- Return the Olc
+  -- Open Loc Code
   subtype Olc_Precisions is Olc.Precision_Range;
   Default_Olc_Precision : constant Olc_Precisions := Olc.Default_Precision;
+  -- Open Loc Code <-> Deg
+  function Olc2Deg (Code : Olc.Code_Type) return Signed_Deg_Rec;
+  function Deg2Olc (Coord : Signed_Deg_Rec;
+                    Precision : Olc_Precisions := Default_Olc_Precision)
+           return Olc.Code_Type;
+  -- Open Loc Code <-> Rad
+  function Olc2Rad (Code : Olc.Code_Type) return Lat_Lon_Rad_Rec;
   function Rad2Olc (Coord : Lat_Lon_Rad_Rec;
                     Precision : Olc_Precisions := Default_Olc_Precision)
            return Olc.Code_Type;
 
   -- Signed Deg <-> Rad
-  type Deg_Rec is record
-    Lat, Lon : Units.Degree;
-  end record;
-  function Deg2Rad (Coord : Deg_Rec) return Lat_Lon_Rad_Rec;
-  function Rad2Deg (Coord : Lat_Lon_Rad_Rec) return Deg_Rec;
+  function Deg2Rad (Coord : Signed_Deg_Rec) return Lat_Lon_Rad_Rec;
+  function Rad2Deg (Coord : Lat_Lon_Rad_Rec) return Signed_Deg_Rec;
 
 end Lat_Lon;
 

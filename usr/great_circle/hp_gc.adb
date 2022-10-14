@@ -18,7 +18,7 @@ procedure Hp_Gc is
   D : String_Util.Distance;
   Str, Unit : As.U.Asu_Us;
   R : My_Math.Real;
-  Degs : Lat_Lon.Deg_Rec;
+  Degs : Lat_Lon.Signed_Deg_Rec;
   I : Integer;
   Map_Precision : Lat_Lon.Map_Precisions;
   Olc_Precision : Lat_Lon.Olc_Precisions;
