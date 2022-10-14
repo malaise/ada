@@ -86,8 +86,9 @@ package body My_Math is
     Neg   : Boolean := False;
     Dig   : constant Positive := 15;  -- digits of real
     Exp   : constant Positive := 4;  -- +123
-    Total : constant Positive := 2 + Dig + 1 + Exp + 1;
-    -- b-1.<14digits>E+123; (b = 1 extra space)
+    -- Put will use <fore> "." Aft "E" Exp, ajusting <fore> to fit Total
+    -- We want: Sd.<14digits>E+123, S being an extra space
+    Total : constant Positive := 2 + Dig + 1 + Exp;
     subtype Typ_Index_Str is Positive range 1 .. Total;
     Str_Aux   : String(Typ_Index_Str);
     Str_Exp   : String(1 .. Exp);
@@ -99,28 +100,28 @@ package body My_Math is
       Neg := True;
     end if;
 
-    -- store  x in a string
-    Real_Io.Put(Str_Aux, abs X , Dig - 1, Exp);
+    -- Store  x in a string
+    Real_Io.Put(Str_Aux, abs X, Dig - 1, Exp);
 
-    -- compute exponent
+    -- Compute exponent
     Str_Exp(1 .. Exp) := Str_Aux(Total - Exp + 1 .. Total);
     Exponent := Integer'Value(Str_Exp);
     if Exponent < 0 then
 
-      -- no integer part
+      -- No integer part
       Result := 0.0;
-    elsif Exponent < Dig - 1 then
+    elsif Exponent < Dig then
 
-      -- reset fraction digits to 0
-      for Index in Total - Exp - Dig + 1 + Exponent .. Total - Exp - 1 loop
+      -- Reset fraction digits to 0
+      for Index in 4 + Exponent .. Total - Exp - 1 loop
         Str_Aux(Index) := '0';
       end loop;
 
-      -- convert result to real
+      -- Convert result to real
       Real_Io.Get(Str_Aux, Result, Index_Str);
     else
 
-      -- no fraction part (number to big)
+      -- No fraction part (number too big)
       Result := X;
     end if;
 
@@ -147,11 +148,17 @@ package body My_Math is
       raise Math_Error;
     end if;
 
+    -- Specific case
+    if X = 0.0 then
+      return 0;
+    end if;
+
+    -- Round
     Int := Inte (X);
     Rea := Real (Int);
 
     -- If round leads to a delta of less than Eps, then it is correct
-    if abs Rea - X < Real'Model_Epsilon then
+    if abs (Rea - X) / 10.0 ** Lg (abs X) < Real'Model_Epsilon then
       return Int;
     end if;
 
