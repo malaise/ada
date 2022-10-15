@@ -1,7 +1,8 @@
 with Ada.Text_Io, Ada.Characters.Handling, Ada.Strings.Fixed,
-     Ada.Environment_Variables;
+     Ada.Environment_Variables, Ada.Numerics.Generic_Elementary_Functions;
 package body Olc is
 
+  package Real_Math is new Ada.Numerics.Generic_Elementary_Functions (Real);
   subtype Inte is Long_Long_Integer;
 
   -- Log traces
@@ -47,17 +48,25 @@ package body Olc is
   function Trunc (X : Real) return Inte is
     Int : Inte;
     Rea : Real;
+    use Real_Math;
   begin
     if      X > Real (Inte'Last)
     or else X < Real (Inte'First) then
       raise Constraint_Error;
     end if;
 
+    -- Specific case
+    if X = 0.0 then
+      return 0;
+    end if;
+
+    -- Round
     Int := Inte (X);
     Rea := Real (Int);
 
     -- If round leads to a delta of less than Eps, then it is correct
-    if abs Rea - X < Real'Model_Epsilon then
+    if abs (Rea - X) / 10.0 ** Log (abs X, 10.0)
+     < Real'Model_Epsilon then
       return Int;
     end if;
 
@@ -78,6 +87,7 @@ package body Olc is
 
     return Int;
   end Trunc;
+
 
   -- Max lat and long
   Min_Lat : constant Lat_Range := Lat_Range'First;
@@ -243,6 +253,14 @@ package body Olc is
     -- Convert to int at the last stage to prserve precision
     Ilat := Inte (Max_Lat) * Grid_Lat_Precision_Inverse;
     Ilon := Inte (Max_Lon) * Grid_Lon_Precision_Inverse;
+    declare
+      Rlat : constant Real
+           := Real (Ilat) + Lat * Real (Grid_Lat_Precision_Inverse);
+      Rlon : constant Real
+           := Real (Ilon) + Lon * Real (Grid_Lon_Precision_Inverse);
+    begin
+      Logger.Log_Debug ("  Reals Lat: " & Rlat'Img & "  Lon: " & Rlon'Img);
+    end;
     Ilat := Trunc (Real (Ilat) + Lat * Real (Grid_Lat_Precision_Inverse));
     Ilon := Trunc (Real (Ilon) + Lon * Real (Grid_Lon_Precision_Inverse));
     Logger.Log_Debug ("  Ints Lat: " & Ilat'Img & "  Lon: " & Ilon'Img);
