@@ -1,48 +1,15 @@
-with Ada.Text_Io;
-with C_Types;
+with Ada.Text_Io, Ada.Numerics.Generic_Elementary_Functions;
 package body My_Math is
 
+  package Real_Math is new Ada.Numerics.Generic_Elementary_Functions (Real);
   package Inte_Io is new Ada.Text_Io.Integer_Io (Inte);
   package Real_Io is new Ada.Text_Io.Float_Io (Real);
-
-  function Cpow (X, Y : C_Types.Double) return C_Types.Double
-    with Import => True, Convention => C, External_Name => "pow";
-
-  function Csqrt (X : C_Types.Double) return C_Types.Double
-    with Import => True, Convention => C, External_Name => "sqrt";
-
-  function Clog10 (X : C_Types.Double) return C_Types.Double
-    with Import => True, Convention => C, External_Name => "log10";
-
-  function Clog (X : C_Types.Double) return C_Types.Double
-    with Import => True, Convention => C, External_Name => "log";
-
-  function Csin (X : C_Types.Double) return C_Types.Double
-    with Import => True, Convention => C, External_Name => "sin";
-
-  function Ccos (X : C_Types.Double) return C_Types.Double
-    with Import => True, Convention => C, External_Name => "cos";
-
-  function Ctan (X : C_Types.Double) return C_Types.Double
-    with Import => True, Convention => C, External_Name => "tan";
-
-  function Casin (X : C_Types.Double) return C_Types.Double
-    with Import => True, Convention => C, External_Name => "asin";
-
-  function Cacos (X : C_Types.Double) return C_Types.Double
-    with Import => True, Convention => C, External_Name => "acos";
-
-  function Catan (X : C_Types.Double) return C_Types.Double
-    with Import => True, Convention => C, External_Name => "atan";
-
-  function Catan2 (Y, X : C_Types.Double) return C_Types.Double
-    with Import => True, Convention => C, External_Name => "atan2";
 
   --------------------------
   -- Constants for computing
   --------------------------
-  -- Multiples and sub-multiples of pi
-  Pi_Hundred_Heighty   : constant := Pi/180.0;
+  -- One cycle in degrees
+  Cycle_Deg : constant Real := 360.0;
 
   -- Get an Inte, get a Real from a string
   -- raise Data_Error if From is not valid
@@ -107,7 +74,6 @@ package body My_Math is
     Str_Exp(1 .. Exp) := Str_Aux(Total - Exp + 1 .. Total);
     Exponent := Integer'Value(Str_Exp);
     if Exponent < 0 then
-
       -- No integer part
       Result := 0.0;
     elsif Exponent < Dig then
@@ -238,7 +204,7 @@ package body My_Math is
   -- Power
   function "**" (Number, Exponent : Real) return Real is
   begin
-   return Real(Cpow (C_Types.Double(Number), C_Types.Double(Exponent)));
+   return Real_Math."**" (Number, Exponent);
   exception
     when others =>
       raise Math_Error;
@@ -247,10 +213,7 @@ package body My_Math is
   -- Square root
   function Sqrt (X : Real) return Real is
   begin
-    if X < 0.0 then
-      raise Math_Error;
-    end if;
-    return Real(Csqrt (C_Types.Double(X)));
+    return Real_Math.Sqrt (X);
   exception
     when others =>
       raise Math_Error;
@@ -259,10 +222,7 @@ package body My_Math is
   -- Based 10 log
   function Lg (X : Real) return Real is
   begin
-    if X < 0.0 then
-      raise Math_Error;
-    end if;
-    return Real(Clog10 (C_Types.Double(X)));
+    return Real_Math.Log (X, 10.0);
   exception
     when others =>
       raise Math_Error;
@@ -273,10 +233,7 @@ package body My_Math is
   -- Ln
   function Ln (X : Real) return Real is
   begin
-    if X < 0.0 then
-      raise Math_Error;
-    end if;
-    return Real(Clog (C_Types.Double(X)));
+    return Real_Math.Log (X);
   exception
     when others =>
       raise Math_Error;
@@ -285,10 +242,12 @@ package body My_Math is
   -- Trigo
   function Sin (X    : Real;
                 Mode : Angle_Unit := Radian) return Real is
-    Y      : Real;
   begin
-    Y := (if Mode = Radian then X else X * Pi_Hundred_Heighty);
-    return Real(Csin (C_Types.Double(Y)));
+    if Mode = Radian then
+      return Real_Math.Sin (X);
+    else
+      return Real_Math.Sin (X, Cycle_Deg);
+    end if;
   exception
     when others =>
       raise Math_Error;
@@ -296,10 +255,12 @@ package body My_Math is
 
   function Cos (X    : Real;
                 Mode : Angle_Unit := Radian) return Real is
-    Y      : Real;
   begin
-    Y := (if Mode = Radian then X else X * Pi_Hundred_Heighty);
-    return Real(Ccos (C_Types.Double(Y)));
+    if Mode = Radian then
+      return Real_Math.Cos (X);
+    else
+      return Real_Math.Cos (X, Cycle_Deg);
+    end if;
   exception
     when others =>
       raise Math_Error;
@@ -307,10 +268,12 @@ package body My_Math is
 
   function Tan (X    : Real;
                 Mode : Angle_Unit := Radian) return Real is
-    Y       : Real;
   begin
-    Y := (if Mode = Radian then X else X * Pi_Hundred_Heighty);
-    return Real(Ctan (C_Types.Double(Y)));
+    if Mode = Radian then
+      return Real_Math.Tan (X);
+    else
+      return Real_Math.Tan (X, Cycle_Deg);
+    end if;
   exception
     when others =>
       raise Math_Error;
@@ -318,16 +281,12 @@ package body My_Math is
 
   function Arc_Sin (X    : Real;
                     Mode : Angle_Unit := Radian) return Real is
-    Y : Real;
   begin
-    if abs X  > 1.0 then
-      raise Math_Error;
+    if Mode = Radian then
+      return Real_Math.Arcsin (X);
+    else
+      return Real_Math.Arcsin (X, Cycle_Deg);
     end if;
-    Y := Real(Casin (C_Types.Double(X)));
-    if Mode = Degree then
-      Y := Y / Pi_Hundred_Heighty;
-    end if;
-    return Y;
   exception
     when others =>
       raise Math_Error;
@@ -335,16 +294,12 @@ package body My_Math is
 
   function Arc_Cos (X    : Real;
                     Mode : Angle_Unit := Radian) return Real is
-    Y : Real;
   begin
-    if abs X > 1.0 then
-      raise Math_Error;
+    if Mode = Radian then
+      return Real_Math.Arccos (X);
+    else
+      return Real_Math.Arccos (X, Cycle_Deg);
     end if;
-    Y := Real(Cacos (C_Types.Double(X)));
-    if Mode = Degree then
-      Y := Y / Pi_Hundred_Heighty;
-    end if;
-    return Y;
   exception
     when others =>
       raise Math_Error;
@@ -352,13 +307,12 @@ package body My_Math is
 
   function Arc_Tan (X    : Real;
                     Mode : Angle_Unit := Radian) return Real is
-    Y : Real;
   begin
-    Y := Real(Catan (C_Types.Double(X)));
-    if Mode = Degree then
-      Y := Y / Pi_Hundred_Heighty;
+    if Mode = Radian then
+      return Real_Math.Arctan (X);
+    else
+      return Real_Math.Arctan (X, Cycle => Cycle_Deg);
     end if;
-    return Y;
   exception
     when others =>
       raise Math_Error;
@@ -366,13 +320,12 @@ package body My_Math is
 
   function Arc_Tan2 (Y, X : Real;
                     Mode : Angle_Unit := Radian) return Real is
-    Z : Real;
   begin
-    Z := Real(Catan2 (C_Types.Double(Y), C_Types.Double(X)));
-    if Mode = Degree then
-      Z := Z / Pi_Hundred_Heighty;
+    if Mode = Radian then
+      return Real_Math.Arctan (Y, X);
+    else
+      return Real_Math.Arctan (Y, X, Cycle_Deg);
     end if;
-    return Z;
    exception
     when others =>
       raise Math_Error;
