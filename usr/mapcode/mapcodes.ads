@@ -9,7 +9,7 @@ package Mapcodes is
                                           & Mapcode_Data_Version;
 
   -- Real type (for latitude and longitude)
-  type Real is digits 15 range -1.79E308 .. 1.79E308;
+  type Real is new Long_Float;
 
   -----------------
   -- TERRITORIES --
