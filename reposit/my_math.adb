@@ -106,6 +106,7 @@ package body My_Math is
   end Round;
 
   function Trunc (X : Real) return Inte is
+    Epsilon : constant Real := Real'Model_Epsilon;
     Int : Inte;
     Rea : Real;
   begin
@@ -124,7 +125,7 @@ package body My_Math is
     Rea := Real (Int);
 
     -- If round leads to a delta of less than Eps, then it is correct
-    if abs (Rea - X) / 10.0 ** Lg (abs X) < Real'Model_Epsilon then
+    if abs (Rea - X) / 10.0 ** Lg (abs X) < Epsilon then
       return Int;
     end if;
 
