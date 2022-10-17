@@ -51,8 +51,8 @@ package body My_Math is
   function Int (X : Real) return Real is
 
     Neg   : Boolean := False;
-    Dig   : constant Positive := 15;  -- digits of real
-    Exp   : constant Positive := 4;  -- +123
+    Dig   : constant Positive := Real'Digits;  -- digits of real
+    Exp   : constant Positive := 4;            -- +123
     -- Put will use <fore> "." Aft "E" Exp, ajusting <fore> to fit Total
     -- We want: Sd.<14digits>E+123, S being an extra space
     Total : constant Positive := 2 + Dig + 1 + Exp;
