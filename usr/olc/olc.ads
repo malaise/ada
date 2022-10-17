@@ -5,7 +5,7 @@ package Olc is
   -- Types --
   -----------
   -- Real type (for latitude and longitude)
-  type Real is digits 15 range -1.79E308 .. 1.79E308;
+  type Real is new Long_Float;
 
   -- Coordinate in fraction of degrees
   subtype Lat_Range is Real range  -90.0 ..  90.0;

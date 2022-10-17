@@ -4,9 +4,7 @@ with Long_Longs;
 package My_Math is
 
   subtype Inte is Long_Longs.Ll_Integer;
-  -- This should generate the overflow checks
-  --  (was subtype Real is Long_Float;)
-  type Real is digits 15 range -1.79E308 .. 1.79E308;
+  type Real is new Long_Float;
 
   -- Types and constants for trigonometry
   -- pi constant
