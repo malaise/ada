@@ -7,7 +7,7 @@
 --   Outputs the mapcode or open location code or lat-long of the destination
 with Olc;
 with Basic_Proc, Argument, Gets, My_Math, Normalization, As.U.Utils,
-     Str_Util.Regex;
+     Str_Util.Regex, Images;
 with Units, Lat_Lon, Great_Circle, String_Util;
 procedure Hp_Gc is
   type Mode_List is (Compute, Apply_Lalo, Apply_Mapcode, Apply_Olc);
@@ -195,7 +195,7 @@ begin
       R := R * 1000.0;
       if R < 1000.0 then
         I := Integer (My_Math.Round (R));
-        Basic_Proc.Put_Output (I'Img & "mm");
+        Basic_Proc.Put_Output (Images.Integer_Image (I) & "mm");
       end if;
     end if;
     Basic_Proc.Put_Line_Output (".");

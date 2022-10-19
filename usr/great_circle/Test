@@ -109,13 +109,13 @@ t_hp_gc -c AU-WA:MF.RRB-1T ZAF:WHWW.J3X-64 \
 
 # One mapcode precision digit in each direction
 t_hp_gc -c FRA:FTGC.R3T-K3 FRA:FTGC.R3T-K4 \
-  "H:   89.999998869, D:     0.000134Nm     0.000247km   0.247m 247mm."
+  "H:   89.999998869, D:     0.000134Nm     0.000247km   0.247m247mm."
 t_hp_gc -c FRA:FTGC.R3T-K3 FRA:FTGC.R3T-K2 \
-  "H:  270.000001131, D:     0.000134Nm     0.000247km   0.247m 247mm."
+  "H:  270.000001131, D:     0.000134Nm     0.000247km   0.247m247mm."
 t_hp_gc -c FRA:FTGC.R3T-K3 FRA:FTGC.R3T-DW \
-  "H:  179.994818765, D:     0.000146Nm     0.000271km   0.271m 271mm."
+  "H:  179.994818765, D:     0.000146Nm     0.000271km   0.271m271mm."
 t_hp_gc -c FRA:FTGC.R3T-K3 FRA:FTGC.R3T-K9 \
-  "H:    0.000000000, D:     0.000146Nm     0.000271km   0.271m 271mm."
+  "H:    0.000000000, D:     0.000146Nm     0.000271km   0.271m271mm."
 # Fonsorbes -> Acuncagua
 t_hp_gc -c FRA:FTGC.R3T-1N 79GMS.VQFW-7R \
   "H:  234.076573125, D:  6010.080418Nm 11130.668935km."
