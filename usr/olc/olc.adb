@@ -46,7 +46,7 @@ package body Olc is
 
   -- Trunk Real into Inte
   function Trunc (X : Real) return Inte is
-    Epsilon : constant Real := Real'Model_Epsilon;
+    Epsilon : constant Real := Real'Model_Epsilon * 5.0;
     Int : Inte;
     Rea : Real;
     use Real_Math;
