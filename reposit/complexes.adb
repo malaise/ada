@@ -50,20 +50,17 @@ package body Complexes is
     return R;
   end Reduct;
 
+  Deg2Rad_Factor : constant Real
+                 := Real(Reducted_Radian'Last) / Real(Reducted_Degree'Last);
   function To_Degree (A : Radian) return Reducted_Degree is
-    R : Real;
   begin
-    R := Real(Reduct(A)/Reducted_Radian'Last) * Real(Reducted_Degree'Last);
-    return Reducted_Degree (R);
+    return Degree (Real'(Real(Reduct(A)) / Deg2Rad_Factor));
   end To_Degree;
 
   function To_Radian (A : Degree) return Reducted_Radian is
-    R : Real;
   begin
-    R := Real(Reduct(A)/Reducted_Degree'Last) * Real(Reducted_Radian'Last);
-    return Reducted_Radian (R);
+    return Radian (Real'(Real(Reduct(A)) * Deg2Rad_Factor));
   end To_Radian;
-
 
   --------------------------
   -- POLAR REPRESENTATION --
