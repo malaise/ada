@@ -1,11 +1,11 @@
-with Images, Normal;
+with Int_Img, Normal;
 package body Cards is
 
   function Image (Name : Deck.Name_Range) return Character is
   begin
     return (case Name is
       -- Returns a string (2 .. Last)
-      when 1 .. 9 => Images.Integer_Image (Name)(2),
+      when 1 .. 9 => Int_Img (Name)(2),
       when 10     => 'a',
       when 11     => 'J',
       when 12     => 'Q',

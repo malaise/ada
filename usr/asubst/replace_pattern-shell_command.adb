@@ -1,4 +1,4 @@
-with Many_Strings, Command, Images;
+with Many_Strings, Command, Int_Img;
 separate (Replace_Pattern)
 
 package body Shell_Command is
@@ -6,7 +6,7 @@ package body Shell_Command is
 
   function Exec (Cmd : String) return String is
     Code : Command.Exit_Code_Range;
-    function Code_Image is new Images.Int_Image (Command.Exit_Code_Range);
+    function Code_Image (Code : Integer) return String renames Int_Img;
   begin
     Log.Rep ("Launching command: >" & Cmd & "<");
 

@@ -1,5 +1,5 @@
 with Ada.Exceptions;
-with As.U, Directory, Afpx.Utils, Str_Util, Basic_Proc, Images;
+with As.U, Directory, Afpx.Utils, Str_Util, Basic_Proc, Int_Img;
 with Git_If, Utils.X, Afpx_Xref, Confirm, Error;
 package body Stash is
 
@@ -10,9 +10,8 @@ package body Stash is
                  From : in  Git_If.Stash_Entry_Rec) is
   begin
     Afpx.Utils.Encode_Line ("",
-        Images.Integer_Image (From.Num)
-      & " " & From.Branch.Image & " " & From.Name.Image, "", List_Width, Line,
-        False);
+        Int_Img (From.Num) & " " & From.Branch.Image & " " & From.Name.Image,
+        "", List_Width, Line, False);
   exception
     when Error:others =>
       Basic_Proc.Put_Line_Error ("Exception "
@@ -89,8 +88,7 @@ package body Stash is
     if Oper /= Stash_Addapl and then Oper /= Stash_Addrst then
       Stashes.Move_At (Afpx.Line_List.Get_Position);
       Stashes.Read (Stash, Moved => Result);
-      Str := As.U.Tus (Images.Integer_Image (Stash.Num)
-                     & " " & Stash.Name.Image);
+      Str := As.U.Tus (Int_Img (Stash.Num) & " " & Stash.Name.Image);
     end if;
 
      -- Recover new name from Get field

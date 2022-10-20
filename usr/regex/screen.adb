@@ -1,4 +1,4 @@
-with Con_Io, Afpx.Utils, Images, Str_Util, Normal;
+with Con_Io, Afpx.Utils, Int_Img, Str_Util, Normal;
 with Afpx_Xref;
 
 package body Screen is
@@ -90,12 +90,12 @@ package body Screen is
   begin
     -- Encode cursor line
     Afpx.Encode_Field (Afpx_Xref.Main.Title, (0, Curs_Col),
-      Images.Integer_Image (
+      Int_Img (
           if Cursor_Field < Afpx_Xref.Main.Text1 then 1
           else Integer (Cursor_Field - Afpx_Xref.Main.Text1 + 1)));
     -- Encode Line
     Afpx.Encode_Field (Afpx_Xref.Main.Line, (0, 0),
-        Images.Integer_Image (if Results = No_Results then 0 else Line));
+        Int_Img (if Results = No_Results then 0 else Line));
     -- Reset result
     Afpx.Reset_Field (Afpx_Xref.Main.Ranges);
     Afpx.Reset_Field (Afpx_Xref.Main.Result);

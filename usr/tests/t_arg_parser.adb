@@ -1,4 +1,4 @@
-with As.U.Utils, Argument, Argument_Parser, Environ, Basic_Proc, Images,
+with As.U.Utils, Argument, Argument_Parser, Environ, Basic_Proc, Int_Img,
      Aski, Sys_Calls, Command, Many_Strings, Parser, Str_Util;
 
 procedure T_Arg_Parser is
@@ -40,7 +40,7 @@ procedure T_Arg_Parser is
   procedure Put (S : String) renames Basic_Proc.Put_Output;
   procedure Put (I : Natural; Append_Sep : Boolean) is
   begin
-    Put (Images.Integer_Image (I));
+    Put (Int_Img (I));
     if Append_Sep then
       Put (" ");
     end if;

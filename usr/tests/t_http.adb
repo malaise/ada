@@ -1,6 +1,6 @@
-with Basic_Proc, Argument, Http, Mixed_Str, Images;
+with Basic_Proc, Argument, Http, Mixed_Str, Int_Img;
 procedure T_Http is
-  function Code_Image is new Images.Int_Image (Http.Server_Code_Range);
+  function Code_Image (Code : Integer) return String renames Int_Img;
   Result : Http.Result_Type;
 begin
 

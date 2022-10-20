@@ -1,4 +1,4 @@
-with Protected_Put, Images, Rnd;
+with Protected_Put, Int_Img, Rnd;
 procedure Accountants is
 
   -- The account: Balance is always >=0
@@ -69,21 +69,21 @@ procedure Accountants is
           Amount := 4000;
           Account.Deposit (Amount);
           Protected_Put.Put_Line_Output (
-            "Accountant " & Images.Integer_Image (Name) & " "
-            & "Deposit of " & Images.Integer_Image (Amount));
+            "Accountant " & Int_Img (Name) & " "
+            & "Deposit of " & Int_Img (Amount));
         when Withdraw =>
           -- Choose an amount
           Amount := Rnd.Gen.Int_Random (1, 10000);
           Account.Withdraw (Amount, Ok);
           Protected_Put.Put_Line_Output (
-            "Accountant " & Images.Integer_Image (Name) & " "
-            & "Withdraw of " & Images.Integer_Image (Amount)
+            "Accountant " & Int_Img (Name) & " "
+            & "Withdraw of " & Int_Img (Amount)
             & (if Ok then " accepted" else " rejected"));
         when Read =>
           Amount := Account.Read;
           Protected_Put.Put_Line_Output (
-            "Accountant " & Images.Integer_Image (Name) & " "
-            & "Balance is " & Images.Integer_Image (Amount));
+            "Accountant " & Int_Img (Name) & " "
+            & "Balance is " & Int_Img (Amount));
       end case;
 
 
@@ -102,6 +102,6 @@ begin
     A.Dye;
   end loop;
   Protected_Put.Put_Line_Output (
-    "Heritage is " & Images.Integer_Image (Account.Read));
+    "Heritage is " & Int_Img (Account.Read));
 end Accountants;
 

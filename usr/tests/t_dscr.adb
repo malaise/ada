@@ -1,4 +1,4 @@
-with Basic_Proc, Argument, Afpx, Con_Io, Normal, Mixed_Str, Language, Images;
+with Basic_Proc, Argument, Afpx, Con_Io, Normal, Mixed_Str, Language, Int_Img;
 procedure T_Dscr is
   Dscr_No : Afpx.Descriptor_Range;
   Get_Handle : Afpx.Get_Handle_Rec;
@@ -46,15 +46,15 @@ procedure T_Dscr is
       Afpx.Get_Field_Geometry (I, Upper_Left, Lower_Right);
       Afpx.Get_Field_Size (I, Height, Width);
       Basic_Proc.Put_Line_Output (
-        ": (" & Images.Integer_Image (Upper_Left.Row)
-        & "," & Images.Integer_Image (Upper_Left.Col)
-        & ")-(" & Images.Integer_Image (Lower_Right.Row)
-        & "," & Images.Integer_Image (Lower_Right.Col)
-        & ") => " & Images.Integer_Image (Afpx.Get_Field_Height (I))
-         & "x"  & Images.Integer_Image (Afpx.Get_Field_Width (I))
+        ": (" & Int_Img (Upper_Left.Row)
+        & "," & Int_Img (Upper_Left.Col)
+        & ")-(" & Int_Img (Lower_Right.Row)
+        & "," & Int_Img (Lower_Right.Col)
+        & ") => " & Int_Img (Afpx.Get_Field_Height (I))
+         & "x"  & Int_Img (Afpx.Get_Field_Width (I))
          & (if I in Afpx.Field_Range
             and then Afpx.Get_Field_Kind (I) = Afpx.Get_Field then
-              "-" & Images.Integer_Image (Afpx.Get_Data_Len (I))
+              "-" & Int_Img (Afpx.Get_Data_Len (I))
             else "") );
     end loop;
     Basic_Proc.Put_Line_Output ("First cursor field is"
@@ -99,8 +99,8 @@ begin
 
   -- Get and prind screen size
   Afpx.Get_Screen_Size (Height, Width);
-  Basic_Proc.Put_Line_Output ("Screen is " & Images.Integer_Image (Height)
-                                     & "x" & Images.Integer_Image (Width));
+  Basic_Proc.Put_Line_Output ("Screen is " & Int_Img (Height)
+                                     & "x" & Int_Img (Width));
 
   -- Set first descriptor
   Set_Dscr(Dscr_No);

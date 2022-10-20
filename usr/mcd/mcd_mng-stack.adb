@@ -1,4 +1,4 @@
-with Dynamic_List, Queues, Images;
+with Dynamic_List, Queues, Int_Img;
 separate (Mcd_Mng)
 
 package body Stack is
@@ -69,7 +69,7 @@ package body Stack is
   procedure Readn (Item : out Item_Rec; N : in Positive) is
     Litem : Item_Rec;
   begin
-    Debug.Log (Debug.Stack, "Reading " & Images.Integer_Image (N) & "th ");
+    Debug.Log (Debug.Stack, "Reading " & Int_Img (N) & "th ");
     List.Move_At (N, Stack_List.Prev);
     List.Read(Litem, Stack_List.Current);
     History.Push (Litem);
@@ -86,7 +86,7 @@ package body Stack is
     Litem : Item_Rec;
     Moved : Boolean;
   begin
-    Debug.Log (Debug.Stack, "Getting " & Images.Integer_Image (N) & "th ");
+    Debug.Log (Debug.Stack, "Getting " & Int_Img (N) & "th ");
     List.Move_At (N, Stack_List.Prev);
     List.Get(Litem, Stack_List.Next, Moved);
     History.Push (Litem);

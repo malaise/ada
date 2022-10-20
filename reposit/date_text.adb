@@ -1,4 +1,4 @@
-with Trace.Loggers, Mixed_Str, Normal, Images, Gets, As.U, Any_Def,
+with Trace.Loggers, Mixed_Str, Normal, Int_Img, Gets, As.U, Any_Def,
      Unbounded_Arrays, Perpet, Scanner;
 package body Date_Text is
 
@@ -349,16 +349,16 @@ package body Date_Text is
       if Fields(Flds.Element(I)).Kind /= Char then
         -- Check value
         if Val < Fields(Target).Min or else Val > Fields(Target).Max then
-          Logger.Log_Debug ("Invalid value " & Images.Integer_Image (Val));
+          Logger.Log_Debug ("Invalid value " & Int_Img (Val));
           raise Invalid_String;
         end if;
 
         -- Check, if already set, that same value
         if Set (Fields(Target).Index)
         and then Val /= Indexes.Get (Result, Fields(Target).Index) then
-          Logger.Log_Debug ("New value " & Images.Integer_Image (Val)
+          Logger.Log_Debug ("New value " & Int_Img (Val)
               & " differs from previous "
-              & Images.Integer_Image (Indexes.Get (Result, Fields(Target).Index)));
+              & Int_Img (Indexes.Get (Result, Fields(Target).Index)));
           raise Invalid_String;
         end if;
 
@@ -424,7 +424,7 @@ package body Date_Text is
         Val := Indexes.Get (Date, Fields(Fi).Index);
         if Fields(Fi).Kind = Enum then
           -- Apply conversion
-          Text := As.U.Tus (Images.Integer_Image (Val));
+          Text := As.U.Tus (Int_Img (Val));
           Text := As.U.Tus (Fields(Fi).Conv_Put (Text.Image));
         else
           -- Put num pad with 0

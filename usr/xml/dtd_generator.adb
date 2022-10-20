@@ -1,7 +1,7 @@
 -- Generate a valid DTD from a XML file or flow
 -- Ignores internal and external DTD
 with Argument, Argument_Parser, Basic_Proc, As.U, Str_Util, Mixed_Str,
-     Unbounded_Arrays, Trace.Loggers, Images,
+     Unbounded_Arrays, Trace.Loggers, Int_Img,
      Xml_Parser, Parser, Hashed_List.Unique, Limited_List;
 procedure Dtd_Generator is
 
@@ -44,16 +44,16 @@ procedure Dtd_Generator is
         & " [ <width> ]");
     Basic_Proc.Put_Line_Error (
         "  <deviation> ::= --deviation=<val>    // default "
-        & Images.Integer_Image (Max_Deviation));
+        & Int_Img (Max_Deviation));
     Basic_Proc.Put_Line_Error (
         "  <elements>  ::= --elements=<val>     // default "
-        & Images.Integer_Image (Max_Elements));
+        & Int_Img (Max_Elements));
     Basic_Proc.Put_Line_Error (
         "  <enums>     ::= --enums=<val>        // default "
-        & Images.Integer_Image (Max_Enums));
+        & Int_Img (Max_Enums));
     Basic_Proc.Put_Line_Error (
         "  <width>     ::= --width=<val>        // min "
-        & Images.Integer_Image (Min_Width));
+        & Int_Img (Min_Width));
     Basic_Proc.Put_Line_Error (
         "Outputs on stdout the DTD of the XML file or stdin.");
   end Usage;
@@ -645,7 +645,7 @@ begin
     if Arg_Dscr.Is_Set (6) then
       Output_Width := Natural'Value (Arg_Dscr.Get_Option (6));
       if Output_Width /= 0 and then Output_Width < Min_Width then
-        Error ("Minimum width is " & Images.Integer_Image (Min_Width));
+        Error ("Minimum width is " & Int_Img (Min_Width));
         Usage;
         return;
       end if;

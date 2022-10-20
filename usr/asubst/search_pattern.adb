@@ -1,5 +1,5 @@
 with Aski, As.U, Sys_Calls, Argument, Hashed_List.Unique, Str_Util, Text_Line,
-     Hexa_Utils, Images, Unbounded_Arrays;
+     Hexa_Utils, Int_Img, Unbounded_Arrays;
 with Log;
 package body Search_Pattern is
 
@@ -443,14 +443,14 @@ package body Search_Pattern is
               if Backref.Regex = 0
               or else Ll_Natural (Backref.Regex) > List.List_Length then
                 Error ("Invalid regex index "
-                     & Images.Integer_Image (Backref.Regex)
+                     & Int_Img (Backref.Regex)
                      & " in back reference");
               end if;
               if Backref.Substr /= 0
               and then Backref.Substr
                        > Nb_Substrings (Ll_Natural (Backref.Regex)) then
                 Error ("Invalid substring index "
-                     & Images.Integer_Image (Backref.Substr)
+                     & Int_Img (Backref.Substr)
                      & " in back reference");
               end if;
               Log.Sea ("Search, adding backref "

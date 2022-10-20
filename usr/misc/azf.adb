@@ -1,6 +1,6 @@
 -- Compress or uncompress stdin to stdout
 with Basic_Proc, Sys_Calls, Argument, Argument_Parser, C_Types, Bit_Ops,
-     As.U, Images, Trace.Loggers, Lzf, Lz4, Snappy;
+     As.U, Int_Img, Trace.Loggers, Lzf, Lz4, Snappy;
 procedure Azf is
 
   -- Max buffer size in Mega Bytes
@@ -20,8 +20,8 @@ procedure Azf is
     Basic_Proc.Put_Line_Error (" -d | --decompress            : Uncompress stdin to stdout");
     Basic_Proc.Put_Line_Error (" -H | --headers               : Use lzf header (and buffer of 64 kB)");
     Basic_Proc.Put_Line_Error (" -s <MB> | --buffer_size=<MB> : Buffer size in MB " &
-      "(max=" & Images.Integer_Image (Max_Buffer_Size) & ", default=" &
-      Images.Integer_Image (Buffer_Size) & ")");
+      "(max=" & Int_Img (Max_Buffer_Size) & ", default=" &
+      Int_Img (Buffer_Size) & ")");
     Basic_Proc.Put_Line_Error (" --lz4                        : Use lz4 instead of lzf");
     Basic_Proc.Put_Line_Error (" --snappy                     : Use snappy instead of lzf");
     Basic_Proc.Put_Line_Error (" -h | --help                  : Display this help");
@@ -71,8 +71,7 @@ procedure Azf is
   begin
     Buffer_Size := Positive'Value (Str);
     if Buffer_Size > Max_Buffer_Size then
-      Error ("Buffer size too large (Max "
-           & Images.Integer_Image (Max_Buffer_Size) & ")");
+      Error ("Buffer size too large (Max " & Int_Img (Max_Buffer_Size) & ")");
       return False;
     end if;
    return True;
@@ -293,8 +292,8 @@ begin
         Lzf.Uncompress (Inb(1 .. Inl), Outb.all, Outl);
         if Outl /= Expected then
           Error ("Unexpected uncompressed length ("
-                 & Images.Integer_Image (Outl) & "i.o. "
-                 & Images.Integer_Image (Expected));
+                 & Int_Img (Outl) & "i.o. "
+                 & Int_Img (Expected));
           return;
         end if;
         Logger.Log_Debug ("Uncompressed into " & Outl'Img & " bytes");

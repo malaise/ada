@@ -1,5 +1,5 @@
 -- Generates a Xml file (or stdout), or string from a tree
-with Aski, Images, Text_Line, Sys_Calls, Str_Util;
+with Aski, Int_Img, Text_Line, Sys_Calls, Str_Util;
 package body Xml_Parser.Generator is
 
   -- Version incremented at each significant change
@@ -193,8 +193,7 @@ package body Xml_Parser.Generator is
     -- Init version attribute
     Vers.Kind := Attribute;
     Vers.Name := Version_Name;
-    Vers.Value := As.U.Tus (Images.Integer_Image (Major)
-                          & "." & Images.Integer_Image (Minor));
+    Vers.Value := As.U.Tus (Int_Img (Major) & "." & Int_Img (Minor));
 
     -- Read Xml
     Ctx.Prologue.Move_Root;

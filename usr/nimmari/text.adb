@@ -1,4 +1,4 @@
-with Aski, Normal, Upper_Str, Upper_Char, Basic_Proc, Images;
+with Aski, Normal, Upper_Str, Upper_Char, Basic_Proc, Int_Img;
 package body Text is
 
   procedure Put (Str : in String) renames Basic_Proc.Put_Output;
@@ -78,7 +78,7 @@ package body Text is
   begin
     for Row in Common.Row_Range loop
       Status := Common.Get_Bars (Row);
-      Put (Row_Image (Row) & '(' & Images.Integer_Image (Row) & "): ");
+      Put (Row_Image (Row) & '(' & Int_Img (Row) & "): ");
       for Col in Common.Bar_Range loop
         if Status(Col) then
           Put ("I ");

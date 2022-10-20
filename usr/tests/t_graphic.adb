@@ -1,4 +1,4 @@
-with Con_Io, Argument, Images;
+with Con_Io, Argument, Int_Img;
 procedure T_Graphic is
   Console : aliased Con_Io.Console;
   Screen : Con_Io.Window;
@@ -29,8 +29,8 @@ begin
 
   loop
     Screen.Clear;
-    Screen.Put ("Font: " & Images.Integer_Image (Console.Font_Width)
-       & "x" & Images.Integer_Image (Console.Font_Height));
+    Screen.Put ("Font: " & Int_Img (Console.Font_Width)
+       & "x" & Int_Img (Console.Font_Height));
 
     -- Chessboard of text and rectangles
     -- Start rows and 21 columns, alternate screen foreground and background

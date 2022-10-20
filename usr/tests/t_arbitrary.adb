@@ -1,4 +1,4 @@
-with Argument, Arbitrary.Factors, Rnd, Images, Mixed_Str,
+with Argument, Arbitrary.Factors, Rnd, Int_Img, Mixed_Str,
      My_Math, Basic_Proc, Key_Pressed;
 procedure T_Arbitrary is
   Abort_Error : exception;
@@ -29,9 +29,9 @@ procedure T_Arbitrary is
   function Random return Integer is (Rnd.Gen.Int_Random (-Max, Max));
 
   function Image (I : Integer) return String is
-    (if I < 0 then Images.Integer_Image (I)
+    (if I < 0 then Int_Img (I)
      -- Add the '+'
-     else '+' & Images.Integer_Image (I));
+     else '+' & Int_Img (I));
 
   function Image (B : Boolean) return String is (Mixed_Str (B'Img));
 

@@ -1,4 +1,4 @@
-with As.U, Afpx.Utils, Basic_Proc, Images, Directory,
+with As.U, Afpx.Utils, Basic_Proc, Int_Img, Directory,
      Dir_Mng, Sys_Calls, Argument, Argument_Parser, Socket, Environ, Command;
 with Utils.X, Git_If, Config, Bookmarks, History, Tree, Tags, Commit, Push_Pull,
      Confirm, Confirm_Diff_Dir, Error, Stash, Branch, Afpx_Xref, Reset, Aski,
@@ -1207,9 +1207,9 @@ begin -- Agite
 exception
   when Incorrect_Version =>
     Basic_Proc.Put_Line_Error ("Incorrect Git version. Minimum required: "
-      & Images.Integer_Image (Ref_Version.Major) & "."
-      & Images.Integer_Image (Ref_Version.Medium) & "."
-      & Images.Integer_Image (Ref_Version.Minor) );
+      & Int_Img (Ref_Version.Major) & "."
+      & Int_Img (Ref_Version.Medium) & "."
+      & Int_Img (Ref_Version.Minor) );
     Basic_Proc.Set_Error_Exit_Code;
   when Config.Invalid_Config =>
     Basic_Proc.Put_Line_Error ("Invalid configuration.");

@@ -1,9 +1,9 @@
-with Images, As.U, Trace.Loggers;
+with Int_Img, As.U, Trace.Loggers;
 with Definition;
 package body Coder is
 
   function Limage (L : Types.Lid) return String is
-    (Images.Integer_Image (Natural (L)));
+    (Int_Img (Natural (L)));
   function Image (L : Types.Lid) return String is
     (Limage (L) & "=" & Types.Letter_Of (L));
 
@@ -116,7 +116,7 @@ package body Coder is
       X := X - Machine.Rotors(I).Offset + Machine.Rotors(I).Position;
       X := Machine.Rotors(I).Scrambler.Translate (X)
          + Machine.Rotors(I).Offset - Machine.Rotors(I).Position;
-      Put ("R" & Images.Integer_Image (I) & "->" & Image (X) & ", ");
+      Put ("R" & Int_Img (I) & "->" & Image (X) & ", ");
     end loop;
     -- Encode through the reflector
     X := X + Machine.Reflector.Position;
@@ -128,7 +128,7 @@ package body Coder is
       X := X - Machine.Rotors(I).Offset + Machine.Rotors(I).Position;
       X := Reverted(I).Translate (X)
          + Machine.Rotors(I).Offset - Machine.Rotors(I).Position;
-      Put ("R" & Images.Integer_Image (I) & "->" & Image (X) & ", ");
+      Put ("R" & Int_Img (I) & "->" & Image (X) & ", ");
     end loop;
     -- Encode through the switches
     X := Machine.Switches.Translate (X);

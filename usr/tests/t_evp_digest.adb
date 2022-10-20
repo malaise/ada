@@ -1,4 +1,4 @@
-with Basic_Proc, Argument, Evp_Digest, Hexa_Utils, Images, Lower_Str, Text_Line;
+with Basic_Proc, Argument, Evp_Digest, Hexa_Utils, Int_Img, Lower_Str, Text_Line;
 procedure T_Evp_Digest is
 
   procedure Usage is
@@ -30,7 +30,7 @@ procedure T_Evp_Digest is
             Hexa_Utils.Image (Natural (Res(I + 1)), 2);
       end loop;
       Basic_Proc.Put_Line_Output (Str
-          & " (" & Images.Integer_Image (Res'Length) & " bytes)");
+          & " (" & Int_Img (Res'Length) & " bytes)");
     end;
     Shown := True;
  end Show;

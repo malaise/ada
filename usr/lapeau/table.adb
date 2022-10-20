@@ -1,5 +1,5 @@
 with Ada.Calendar;
-with X_Mng, Timers, Long_Long_Limited_Pool, Trace.Loggers, Images,
+with X_Mng, Timers, Long_Long_Limited_Pool, Trace.Loggers, Int_Img,
      Aski.Unicode, Language, Perpet;
 with Movements;
 package body Table is
@@ -165,7 +165,7 @@ package body Table is
   -- Set game num
   procedure Set_Game_Num (Num : in Memory.Game_Range) is
   begin
-    Console.Set_Name ("La peau " & "(" & Images.Integer_Image (Num) & ")");
+    Console.Set_Name ("La peau " & "(" & Int_Img (Num) & ")");
   end Set_Game_Num;
 
   -- Position (X, Y) of card within a stack

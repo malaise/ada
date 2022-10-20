@@ -1,5 +1,5 @@
 -- Master mind (graphic or text mode)
-with Basic_Proc, Argument, Argument_Parser, As.U, Images, Rnd;
+with Basic_Proc, Argument, Argument_Parser, As.U, Int_Img, Rnd;
 with Common, Action, Mmind_Asc, Screen, Response;
 procedure Mmind is
   Version : constant String := "V1.0";
@@ -23,7 +23,7 @@ procedure Mmind is
       "  <init_level>   ::= -l <level> | --level=<level>");
     Basic_Proc.Put_Line_Error (
       "  <level>        ::= 3 | 4 | 5      // Default "
-      & Images.Integer_Image (Integer (Default_Level)));
+      & Int_Img (Integer (Default_Level)));
     Basic_Proc.Put_Line_Error (
       "  <init_code>    ::= -c <code> | --code=<code>");
     Basic_Proc.Put_Line_Error (

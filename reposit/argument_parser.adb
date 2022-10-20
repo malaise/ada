@@ -1,5 +1,5 @@
 with Ada.Unchecked_Deallocation, Ada.Characters.Latin_1;
-with Argument, Str_Util, Images;
+with Argument, Str_Util, Int_Img;
 package body Argument_Parser is
 
   No_Match : constant String := "" & Ada.Characters.Latin_1.Nul;
@@ -114,7 +114,7 @@ package body Argument_Parser is
         if Len = 3 then
           -- "--="
           P_Dscr.Error := As.U.Tus ("Argument " & Str & " at pos "
-             & Images.Integer_Image(Arg_No) & " is not valid");
+             & Int_Img(Arg_No) & " is not valid");
           return;
         end if;
         -- Set Len to last of key string
@@ -133,7 +133,7 @@ package body Argument_Parser is
             and then not The_Keys(I).Key_Can_Option then
               -- It has an option and cannot
               P_Dscr.Error := As.U.Tus ("Argument " & Str & " at pos "
-                 & Images.Integer_Image(Arg_No) & " cannot have option");
+                 & Int_Img(Arg_No) & " cannot have option");
               return;
             end if;
             if Len = 0
@@ -141,7 +141,7 @@ package body Argument_Parser is
             and then The_Keys(I).Required then
               -- It has no option and mut have one
               P_Dscr.Error := As.U.Tus ("Argument " & Str & " at pos "
-                 & Images.Integer_Image(Arg_No) & " must have an option");
+                 & Int_Img(Arg_No) & " must have an option");
               return;
             end if;
             A_Dscr.Index := I;
@@ -152,14 +152,14 @@ package body Argument_Parser is
         end loop;
         -- Not found
         P_Dscr.Error := As.U.Tus ("Argument " & Str & " at pos "
-           & Images.Integer_Image(Arg_No) & " is not expected");
+           & Int_Img(Arg_No) & " is not expected");
         return;
       end if;
 
       -- Char key, no minus allowed
       if Str_Util.Locate (Str, "-", 2) /= 0 then
         P_Dscr.Error := As.U.Tus ("Argument " & Str & " at pos "
-           & Images.Integer_Image(Arg_No) & " contains minus");
+           & Int_Img(Arg_No) & " contains minus");
         return;
       end if;
 
@@ -176,7 +176,7 @@ package body Argument_Parser is
         if A_Dscr.Index = 0 then
           -- Not found
           P_Dscr.Error := As.U.Tus ("Argument " & Str & " at pos "
-             & Images.Integer_Image(Arg_No) & " is not expected");
+             & Int_Img(Arg_No) & " is not expected");
           return;
         end if;
         -- Found, see if it can have and has a valid option
@@ -185,7 +185,7 @@ package body Argument_Parser is
           if The_Keys(A_Dscr.Index).Required
           and then A_Dscr.Option = Asu_No_Match then
             P_Dscr.Error := As.U.Tus ("Argument " & Str & " at pos "
-               & Images.Integer_Image(Arg_No) & " must have an option");
+               & Int_Img(Arg_No) & " must have an option");
             return;
           end if;
         end if;
@@ -204,7 +204,7 @@ package body Argument_Parser is
           end loop;
           if not Found then
             P_Dscr.Error := As.U.Tus ("Argument " & Str & " at pos "
-               & Images.Integer_Image(Arg_No) & " has not expected key " & Str(I));
+               & Int_Img(Arg_No) & " has not expected key " & Str(I));
             return;
           end if;
           -- See if last char key can have and has a valid option
@@ -214,7 +214,7 @@ package body Argument_Parser is
             if The_Keys(Index).Required
             and then A_Dscr.Option = Asu_No_Match then
               P_Dscr.Error := As.U.Tus ("Argument " & Str & " at pos "
-                 & Images.Integer_Image(Arg_No) & " must have an option");
+                 & Int_Img(Arg_No) & " must have an option");
               return;
             end if;
           end if;
@@ -312,7 +312,7 @@ package body Argument_Parser is
           Dscr.Error := As.U.Tus ("Argument "
              & Argument.Get_Parameter (Occurence => I)
              & " at pos "
-             & Images.Integer_Image(I) & " appears several times");
+             & Int_Img(I) & " appears several times");
           return Dscr;
         end if;
         Dscr.Nb_Occurences(Arg.Index) := Dscr.Nb_Occurences(Arg.Index) + 1;
@@ -340,7 +340,7 @@ package body Argument_Parser is
                 Dscr.Error := As.U.Tus ("Argument "
                    & Argument.Get_Parameter (Occurence => I)
                    & " at pos "
-                   & Images.Integer_Image(I)
+                   & Int_Img(I)
                    & " makes key " & The_Keys(K).Key_Char
                    & " appear several times");
                 return Dscr;

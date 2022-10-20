@@ -1,5 +1,5 @@
 -- Bencoder library that encodes  Xml <-> Bencode
-with Trace.Loggers, Long_Longs, Images, Gets, Hexa_Utils, As.U,
+with Trace.Loggers, Long_Longs, Int_Img, Gets, Hexa_Utils, As.U,
      Upper_Str, Mixed_Str, Unbounded_Arrays,
      Xml_Parser.Generator;
 package body Bencode is
@@ -174,7 +174,7 @@ package body Bencode is
     begin
       if I = Ben_Array'Last then
         Logger.Log_Error ("Unexpected end of bencoded array at offset "
-                        & Images.Integer_Image (I)
+                        & Int_Img (I)
                         & " while " & Action);
         raise Format_Error;
       end if;
@@ -205,7 +205,7 @@ package body Bencode is
           Tmp.Append (Character'Val(B));
         else
           Logger.Log_Error ("Unexpected byte " & Character'Val(B)
-                           & " at offset " & Images.Integer_Image (I)
+                           & " at offset " & Int_Img (I)
                            & " while decoding an Int");
           raise Format_Error;
         end if;
@@ -222,7 +222,7 @@ package body Bencode is
       exception
         when others =>
           Logger.Log_Error ("Invalid Int " & Tmp.Image
-                           & " at offset " & Images.Integer_Image (I));
+                           & " at offset " & Int_Img (I));
           raise Format_Error;
       end;
       -- Insert element "Int" with text
@@ -246,7 +246,7 @@ package body Bencode is
         exit when B = Character'Pos(':');
         if not Is_Digit (B) then
           Logger.Log_Error ("Invalid char in Byte length " & Character'Val(B)
-                           & " at offset " & Images.Integer_Image (I));
+                           & " at offset " & Int_Img (I));
           raise Format_Error;
         end if;
         Tmp.Append (Character'Val(B));
@@ -343,7 +343,7 @@ package body Bencode is
         if Keys_Policy = Check
         and then not (Prev_Bytes < Last_Bytes) then --## rule line off Logical_Not
           Logger.Log_Error ("Dictio has not crescent keys"
-                           & " at offset " & Images.Integer_Image (I));
+                           & " at offset " & Int_Img (I));
           raise Format_Error;
         end if;
         Prev_Bytes := Last_Bytes;
@@ -370,7 +370,7 @@ package body Bencode is
         if Must_Be_Bytes then
           Logger.Log_Error ("Unexpected starter "
                         & Character'Val(B) & " for Dictio key"
-                        & " at offset " & Images.Integer_Image (I));
+                        & " at offset " & Int_Img (I));
           raise Format_Error;
         end if;
       end Check_Bytes;
@@ -396,7 +396,7 @@ package body Bencode is
         return False;
       else
         Logger.Log_Error ("Invalid starter " & Character'Val(B)
-                         & " at offset " & Images.Integer_Image (I));
+                         & " at offset " & Int_Img (I));
         raise Format_Error;
       end if;
       return True;
@@ -511,7 +511,7 @@ package body Bencode is
       end;
 
       -- Done: put <len>:<bytes>
-      Append (Images.Integer_Image (Bytes.Length) & ":");
+      Append (Int_Img (Bytes.Length) & ":");
       Result.Append (Bytes);
       Last_Bytes := Bytes;
       Logger.Log_Debug ("Encoded" & Natural'Image (Bytes.Length) & " Bytes");
