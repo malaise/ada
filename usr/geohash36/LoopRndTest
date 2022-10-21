@@ -1,0 +1,57 @@
+#!/bin/bash
+# Loop of tests of Geohash-36 encoding e and decoding
+
+# Path to random
+export RAND="$HOME/ada/usr/misc/random"
+
+# Precision
+export PRECISION=15
+
+# Return a random from in [$1 .. $2[
+function rnd {
+
+  echo "" | awk -v RAND="$RAND" -v V1=$1 -v V2=$2 '
+    {
+      cmd=RAND" "V1" "V2
+      cmd | getline V
+      close(cmd)
+      printf "%.9f", V
+      exit
+    }'
+}
+
+# On sigterm or sigint
+let N=0
+function term {
+  echo "Terminated after $N iterations."
+  exit 0
+}
+trap "term" SIGINT SIGTERM
+
+# Infinite main loop
+while true ; do
+  let N=$N+1
+
+  # Set a random position P
+  export PLat=`rnd  -90.0  90.0`
+  export PLon=`rnd -180.0 180.0`
+  # Get its Geohash-36 code with precision P
+  RefHash=`t_geohash36 -c $PLat $PLon $PRECISION`
+
+  # Get the corresponding position
+  RefPos=`t_geohash36 -d $RefHash`
+  RefLat=`echo -n $RefPos | cut -d ' ' -f 1`
+  RefLon=`echo -n $RefPos | cut -d ' ' -f 2`
+  # Get the correspondig Geohash-36 code with precision P
+  ResHash=`t_geohash36 -c $RefLat $RefLon $PRECISION`
+
+  # Check 
+  echo -n "$RefHash -> $RefLat $RefLon -> $ResHash"
+  if [ "$RefHash" != "$ResHash" ] ; then
+    echo " => ERROR":
+    exit 1
+  else
+    echo " => OK"
+  fi
+done 
+

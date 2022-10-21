@@ -1,3 +1,4 @@
+#!/bin/bash
 # Test high precision great circle
 # Set a random position P1 (lat, long),
 # Get its international mapcode with precision 2

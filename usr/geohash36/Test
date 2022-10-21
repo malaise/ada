@@ -1,0 +1,64 @@
+#!/bin/bash
+
+# Log an error and exit
+function error {
+  echo "ERROR: $*" 1>&2
+  exit 1
+}
+
+# Launch t_geohash36 with $2 ... $n, and verify that the result is $1
+function check {
+  exp="$1"
+  shift
+  res=`t_geohash36 $*`
+  cod=$?
+  if [ $cod -ne 0 ] ; then
+    error "t_geohash36 $* has failed"
+  fi
+  if [ "$res" != "$exp" ] ; then
+    error "t_geohash36 $* has returned $res instead of $exp"
+  fi
+  echo "t_geohash36 $* => $res"
+}
+
+# 5s of loop of random tests
+echo "5s of random tests"
+./LoopRndTest&
+export CPID=$!
+sleep 5
+kill $CPID
+res=$?
+if [ $res -ne 0 ] ; then
+  error "Random test failed"
+fi
+sleep 1
+echo ""
+
+# Encode
+check "bdrdC26BqH" -c 51.504444 -0.086666 10
+check "bdrdC26BqHg5X83" -c 51.504444 -0.086666 15
+check "9LVB4BH89g" -c 40.689167 -74.044444 10
+check "bdrdC26BqH" -c  51.504444 -0.086667 10
+
+# Decode
+check "  51.504443575198   -0.086665642623" -d bdrdC26BqH
+
+# Precision
+check "     0.166m x      0.331m" -P 10
+
+# Neighbors
+EXP=`cat <<EOF
+bdrdC26BqC  bdrdC26Bqd  bdrdC26Bq8
+bdrdC26Bqh  bdrdC26BqH  bdrdC26BqD
+bdrdC26BqL  bdrdC26BqM  bdrdC26Bqj
+EOF`
+check "$EXP" -N bdrdC26BqH
+
+# Checksum
+check "m" -C bdrdC26BqH
+check "m" -C 9LVB4BH89g
+check "c" -C bdrd5tb4Md
+
+# Done
+echo OK
+
