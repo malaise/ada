@@ -1,0 +1,53 @@
+#!/bin/bash
+
+# Log an error and exit
+function error {
+  echo "ERROR: $*" 1>&2
+  exit 1
+}
+
+# Launch t_geohash with $2 ... $n, and verify that the result is $1
+function check {
+  exp="$1"
+  shift
+  res=`t_geohash $*`
+  cod=$?
+  if [ $cod -ne 0 ] ; then
+    error "t_geohash $* has failed"
+  fi
+  if [ "$res" != "$exp" ] ; then
+    error "t_geohash $* has returned $res instead of $exp"
+  fi
+  echo "t_geohash $* => $res"
+}
+
+# 5s of loop of random tests
+echo "5s of random tests"
+./LoopRndTest&
+export CPID=$!
+sleep 5
+kill $CPID
+res=$?
+if [ $res -ne 0 ] ; then
+  error "Random test failed"
+fi
+sleep 1
+echo ""
+
+# Encode
+check "ezs42"        -c  42.6       -5.6      5
+check "u4pruy"       -c  57.648     10.410    6
+check "6gkzwgjz"     -c -25.38262  -49.26561  8
+check "wy85bj0hbp21" -c  37.25     123.75    12
+
+# Decode
+check "  42.604980468750   -5.603027343750" -d ezs42
+check "  57.648010253906   10.409545898438" -d u4pruy
+check " -25.382623672485  -49.265613555908" -d 6gkzwgjz
+
+# Adjacents
+check "gbpb ezzy spbp ezzx" -A ezzz
+
+# Done
+echo OK
+
