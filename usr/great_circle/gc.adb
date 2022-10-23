@@ -17,6 +17,10 @@ procedure Gc is
       & " [<context>:]<mapcode> [<context>:]<mapcode>");
     Basic_Proc.Put_Line_Output ("   or: " & Argument.Get_Program_Name
       & " <open_location_code> <open_location_code>");
+    Basic_Proc.Put_Line_Output ("   or: " & Argument.Get_Program_Name
+      & " <geohash36_code> <geohash36_code>");
+    Basic_Proc.Put_Line_Output ("   or: " & Argument.Get_Program_Name
+      & " <geohash_code> <geohash_code>");
     Basic_Proc.Put_Line_Output (" where a is N or S and o is E or W.");
   end Usage;
 
@@ -30,7 +34,7 @@ procedure Gc is
   Result : Afpx.Result_Rec;
 
   -- Result of decoding of a data (a point or a mapcode) or of both data
-  -- Global: True if both OK, Other if both are ameptu or ig if one is empty
+  -- Global: True if both OK, Other if both are empty or if one is empty
   --   and the other is OK, False if an error
   -- Each data: True if OK, Other if empty, False if error
   type Decode_Status_Rec is record
@@ -41,12 +45,16 @@ procedure Gc is
 
   Sexa_Pattern : constant String :=
       "[NnSs][0-9]{2}\.[0-9]{2}\.[0-9]{4}/[EeWw][0-9]{3}\.[0-9]{2}\.[0-9]{4}";
-  Deci_Pattern : constant String :=
-      "[NnSs][0-9]{2}\.[0-9]{6}/[EeWw][0-9]{3}\.[0-9]{6}";
-  Map_Pattern : constant String :=
-      "([A-Z-]+:)?(.*[A-Z].*\..+|.+\..*[A-Z].*)";
-  Olc_Pattern : constant String :=
-      "[A-Z0-9]+\+[A-Z0-9]*";
+  Deci_Pattern : constant String
+               := "[NnSs][0-9]{2}\.[0-9]{6}/[EeWw][0-9]{3}\.[0-9]{6}";
+  Map_Pattern : constant String
+              := "([A-Z-]+:)?(.*[A-Z].*\..+|.+\..*[A-Z].*)";
+  Olc_Pattern : constant String
+              := "[A-Z0-9]+\+[A-Z0-9]*";
+  Gh36_Pattern : constant String
+               := "[23456789bBCdDFgGhHjJKlLMnNPqQrRtTVWX]+(@GH36)?";
+  Gh_Pattern : constant String
+               := "[0123456789bcdefghjkmnpqrstuvwxyz]+(@HH)?";
 
   Mode_Field  : constant Afpx.Field_Range := Afpx_Xref.Main.Mode;
   subtype A_Flds is Afpx.Field_Range
@@ -64,11 +72,15 @@ procedure Gc is
   Deci_Field : constant Afpx.Field_Range := Afpx_Xref.Main.To_Deci;
   Map_Field : constant Afpx.Field_Range := Afpx_Xref.Main.To_Map;
   Olc_Field : constant Afpx.Field_Range := Afpx_Xref.Main.To_Olc;
+  Gh36_Field : constant Afpx.Field_Range := Afpx_Xref.Main.To_Gh36;
+  Gh_Field : constant Afpx.Field_Range := Afpx_Xref.Main.To_Gh;
   Clear_Field  : constant Afpx.Field_Range := Afpx_Xref.Main.Clear;
   Compute_Field  : constant Afpx.Field_Range := Afpx_Xref.Main.Compute;
   Exit_Field  : constant Afpx.Field_Range := Afpx_Xref.Main.Quit;
 
-  type Mode_List is (Sexa_Mode, Deci_Mode, Map_Mode, Olc_Mode);
+  type Mode_List is (Sexa_Mode, Deci_Mode, Map_Mode, Olc_Mode, Gh36_Mode,
+                     Gh_Mode);
+  subtype Code_Kind_List is Mode_List range Olc_Mode .. Gh_Mode;
   Mode : Mode_List := Sexa_Mode;
   Need_Clean : Boolean := False;
 
@@ -109,7 +121,7 @@ procedure Gc is
   procedure Reset is
   begin
     -- Deactivate / clear fields
-    if Mode = Map_Mode or else Mode = Olc_Mode then
+    if Mode = Map_Mode or else Mode >= Olc_Mode then
       for Field in A_Flds loop
         Afpx.Set_Field_Activation (Field, False);
       end loop;
@@ -147,7 +159,7 @@ procedure Gc is
     end if;
     Clear_Result;
     -- Update Mode text and Switch buttons
-    for Field in Sexa_Field .. Olc_Field loop
+    for Field in Sexa_Field .. Gh_Field loop
       Afpx.Utils.Protect_Field (Field, False);
     end loop;
     case Mode is
@@ -163,10 +175,16 @@ procedure Gc is
       when Olc_Mode =>
         Afpx.Encode_Field (Mode_Field, (0, 0), "Open Loc mode   ");
         Afpx.Utils.Protect_Field (Olc_Field, True);
+      when Gh36_Mode =>
+        Afpx.Encode_Field (Mode_Field, (0, 0), "Geohash36 mode  ");
+        Afpx.Utils.Protect_Field (Gh36_Field, True);
+      when Gh_Mode =>
+        Afpx.Encode_Field (Mode_Field, (0, 0), "Geohash36 mode  ");
+        Afpx.Utils.Protect_Field (Gh_Field, True);
     end case;
     if Mode = Map_Mode then
       Get_Handle.Cursor_Field := Map_Flds'First;
-    elsif Mode = Olc_Mode then
+    elsif Mode >= Olc_Mode then
       Get_Handle.Cursor_Field := Olc_Flds'First;
     else
       Get_Handle.Cursor_Field := A_Flds'First;
@@ -318,13 +336,14 @@ procedure Gc is
       Cursor := First_Fld;
   end Decode_Mapcode;
 
-  -- Decode an open localtion code
-  subtype Olc_Txt is As.B.Asb_Bs(16);
-  procedure Decode_Olc (Field : in Afpx.Field_Range;
-                        Point : out Lat_Lon.Lat_Lon_Rad_Rec;
-                        Code : out Olc_Txt;
-                        Status : out Trilean.Trilean;
-                        Cursor : in out Afpx.Field_Range) is
+  -- Decode an open location code, geohash36 or geohash
+  subtype Code_Txt is As.B.Asb_Bs(16);
+  procedure Decode_Code (Field : in Afpx.Field_Range;
+                         Kind : in Code_Kind_List;
+                         Point : out Lat_Lon.Lat_Lon_Rad_Rec;
+                         Code : out Code_Txt;
+                         Status : out Trilean.Trilean;
+                         Cursor : in out Afpx.Field_Range) is
     Default_Content : Boolean;
   begin
     Code.Set_Null;
@@ -336,34 +355,42 @@ procedure Gc is
     Code.Set (Str_Util.Strip (
           Afpx.Decode_Field(Field, 0, False), Str_Util.Both));
     if Default_Content then
-      Great_Circle.Logger.Log_Debug ("Olc is empty");
+      Great_Circle.Logger.Log_Debug ("Code is empty");
       Status := Other;
       Cursor := Field;
       return;
     end if;
-    Great_Circle.Logger.Log_Debug ("Parsed Olc: " & Code.Image);
-    Point := Lat_Lon.Olc2Rad (Code.Image);
+    Great_Circle.Logger.Log_Debug ("Parsed Code: " & Code.Image);
+    case Kind is
+      when Olc_Mode =>
+        Point := Lat_Lon.Olc2Rad (Code.Image);
+      when Gh36_Mode =>
+        Point := Lat_Lon.Gh362Rad (Code.Image);
+      when Gh_Mode =>
+        Point := Lat_Lon.Gh2Rad (Code.Image);
+    end case;
     Great_Circle.Logger.Log_Debug ("Got point OK");
     Status := True;
   exception
     when others =>
-      Great_Circle.Logger.Log_Debug ("Decode olc Exception");
+      Great_Circle.Logger.Log_Debug ("Decode code Exception");
       Status := False;
       Cursor := Field;
-  end Decode_Olc;
+  end Decode_Code;
 
   -- Decode points, mapcodes or olcs, set A and B. Return
   -- Ok if both are OK, Empty if one is Ok and the other is empty
   function Decode return Decode_Status_Rec is
     Status : Decode_Status_Rec;
     Mapa, Mapb : Mapcode_Txt;
-    Olca, Olcb : Olc_Txt;
+    Code_A, Code_B : Code_Txt;
   begin
     Get_Handle.Cursor_Col := 0;
     Get_Handle.Insert := False;
     Clear_Result;
     -- Decode both points/maps in order to set Default_Content
-    if Mode /= Map_Mode and then Mode /= Olc_Mode then
+    if Mode <= Olc_Mode and then Mode /= Map_Mode then
+      -- Coordinates
       Get_Handle.Cursor_Field := A_Flds'First;
       Decode_Point (A_Flds'First, A_Flds'Last, A, Status.Data1,
                     Get_Handle.Cursor_Field);
@@ -373,6 +400,7 @@ procedure Gc is
                       Get_Handle.Cursor_Field);
       end if;
     elsif Mode = Map_Mode then
+      -- Mapcode
       Get_Handle.Cursor_Field := Map_Flds'First;
       Decode_Mapcode (Map_Flds'First, Map_Flds'First + 2, A, Mapa,
                       Status.Data1, Get_Handle.Cursor_Field);
@@ -385,16 +413,17 @@ procedure Gc is
         Afpx.Set_Selection (Mapa.Image & " " & Mapb.Image);
       end if;
     else
+      -- Olc, GH36 or GH
       Get_Handle.Cursor_Field := Olc_Flds'First;
-      Decode_Olc (Olc_Flds'First, A, Olca,
+      Decode_Code (Olc_Flds'First, Mode, A, Code_A,
                   Status.Data1, Get_Handle.Cursor_Field);
       if Status.Data1 /= False then
         Get_Handle.Cursor_Field := Olc_Flds'Last;
-        Decode_Olc (Olc_Flds'Last, B, Olca,
+        Decode_Code (Olc_Flds'Last, Mode, B, Code_B,
                     Status.Data2, Get_Handle.Cursor_Field);
       end if;
       if Status.Data1 = True and then Status.Data2 = True then
-        Afpx.Set_Selection (Olca.Image & " " & Olcb.Image);
+        Afpx.Set_Selection (Code_A.Image & " " & Code_B.Image);
       end if;
     end if;
     Great_Circle.Logger.Log_Debug (
@@ -456,13 +485,29 @@ procedure Gc is
     Afpx.Encode_Field (Last_Fld, (0, 0), Code);
   end Encode_Mapcode;
 
-  -- Encode a mlc
+  -- Encode a olc
   procedure Encode_Olc (First_Fld, Unused_Last_Fld : in Afpx.Field_Range;
                         Point : in Lat_Lon.Lat_Lon_Rad_Rec) is
     Code : constant String := Lat_Lon.Rad2Olc (Point);
   begin
     Afpx.Encode_Field (First_Fld, (0, 0), Code);
   end Encode_Olc;
+
+  -- Encode a Gh36 code
+  procedure Encode_Gh36 (First_Fld, Unused_Last_Fld : in Afpx.Field_Range;
+                         Point : in Lat_Lon.Lat_Lon_Rad_Rec) is
+    Code : constant String := Lat_Lon.Rad2Gh36 (Point);
+  begin
+    Afpx.Encode_Field (First_Fld, (0, 0), Code);
+  end Encode_Gh36;
+
+  -- Encode a Gh code
+  procedure Encode_Gh (First_Fld, Unused_Last_Fld : in Afpx.Field_Range;
+                       Point : in Lat_Lon.Lat_Lon_Rad_Rec) is
+    Code : constant String := Lat_Lon.Rad2Gh (Point);
+  begin
+    Afpx.Encode_Field (First_Fld, (0, 0), Code);
+  end Encode_Gh;
 
   -- Encode A and B as points or mapcodes
   procedure Encode (Encode1, Encode2 : in Boolean) is
@@ -480,6 +525,20 @@ procedure Gc is
       end if;
       if Encode2 then
         Encode_Olc (Olc_Flds'Last,  Olc_Flds'Last,  B);
+      end if;
+    elsif Mode = Gh36_Mode then
+      if Encode1 then
+        Encode_Gh36 (Olc_Flds'First, Olc_Flds'First, A);
+      end if;
+      if Encode2 then
+        Encode_Gh36 (Olc_Flds'Last,  Olc_Flds'Last,  B);
+      end if;
+    elsif Mode = Gh_Mode then
+      if Encode1 then
+        Encode_Gh (Olc_Flds'First, Olc_Flds'First, A);
+      end if;
+      if Encode2 then
+        Encode_Gh (Olc_Flds'Last,  Olc_Flds'Last,  B);
       end if;
     else
       if Encode1 then
@@ -560,9 +619,31 @@ begin
     elsif Reg_Exp.Match (Olc_Pattern, Argument.Get_Parameter(1), True)
     and then Reg_Exp.Match (Olc_Pattern, Argument.Get_Parameter(2), True) then
       Mode := Olc_Mode;
+    elsif Reg_Exp.Match (Gh36_Pattern, Argument.Get_Parameter(1), True)
+    and then Reg_Exp.Match (Gh36_Pattern, Argument.Get_Parameter(2), True) then
+      Mode := Gh36_Mode;
+    elsif Reg_Exp.Match (Gh_Pattern, Argument.Get_Parameter(1), True)
+    and then Reg_Exp.Match (Gh_Pattern, Argument.Get_Parameter(2), True) then
+      Mode := Gh_Mode;
     else
-      raise String_Util.Format_Error;
+      Basic_Proc.Put_Line_Error ("ERROR: Invalid argument.");
+      Basic_Proc.Set_Error_Exit_Code;
+      Usage;
+      return;
     end if;
+    if (Mode = Gh36_Mode
+      and then Reg_Exp.Match (Gh_Pattern, Argument.Get_Parameter(1), True)
+      and then Reg_Exp.Match (Gh_Pattern, Argument.Get_Parameter(2), True) )
+    or else (Mode = Gh_Mode
+      and then Reg_Exp.Match (Gh36_Pattern, Argument.Get_Parameter(1), True)
+      and then Reg_Exp.Match (Gh36_Pattern, Argument.Get_Parameter(2), True) )
+    then
+      Basic_Proc.Put_Line_Error ("ERROR: Ambiguous argument.");
+      Basic_Proc.Set_Error_Exit_Code;
+      Usage;
+      return;
+    end if;
+
     Great_Circle.Logger.Log_Debug ("Mode: " & Mode'Img);
     begin
       -- Parse arguments
@@ -580,6 +661,14 @@ begin
         -- Coordinates of open location codes
         A := Lat_Lon.Olc2Rad (Argument.Get_Parameter(1));
         B := Lat_Lon.Olc2Rad (Argument.Get_Parameter(2));
+      elsif Mode = Gh36_Mode then
+        -- Coordinates of geohash36 codes
+        A := Lat_Lon.Gh362Rad (Argument.Get_Parameter(1));
+        B := Lat_Lon.Gh362Rad (Argument.Get_Parameter(2));
+      elsif Mode = Gh_Mode then
+        -- Coordinates of geohash codes
+        A := Lat_Lon.Gh2Rad (Argument.Get_Parameter(1));
+        B := Lat_Lon.Gh2Rad (Argument.Get_Parameter(2));
       end if;
       Great_Circle.Logger.Log_Debug ("Got point A:" & A.X'Img & A.Y'Img);
       Great_Circle.Logger.Log_Debug ("Got point B:" & B.X'Img & B.Y'Img);
@@ -658,6 +747,10 @@ begin
               Mode := Map_Mode;
             when Olc_Field =>
               Mode := Olc_Mode;
+            when Gh36_Field =>
+              Mode := Gh36_Mode;
+            when Gh_Field =>
+              Mode := Gh_Mode;
             when others =>
               null;
           end case;

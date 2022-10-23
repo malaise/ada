@@ -303,45 +303,59 @@
 
     <!-- Switch, Compute and Exit buttons -->
     <Field Num="49" Kind="Button" Name="To_Sexa">
-      <Geometry Up="9" Left="${Field_9.Left}" Height="3" Width="9"/>
+      <Geometry Up="9" Left="${Field_9.Left}" Height="3" Width="8"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="1" Col="1">To Sexa</Init>
+      <Init Row="1" Col="1">ToSexa</Init>
     </Field>
 
     <Field Num="50" Kind="Button" Name="To_Deci">
       <Geometry Up="${Field_49.Up}" Left="${Field_49.Right}+2" Height="3"
-                Width="9"/>
+                Width="8"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="1" Col="1">To Deci</Init>
+      <Init Row="1" Col="1">ToDeci</Init>
     </Field>
 
     <Field Num="51" Kind="Button" Name="To_Map">
       <Geometry Up="${Field_49.Up}" Left="${Field_50.Right}+2" Height="3"
-                Width="8"/>
+                Width="7"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="1" Col="1">To Map</Init>
+      <Init Row="1" Col="1">ToMap</Init>
     </Field>
 
     <Field Num="52" Kind="Button" Name="To_Olc">
       <Geometry Up="${Field_49.Up}" Left="${Field_51.Right}+2" Height="3"
-                Width="8"/>
+                Width="7"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="1" Col="1">To Olc</Init>
+      <Init Row="1" Col="1">ToOlc</Init>
     </Field>
 
-    <Field Num="53" Kind="Button" Name="Compute">
-      <Geometry Up="9" Left="${Field_52.Right}+8" Height="3" Width="9"/>
+    <Field Num="53" Kind="Button" Name="To_Gh36">
+      <Geometry Up="${Field_49.Up}" Left="${Field_52.Right}+2" Height="3"
+                Width="8"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="1" Col="1">ToGh36</Init>
+    </Field>
+
+    <Field Num="54" Kind="Button" Name="To_Gh">
+      <Geometry Up="${Field_49.Up}" Left="${Field_53.Right}+2" Height="3"
+                Width="6"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="1" Col="1">ToGh</Init>
+    </Field>
+
+    <Field Num="55" Kind="Button" Name="Compute">
+      <Geometry Up="9" Left="${Field_54.Right}+3" Height="3" Width="9"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="1">Compute</Init>
     </Field>
 
-    <Field Num="54" Kind="Button" Name="Clear">
-      <Geometry Up="9" Left="${Field_53.Right}+6" Height="3" Width="7"/>
+    <Field Num="56" Kind="Button" Name="Clear">
+      <Geometry Up="9" Left="${Field_55.Right}+3" Height="3" Width="7"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="1">Clear</Init>
     </Field>
 
-    <Field Num="55" Kind="Button" Name="Quit">
+    <Field Num="57" Kind="Button" Name="Quit">
       <Geometry Up="9" Right="${Screen.Right}-1" Height="3" Width="6"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="1">Exit</Init>
