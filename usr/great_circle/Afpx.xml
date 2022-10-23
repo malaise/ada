@@ -263,8 +263,8 @@
       <Init Row="0" Col="0">:</Init>
     </Field>
 
-    <Field Num="43" Kind="Get" Name="A_Code">
-      <Geometry Up="6" Left="8" Height="1" Width="13"/>
+    <Field Num="43" Kind="Get" Name="A_Map">
+      <Geometry Up="6" Left="8" Height="1" Width="18"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
@@ -282,20 +282,20 @@
       <Init Row="0" Col="0">:</Init>
     </Field>
 
-    <Field Num="46" Kind="Get" Name="B_Code">
-      <Geometry Up="6" Left="35" Height="1" Width="13"/>
+    <Field Num="46" Kind="Get" Name="B_Map">
+      <Geometry Up="6" Left="35" Height="1" Width="18"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
-    <!-- Point A and B open location codes -->
-    <Field Num="47" Kind="Get" Name="A_Olc">
+    <!-- Point A and B codes (Olc, Gh36, Gh)-->
+    <Field Num="47" Kind="Get" Name="A_Code">
       <Geometry Up="7" Left="1" Height="1" Width="16"/>
       <Get_Tuning Move_Prev="False" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
-    <Field Num="48" Kind="Get" Name="B_Olc">
+    <Field Num="48" Kind="Get" Name="B_Code">
       <Geometry Up="7" Left="28" Height="1" Width="16"/>
       <Get_Tuning Move_Prev="False" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>

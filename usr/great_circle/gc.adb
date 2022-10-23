@@ -62,9 +62,9 @@ procedure Gc is
   subtype B_Flds is Afpx.Field_Range
                     range Afpx_Xref.Main.B_First .. Afpx_Xref.Main.B_Last;
   subtype Map_Flds is Afpx.Field_Range
-                    range Afpx_Xref.Main.A_Ctx .. Afpx_Xref.Main.B_Code;
-  subtype Olc_Flds is Afpx.Field_Range
-                    range Afpx_Xref.Main.A_Olc .. Afpx_Xref.Main.B_Olc;
+                    range Afpx_Xref.Main.A_Ctx .. Afpx_Xref.Main.B_Map;
+  subtype Code_Flds is Afpx.Field_Range
+                    range Afpx_Xref.Main.A_Code .. Afpx_Xref.Main.B_Code;
   Heading_Ab_Field  : constant Afpx.Field_Range := Afpx_Xref.Main.Heading;
   Distance_Field  : constant Afpx.Field_Range := Afpx_Xref.Main.Distance;
   Heading_Ba_Field  : constant Afpx.Field_Range := Afpx_Xref.Main.Revert;
@@ -132,14 +132,14 @@ procedure Gc is
         for Field in Map_Flds loop
           Reset_Field (Field);
         end loop;
-        for Field in Olc_Flds loop
+        for Field in Code_Flds loop
           Afpx.Set_Field_Activation (Field, False);
         end loop;
       else
         for Field in Map_Flds loop
           Afpx.Set_Field_Activation (Field, False);
         end loop;
-        for Field in Olc_Flds loop
+        for Field in Code_Flds loop
           Reset_Field (Field);
         end loop;
       end if;
@@ -153,7 +153,7 @@ procedure Gc is
       for Field in Map_Flds loop
         Afpx.Set_Field_Activation (Field, False);
       end loop;
-      for Field in Olc_Flds loop
+      for Field in Code_Flds loop
         Afpx.Set_Field_Activation (Field, False);
       end loop;
     end if;
@@ -185,7 +185,7 @@ procedure Gc is
     if Mode = Map_Mode then
       Get_Handle.Cursor_Field := Map_Flds'First;
     elsif Mode >= Olc_Mode then
-      Get_Handle.Cursor_Field := Olc_Flds'First;
+      Get_Handle.Cursor_Field := Code_Flds'First;
     else
       Get_Handle.Cursor_Field := A_Flds'First;
     end if;
@@ -294,8 +294,8 @@ procedure Gc is
   end Decode_Point;
 
   -- Decode a mapcode
-  -- 6 for context, ":" and 14 for mapcode
-  subtype Mapcode_Txt is As.B.Asb_Bs(21);
+  -- 6 for context, ":" and 18 for mapcode
+  subtype Mapcode_Txt is As.B.Asb_Bs(25);
   procedure Decode_Mapcode (First_Fld, Last_Fld : in Afpx.Field_Range;
                             Point : out Lat_Lon.Lat_Lon_Rad_Rec;
                             Mapcode : out Mapcode_Txt;
@@ -389,7 +389,7 @@ procedure Gc is
     Get_Handle.Insert := False;
     Clear_Result;
     -- Decode both points/maps in order to set Default_Content
-    if Mode <= Olc_Mode and then Mode /= Map_Mode then
+    if Mode < Olc_Mode and then Mode /= Map_Mode then
       -- Coordinates
       Get_Handle.Cursor_Field := A_Flds'First;
       Decode_Point (A_Flds'First, A_Flds'Last, A, Status.Data1,
@@ -414,12 +414,12 @@ procedure Gc is
       end if;
     else
       -- Olc, GH36 or GH
-      Get_Handle.Cursor_Field := Olc_Flds'First;
-      Decode_Code (Olc_Flds'First, Mode, A, Code_A,
+      Get_Handle.Cursor_Field := Code_Flds'First;
+      Decode_Code (Code_Flds'First, Mode, A, Code_A,
                   Status.Data1, Get_Handle.Cursor_Field);
       if Status.Data1 /= False then
-        Get_Handle.Cursor_Field := Olc_Flds'Last;
-        Decode_Code (Olc_Flds'Last, Mode, B, Code_B,
+        Get_Handle.Cursor_Field := Code_Flds'Last;
+        Decode_Code (Code_Flds'Last, Mode, B, Code_B,
                     Status.Data2, Get_Handle.Cursor_Field);
       end if;
       if Status.Data1 = True and then Status.Data2 = True then
@@ -521,24 +521,24 @@ procedure Gc is
       end if;
     elsif Mode = Olc_Mode then
       if Encode1 then
-        Encode_Olc (Olc_Flds'First, Olc_Flds'First, A);
+        Encode_Olc (Code_Flds'First, Code_Flds'First, A);
       end if;
       if Encode2 then
-        Encode_Olc (Olc_Flds'Last,  Olc_Flds'Last,  B);
+        Encode_Olc (Code_Flds'Last,  Code_Flds'Last,  B);
       end if;
     elsif Mode = Gh36_Mode then
       if Encode1 then
-        Encode_Gh36 (Olc_Flds'First, Olc_Flds'First, A);
+        Encode_Gh36 (Code_Flds'First, Code_Flds'First, A);
       end if;
       if Encode2 then
-        Encode_Gh36 (Olc_Flds'Last,  Olc_Flds'Last,  B);
+        Encode_Gh36 (Code_Flds'Last,  Code_Flds'Last,  B);
       end if;
     elsif Mode = Gh_Mode then
       if Encode1 then
-        Encode_Gh (Olc_Flds'First, Olc_Flds'First, A);
+        Encode_Gh (Code_Flds'First, Code_Flds'First, A);
       end if;
       if Encode2 then
-        Encode_Gh (Olc_Flds'Last,  Olc_Flds'Last,  B);
+        Encode_Gh (Code_Flds'Last,  Code_Flds'Last,  B);
       end if;
     else
       if Encode1 then
