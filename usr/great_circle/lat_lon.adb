@@ -245,7 +245,7 @@ package body Lat_Lon is
     return Deg2Mapcode (Rad2Deg (Coord), Precision);
   end Rad2Mapcode;
 
-  -- Olc <-> Deg
+  -- Open Loc Code <-> Deg
   function Olc2Deg (Code : Olc.Code_Type) return Signed_Deg_Rec is
     Sw, Ne, Center : Olc.Coordinate;
   begin
@@ -276,6 +276,66 @@ package body Lat_Lon is
   begin
     return Deg2Olc (Rad2Deg (Coord), Precision);
   end Rad2Olc;
+
+  -- Geohash36 <-> Deg
+  function Gh362Deg (Code : Geohash36.Code_Type) return Signed_Deg_Rec is
+    Coord : constant Geohash36.Coordinate := Geohash36.Decode (Code);
+  begin
+    return (Lat => Signed_Deg (Coord.Lat),
+            Lon => Signed_Deg (Coord.Lon) );
+  end Gh362Deg;
+
+  function Deg2Gh36 (Coord : Signed_Deg_Rec;
+                     Precision : Gh36_Precisions := Default_Gh36_Precision)
+           return Geohash36.Code_Type is
+    C : constant Geohash36.Coordinate := (Lat => Geohash36.Real (Coord.Lat),
+                                          Lon => Geohash36.Real (Coord.Lon));
+  begin
+    return Geohash36.Encode (C, Precision);
+  end Deg2Gh36;
+
+  -- Geohash36 <-> Rad
+  function Gh362Rad (Code : Geohash36.Code_Type) return Lat_Lon_Rad_Rec is
+  begin
+    return Deg2Rad (Gh362Deg (Code));
+  end Gh362Rad;
+
+  function Rad2Gh36 (Coord : Lat_Lon_Rad_Rec;
+                    Precision : Gh36_Precisions := Default_Gh36_Precision)
+           return Geohash36.Code_Type is
+  begin
+    return Deg2Gh36 (Rad2Deg (Coord), Precision);
+  end Rad2Gh36;
+
+  -- Geohash <-> Deg
+  function Gh2Deg (Code : Geohash.Code_Type) return Signed_Deg_Rec is
+    Coord : constant Geohash.Coordinate := Geohash.Decode (Code);
+  begin
+    return (Lat => Signed_Deg (Coord.Lat),
+            Lon => Signed_Deg (Coord.Lon) );
+  end Gh2Deg;
+
+  function Deg2Gh (Coord : Signed_Deg_Rec;
+                     Precision : Gh_Precisions := Default_Gh_Precision)
+           return Geohash.Code_Type is
+    C : constant Geohash.Coordinate := (Lat => Geohash.Real (Coord.Lat),
+                                          Lon => Geohash.Real (Coord.Lon));
+  begin
+    return Geohash.Encode (C, Precision);
+  end Deg2Gh;
+
+  -- Geohash <-> Rad
+  function Gh2Rad (Code : Geohash.Code_Type) return Lat_Lon_Rad_Rec is
+  begin
+    return Deg2Rad (Gh2Deg (Code));
+  end Gh2Rad;
+
+  function Rad2Gh (Coord : Lat_Lon_Rad_Rec;
+                    Precision : Gh_Precisions := Default_Gh_Precision)
+           return Geohash.Code_Type is
+  begin
+    return Deg2Gh (Rad2Deg (Coord), Precision);
+  end Rad2Gh;
 
   -- Signed Deg <-> Rad
   function Deg2Rad (Coord : Signed_Deg_Rec) return Lat_Lon_Rad_Rec is

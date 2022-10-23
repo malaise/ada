@@ -37,6 +37,42 @@ function comp {
   fi
 }
 
+# Check that $2 = $3
+# if $1 is -d then compare floats modulo Epsilon (1.0E-6)
+# Echo 0 if OK and 1 otherwise
+function check {
+  if [ "$1" = "-d" ] ; then
+    echo $2 | awk -v EXPECT="$3" -v EPS="1.0E-6" '
+    function abs(v) {return v < 0 ? -v : v}
+    {
+      NEXPECT=split(EXPECT, EXPECTS)
+      NOUTPUT=split($0, OUTPUTS);
+      if (NEXPECT != NOUTPUT) {print "1"; exit}
+      for (i = 1; i < NEXPECT+1; i++) {
+        E = 0.0+EXPECTS[i]
+        O = 0.0+OUTPUTS[i]
+        D = abs(E - O)
+        if (D > EPS) {
+          if (E < 0.0) E += 360.0
+          if (O < 0.0) O += 360.0
+          D = abs(E - O)
+          if (D > EPS) {
+            print "1"
+          }
+        }
+      }
+      print "0"
+    }
+    '
+  else
+    if [ "$2" = "$3" ] ; then
+      echo 0
+    else
+      echo 1
+    fi
+  fi
+}
+
 # Regenerate interception scenario
 if [ "$1" = "generate_intercept" ] ; then
   awk '
@@ -202,6 +238,14 @@ t_hp_gc -c 8FM3G6JP+P5JQ25  8FP3R47X+X98 \
 t_hp_gc -c 8FM3G6JP+P5JQ252 8FP3R47X+X98 \
   "H:  357.247675457, D:    77.127289Nm   142.839739km."
 
+# Geohash36
+t_hp_gc -c Bj8QKhjBr3WVRrC Bj2C8WXR3K82r35 \
+  "H:  357.247675462, D:    77.127289Nm   142.839739km."
+
+# Geohash
+t_hp_gc -c sp8zshex6ghu spbyfnk3bchw \
+  "H:  357.247676146, D:    77.127294Nm   142.839749km."
+
 echo
 echo "5s of random high precision tests"
 ./LoopRndHpgc &
@@ -332,39 +376,44 @@ echo ""
 
 # Geo_Conv
 #---------
-cat <<EOF >expout
-N50.03.5900/W005.42.5300
-50.066388900/-5.714722229
-VH05L.WLQG-6WVDY4Q8
-9C2P378P+H42HPRH
-EOF
-echo -n "" >experr
+# Launch geoconv $1 and check:
+# - 1st line versus EL1
+# - 2nd line versus EL2 (modulo Epsilon)
+# - if $2 != "", that $1 versus line $2
+export EL1="N50.03.5900/W005.42.5300"
+export EL2="50.066388900/-5.714722229"
+function t_geo_conv {
+  echo "geo_conv $1"
+  export RES=`geo_conv $1`
+  if [ $? -ne 0 ] ; then
+    error "geo_conv has failed"
+  fi
+  L1=`echo -n $RES | cut -d ' ' -f 1`
+  chk=`check -t "$L1" "$EL1"`
+  if [ "$chk" != "0" ] ; then
+    error "$L1 /= $EL1"
+  fi
+  L2=`echo -n $RES | cut -d ' ' -f 2`
+  chk=`check -d "L2" "EL2"`
+  if [ "$chk" != "0" ] ; then
+    error "$L2 /= $EL2"
+  fi
+  if [ -n "$2" ] ; then
+    LN=`echo -n $RES | cut -d ' ' -f $2`
+    chk=`check -t "$1" $LN`
+    if [ "$chk" != "0" ] ; then
+      error "$1 /= $LN"
+    fi
 
-echo geo_conv 50.066388900/-5.714722229
-geo_conv 50.066388900/-5.714722229 >out 2>err
-comp out expout 
-comp err experr 
+  fi
+}
 
-echo geo_conv VH05L.WLQG-6WVDY4Q8
-geo_conv VH05L.WLQG-6WVDY4Q8 >out 2>err
-comp out expout 
-comp err experr 
-
-echo geo_conv 9C2P378P+H42HPRH
-geo_conv 9C2P378P+H42HPRH >out 2>err
-comp out expout 
-comp err experr 
-
-cat <<EOF >expout
-N50.03.5900/W005.42.5300
-50.066388889/-5.714722222
-VH05L.WLQG-6WVFHMKG
-9C2P378P+H42HPRH
-EOF
-echo geo_conv N50.03.5900/W005.42.5300
-geo_conv N50.03.5900/W005.42.5300 >out 2>err
-comp out expout
-comp err experr
+t_geo_conv N50.03.5900/W005.42.5300 1
+t_geo_conv 50.066388900/-5.714722229 2
+t_geo_conv VH05L.WLQG-6WVDY4Q8 3
+t_geo_conv 9C2P378P+H42HPRH 4
+t_geo_conv bdTVK5PNK4DlK77 5
+t_geo_conv gbguvfq9v764 6
 
 # Done
 #-----

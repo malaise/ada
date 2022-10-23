@@ -9,7 +9,7 @@ procedure Geo_Conv is
     Basic_Proc.Put_Line_Output ("Usage: "
         & Directory.Basename (Argument.Get_Program_Name) & " <location>");
     Basic_Proc.Put_Line_Output (
-        "<location> ::= <sexa> | <deci> | <map_code> | <ol_code>");
+        "<location> ::= <sexa> | <deci> | code>");
     Basic_Proc.Put_Line_Output (
         "<sexa>     ::= add.mm.ssss/oddd.mm.ssss");
     Basic_Proc.Put_Line_Output (
@@ -19,9 +19,11 @@ procedure Geo_Conv is
     Basic_Proc.Put_Line_Output (
         "  where i is positivie or degative, and d up to 9 digits");
     Basic_Proc.Put_Line_Output (
+        "<code> ::= <map_code> | <olc_code> | <geohash36> | <geohash>");
+    Basic_Proc.Put_Line_Output (
         "<map_code> ::= [<context>:]<mapcode>");
     Basic_Proc.Put_Line_Output (
-        "<ol_code>      ::= <open_location_code>");
+        "<olc_code>     ::= <open_location_code>");
   end Help;
 
   procedure Error (Msg : in String) is
@@ -31,11 +33,22 @@ procedure Geo_Conv is
     Basic_Proc.Set_Error_Exit_Code;
   end Error;
 
+  -- Strip the potential tail (@...) of a Geohash36 or Geohash code
+  function Strip (Code : String) return String is
+    Index : constant Natural := Str_Util.Locate (Code, "@");
+  begin
+    if Index = 0 then
+      return Code;
+    else
+      return Code (Code'First .. Index - 1);
+    end if;
+  end Strip;
+
   -- Argument
   Arg : As.U.Asu_Us;
 
   -- Kind of input
-  type In_Kind_List is (Sexa, Deci, Map, Olc);
+  type In_Kind_List is (Sexa, Deci, Map, Olc, Gh36, Gh);
   Kind : In_Kind_List;
   Found : Boolean;
 
@@ -49,7 +62,11 @@ procedure Geo_Conv is
     -- [Territory:]code, code with at least a dot and a letter
     Map => Tus ("([A-Z-]+:)?(.*[A-Z].*\..+|.+\..*[A-Z].*)"),
     -- Letter or num and a "+"
-    Olc => Tus ("[A-Z0-9]+\+[A-Z0-9]*") );
+    Olc => Tus ("[A-Z0-9]+\+[A-Z0-9]*"),
+    -- Gh36 alphabet and optional indicator
+    Gh36 => Tus ("[23456789bBCdDFgGhHjJKlLMnNPqQrRtTVWX]+(@GH36)?"),
+    -- Gh alphabet and optional indicator
+    Gh => Tus ("[0123456789bcdefghjkmnpqrstuvwxyz]+(@HH)?") );
 
   -- Index of '/' in input
   Slash : Natural;
@@ -60,6 +77,8 @@ procedure Geo_Conv is
   Frac_Len : constant := 9;
   Map_Precision : constant Lat_Lon.Map_Precisions := 8;
   Olc_Precision : constant Lat_Lon.Olc_Precisions := 15;
+  Gh36_Precision : constant Lat_Lon.Gh36_Precisions := 15;
+  Gh_Precision : constant Lat_Lon.Olc_Precisions :=12;
 
   -- Format output in degrees
   function Format_Degree (D : in Units.Degree) return String is
@@ -90,6 +109,13 @@ begin
     Error ("Invalid argument " & Arg.Image);
     return;
   end if;
+  if Kind = Gh36 or else Kind = Gh then
+    if Reg_Exp.Match (Patterns(Gh36).Image, Arg.Image, True)
+    and then Reg_Exp.Match (Patterns(Gh).Image, Arg.Image, True) then
+      Error ("Ambibuous argument (geohash36 or geohash code)");
+    end if;
+    Arg := As.U.Tus (Strip (Arg.Image));
+  end if;
 
   -- Set Point
   case Kind is
@@ -105,6 +131,10 @@ begin
       Point := Lat_Lon.Mapcode2Deg (Arg.Image);
     when Olc =>
       Point := Lat_Lon.Olc2Deg (Arg.Image);
+    when Gh36 =>
+      Point := Lat_Lon.Gh362Deg (Arg.Image);
+    when Gh =>
+      Point := Lat_Lon.Gh2Deg (Arg.Image);
    end case;
 
    -- Display the 4 values
@@ -117,6 +147,10 @@ begin
   Basic_Proc.Put_Line_Output (Lat_Lon.Deg2Mapcode (Point, Map_Precision));
   -- Open Location Code
   Basic_Proc.Put_Line_Output (Lat_Lon.Deg2Olc (Point, Olc_Precision));
+  -- Geohash36 Code
+  Basic_Proc.Put_Line_Output (Lat_Lon.Deg2Gh36 (Point, Gh36_Precision));
+  -- Geohash Code
+  Basic_Proc.Put_Line_Output (Lat_Lon.Deg2Gh (Point, Gh_Precision));
 
 end Geo_Conv;
 

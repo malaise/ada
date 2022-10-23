@@ -1,5 +1,5 @@
 -- Convert lat/long, radians, mapcodes
-with Mapcodes, Olc;
+with Mapcodes, Olc, Geohash36, Geohash;
 with Units;
 package Lat_Lon is
 
@@ -95,6 +95,34 @@ package Lat_Lon is
                     Precision : Olc_Precisions := Default_Olc_Precision)
            return Olc.Code_Type;
 
+  -- Geohash36
+  subtype Gh36_Precisions is Geohash36.Precision_Range;
+  Default_Gh36_Precision : constant Gh36_Precisions
+                         := Geohash36.Default_Precision;
+  -- Geohash36 <-> Deg
+  function Gh362Deg (Code : Geohash36.Code_Type) return Signed_Deg_Rec;
+  function Deg2Gh36 (Coord : Signed_Deg_Rec;
+                     Precision : Gh36_Precisions := Default_Gh36_Precision)
+           return Geohash36.Code_Type;
+  -- Geohash36 <-> Rad
+  function Gh362Rad (Code : Geohash36.Code_Type) return Lat_Lon_Rad_Rec;
+  function Rad2Gh36 (Coord : Lat_Lon_Rad_Rec;
+                     Precision : Gh36_Precisions := Default_Gh36_Precision)
+           return Geohash36.Code_Type;
+
+  -- Geohash
+  subtype Gh_Precisions is Geohash.Precision_Range;
+  Default_Gh_Precision : constant Gh_Precisions := Geohash.Default_Precision;
+  -- Geohash <-> Deg
+  function Gh2Deg (Code : Geohash.Code_Type) return Signed_Deg_Rec;
+  function Deg2Gh (Coord : Signed_Deg_Rec;
+                   Precision : Gh_Precisions := Default_Gh_Precision)
+           return Geohash36.Code_Type;
+  -- Geohash <-> Rad
+  function Gh2Rad (Code : Geohash.Code_Type) return Lat_Lon_Rad_Rec;
+  function Rad2Gh (Coord : Lat_Lon_Rad_Rec;
+                   Precision : Gh_Precisions := Default_Gh_Precision)
+           return Geohash36.Code_Type;
   -- Signed Deg <-> Rad
   function Deg2Rad (Coord : Signed_Deg_Rec) return Lat_Lon_Rad_Rec;
   function Rad2Deg (Coord : Lat_Lon_Rad_Rec) return Signed_Deg_Rec;
