@@ -98,7 +98,7 @@ package body Geohash is
 
       -- Decode char
       for N in reverse 0 .. 4 loop
-        Bit_N := (Index / (2 ** N)) rem 2;
+        Bit_N := (Index / 2 ** N) rem 2;
         if Even_Bit then
           -- Longitude
           Lon_Mid := (Lon_Min + Lon_Max) / 2.0;
