@@ -179,7 +179,7 @@ procedure Gc is
         Afpx.Encode_Field (Mode_Field, (0, 0), "Geohash36 mode  ");
         Afpx.Utils.Protect_Field (Gh36_Field, True);
       when Gh_Mode =>
-        Afpx.Encode_Field (Mode_Field, (0, 0), "Geohash36 mode  ");
+        Afpx.Encode_Field (Mode_Field, (0, 0), "Geohash mode    ");
         Afpx.Utils.Protect_Field (Gh_Field, True);
     end case;
     if Mode = Map_Mode then
