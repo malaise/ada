@@ -1,54 +1,6 @@
 with Normal, Upper_Char;
 package body String_Util is
 
-  function Str2Geo (Str : Geo_Str) return Lat_Lon.Lat_Lon_Geo_Rec is
-    Geo : Lat_Lon.Lat_Lon_Geo_Rec;
-  begin
-    -- Check / and .
-    if Str(4) /= '.' or else Str(7) /= '.' or else Str(12) /= '/'
-    or else Str(17) /= '.' or else Str(20) /= '.' then
-      raise Format_Error;
-    end if;
-    -- Lat N or S
-    if Upper_Char(Str(1)) = 'N' then
-      Geo.Lat.North := True;
-    elsif Upper_Char(Str(1)) = 'S' then
-      Geo.Lat.North := False;
-    else
-      raise Format_Error;
-    end if;
-    -- Lon W or E
-    if Upper_Char(Str(13)) = 'E' then
-      Geo.Lon.East := True;
-    elsif Upper_Char(Str(13)) = 'W' then
-      Geo.Lon.East := False;
-    else
-      raise Format_Error;
-    end if;
-
-    -- Lat
-    Geo.Lat.Coord.Deg := Units.Deg_Range'Value(Str( 2 .. 3));
-    Geo.Lat.Coord.Min := Units.Min_Range'Value(Str( 5 .. 6));
-    Geo.Lat.Coord.Sec := Units.Sec_Range'Value(Str( 8 .. 9));
-    Geo.Lat.Coord.Ten := Units.Sec_Range'Value(Str(10 .. 11)) * 100;
-    -- Lon
-    Geo.Lon.Coord.Deg := Units.Deg_Range'Value(Str(14 .. 16));
-    Geo.Lon.Coord.Min := Units.Min_Range'Value(Str(18 .. 19));
-    Geo.Lon.Coord.Sec := Units.Sec_Range'Value(Str(21 .. 22));
-    Geo.Lon.Coord.Ten := Units.Sec_Range'Value(Str(23 .. 24)) * 100;
-
-    -- Check the whole thing
-    if not Lat_Lon.Is_Lat_Lon_Ok(Geo) then
-      raise Format_Error;
-    end if;
-
-    -- Ok
-    return Geo;
-  exception
-    when others =>
-      raise Format_Error;
-  end Str2Geo;
-
   -- Round Ten millis to seconds and propagate
   -- or Round Ten millis to hundredth and propagate
   procedure Round (C : in out Units.Geo_Coord_Rec;
@@ -86,6 +38,55 @@ package body String_Util is
     end if;
     C := (Deg, Min, Sec, C.Ten * Natural (Factor));
   end Round;
+
+  -- Str <-> Geo
+  function Str2Geo (Str : Geo_Str) return Lat_Lon.Lat_Lon_Geo_Rec is
+    Geo : Lat_Lon.Lat_Lon_Geo_Rec;
+  begin
+    -- Check / and .
+    if Str(4) /= '.' or else Str(7) /= '.' or else Str(12) /= '/'
+    or else Str(17) /= '.' or else Str(20) /= '.' then
+      raise Format_Error;
+    end if;
+    -- Lat N or S
+    if Upper_Char(Str(1)) = 'N' then
+      Geo.Lat.North := True;
+    elsif Upper_Char(Str(1)) = 'S' then
+      Geo.Lat.North := False;
+    else
+      raise Format_Error;
+    end if;
+    -- Lon W or E
+    if Upper_Char(Str(13)) = 'E' then
+      Geo.Lon.East := True;
+    elsif Upper_Char(Str(13)) = 'W' then
+      Geo.Lon.East := False;
+    else
+      raise Format_Error;
+    end if;
+
+    -- Lat
+    Geo.Lat.Coord.Deg := Units.Deg_Range'Value(Str( 2 .. 3));
+    Geo.Lat.Coord.Min := Units.Min_Range'Value(Str( 5 .. 6));
+    Geo.Lat.Coord.Sec := Units.Sec_Range'Value(Str( 8 .. 9));
+    Geo.Lat.Coord.Ten := Units.Ten_Range'Value(Str(10 .. 11)) * 100;
+    -- Lon
+    Geo.Lon.Coord.Deg := Units.Deg_Range'Value(Str(14 .. 16));
+    Geo.Lon.Coord.Min := Units.Min_Range'Value(Str(18 .. 19));
+    Geo.Lon.Coord.Sec := Units.Sec_Range'Value(Str(21 .. 22));
+    Geo.Lon.Coord.Ten := Units.Ten_Range'Value(Str(23 .. 24)) * 100;
+
+    -- Check the whole thing
+    if not Lat_Lon.Is_Lat_Lon_Ok(Geo) then
+      raise Format_Error;
+    end if;
+
+    -- Ok
+    return Geo;
+  exception
+    when others =>
+      raise Format_Error;
+  end Str2Geo;
 
   function Geo2Str (Geo : Lat_Lon.Lat_Lon_Geo_Rec) return Geo_Str is
     Rounded : Lat_Lon.Lat_Lon_Geo_Rec;
@@ -128,6 +129,91 @@ package body String_Util is
     return Str;
   end Geo2Str;
 
+  -- Lstr <-> Geo
+  function Lstr2Geo (Lstr : Geo_Lstr) return Lat_Lon.Lat_Lon_Geo_Rec is
+    Geo : Lat_Lon.Lat_Lon_Geo_Rec;
+  begin
+    -- Check / and .
+    if Lstr(4) /= '.' or else Lstr(7) /= '.' or else Lstr(14) /= '/'
+    or else Lstr(19) /= '.' or else Lstr(22) /= '.' then
+      raise Format_Error;
+    end if;
+    -- Lat N or S
+    if Upper_Char(Lstr(1)) = 'N' then
+      Geo.Lat.North := True;
+    elsif Upper_Char(Lstr(1)) = 'S' then
+      Geo.Lat.North := False;
+    else
+      raise Format_Error;
+    end if;
+    -- Lon W or E
+    if Upper_Char(Lstr(15)) = 'E' then
+      Geo.Lon.East := True;
+    elsif Upper_Char(Lstr(15)) = 'W' then
+      Geo.Lon.East := False;
+    else
+      raise Format_Error;
+    end if;
+
+    -- Lat
+    Geo.Lat.Coord.Deg := Units.Deg_Range'Value(Lstr( 2 .. 3));
+    Geo.Lat.Coord.Min := Units.Min_Range'Value(Lstr( 5 .. 6));
+    Geo.Lat.Coord.Sec := Units.Sec_Range'Value(Lstr( 8 .. 9));
+    Geo.Lat.Coord.Ten := Units.Ten_Range'Value(Lstr(10 .. 13));
+    -- Lon
+    Geo.Lon.Coord.Deg := Units.Deg_Range'Value(Lstr(16 .. 18));
+    Geo.Lon.Coord.Min := Units.Min_Range'Value(Lstr(20 .. 21));
+    Geo.Lon.Coord.Sec := Units.Sec_Range'Value(Lstr(23 .. 24));
+    Geo.Lon.Coord.Ten := Units.Ten_Range'Value(Lstr(25 .. 28));
+
+    -- Check the whole thing
+    if not Lat_Lon.Is_Lat_Lon_Ok(Geo) then
+      raise Format_Error;
+    end if;
+
+    -- Ok
+    return Geo;
+  exception
+    when others =>
+      raise Format_Error;
+  end Lstr2Geo;
+
+  function Geo2Lstr (Geo : Lat_Lon.Lat_Lon_Geo_Rec) return Geo_Lstr is
+    Lstr : Geo_Lstr;
+
+  begin
+    -- Set / and .
+    Lstr(4) := '.'; Lstr(7) := '.';
+    Lstr(14) := '/';
+    Lstr(19) := '.'; Lstr(22) := '.';
+
+    -- North or south lat, East or west lon
+    if Geo.Lat.North then
+      Lstr(1) := 'N';
+    else
+      Lstr(1) := 'S';
+    end if;
+    if Geo.Lon.East then
+      Lstr(15) := 'E';
+    else
+      Lstr(15) := 'W';
+    end if;
+
+    -- Put the numbers
+    Lstr( 2 ..  3) := Normal (Geo.Lat.Coord.Deg, 2, Gap => '0');
+    Lstr( 5 ..  6) := Normal (Geo.Lat.Coord.Min, 2, Gap => '0');
+    Lstr( 8 ..  9) := Normal (Geo.Lat.Coord.Sec, 2, Gap => '0');
+    Lstr(10 .. 13) := Normal (Geo.Lat.Coord.Ten, 4, Gap => '0');
+    Lstr(16 .. 18) := Normal (Geo.Lon.Coord.Deg, 3, Gap => '0');
+    Lstr(20 .. 21) := Normal (Geo.Lon.Coord.Min, 2, Gap => '0');
+    Lstr(23 .. 24) := Normal (Geo.Lon.Coord.Sec, 2, Gap => '0');
+    Lstr(25 .. 28) := Normal (Geo.Lon.Coord.Ten, 4, Gap => '0');
+
+    -- Done
+    return Lstr;
+  end Geo2Lstr;
+
+  -- Str <-> Dec
   function Str2Dec (Str : Dec_Str) return Lat_Lon.Lat_Lon_Dec_Rec is
     Dec : Lat_Lon.Lat_Lon_Dec_Rec;
   begin

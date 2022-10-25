@@ -1,0 +1,110 @@
+#!/bin/bash
+# Test geo conversion
+# Set a random position ORIGIN (lat, long),
+# Get all its geo conversions (sexa, deci, mapcode, olc, gh36 and gh)
+# For each these values, check that calling with value
+#  - provide the same value
+#  - provides a position P2 within Epsilon of ORIGIN
+
+export EPSILON=1.0E-6
+
+export RAND="$HOME/ada/usr/misc/random"
+export MAPCODE="$HOME/ada/usr/mapcode/t_mapcode"
+export GEOCONV="$HOME/ada/usr/great_circle/geo_conv"
+
+# Return a random from in [$1 .. $2[
+function rnd {
+  echo "" | awk -v RAND="$RAND" -v V1=$1 -v V2=$2 '
+    {
+      cmd=RAND" "V1" "V2
+      cmd | getline V
+      close(cmd)
+      printf "%.9f", V
+      exit
+    }'
+}
+
+# Check that $2 = $3
+# if $1 is -d then compare floats modulo Epsilon (1.0E-6)
+# Echo 0 if OK and 1 otherwise
+function check {
+  if [ "$1" = "-d" ] ; then
+    echo $2 | awk -v EXPECT="$3" -v EPS="$EPSILON" '
+    function abs(v) {return v < 0 ? -v : v}
+    {
+      NEXPECT=split(EXPECT, EXPECTS)
+      NOUTPUT=split($0, OUTPUTS);
+      if (NEXPECT != NOUTPUT) {print "1"; exit}
+      for (i = 1; i < NEXPECT+1; i++) {
+        E = 0.0+EXPECTS[i]
+        O = 0.0+OUTPUTS[i]
+        D = abs(E - O)
+        if (D > EPS) {
+          if (E < 0.0) E += 360.0
+          if (O < 0.0) O += 360.0
+          D = abs(E - O)
+          if (D > EPS) {
+            print "1"
+          }
+        }
+      }
+      print "0"
+    }
+    '
+  else
+    if [ "$2" = "$3" ] ; then
+      echo 0
+    else
+      echo 1
+    fi
+  fi
+}
+
+
+# On sigterm or sigint
+let N=0
+function term {
+  echo -e "\nTerminated after $N iterations."
+  exit 0
+}
+
+######################
+# Infinite main loop #
+######################
+NAMES=("sexa" "deci" "map" "olc" "gh36" "gh")
+trap "term" SIGINT SIGTERM
+while true ; do
+  let N=$N+1
+
+  # Set a random position P1
+  export ORIa=`rnd  -90.0  90.0`
+  export ORIo=`rnd -180.0 180.0`
+  export ORI="$ORIa/$ORIo"
+  # Get all its equivalent codes
+  CODES=`$GEOCONV "$ORI"`
+  echo -n "$ORI"
+
+  # Check each code
+  let L=0
+  for CODE in $CODES ; do
+    let L=$L+1
+    OUTPUT=`$GEOCONV $CODE`
+    # Check that it povides P1 (modulo Epsilon)
+    POINT=`echo -n $OUTPUT | cut -d ' ' -f 2 | sed 's@/@ @'`
+    res=`check -d "$POINT" "$ORIa $ORIo"`
+    if [ "$res" = "1" ] ; then
+      echo -e "\nERROR: Point $POINT differs from origin $ORIa $ORIo" 1>&2
+      exit 1
+    fi
+    # Check that it provides itself
+    SAME=`echo -n $OUTPUT | cut -d ' ' -f $L`
+    res=`check -t $SAME $CODE`
+    if [ "$res" = "1" ] ; then
+      echo -e "\nERROR: output $SAME differs from input $CODE" 1>&2
+      exit 1
+    fi
+    echo -n " ${NAMES[$L-1]}"
+  done
+  echo " OK"
+done
+
