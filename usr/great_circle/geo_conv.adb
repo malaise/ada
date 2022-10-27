@@ -87,7 +87,7 @@ procedure Geo_Conv is
     -- Gh36 alphabet and optional indicator
     Gh36 => Tus ("[23456789bBCdDFgGhHjJKlLMnNPqQrRtTVWX]+(@GH36)?"),
     -- Gh alphabet and optional indicator
-    Gh => Tus ("[0123456789bcdefghjkmnpqrstuvwxyz]+(@HH)?") );
+    Gh => Tus ("[0123456789bcdefghjkmnpqrstuvwxyz]+(@GH)?") );
 
   -- Index of '/' in input
   Slash : Natural;
@@ -188,6 +188,7 @@ begin
     if Reg_Exp.Match (Patterns(Gh36).Image, Arg.Image, True)
     and then Reg_Exp.Match (Patterns(Gh).Image, Arg.Image, True) then
       Error ("Ambibuous argument (geohash36 or geohash code)");
+      return;
     end if;
     Arg := As.U.Tus (Strip (Arg.Image));
   end if;

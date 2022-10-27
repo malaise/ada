@@ -43,13 +43,14 @@ procedure Hp_Gc is
       return Mapcode;
     elsif Str_Util.Locate (Str, "+") /= 0 then
       return Olc;
-    elsif Str_Util.Locate (Str, "@GH36") /= 0 then
+    elsif Str_Util.Locate (Str, "@GH36") = Str'Last - 4 then
       return Gh36;
-    elsif Str(Str'Last) = '@' then
+    elsif Str_Util.Locate (Str, "@GH") = Str'Last - 2 then
       return Gh;
     elsif Reg_Exp.Match(Gh36_Pat, Str, True)
     and then Reg_Exp.Match(Gh_Pat, Str, True) then
       -- Ambiguous
+      Basic_Proc.Put_Line_Error ( "ERROR: Ambiguous argument");
       raise Constraint_Error;
     elsif Reg_Exp.Match(Gh36_Pat, Str, True) then
       return Gh36;
@@ -96,12 +97,16 @@ begin
             B := Lat_Lon.Olc2Rad (Argument.Get_Parameter (Occurence => 3));
           when Gh36 =>
             -- 2 Geohash36 codes
-            A := Lat_Lon.Gh362Rad (Argument.Get_Parameter (Occurence => 2));
-            B := Lat_Lon.Gh362Rad (Argument.Get_Parameter (Occurence => 3));
+            A := Lat_Lon.Gh362Rad (
+              Strip (Argument.Get_Parameter (Occurence => 2)));
+            B := Lat_Lon.Gh362Rad (
+              Strip (Argument.Get_Parameter (Occurence => 3)));
           when Gh =>
             -- 2 Geohash codes
-            A := Lat_Lon.Gh2Rad (Argument.Get_Parameter (Occurence => 2));
-            B := Lat_Lon.Gh2Rad (Argument.Get_Parameter (Occurence => 3));
+            A := Lat_Lon.Gh2Rad (
+              Strip (Argument.Get_Parameter (Occurence => 2)));
+            B := Lat_Lon.Gh2Rad (
+              Strip (Argument.Get_Parameter (Occurence => 3)));
           when Lalo =>
             raise Constraint_Error;
         end case;
@@ -235,9 +240,11 @@ begin
       Basic_Proc.Put_Line_Error (
           "<point>         ::= <lat> <lon>>");
       Basic_Proc.Put_Line_Error (
-          "<code>      ::= <map_code> | <geohash36> | <geohash>");
+          "<code>      ::= <map_code> | <olc> | <geohash36> | <geohash>");
       Basic_Proc.Put_Line_Error (
           "<map_code>  ::= [ <context>: ] <mapcode>");
+      Basic_Proc.Put_Line_Error (
+          "<olc>       ::= { <letter_or_digit> } + [ { <letter_or_digit> } ]");
       Basic_Proc.Put_Line_Error (
           "<geohash36> ::= { <letter_or_digit> } [ @GH36 ]");
       Basic_Proc.Put_Line_Error (

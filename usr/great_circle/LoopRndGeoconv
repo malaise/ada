@@ -72,6 +72,7 @@ function term {
 # Infinite main loop #
 ######################
 NAMES=("sexa" "deci" "map" "olc" "gh36" "gh")
+SUFFIXES=("" "" "" "" "@GH36" "@GH")
 trap "term" SIGINT SIGTERM
 while true ; do
   let N=$N+1
@@ -88,7 +89,8 @@ while true ; do
   let L=0
   for CODE in $CODES ; do
     let L=$L+1
-    OUTPUT=`$GEOCONV $CODE`
+    echo -n " ${NAMES[$L-1]}"
+    OUTPUT=`$GEOCONV $CODE${SUFFIXES[L-1]}`
     # Check that it povides P1 (modulo Epsilon)
     POINT=`echo -n $OUTPUT | cut -d ' ' -f 2 | sed 's@/@ @'`
     res=`check -d "$POINT" "$ORIa $ORIo"`
@@ -103,7 +105,6 @@ while true ; do
       echo -e "\nERROR: output $SAME differs from input $CODE" 1>&2
       exit 1
     fi
-    echo -n " ${NAMES[$L-1]}"
   done
   echo " OK"
 done
