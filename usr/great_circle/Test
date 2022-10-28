@@ -95,15 +95,17 @@ fi
 
 # Play gc scenario
 #-----------------
+echo "Playing scenario"
 ./player Scenario
 ret=$?
 if [ $ret -ne 0 ] ; then
   exit 1
 fi
+echo
 
-# High precision
-#---------------
-echo "hp_gc"
+# Hp_gc (High precision great circle)
+#------------------------------------
+echo "High precision great circle"
 function t_hp_gc {
   if [ $# -eq 3 ] ; then
     res="`hp_gc $1 $2`"
@@ -248,9 +250,10 @@ t_hp_gc -c Bj8QKhjBr3WVRrC Bj2C8WXR3K82r35 \
 # Geohash
 t_hp_gc -c sp8zshex6ghu spbyfnk3bchw \
   "H:  357.247676146, D:    77.127294Nm   142.839749km."
-
 echo
-echo "5s of random high precision tests"
+
+# Loop of random Hp_gc (route and dest) with various lat lon
+echo "5s of random high precision tests (route and dest)"
 ./LoopRndHpgc &
 export CPID=$!
 sleep 5
@@ -260,10 +263,11 @@ if [ $res -ne 0 ] ; then
   error "Random test failed"
 fi
 sleep 1
-echo ""
+echo
 
 # Intercept
 # ---------
+echo "Interception"
 # Get constant Intercept DME
 INTER_DME=`intercept --dme | cut -d ' ' -f1`
 # Manually use the second output field to set Beta DME
@@ -375,10 +379,9 @@ cat <<EOF >expout
 EOF
 debug 276 200 --debug   28.000000 -22.805090 -43.256699 W22
 
-echo ""
-
-# Geo_Conv
+# Geo_conv
 #---------
+# Loop of random geo_conv
 echo
 echo "5s of random geo conversion tests"
 ./LoopRndGeoconv &
@@ -391,6 +394,7 @@ if [ $res -ne 0 ] ; then
 fi
 sleep 1
 
+# Geo_conv with predefined result
 # Launch geoconv $1 and check:
 # - 1st line versus EL1
 # - 2nd line versus EL2 (modulo Epsilon)
@@ -429,6 +433,22 @@ t_geo_conv VH05L.WLQG-6WVDY4Q 3
 t_geo_conv 9C2P378P+H42HPR 4
 t_geo_conv bdTVK5PNK4DlK7 5
 t_geo_conv gbguvfq9v76 6
+
+# Hp_gc & geo_conv
+# ----------------
+# Loop of random hp_gc with various codes
+echo
+echo "5s of random high precision tests with various codes"
+./LoopRndHpConv &
+export CPID=$!
+sleep 5
+kill $CPID
+res=$?
+if [ $res -ne 0 ] ; then
+  error "Random test failed"
+fi
+sleep 1
+echo ""
 
 # Done
 #-----

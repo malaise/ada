@@ -1,0 +1,147 @@
+#!/bin/bash
+# Test high precision great circle with n various kinds of codes
+# Set a random position P1 (lat, long),
+# Set a random position P2 (lat, long),
+# Compute hp_gc from P1 to P2, as reference
+# For each kind except sexa (deci, map, olc gh36 and gh):
+# - Convert P1 and P2 into the kind
+# - Compute hp_gc between these values
+# - Check heading and distance versus reference
+
+export EPS_HEAD=1E-4
+export EPS_DIST=1E-4
+
+# Path to random, to high precision great circle and to geo_conv
+export RAND="$HOME/ada/usr/misc/random"
+export HPGC="$HOME/ada/usr/great_circle/hp_gc"
+export GCONV="$HOME/ada/usr/great_circle/geo_conv"
+
+# Return a random from in [$1 .. $2[
+function rnd {
+
+  echo "" | awk -v RAND="$RAND" -v V1=$1 -v V2=$2 '
+    {
+      cmd=RAND" "V1" "V2
+      cmd | getline V
+      close(cmd)
+      printf "%.9f", V
+      exit
+    }'
+}
+
+# Check that $2 = $3
+# if $1 != 0 then compare floats modulo Epsilon=$1
+# Optionally, if $4 is set, then use it as a Modulus (allow $2 and $3
+#  to be on both sides of the Modulus, within Epsilon)
+# Echo 0 if OK and 1 otherwise
+function check {
+  if [ "$1" != "0" ] ; then
+    if [ -n "$4" ] ; then
+      MOD="$4"
+    else
+      MOD="0"
+    fi
+    echo $2 | awk -v EXPECT="$3" -v EPS="$1" -v MOD="$MOD" '
+    function abs(v) {return v < 0 ? -v : v}
+    {
+      NEXPECT=split(EXPECT, EXPECTS)
+      NOUTPUT=split($0, OUTPUTS);
+      if (NEXPECT != NOUTPUT) {print "1"; exit}
+      for (i = 1; i < NEXPECT+1; i++) {
+        E = 0.0+EXPECTS[i]
+        O = 0.0+OUTPUTS[i]
+        D = abs(E - O)
+        if (D > EPS) {
+          if (E < 0.0) E += 360.0
+          if (O < 0.0) O += 360.0
+          D = abs(E - O)
+          if (D > EPS) {
+            if ( (MOD = 0) || (MOD - D > EPS) ) {
+              print "1"
+              next
+            }
+          }
+        }
+      }
+      print "0"
+    }
+    '
+  else
+    if [ "$2" = "$3" ] ; then
+      echo 0
+    else
+      echo 1
+    fi
+  fi
+}
+
+# On sigterm or sigint
+let N=0
+function term {
+  echo -e "\nTerminated after $N iterations."
+  exit 0
+}
+
+# Extract Heading value from $1 (hp_gc result)
+function hof {
+  echo -n ${1:3:14}
+}
+# Extract Distance value from $1 (hp_gc result)
+function dof {
+  echo -n ${1:22:12}
+}
+
+######################
+# Infinite main loop #
+######################
+NAMES=("sexa" "deci" "map" "olc" "gh36" "gh")
+SUFFIXES=("" "" "" "" "@GH36" "@GH")
+trap "term" SIGINT SIGTERM
+while true ; do
+  let R=$N+1
+
+  # Set a random position P1 and a random position P2
+  export P1a=`rnd  -90.0  90.0`
+  export P1o=`rnd -180.0 180.0`
+  export P2a=`rnd  -90.0  90.0`
+  export P2o=`rnd -180.0 180.0`
+
+  # Compute hp_gc and extract reference H and D
+ echo -n $P1a $P1o $P2a $P2o
+  RES=`$HPGC -c $P1a $P1o $P2a $P2o`
+  HREF=`hof "$RES"`
+  DREF=`dof "$RES"`
+
+  # Get the corresponding codes of P1 and P2
+  CS1=`$GCONV $P1a/$P1o`
+  CS2=`$GCONV $P2a/$P2o`
+
+  # For each kind of code except sexa
+  let L=2
+  while [ $L -le 6 ] ; do
+    echo -n " ${NAMES[$L-1]}"
+    # Extract both codes
+    C1=`echo $CS1 | cut -d ' ' -f $L | sed 's@/@ @g'`${SUFFIXES[L-1]}
+    C2=`echo $CS2 | cut -d ' ' -f $L | sed 's@/@ @g'`${SUFFIXES[L-1]}
+    # Compute hp_gc and extract H and D
+    RES=`$HPGC -c $C1 $C2`
+    H=`hof "$RES"`
+    D=`dof "$RES"`
+    # Check heading versus reference, modulo 360
+    res=`check $EPS_HEAD $HREF $H 360`
+    if [ "$res" != "0" ] ; then
+      echo -e "\nERROR: $C1 $C2 H => $H != $HREF."
+      exit 1
+    fi
+    # Check distance versus reference
+    res=`check $EPS_DIST $DREF $D`
+    if [ "$res" != "0" ] ; then
+      echo -e "\nERROR: $C1 $C2 D => $D != $DREF."
+      exit 1
+    fi
+    let L=$L+1
+  done
+  echo " OK"
+  let N=$N+1
+done
+
