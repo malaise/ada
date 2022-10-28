@@ -159,9 +159,8 @@ begin
       Common.Set_Level_To_Stored;
       Response.New_Code;
     end loop;
+    Action.End_Action;
   end if;
-
-  Action.End_Action;
 
 exception
   when Action.No_Mouse =>
