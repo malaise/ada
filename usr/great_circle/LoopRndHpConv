@@ -107,8 +107,8 @@ while true ; do
   export P2o=`rnd -180.0 180.0`
 
   # Compute hp_gc and extract reference H and D
- echo -n $P1a $P1o $P2a $P2o
-  RES=`$HPGC -c $P1a $P1o $P2a $P2o`
+ echo -n $P1a/$P1o $P2a/$P2o
+  RES=`$HPGC -c $P1a/$P1o $P2a/$P2o`
   HREF=`hof "$RES"`
   DREF=`dof "$RES"`
 
@@ -121,8 +121,8 @@ while true ; do
   while [ $L -le 6 ] ; do
     echo -n " ${NAMES[$L-1]}"
     # Extract both codes
-    C1=`echo $CS1 | cut -d ' ' -f $L | sed 's@/@ @g'`${SUFFIXES[L-1]}
-    C2=`echo $CS2 | cut -d ' ' -f $L | sed 's@/@ @g'`${SUFFIXES[L-1]}
+    C1=`echo $CS1 | cut -d ' ' -f $L`${SUFFIXES[L-1]}
+    C2=`echo $CS2 | cut -d ' ' -f $L`${SUFFIXES[L-1]}
     # Compute hp_gc and extract H and D
     RES=`$HPGC -c $C1 $C2`
     H=`hof "$RES"`

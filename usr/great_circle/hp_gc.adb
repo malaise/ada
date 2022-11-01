@@ -4,7 +4,7 @@
 --   * or two open location codes,
 --   * or two geohash36 codes
 --   * or two geohash codes
---   * or two lat-long (in degres with decimals)
+--   * or two lat/lon (in degres with decimals)
 --   Outputs heading (in degrees with 9 decimals) and distance (down to the mm)
 -- Takes as input one code as above and  and a heading and distance
 --   Outputs the code the destination
@@ -25,7 +25,7 @@ procedure Hp_Gc is
   Str, Unit : As.U.Asu_Us;
   R : My_Math.Real;
   Degs : Lat_Lon.Signed_Deg_Rec;
-  I : Integer;
+  I : Positive;
   Map_Precision : Lat_Lon.Map_Precisions;
   Olc_Precision : Lat_Lon.Olc_Precisions;
   Gh36_Precision : Lat_Lon.Gh36_Precisions;
@@ -39,7 +39,9 @@ procedure Hp_Gc is
   Gh_Pat   : constant String :=  "[0123456789bcdefghjkmnpqrstuvwxyz]+";
   function Kind_Of (Str : String) return Kind_List is
   begin
-    if Str_Util.Locate (Str, ".") /= 0 then
+    if Str_Util.Locate (Str, "/") /= 0 then
+      return Lalo;
+    elsif Str_Util.Locate (Str, ".") /= 0 then
       return Mapcode;
     elsif Str_Util.Locate (Str, "+") /= 0 then
       return Olc;
@@ -75,127 +77,117 @@ procedure Hp_Gc is
 begin
   Great_Circle.Init_Logger;
   -- Get arguments:
-  --  -c mapcode mapcode or -c olc olc or -c lat lon lat lon
+  --  -c mapcode mapcode or -c olc olc or -c lat/lon lat/lon
   --  -a mapcode heading distance or -a olc heading distance
   --    or -a lat lon heading distance
   --    with -a mapcode or -a olc, then possibly -p precision
   begin
-    if (Argument.Get_Nbre_Arg = 3
-        or else Argument.Get_Nbre_Arg = 5)
+    if Argument.Get_Nbre_Arg = 3
     and then Argument.Get_Parameter (Occurence => 1) = "-c" then
       Mode := Compute;
-      if Argument.Get_Nbre_Arg = 3 then
-        Kind := Kind_Of (Argument.Get_Parameter (Occurence => 2));
-        case Kind is
-          when Mapcode =>
-            -- 2 mapcodes
-            A := Lat_Lon.Mapcode2Rad (Argument.Get_Parameter (Occurence => 2));
-            B := Lat_Lon.Mapcode2Rad (Argument.Get_Parameter (Occurence => 3));
-          when Olc =>
-            -- 2 open location codes
-            A := Lat_Lon.Olc2Rad (Argument.Get_Parameter (Occurence => 2));
-            B := Lat_Lon.Olc2Rad (Argument.Get_Parameter (Occurence => 3));
-          when Gh36 =>
-            -- 2 Geohash36 codes
-            A := Lat_Lon.Gh362Rad (
-              Strip (Argument.Get_Parameter (Occurence => 2)));
-            B := Lat_Lon.Gh362Rad (
-              Strip (Argument.Get_Parameter (Occurence => 3)));
-          when Gh =>
-            -- 2 Geohash codes
-            A := Lat_Lon.Gh2Rad (
-              Strip (Argument.Get_Parameter (Occurence => 2)));
-            B := Lat_Lon.Gh2Rad (
-              Strip (Argument.Get_Parameter (Occurence => 3)));
-          when Lalo =>
-            raise Constraint_Error;
-        end case;
-      else
-        Kind := Lalo;
-        -- 4 arguments: 2 lat lon
-        Lat1 := Units.Degree (Gets.Get_Int_Real (
-            Argument.Get_Parameter (Occurence => 2)));
-        Lon1 := Units.Degree (Gets.Get_Int_Real (
-            Argument.Get_Parameter (Occurence => 3)));
-        Lat2 := Units.Degree (Gets.Get_Int_Real (
-            Argument.Get_Parameter (Occurence => 4)));
-        Lon2 := Units.Degree (Gets.Get_Int_Real (
-            Argument.Get_Parameter (Occurence => 5)));
-        A := Lat_Lon.Deg2Rad ( (Lat1, Lon1) );
-        B := Lat_Lon.Deg2Rad ( (Lat2, Lon2) );
-      end if;
-    elsif    Argument.Get_Nbre_Arg = 4
-    or else Argument.Get_Nbre_Arg = 5 then
+      Kind := Kind_Of (Argument.Get_Parameter (Occurence => 2));
+      case Kind is
+        when Lalo =>
+          -- 2 arguments lat/lon
+          Str := As.U.Tus (Argument.Get_Parameter (Occurence => 2) );
+          I := Str.Locate ("/");
+          Lat1 := Units.Degree (Gets.Get_Int_Real (Str.Slice (1, I - 1)));
+          Lon1 := Units.Degree (Gets.Get_Int_Real (
+                                 Str.Slice (I + 1, Str.Length)));
+          Str := As.U.Tus (Argument.Get_Parameter (Occurence => 3) );
+          I := Str.Locate ("/");
+          Lat2 := Units.Degree (Gets.Get_Int_Real (Str.Slice (1, I - 1)));
+          Lon2 := Units.Degree (Gets.Get_Int_Real (
+                                 Str.Slice (I + 1, Str.Length)));
+          A := Lat_Lon.Deg2Rad ( (Lat1, Lon1) );
+          B := Lat_Lon.Deg2Rad ( (Lat2, Lon2) );
+        when Mapcode =>
+          -- 2 mapcodes
+          A := Lat_Lon.Mapcode2Rad (Argument.Get_Parameter (Occurence => 2));
+          B := Lat_Lon.Mapcode2Rad (Argument.Get_Parameter (Occurence => 3));
+        when Olc =>
+          -- 2 open location codes
+          A := Lat_Lon.Olc2Rad (Argument.Get_Parameter (Occurence => 2));
+          B := Lat_Lon.Olc2Rad (Argument.Get_Parameter (Occurence => 3));
+        when Gh36 =>
+          -- 2 Geohash36 codes
+          A := Lat_Lon.Gh362Rad (
+            Strip (Argument.Get_Parameter (Occurence => 2)));
+          B := Lat_Lon.Gh362Rad (
+            Strip (Argument.Get_Parameter (Occurence => 3)));
+        when Gh =>
+          -- 2 Geohash codes
+          A := Lat_Lon.Gh2Rad (
+            Strip (Argument.Get_Parameter (Occurence => 2)));
+          B := Lat_Lon.Gh2Rad (
+            Strip (Argument.Get_Parameter (Occurence => 3)));
+      end case;
+    elsif Argument.Get_Nbre_Arg = 4
+    and then Argument.Get_Parameter (Occurence => 1) = "-a" then
       Mode := Apply;
-      if Argument.Get_Nbre_Arg = 4 then
-        Kind := Kind_Of (Argument.Get_Parameter (Occurence => 2));
-        case Kind is
-          when Mapcode =>
-            -- 1 mapcode, 1 heading and 1 distance
-            declare
-              Mapcode : constant String
-                      := Argument.Get_Parameter (Occurence => 2);
-              -- Locate first "-" after territory
-              Col : constant Natural := Str_Util.Locate (Mapcode, ":");
-              Index : constant Natural := Str_Util.Locate (Mapcode, "-", Col);
-            begin
-              A := Lat_Lon.Mapcode2Rad (Mapcode);
-              if Index = 0 then
-                Map_Precision := 0;
-              else
-                Map_Precision := Mapcode'Length - Index;
-              end if;
-            end;
-            Kind := Mapcode;
-          when Olc =>
-            -- 1 olc, 1 heading and 1 distance
-            declare
-              Code : constant String := Argument.Get_Parameter (Occurence => 2);
-            begin
-              A := Lat_Lon.Mapcode2Rad (Code);
-              Olc_Precision := Olc_Lib.Precision_Of (Code);
-            end;
-            Kind := Olc;
-          when Gh36 =>
-            -- 1 Geohash36 code, 1 heading and 1 distance
-            declare
-              Code : constant String
-                   := Strip (Argument.Get_Parameter (Occurence => 2));
-            begin
-              A := Lat_Lon.Gh362Rad (Code);
-              Gh36_Precision := Code'Length;
-            end;
-            Kind := Gh36;
-          when Gh =>
-            -- 1 Geohash code, 1 heading and 1 distance
-            declare
-              Code : constant String
-                   := Strip (Argument.Get_Parameter (Occurence => 2));
-            begin
-              A := Lat_Lon.Gh2Rad (Code);
-              Gh_Precision := Code'Length;
-            end;
-            Kind := Gh36;
-          when Lalo =>
-            raise Constraint_Error;
-        end case;
-        I := 3;
-      elsif Argument.Get_Nbre_Arg = 5 then
-        Kind := Lalo;
-        -- 1 lat long, 1 heading and 1 distance
-        Lat1 := Units.Degree (Gets.Get_Int_Real (
-            Argument.Get_Parameter (Occurence => 2)));
-        Lon1 := Units.Degree (Gets.Get_Int_Real (
-            Argument.Get_Parameter (Occurence => 3)));
-        A := Lat_Lon.Deg2Rad ( (Lat1, Lon1) );
-        I := 4;
-      end if;
+      Kind := Kind_Of (Argument.Get_Parameter (Occurence => 2));
+      case Kind is
+        when Lalo =>
+          -- 1 lat/long, 1 heading and 1 distance
+          Str := As.U.Tus (Argument.Get_Parameter (Occurence => 2) );
+          I := Str.Locate ("/");
+          Lat1 := Units.Degree (Gets.Get_Int_Real (Str.Slice (1, I - 1)));
+          Lon1 := Units.Degree (Gets.Get_Int_Real (
+                                 Str.Slice (I + 1, Str.Length)));
+          A := Lat_Lon.Deg2Rad ( (Lat1, Lon1) );
+        when Mapcode =>
+          -- 1 mapcode, 1 heading and 1 distance
+          declare
+            Mapcode : constant String
+                    := Argument.Get_Parameter (Occurence => 2);
+            -- Locate first "-" after territory
+            Col : constant Natural := Str_Util.Locate (Mapcode, ":");
+            Index : constant Natural := Str_Util.Locate (Mapcode, "-", Col);
+          begin
+            A := Lat_Lon.Mapcode2Rad (Mapcode);
+            if Index = 0 then
+              Map_Precision := 0;
+            else
+              Map_Precision := Mapcode'Length - Index;
+            end if;
+          end;
+          Kind := Mapcode;
+        when Olc =>
+          -- 1 olc, 1 heading and 1 distance
+          declare
+            Code : constant String := Argument.Get_Parameter (Occurence => 2);
+          begin
+            A := Lat_Lon.Mapcode2Rad (Code);
+            Olc_Precision := Olc_Lib.Precision_Of (Code);
+          end;
+          Kind := Olc;
+        when Gh36 =>
+          -- 1 Geohash36 code, 1 heading and 1 distance
+          declare
+            Code : constant String
+                 := Strip (Argument.Get_Parameter (Occurence => 2));
+          begin
+            A := Lat_Lon.Gh362Rad (Code);
+            Gh36_Precision := Code'Length;
+          end;
+          Kind := Gh36;
+        when Gh =>
+          -- 1 Geohash code, 1 heading and 1 distance
+          declare
+            Code : constant String
+                 := Strip (Argument.Get_Parameter (Occurence => 2));
+          begin
+            A := Lat_Lon.Gh2Rad (Code);
+            Gh_Precision := Code'Length;
+          end;
+          Kind := Gh36;
+      end case;
 
       -- The route
-      R := Gets.Get_Int_Real (Argument.Get_Parameter (Occurence => I));
+      R := Gets.Get_Int_Real (Argument.Get_Parameter (Occurence => 3));
       H := Units.Deg2Rad (Units.Degree (R));
       -- Distance is positive or real, with unit "Nm", "km", "m" or "mm"
-      Argument.Get_Parameter (Str, Occurence => I + 1);
+      Argument.Get_Parameter (Str, Occurence => 4);
       -- Split to extra unit
       declare
         Words : constant As.U.Utils.Asu_Array
@@ -238,7 +230,9 @@ begin
       Basic_Proc.Put_Line_Error (
           "<apply_route>   ::= -a <point> <route> | -a <code> <route>");
       Basic_Proc.Put_Line_Error (
-          "<point>         ::= <lat> <lon>>");
+          "<point>         ::= D.d/D.d");
+      Basic_Proc.Put_Line_Error (
+          "  where D is positivie or negative, and d up to 9 digits");
       Basic_Proc.Put_Line_Error (
           "<code>      ::= <map_code> | <olc> | <geohash36> | <geohash>");
       Basic_Proc.Put_Line_Error (
@@ -290,11 +284,14 @@ begin
         -- Display Lat Long of destination
         Degs := Lat_Lon.Rad2Deg (B);
         Basic_Proc.Put_Output (
-          Normalization.Normal_Fixed (
-            My_Math.Real (Degs.Lat), Frac_Len + 5, 4, '0') & " ");
+          Str_Util.Strip (
+            Normalization.Normal_Fixed (
+              My_Math.Real (Degs.Lat), Frac_Len + 5, 4, '0'), Str_Util.Head)
+          & "/");
         Basic_Proc.Put_Line_Output (
-          Normalization.Normal_Fixed (
-            My_Math.Real (Degs.Lon), Frac_Len + 5, 4, '0'));
+          Str_Util.Strip (
+            Normalization.Normal_Fixed (
+              My_Math.Real (Degs.Lon), Frac_Len + 5, 4, '0'), Str_Util.Head));
       when Mapcode =>
         -- Display Mapcode of destination
         Basic_Proc.Put_Line_Output (Lat_Lon.Rad2Mapcode (B, Map_Precision));
