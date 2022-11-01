@@ -18,7 +18,7 @@ procedure Geo_Conv is
     Basic_Proc.Put_Line_Output (
         "<deci>     ::= D.d/D.d");
     Basic_Proc.Put_Line_Output (
-        "  where i is positivie or degative, and d up to 9 digits");
+        "  where D is positivie or negative, and d up to 9 digits");
     Basic_Proc.Put_Line_Output (
         "<code> ::= <map_code> | <olc_code> | <geohash36> | <geohash>");
     Basic_Proc.Put_Line_Output (
