@@ -125,7 +125,7 @@ while true ; do
   debug "P3: " $P3c
   let N=$N+1
 
-  # Check is same mapcode
+  # Check that P3 is same mapcode as P1
   if [ "$P1c" = "$P3c" ] ; then
     if [ $OKS -eq 1 ] ; then
       echo "Ok for $P1c + $H12 ${D12}km"
