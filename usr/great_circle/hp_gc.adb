@@ -26,6 +26,7 @@ procedure Hp_Gc is
   R : My_Math.Real;
   Degs : Lat_Lon.Signed_Deg_Rec;
   I : Positive;
+  Mm : Natural;
   Map_Precision : Lat_Lon.Map_Precisions;
   Olc_Precision : Lat_Lon.Olc_Precisions;
   Gh36_Precision : Lat_Lon.Gh36_Precisions;
@@ -271,8 +272,8 @@ begin
       Basic_Proc.Put_Output (Normalization.Normal_Fixed (R, 8, 4, '0') & "m");
       R := R * 1000.0;
       if R < 1000.0 then
-        I := Integer (My_Math.Round (R));
-        Basic_Proc.Put_Output (Int_Img (I) & "mm");
+        Mm := Integer (My_Math.Round (R));
+        Basic_Proc.Put_Output (" " & Int_Img (Mm) & "mm");
       end if;
     end if;
     Basic_Proc.Put_Line_Output (".");
