@@ -1,8 +1,8 @@
 with Normal, Upper_Char;
 package body String_Util is
 
-  -- Round Ten millis to seconds and propagate
-  -- or Round Ten millis to hundredth and propagate
+  -- Round Mil millis to seconds and propagate
+  -- or Round Mil millis to hundredth and propagate
   procedure Round (C : in out Units.Geo_Coord_Rec;
                    To_Seconds : in Boolean) is
     Sec, Min, Deg : Natural;
@@ -341,6 +341,36 @@ package body String_Util is
     Str(8 ..  9) := Normal (Rounded.Sec, 2, Gap => '0');
     return Str;
   end Geoangle2Str;
+
+  function Geoangle2Lstr (Geo_Angle : Units.Geo_Coord_Rec)
+           return Geo_Angle_Lstr is
+    Rounded : Units.Geo_Coord_Rec;
+    Lstr : Geo_Angle_Lstr;
+  begin
+    -- Round hundredths
+    Rounded := Geo_Angle;
+    Round (Rounded, False);
+    -- Set .
+    Lstr(4) := '.'; Lstr(7) := '.';
+    Lstr( 1 ..  3) := Normal (Rounded.Deg, 3, Gap => '0');
+    Lstr( 5 ..  6) := Normal (Rounded.Min, 2, Gap => '0');
+    Lstr( 8 ..  9) := Normal (Rounded.Sec, 2, Gap => '0');
+    Lstr(10 .. 11) := Normal (Rounded.Ten / 100, 2, Gap => '0');
+    return Lstr;
+  end Geoangle2Lstr;
+
+  function Lstr2Geoangle (Lstr : Geo_Angle_Lstr) return Units.Geo_Coord_Rec is
+    Geo : Units.Geo_Coord_Rec;
+  begin
+    if Lstr(4) /= '.' or else Lstr(7) /= '.' then
+      raise Format_Error;
+    end if;
+    Geo.Deg := Units.Deg_Range'Value(Lstr( 1 ..  3));
+    Geo.Min := Units.Deg_Range'Value(Lstr( 5 ..  6));
+    Geo.Sec := Units.Deg_Range'Value(Lstr( 8 ..  9));
+    Geo.Ten := Units.Deg_Range'Value(Lstr(10 ..  11)) * 100;
+    return Geo;
+  end Lstr2Geoangle;
 
   function Decangle2Str (Dec_Angle : Units.Dec_Coord_Rec) return Dec_Angle_Str is
     Rounded : Units.Dec_Coord_Rec;

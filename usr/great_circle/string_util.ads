@@ -19,9 +19,13 @@ package String_Util is
   -- Convert Lat_Lon_Geo_Rec to Geo_Lstr
   function Geo2Lstr (Geo : Lat_Lon.Lat_Lon_Geo_Rec) return Geo_Lstr;
 
-  -- Geo_Angle is ddd.mm.ss
+  -- Geo_Angle is ddd.mm.ss or ddd.mm.ssss
   subtype Geo_Angle_Str is  String(1..9);
   function Geoangle2Str (Geo_Angle : Units.Geo_Coord_Rec) return Geo_Angle_Str;
+  subtype Geo_Angle_Lstr is  String(1..11);
+  function Geoangle2Lstr (Geo_Angle : Units.Geo_Coord_Rec)
+           return Geo_Angle_Lstr;
+  function Lstr2Geoangle (Lstr : Geo_Angle_Lstr) return Units.Geo_Coord_Rec;
 
 
   -- Ndd.ijklmn/Wddd.ijklmn

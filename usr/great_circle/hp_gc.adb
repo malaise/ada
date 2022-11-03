@@ -15,7 +15,7 @@ with Units, Lat_Lon, Great_Circle, String_Util;
 procedure Hp_Gc is
   package Olc_Lib renames Olc;
   type Mode_List is (Compute, Apply);
-  type Kind_List is (Lalo, Mapcode, Olc, Gh36, Gh);
+  type Kind_List is (Sexa, Deci, Mapcode, Olc, Gh36, Gh);
   Mode : Mode_List;
   Kind : Kind_List;
   Lat1, Lon1, Lat2, Lon2 : Units.Degree;
@@ -41,7 +41,12 @@ procedure Hp_Gc is
   function Kind_Of (Str : String) return Kind_List is
   begin
     if Str_Util.Locate (Str, "/") /= 0 then
-      return Lalo;
+      if      Str_Util.Locate (Str, "N") /= 0
+      or else Str_Util.Locate (Str, "S") /= 0 then
+        return Sexa;
+      else
+        return Deci;
+      end if;
     elsif Str_Util.Locate (Str, ".") /= 0 then
       return Mapcode;
     elsif Str_Util.Locate (Str, "+") /= 0 then
@@ -88,8 +93,14 @@ begin
       Mode := Compute;
       Kind := Kind_Of (Argument.Get_Parameter (Occurence => 2));
       case Kind is
-        when Lalo =>
-          -- 2 arguments lat/lon
+        when Sexa =>
+          -- 2 arguments lat/lon in sexadecimal
+          A := Lat_Lon.Geo2Rad (String_Util.Lstr2Geo (
+                                  Argument.Get_Parameter(2)));
+          B := Lat_Lon.Geo2Rad (String_Util.Lstr2Geo (
+                                  Argument.Get_Parameter(3)));
+        when Deci =>
+          -- 2 arguments lat/lon in decimal
           Str := As.U.Tus (Argument.Get_Parameter (Occurence => 2) );
           I := Str.Locate ("/");
           Lat1 := Units.Degree (Gets.Get_Int_Real (Str.Slice (1, I - 1)));
@@ -128,8 +139,12 @@ begin
       Mode := Apply;
       Kind := Kind_Of (Argument.Get_Parameter (Occurence => 2));
       case Kind is
-        when Lalo =>
-          -- 1 lat/long, 1 heading and 1 distance
+        when Sexa =>
+          -- 1 lat/long in sexadecimal, 1 heading and 1 distance
+          A := Lat_Lon.Geo2Rad (String_Util.Lstr2Geo (
+                                  Argument.Get_Parameter(2)));
+        when Deci =>
+          -- 1 lat/long in decimal, 1 heading and 1 distance
           Str := As.U.Tus (Argument.Get_Parameter (Occurence => 2) );
           I := Str.Locate ("/");
           Lat1 := Units.Degree (Gets.Get_Int_Real (Str.Slice (1, I - 1)));
@@ -184,9 +199,15 @@ begin
           Kind := Gh36;
       end case;
 
-      -- The route
-      R := Gets.Get_Int_Real (Argument.Get_Parameter (Occurence => 3));
-      H := Units.Deg2Rad (Units.Degree (R));
+      -- The route heading
+      if Kind = Sexa then
+        H := Units.Geo2Rad (String_Util.Lstr2Geoangle (
+                                Argument.Get_Parameter (Occurence => 3)));
+      else
+        R := Gets.Get_Int_Real (Argument.Get_Parameter (Occurence => 3));
+        H := Units.Deg2Rad (Units.Degree (R));
+      end if;
+      -- The route length
       -- Distance is positive or real, with unit "Nm", "km", "m" or "mm"
       Argument.Get_Parameter (Str, Occurence => 4);
       -- Split to extra unit
@@ -231,7 +252,13 @@ begin
       Basic_Proc.Put_Line_Error (
           "<apply_route>   ::= -a <point> <route> | -a <code> <route>");
       Basic_Proc.Put_Line_Error (
-          "<point>         ::= D.d/D.d");
+          "<point>         ::= <sexa> | <deci>");
+      Basic_Proc.Put_Line_Error (
+          "<sexa>     ::= add.mm.ssssss/oddd.mm.ssssss");
+      Basic_Proc.Put_Line_Error (
+          "  where a is N or S and o is E or W.");
+      Basic_Proc.Put_Line_Error (
+          "<deci>         ::= D.d/D.d");
       Basic_Proc.Put_Line_Error (
           "  where D is positivie or negative, and d up to 9 digits");
       Basic_Proc.Put_Line_Error (
@@ -257,12 +284,20 @@ begin
     -- Compute and display great circle
     Great_Circle.Compute_Route (A, B, H, D);
 
-    -- Display result, Heading, then dist in Nm, km [, m]  [, mm ]
+    -- Display result: Heading, then dist
+    Basic_Proc.Put_Output ("H: ");
+    if Kind = Sexa then
+      Basic_Proc.Put_Output (
+        String_Util.Geoangle2Lstr (Units.Rad2Geo (H)));
+
+    else
+      R := My_Math.Round_At (My_Math.Real (Units.Rad2Deg (H)), -Frac_Len);
+      Basic_Proc.Put_Output (
+        Normalization.Normal_Fixed (R, Frac_Len + 5, 4, '0'));
+    end if;
+    -- Dist in Nm, km [, m]  [, mm ]
     -- Nm with 5.6 digits, km with 5.6 digits,
     --  m with 3.3 digits and mm with 3 digits
-    R := My_Math.Round_At (My_Math.Real (Units.Rad2Deg (H)), -Frac_Len);
-    Basic_Proc.Put_Output ("H: "
-        & Normalization.Normal_Fixed (R, Frac_Len + 5, 4, '0'));
     Basic_Proc.Put_Output (", D:"
         & Normalization.Normal_Fixed (D, 13, 6, '0') & "Nm");
     R := D * Km_In_Nm;
@@ -281,8 +316,11 @@ begin
     -- Apply great circle and display target
     B := Great_Circle.Apply_Route (A, H, D);
     case Kind is
-      when Lalo =>
-        -- Display Lat Long of destination
+      when Sexa =>
+        -- Display Lat Lon in sexadecimal of destination
+        Basic_Proc.Put_Line_Output (String_Util.Geo2Lstr (Lat_Lon.Rad2Geo (B)));
+      when Deci =>
+        -- Display Lat Lon in decimal of destination
         Degs := Lat_Lon.Rad2Deg (B);
         Basic_Proc.Put_Output (
           Str_Util.Strip (

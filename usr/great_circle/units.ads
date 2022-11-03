@@ -8,7 +8,7 @@ package Units is
   subtype Ten_Range is Natural range 0 .. 9999;
   subtype Nan_Range is Natural range 0 .. 999999999;
 
-  -- Degrees, Minutes, Seconds and 10 milli
+  -- Degrees, Minutes, Seconds and 10ths of milli
   type Geo_Coord_Rec is record
     Deg : Deg_Range;
     Min : Min_Range;
