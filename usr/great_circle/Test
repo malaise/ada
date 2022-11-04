@@ -395,8 +395,6 @@ sleep 1
 # - 1st line versus EL1
 # - 2nd line versus EL2 (modulo Epsilon)
 # - if $2 != "", that $1 versus line $2
-export EL1="N50.03.5900/W005.42.5300"
-export EL2="50.066388900/-5.714722229"
 export PRECISIONS="4/8/7/14/14/11"
 function t_geo_conv {
   echo "geo_conv $1 -p $PRECISIONS"
@@ -423,12 +421,23 @@ function t_geo_conv {
   fi
 }
 
+export EL1="N50.03.5900/W005.42.5300"
+export EL2="50.066388900/-5.714722229"
 t_geo_conv N50.03.5900/W005.42.5300 1
 t_geo_conv 50.06638890/-5.71472223 2
 t_geo_conv VH05L.WLQG-6WVDY4Q 3
 t_geo_conv 9C2P378P+H42HPR 4
 t_geo_conv bdTVK5PNK4DlK7 5
 t_geo_conv gbguvfq9v76 6
+
+export EL1="N43.31.5476/E001.14.0786"
+export ELS="43.53187760/1.23551667"
+t_geo_conv N43.31.5476/E001.14.0786 1
+t_geo_conv 43.53187760/1.23551667 2
+t_geo_conv THM1V.2TNX-LWR7BJV 3
+t_geo_conv 8FM3G6JP+Q624CP 4
+t_geo_conv Bj8QKhjCg5g8HR 5
+t_geo_conv sp8zshextdh 6
 
 # Hp_gc & geo_conv
 # ----------------
