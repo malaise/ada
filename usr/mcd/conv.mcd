@@ -15,7 +15,7 @@
 [
   "Error. Invalid argument " put putl
   "Expecting strings of <num><unit>, where <num> is an inte or a real" putl
-  " and <unit> is one of: km Nm cm C F hP Hg ms € f m ft l gal" putl
+  " and <unit> is one of: km Nm cm C F hPa Hg ms € f m ft l gal" putl
   1 setexit ssize popn retall
 ] Z popr
 
@@ -64,7 +64,7 @@ strcat
 ] C popr
 "C" d popr [ 1.8 * 32.0 + round put "F" putl ] D popr
 "F" e popr [ 32.0 - 1.8 / round put "C" putl ] E popr
-"hP" f popr [ W pushr call 0.029529983071445 * X pushr call
+"hPa" f popr [ W pushr call 0.029529983071445 * X pushr call
 put "Hg" putl ] F popr
 "Hg" g popr [ W pushr call 0.029529983071445 / round put "hP" putl ] G popr
 "ms" h popr [ W pushr call 1000.0 / 3600.0 * 1.852 / round

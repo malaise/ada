@@ -262,7 +262,7 @@ if `match $arg conv` ; then
   echo -en "3.20€\n137.75f\n" > exp
   comp out exp
   comp err nul
-  launch conv ":1013hP:"
+  launch conv ":1013hPa:"
   echo "29.91Hg" > exp
   comp out exp
   comp err nul
