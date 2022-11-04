@@ -349,7 +349,7 @@ package body Sys_Calls is
     end if;
   end Set_Rights;
 
-  -- Convert file time
+  -- Convert Time_T time
   type C_Tm_T is record
     Tm_Sec  : Integer;
     Tm_Min  : Integer;
@@ -359,10 +359,10 @@ package body Sys_Calls is
     Tm_Year : Integer;
   end record;
 
-  function Time_Of (Time : Time_T) return Ada.Calendar.Time is
+  function Tm_To_Time (Time : Time_T) return Ada.Calendar.Time is
     Tm4C  : C_Tm_T;
-    function C_Time_To_Tm (Time_P  : System.Address;
-                           My_Tm_P : System.Address)
+    function C_Time_To_Tm (Time_P : System.Address;
+                           Tm_P : System.Address)
              return C_Types.Int
       with Import => True, Convention => C, External_Name => "time_to_tm";
     Res : C_Types.Int;
@@ -374,14 +374,37 @@ package body Sys_Calls is
     return Day_Mng.Pack (
         Tm4C.Tm_Year, Tm4C.Tm_Mon, Tm4C.Tm_Mday,
         Tm4C.Tm_Hour, Tm4C.Tm_Min, Tm4C.Tm_Sec, 0);
-  end Time_Of;
+  end Tm_To_Time;
 
-  -- Get offset of local time versus GMT
-  function Gmt_Offset return Duration is
-    function C_Gmt_Offset return C_Types.Long
+  function Time_To_Tm (Time : Ada.Calendar.Time) return Time_T is
+    Tm4C  : C_Tm_T;
+    Dummy_Milli : Day_Mng.T_Millisecs;
+    Time4C : Time_T;
+    function C_Tm_To_Time (Tm_P : System.Address;
+                           Time_P : System.Address)
+             return C_Types.Int
+      with Import => True, Convention => C, External_Name => "tm_to_time";
+    Res : C_Types.Int;
+  begin
+    Day_Mng.Split (Time, Tm4C.Tm_Year, Tm4C.Tm_Mon, Tm4C.Tm_Mday,
+                   Tm4C.Tm_Hour, Tm4C.Tm_Min, Tm4C.Tm_Sec, Dummy_Milli);
+    Res := C_Tm_To_Time (Tm4C'Address, Time4C'Address);
+    if Res /= 0 then
+      raise Constraint_Error;
+    end if;
+    return Time4C;
+  end Time_To_Tm;
+
+  -- Get offset of local time versus given GMT time
+  function Gmt_Offset (At_Time : Time_T := Now_Time_T) return Time_T is
+    function C_Gmt_Offset (At_Time : System.Address) return C_Types.Long
       with Import => True, Convention => C, External_Name => "gmt_offset";
   begin
-    return Duration (C_Gmt_Offset);
+    if At_Time = Now_Time_T then
+      return Time_T (C_Gmt_Offset (System.Null_Address));
+    else
+      return Time_T (C_Gmt_Offset (At_Time'Address));
+    end if;
   end Gmt_Offset;
 
   -- Get effective user/group Id

@@ -105,12 +105,12 @@ begin
       end case;
     end;
   end if;
-  -- Clock is in Local time, convert into UTC if requested
+  -- Clock is in Local time, convert into current UTC if requested
   if Utc then
     declare
       use type Ada.Calendar.Time;
     begin
-      Crit.Date := Crit.Date - Sys_Calls.Gmt_Offset;
+      Crit.Date := Crit.Date - Duration (Sys_Calls.Gmt_Offset);
     end;
   end if;
   return Crit;

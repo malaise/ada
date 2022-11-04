@@ -28,7 +28,7 @@ typedef struct {
 extern int fd_stat(int fd, simple_stat *simple_stat_struct);
 extern int file_stat(const char *path, simple_stat *simple_stat_struct);
 
-/* Time to struct tm */
+/* Time to struct tm  and reverse */
 typedef struct {
   int tm_sec;       /* Seconds after the minute [0-60]   */
   int tm_min;       /* Minutes after the hour [0-59]     */
@@ -37,10 +37,11 @@ typedef struct {
   int tm_mon;       /* Months since January [1-12] *******/
   int tm_year;      /* Years since 1900                  */
 } my_tm_t;
-extern int time_to_tm (const time_t *the_time_p, my_tm_t *my_tm_p);
+extern int time_to_tm (const time_t *time_p, my_tm_t *my_tm_p);
+extern int tm_to_time (const my_tm_t *my_tm_p, time_t *time_p);
 
-/* Current offset of local time v.s. GMT */
-extern long gmt_offset (void);
+/* Current offset of local time v.s. a given GMT time */
+extern long gmt_offset (time_t *gmt_p);
 
 /* Get user name from uid and get uid and gid from user name */
 /* Return name len on success and ERROR (-1) on error (not found) */

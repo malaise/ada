@@ -90,27 +90,57 @@ extern int time_to_tm (const time_t *the_time_p, my_tm_t *my_tm_p) {
 
   if (tm_p == (struct tm *) NULL) {
     return (ERROR);
-  } else {
-    my_tm_p->tm_sec  = tm_p->tm_sec;
-    my_tm_p->tm_min  = tm_p->tm_min;
-    my_tm_p->tm_hour = tm_p->tm_hour;
-    my_tm_p->tm_mday = tm_p->tm_mday;
-    my_tm_p->tm_mon  = tm_p->tm_mon + 1; /* mon is 0-11 in struct tm */
-    my_tm_p->tm_year = tm_p->tm_year + 1900;
-    return OK;
   }
+  my_tm_p->tm_sec  = tm_p->tm_sec;
+  my_tm_p->tm_min  = tm_p->tm_min;
+  my_tm_p->tm_hour = tm_p->tm_hour;
+  my_tm_p->tm_mday = tm_p->tm_mday;
+  my_tm_p->tm_mon  = tm_p->tm_mon + 1; /* mon is 0-11 in struct tm */
+  my_tm_p->tm_year = tm_p->tm_year + 1900;
+  return OK;
+}
+
+/* Struct tm to time */
+extern int tm_to_time (const my_tm_t *my_tm_p, time_t *the_time_p) {
+
+  struct tm the_tm;
+
+  if (my_tm_p == (my_tm_t *) NULL) {
+    return (ERROR);
+  }
+
+  the_tm.tm_sec  = my_tm_p->tm_sec;
+  the_tm.tm_min  = my_tm_p->tm_min;
+  the_tm.tm_hour = my_tm_p->tm_hour;
+  the_tm.tm_mday = my_tm_p->tm_mday;
+  the_tm.tm_mon  = my_tm_p->tm_mon;
+  the_tm.tm_year = my_tm_p->tm_year - 1900;
+  the_tm.tm_isdst = 0;
+  *the_time_p = mktime (&the_tm);
+  if (*the_time_p == (-1) ) {
+    return (ERROR);
+  }
+  return OK;
 }
 
 /* Current offset of local time v.s. GMT */
-extern long gmt_offset (void) {
+extern long gmt_offset (time_t *gmt_p) {
 
-  time_t ttime;
-  struct tm ltime;
+  time_t gtime;
+  struct tm tmtime;
 
-  /* Get gmt offset of current local time */
-  ttime = time (NULL);
-  (void) localtime_r(&ttime, &ltime);
-  return ltime.tm_gmtoff;
+  if (gmt_p == (time_t *) NULL) {
+    /* Reference for GMT offset is now */
+    gtime = time (NULL);
+  } else {
+    gtime = *gmt_p;
+  }
+  /* Get local time of reference */
+  if (localtime_r(&gtime, &tmtime) == (struct tm*) NULL) {
+    return 0;
+  }
+  /* Offset to be applied to a gmt time in order to get local time */
+  return tmtime.tm_gmtoff;
 }
 
 /* Get user name from uid and get uid and gid from user name */

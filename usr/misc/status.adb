@@ -53,7 +53,7 @@ begin
       Sys_Calls.Set_Exit_Code(Exit_Internal_Error);
       return;
   end;
-  Target_Time := Sys_Calls.Time_Of(Fstat.Modif_Time);
+  Target_Time := Sys_Calls.Tm_To_Time (Fstat.Modif_Time);
 
   -- Check that each source exists and is before result
   for Arg_No in 1 .. Argument.Get_Nbre_Arg - 1 loop
@@ -90,7 +90,7 @@ begin
         Sys_Calls.Set_Exit_Code(Exit_Internal_Error);
         return;
     end;
-    Source_Time := Sys_Calls.Time_Of(Fstat.Modif_Time);
+    Source_Time := Sys_Calls.Tm_To_Time (Fstat.Modif_Time);
 
     if Exit_Code = Exit_Ok and then Target_Time <= Source_Time then
       -- Source files exist so far and this one is after result

@@ -137,13 +137,16 @@ package Sys_Calls is
   -- May raise Name_Error or Access_Error
   procedure Set_Rights (File_Name : in String; Rights : in Natural);
 
-  -- Convert file time
-  function Time_Of (Time : Time_T) return Ada.Calendar.Time;
+  -- Time
+  -------
+  -- Convert Time_T time
+  function Tm_To_Time (Time : Time_T) return Ada.Calendar.Time;
+  function Time_To_Tm (Time : Ada.Calendar.Time) return Time_T;
 
-  -- Get offset of local time versus GMT
+  -- Get offset of local time versus a given GMT time
   -- Add this offset to a GMT time to get the corresponding local time
-  function Gmt_Offset return Duration;
-
+  Now_Time_T : constant Time_T := -1;
+  function Gmt_Offset (At_Time : Time_T := Now_Time_T) return Time_T;
 
   -- Unix users
   -------------

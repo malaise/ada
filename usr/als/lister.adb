@@ -272,7 +272,7 @@ package body Lister is
                   File : in String) is
     Ent : Entities.Entity;
     Stat : Sys_Calls.File_Stat_Rec;
-    use type Directory.File_Kind_List, Ada.Calendar.Time;
+    use type Directory.File_Kind_List, Sys_Calls.Time_T;
   begin
     -- Prepare list for appending
     Ent_List.Rewind (Entities.Entity_List_Mng.Prev, False);
@@ -289,11 +289,12 @@ package body Lister is
     -- Fill entity
     Ent.Name := As.U.Tus (Directory.Basename(File));
     Ent.Kind := Directory.File_Kind_List (Stat.Kind);
-    Ent.Modif_Time := Sys_Calls.Time_Of (Stat.Modif_Time);
     if not Utc then
       -- Store modif time in local time
-      Ent.Modif_Time := Ent.Modif_Time + Sys_Calls.Gmt_Offset;
+      Stat.Modif_Time := Stat.Modif_Time
+                       + Sys_Calls.Gmt_Offset (Stat.Modif_Time);
     end if;
+    Ent.Modif_Time := Sys_Calls.Tm_To_Time (Stat.Modif_Time);
     Ent.Path := As.U.Tus (Directory.Dirname(File));
     Ent.Rights := Stat.Rights;
     Ent.User_Id := Stat.User_Id;
@@ -326,7 +327,7 @@ package body Lister is
     Ent : Entities.Entity;
     Stat : Sys_Calls.File_Stat_Rec;
     use type Directory.File_Kind_List, Entities.Dots_Kind_List,
-             Ada.Calendar.Time;
+             Sys_Calls.Time_T;
   begin
     -- Prepare list for appending
     Ent_List.Rewind (Entities.Entity_List_Mng.Prev, False);
@@ -390,11 +391,12 @@ package body Lister is
 
         -- Fill entity
         Ent.Kind := Directory.File_Kind_List (Stat.Kind);
-        Ent.Modif_Time := Sys_Calls.Time_Of (Stat.Modif_Time);
         if not Utc then
           -- Store modif time in local time
-          Ent.Modif_Time := Ent.Modif_Time + Sys_Calls.Gmt_Offset;
+          Stat.Modif_Time := Stat.Modif_Time
+                           + Sys_Calls.Gmt_Offset (Stat.Modif_Time);
         end if;
+        Ent.Modif_Time := Sys_Calls.Tm_To_Time (Stat.Modif_Time);
         Ent.Rights := Stat.Rights;
         Ent.User_Id := Stat.User_Id;
         Ent.Group_Id := Stat.Group_Id;

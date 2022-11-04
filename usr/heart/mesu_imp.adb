@@ -112,12 +112,13 @@ package body Mesu_Imp is
     declare
       Time_Local : Ada.Calendar.Time;
     begin
-      -- Scan and convert to local time if necessary
+      -- Scan and convert to local time (at that time) if necessary
       Date := Date_Text.Scan (Txt.Slice (1, Date_Len), "%Y-%m-%dT%H:%M:%S");
       Logger.Log_Debug ("Got Id with date " & Txt.Image);
       Init_Time := Date_Text.Pack (Date);
       if Txt.Element (Txt.Length) = 'Z' then
-        Time_Local := Init_Time + Sys_Calls.Gmt_Offset;
+        Time_Local := Init_Time
+          + Duration (Sys_Calls.Gmt_Offset (Sys_Calls.Time_To_Tm (Init_Time)));
         Date := Date_Text.Split (Time_Local);
       end if;
       -- And put date (skip hours, minutes, secs)
