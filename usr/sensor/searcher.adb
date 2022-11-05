@@ -150,13 +150,20 @@ package body Searcher is
         -- Fix year if it is not set
         if Time.Years = Ada.Calendar.Year_Number'First then
           Time.Years := Ada.Calendar.Year (Current_Time);
-          Line_Time := Time_Of (Time);
-          -- Adjust year to -1  if result is above current time
-          if Line_Time > Current_Time then
-            Time.Years := Time.Years - 1;
-            Line_Time := Time_Of (Time);
+          -- If result is above current time
+          --  either we are changing year (file date is december)
+          --    => substract 1 year
+          --  or time has stepped backwards (daylight saving to winter)
+          --    => keep this line
+          if Time_Of (Time) > Current_Time then
+            if Time.Months = 12 then
+              Time.Years := Time.Years - 1;
+            else
+              Time := Date_Text.Split (Current_Time);
+            end if;
           end if;
         end if;
+        Line_Time := Time_Of (Time);
         -- Remove lines before ref time
         if Line_Time >= Ref_Time then
           -- Keep

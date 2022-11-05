@@ -15,6 +15,10 @@ package body Timers.Expiration is
                          & " ");
   end Exp_Image;
 
+  -- Protection against too many expiratins of periodocal timers
+  -- when time switches backwards
+  Max_Expirations : constant := 100;
+
   -- For each timer for which if expiration time/delay is reached
   -- its callback is called
   -- then, if periodical it is re-armed (and may expire)
@@ -24,6 +28,8 @@ package body Timers.Expiration is
     Id : Timer_Id;
     Timer : access Timer_Rec;
     One_True : Boolean;
+    Speed : Virtual_Time.Speed_Range;
+    Now : Ada.Calendar.Time;
     use type Virtual_Time.Time;
   begin
     Get_Mutex;
@@ -35,16 +41,25 @@ package body Timers.Expiration is
       Timer_List.Read (Id, Timer_List_Mng.Current);
       Timer := Id.Get_Access;
       -- Done when no more to expire
+      Now := Ada.Calendar.Clock;
       exit when Timer.Status /= Running or else Timer.Frozen
-      or else Timer.Exp.Expiration_Time > Ada.Calendar.Clock;
+      or else Timer.Exp.Expiration_Time > Now;
 
       -- Expired: Remove single shot
       if Timer.Exp.Period = No_Period then
         Delete_Current;
       else
         -- Re-arm periodical and sort
+        Speed := Virtual_Time.Get_Speed (Timer.Clock);
         Timer.Exp.Expiration_Time := Timer.Exp.Expiration_Time
-             + Timer.Exp.Period / Virtual_Time.Get_Speed (Timer.Clock);
+            + Timer.Exp.Period / Speed;
+        if (Now - Timer.Exp.Expiration_Time) / Duration'(Timer.Exp.Period / Speed)
+           > Duration (Max_Expirations) then
+           Put_Debug ("Expire", "protection on backward jump");
+          -- Incremeting Last_Exp + Period would lead to too many expirations
+          -- Restart from now
+          Timer.Exp.Expiration_Time := Now;
+        end if;
         Sort (Timer_List);
       end if;
       Put_Debug ("Expire", "expiring");
@@ -76,7 +91,7 @@ package body Timers.Expiration is
     end if;
   end Adjust;
 
-  -- Date of expiration of next timer
+  -- Expiration time of next timer (or Infinite)
   function Wait_Until return Expiration_Rec is
     Id : Timer_Id;
     Timer : access Timer_Rec;
@@ -101,9 +116,10 @@ package body Timers.Expiration is
     Put_Debug ("Wait_Until", "-> "
              & Images.Date_Image (Timer.Exp.Expiration_Time));
     Release_Mutex;
-    return (Infinite => False, Time =>Timer.Exp.Expiration_Time);
+    return (Infinite => False, Time => Timer.Exp.Expiration_Time);
   end Wait_Until;
 
+  -- Delay until next timer expires (or Infinite_Seconds)
   function Wait_For return Duration is
     Now : Virtual_Time.Time;
     Next_Exp : Expiration_Rec;

@@ -55,10 +55,10 @@ package body Perpet is
   begin
 
     Ada.Calendar.Split (Date => Date,
-                    Year    => Rec.Year,
-                    Month   => Rec.Month,
-                    Day     => Rec.Day,
-                    Seconds => Rec.Seconds);
+                        Year    => Rec.Year,
+                        Month   => Rec.Month,
+                        Day     => Rec.Day,
+                        Seconds => Rec.Seconds);
     return Rec;
   end Split;
 
