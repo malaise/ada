@@ -54,8 +54,8 @@ package body Timers.Expiration is
         Timer.Exp.Expiration_Time := Timer.Exp.Expiration_Time
             + Timer.Exp.Period / Speed;
         if (Now - Timer.Exp.Expiration_Time) / Duration'(Timer.Exp.Period / Speed)
-           > Duration (Max_Expirations) then
-           Put_Debug ("Expire", "protection on backward jump");
+            > Duration (Max_Expirations) then
+          Put_Debug ("Expire", "protection on backward jump");
           -- Incremeting Last_Exp + Period would lead to too many expirations
           -- Restart from now
           Timer.Exp.Expiration_Time := Now;
