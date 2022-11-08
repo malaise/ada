@@ -176,11 +176,6 @@ Agite persistent data
 Agite also uses the configuration file to store information from one invocation
 to another.
 
-last_dir::
-Agite stores the current directory (each time it changes) in this entry. See the
-xref:XCommandLine[argument] '-p' ('--previous') for how to use this feature
-and the argument '-n' ('--no-history') for how to disable this feature.
-
 bookmarks::
 Agite stores the xref:XBook[bookmarks] (each time you change them) in this
 section:
@@ -188,6 +183,11 @@ section:
 * blank lines have no 'Name' nor content,
 * separators have a 'Name' and no content,
 * bookmarks have a content and possibly a 'Name'.
+
+last_dir::
+Agite stores the current directory (each time it changes) in this entry. See the
+xref:XCommandLine[argument] '-p' ('--previous') for how to use this feature
+and the argument '-n' ('--no-history') for how to disable this feature.
 
 comment::
 Agite saves the text of the current comment of the xref:XCommit[commit], so

@@ -33,10 +33,6 @@ package Config is
   -- Default history length
   function History_Len return Long_Longs.Llu_Natural;
 
-  -- Last/Current dir
-  procedure Save_Curr_Dir (Dir : in String);
-  function Prev_Dir return String;
-
   -- Bookmarks
   type Bookmark_Rec is record
     Name : As.U.Asu_Us;
@@ -50,6 +46,10 @@ package Config is
   procedure Del_Bookmark (Index : in Positive);
   procedure Add_Bookmark (After_Index : in Natural; Bookmark : in Bookmark_Rec);
   procedure Move_Bookmark (Index : in Positive; Up : in Boolean);
+
+  -- Last/Current dir
+  procedure Save_Curr_Dir (Dir : in String);
+  function Prev_Dir return String;
 
   -- Comment
   procedure Save_Comment (Text : in String);

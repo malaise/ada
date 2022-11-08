@@ -25,13 +25,14 @@ package body Config is
     return File_Path.Image;
   end Get_File_Name;
 
-  Curr_Dir_Pos : constant := 10;
-  Bookmarks_Pos : constant := 11;
+  Bookmarks_Pos : constant := 10;
+  Last_Dir_Pos : constant := 11;
 
   -- Load the conf and check
   Ctx : Xml_Parser.Generator.Ctx_Type;
   Root : Xml_Parser.Element_Type;
   Bookmarks : Xml_Parser.Element_Type;
+  Last_Dir : Xml_Parser.Element_Type;
   Comment : Xml_Parser.Element_Type;
   procedure Check is
     use type Xml_Parser.Ctx_Status_List;
@@ -58,16 +59,21 @@ package body Config is
     -- Store references
     Root := Ctx.Get_Root_Element;
     Bookmarks := Ctx.Get_Child (Root, Bookmarks_Pos);
-    Comment := Ctx.Get_Child (Root, Bookmarks_Pos + 1);
+    Last_Dir := Ctx.Get_Child (Root, Last_Dir_Pos);
+    Comment := Ctx.Get_Child (Root, Last_Dir_Pos + 1);
     -- Verify that each definition has one (text) child
-    -- Prev dir may be empty
-    for I in 1 .. Curr_Dir_Pos - 1 loop
+    for I in 1 .. Bookmarks_Pos - 1 loop
       if Ctx.Get_Nb_Children (Ctx.Get_Child (Root, I)) /= 1 then
         raise Invalid_Config;
       end if;
     end loop;
     -- Verify that bookmarks is named "bookmarks"
     if Ctx.Get_Name (Bookmarks) /= "bookmarks" then
+      raise Invalid_Config;
+    end if;
+    -- Verify that last_dir has proper name and at most one (text) child
+    if Ctx.Get_Name (Last_Dir) /= "last_dir"
+    or else Ctx.Get_Nb_Children (Last_Dir) > 1 then
       raise Invalid_Config;
     end if;
     -- Verify that comment has proper name and at most one (text) child
@@ -197,32 +203,6 @@ package body Config is
   function Xml2Path (Str : in String) return String
     renames Xml_Parser.Generator.Xml2Text;
 
-  -- Last/Current dir
-  procedure Save_Curr_Dir (Dir : in String) is
-    Prev : Xml_Parser.Element_Type;
-    New_Node : Xml_Parser.Node_Type;
-  begin
-    -- Prev dir may not be empty
-    Prev := Ctx.Get_Child (Root, Curr_Dir_Pos);
-    if Ctx.Get_Nb_Children (Prev) = 1 then
-      Ctx.Delete_Children (Prev);
-    end if;
-    Ctx.Add_Child (Prev, Path2Xml (Dir), Xml_Parser.Text, New_Node);
-    Save (False);
-  end Save_Curr_Dir;
-
-  function Prev_Dir return String is
-    Prev : Xml_Parser.Element_Type;
-  begin
-    -- Prev dir may be empty
-    Prev := Ctx.Get_Child (Root, Curr_Dir_Pos);
-    if Ctx.Get_Nb_Children (Prev) = 1 then
-      return Xml2Path (Ctx.Get_Text (Ctx.Get_Child (Prev, 1)));
-    else
-      return "";
-    end if;
-  end Prev_Dir;
-
   -- Bookmarks
   function Get_Bookmarks return Bookmark_Array is
   begin
@@ -320,6 +300,32 @@ package body Config is
     end if;
     Save;
   end Move_Bookmark;
+
+  -- Last/Current dir
+  procedure Save_Curr_Dir (Dir : in String) is
+    Prev : Xml_Parser.Element_Type;
+    New_Node : Xml_Parser.Node_Type;
+  begin
+    -- Prev dir may not be empty
+    Prev := Ctx.Get_Child (Root, Last_Dir_Pos);
+    if Ctx.Get_Nb_Children (Prev) = 1 then
+      Ctx.Delete_Children (Prev);
+    end if;
+    Ctx.Add_Child (Prev, Path2Xml (Dir), Xml_Parser.Text, New_Node);
+    Save (False);
+  end Save_Curr_Dir;
+
+  function Prev_Dir return String is
+    Prev : Xml_Parser.Element_Type;
+  begin
+    -- Prev dir may be empty
+    Prev := Ctx.Get_Child (Root, Last_Dir_Pos);
+    if Ctx.Get_Nb_Children (Prev) = 1 then
+      return Xml2Path (Ctx.Get_Text (Ctx.Get_Child (Prev, 1)));
+    else
+      return "";
+    end if;
+  end Prev_Dir;
 
   -- Comment
   procedure Save_Comment (Text : in String) is
