@@ -10,7 +10,7 @@
 <!ELEMENT Actions (Action*)>
 <!-- Each action is identified by a name, -->
 <!-- and is defining the shell command to be executed. -->
-<!-- In the command, the following variables are defined: -->
+<!-- In the command, the following variables are automatically defined: -->
 <!--  - ${Match} : Lines of the log that match the filter -->
 <!--  - ${Time} : Date and time at ISO format (YYyy-Mm-DdTHh:Mm:Ss.mmm) -->
 <!--  - ${Host}: Local host name -->
@@ -23,7 +23,7 @@
 <!ELEMENT Action (Repeat*)>
 <!-- - at least a given number of times -->
 <!-- - withing a given number of seconds (min 1.0)-->
-<!-- - trigger another action -->
+<!-- - then trigger another action -->
 <!ATTLIST Repeat Number CDATA "3"
                  During CDATA "900"
                  Action IDREF #REQUIRED>

@@ -1,6 +1,6 @@
 Sensor
 ======
-Version: 7.1
+Version: 7.2
 
 Sensor scans some files and triggers actions when finding specific events. +
 It is usefull to raise alerts when some log messages are matching criteria.
@@ -20,7 +20,7 @@ a unique name and a text value.
 
 .Actions
 Then the configuration file defines several actions. +
-Each action has a unique name and executes a predefined shell command. +
+Each action has a unique name and defines a shell command. +
 If an action is triggered too often (more than a given number of occurences
 within a given time), it is possible to trigger another action. +
 The definition of a command can refer to some variables of the form
