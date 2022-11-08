@@ -186,16 +186,25 @@ begin
           when Targeted =>
             -- Releasing in Selected target
             -- Set movement
-            Mov := (Card => Selected_Source,
-                    From => Selected_Source.Stack,
-                    To   => Selected_Target.Stack);
-            -- Unselect
-            Reset;
-            Status := Selectable;
-            Selected_Target.Xcard.Un_Select;
-            Selected_Target := null;
-            -- Move
-            Movements.Move (Mov, True);
+            if Selected_Source /= null and then Selected_Target /= null then
+              Mov := (Card => Selected_Source,
+                      From => Selected_Source.Stack,
+                      To   => Selected_Target.Stack);
+              Tmp_Card := Selected_Target;
+              -- Unselect
+              Reset;
+              Status := Selectable;
+              Selected_Target.Xcard.Un_Select;
+              Selected_Target := null;
+              -- Move
+              if Movements.Can_Move (Mov.Card, Tmp_Card) then
+                Movements.Move (Mov, True);
+              else
+                Reset;
+              end if;
+            else
+              Reset;
+            end if;
         end case;
       when Table.Right_Pressed =>
         -- Right click-release
@@ -204,12 +213,13 @@ begin
                  and then Selected_Source = Event.Card) then
           -- Try to move to Done
           Stack := Cards.The_Done(Event.Card.Suit)'Access;
-          if Stack.Prev /= null then
+          if Stack /= null and then Stack.Prev /= null then
             Card := Stack.Prev;
           else
             Card := Stack;
           end if;
-          if not Movements.Can_Move (Event.Card, Card) then
+          if Stack /= null
+          and then not Movements.Can_Move (Event.Card, Card) then
             -- Try to find a free Tmp stack
             Stack := null;
             for I in Cards.Tmp_Stack_Range loop

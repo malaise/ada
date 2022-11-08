@@ -227,16 +227,26 @@ begin
           when Targeted =>
             -- Releasing in Selected target
             -- Set movement
-            Mov := (Card => Selected_Source,
-                    From => Selected_Source.Stack,
-                    To   => Selected_Target.Stack);
-            -- Unselect
-            Reset;
-            Status := Selectable;
-            Selected_Target.Xcard.Un_Select;
-            Selected_Target := null;
-            -- Move
-            Movements.Move (Mov, True);
+            if Selected_Source /= null and then Selected_Target /= null then
+              Mov := (Card => Selected_Source,
+                      From => Selected_Source.Stack,
+                      To   => Selected_Target.Stack);
+              Tmp_Card := Selected_Target;
+              -- Unselect
+              Reset;
+              Status := Selectable;
+              Selected_Target.Xcard.Un_Select;
+              Selected_Target := null;
+              -- Move
+              if Movements.Can_Move (Mov.Card, Tmp_Card) then
+                Movements.Move (Mov, True);
+              else
+                Reset;
+              end if;
+            else
+              Reset;
+            end if;
+
         end case;
       when Table.Right_Pressed =>
         if Status = Selectable
