@@ -21,6 +21,10 @@ package body Movements is
   function Is_Valid (Source, Target : in Cards.Card_Access) return Boolean is
     use type Cards.Card_Access, Cards.Deck.Suit_List, Cards.Colors;
   begin
+    if Source.Suit not in Cards.Deck.Suit_List then
+      -- Not a real card
+      return False;
+    end if;
     if Target.Stack.Suit = Cards.Deck.Empty then
       -- Target is in a play stack
       if Target = Target.Stack then
