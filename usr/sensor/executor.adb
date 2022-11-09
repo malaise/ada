@@ -188,6 +188,7 @@ package body Executor is
     Timer : Timer_Rec;
     Dummy_Res : Boolean;
   begin
+    -- Delete and expire all timers, flushing actions pending on latency
     Timers_List.Rewind (Check_Empty => False);
     while not Timers_List.Is_Empty loop
       Timers_List.Get (Timer);

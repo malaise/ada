@@ -4,13 +4,6 @@
 <Sensor>
   <Var Name="Syslog" Value="/var/log/syslog"/>
   <Var Name="Auth" Value="/var/log/auth.log"/>
-  <Actions>
-    <Action Name="CloseRootSSH" Command='/root/bin/CloseRootSSH'/>
-    <Action Name="Antibot" Command='echo -en "${Match}" | /root/sensor/antibot'>
-      <Repeat Number="3" During="900" Action="CloseRootSSH"/>
-    </Action>
-    <Action Name="RootLogin" Command='echo -en "${Match}" >> /root/log/login'></Action>
-  </Actions>
   <Rules>
     <Rule>
       <Scan File="${Syslog}" Criteria="BANNING"></Scan>
@@ -24,5 +17,12 @@
       <Execute Action="RootLogin"/>
     </Rule>
   </Rules>
+  <Actions>
+    <Action Name="CloseRootSSH" Command='/root/bin/CloseRootSSH'/>
+    <Action Name="Antibot" Command='echo -en "${Match}" | /root/sensor/antibot'>
+      <Repeat Number="3" During="900" Action="CloseRootSSH"/>
+    </Action>
+    <Action Name="RootLogin" Command='echo -en "${Match}" >> /root/log/login'></Action>
+  </Actions>
 </Sensor>
 

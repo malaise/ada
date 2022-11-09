@@ -1,6 +1,6 @@
 Sensor
 ======
-Version: 7.2
+Version: 8.0
 
 Sensor scans some files and triggers actions when finding specific events. +
 It is usefull to raise alerts when some log messages are matching criteria.
@@ -18,21 +18,10 @@ With option -c (--check), sensor only checks the configuration file and exits.
 The XML configuration file may start by defining variables. Each variable has
 a unique name and a text value.
 
-.Actions
-Then the configuration file defines several actions. +
-Each action has a unique name and defines a shell command. +
-If an action is triggered too often (more than a given number of occurences
-within a given time), it is possible to trigger another action. +
-The definition of a command can refer to some variables of the form
-'$\{variable}'. The following variable names are automatically defined:
-
-- $\{Match} : Lines (content) of the log that match the filter
-- $\{Time} : Date and time at ISO format (YYyy-Mm-DdTHh:Mm:Ss.mmm)
-- $\{Host}: Local host name
-- $\{Action}: when executing an action as the consequence of a repeated action
-
-All the other variables must be defined previously in the configuration or in
-the environment, otherwise this is an error.
+All the definitions of the configuration (variable definition, action name,
+rule name and options), can refer to existing variables of the form
+'$\{variable}'. A referred variable must be defined previously (automatically,
+or in the configuration or in the environment), otherwise this is an error.
 
 .Rules
 The configuration file then defines rules. Each rule consists in:
@@ -40,8 +29,8 @@ The configuration file then defines rules. Each rule consists in:
 - scanning criteria
 
 * the name of the file to scan
-* the criteria (regular expression) to match
 * an optional scanning period in seconds (default 60.0, min 0.1)
+* the criteria (regular expression) to match
 * an optional tail size to scan (default 100 lines, 0 for infinite)
 * an optional number of past seconds to scan (default 1 hour, 0 for infinite)
 and the format of time (expected at a fixed offset in each line of the file).
@@ -54,9 +43,23 @@ See Date_Text for the definition of format used to scan dates and times.
 action for the same reason
 * the latency between two successive executions of the action
 
-All the definitions of the configuration (variable definition, action name,
-rule name and options), can refer to existing variables (defined previously in
-the configuration or in the environment, otherwise this is an error).
+.Actions
+Then the configuration file defines several actions. +
+Each action has a unique name and defines a shell command. +
+If an action is triggered too often (more than a given number of occurences
+within a given time), it is possible to also trigger another action. +
+The following variable names are automatically defined when evaluating an
+action:
+
+- $\{Match} : The lines of the log that match the filter
+- $\{Time} : Date and time at ISO format (YYyy-Mm-DdTHh:Mm:Ss.mmm)
+- $\{Host}: Local host name
+- $\{Action}: The repeated action, when executing an action as the consequence
+of a repeated action
+
+NOTE: During a scan, several lines may match the criteria and get through the
+various history and latency filters. In this case, $\{Match} will be
+expanded with *all* these lines separated by Line_Feed.
 
 Example:
 
@@ -67,6 +70,13 @@ Example:
 
 <Sensor>
   <Var Name="OUTPUT" Value="/root/log/Sensor.log"/>
+  <Rules>
+    <Rule>
+      <Scan File="${INPUT}" Period="60" Criteria="${TRIGGER}" Tail="10">
+      </Scan>
+      <Execute Action="LogTrigger" History="5" Latency="1.5"/>
+    </Rule>
+  </Rules>
   <Actions>
     <Action Name="LogTrigger"
             Command='/bin/echo -en "Got ${Match}" >>${OUTPUT}'>
@@ -76,13 +86,6 @@ Example:
             Command='/bin/echo "Repeated ${Action}" >>${OUTPUT}'>
     </Action>
   </Actions>
-  <Rules>
-    <Rule>
-      <Scan File="${INPUT}" Criteria="${TRIGGER}" Period="60" Tail="10">
-      </Scan>
-      <Execute Action="LogTrigger" History="5" Latency="1.5"/>
-    </Rule>
-  </Rules>
 </Sensor>
 
 .......................................
@@ -99,12 +102,13 @@ time format, regular expression, and that the referenced action exists
 
 .When a timer expires:
  * Retrieve the rule
- * Extract the tail then filter the past seconds of the file, and then search
-the regex
- * If found, check each line of the result versus the history
- * If found in the history then drop, otherwise store in the history
- * Store the matching lines until latency is reached, then expand and execute
-the action on all these lines together
- * Store the occurences of the action (purge old occurences), check if
-repeated too often and trigger "repeat" actions.
+ * Extract the tail of the file then filter the past seconds of the file,
+and then search the lines matching the regex
+ * For each matching line, if found in the history then drop it,
+otherwise store it in the history
+ * If within latency since previous match of this rule then drop it,
+otherwise expand and execute the action (on all these lines together)
+ * Store these occurences of the action (one for each matching line),
+purge old occurences, check if this action is repeated too often and trigger
+associated "repeat" action (potentially several times).
 

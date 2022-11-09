@@ -4,7 +4,7 @@ with Argument, Basic_Proc, Sys_Calls, As.U, Timers, Event_Mng,
 with Debug, Actions, Rules, Executor;
 procedure Sensor is
 
-  Version : constant String := "V7.2";
+  Version : constant String := "V8.0";
 
   procedure Help is
   begin
@@ -19,7 +19,7 @@ procedure Sensor is
   -- Xml parsing
   Ctx : Xml_Parser.Ctx_Type;
   Ok : Boolean;
-  Root, Var, Class, Node, Child : Xml_Parser.Element_Type;
+  Root, Var, Actions_Root, Rules_Root, Node, Child : Xml_Parser.Element_Type;
   Name, Value, Text, Tmp : As.U.Asu_Us;
   Rule : Rules.Rule_Rec;
   Hist_Size : Queues.Len_Range;
@@ -73,7 +73,6 @@ begin
   -- Define variables
   for I in 1 .. Ctx.Get_Nb_Children (Root) - 2 loop
     Var := Ctx.Get_Child (Root, I);
-    Class := Ctx.Get_Brother (Var);
     -- Get name and value
     Name := Ctx.Get_Attribute (Var, 1).Value;
     Value := Ctx.Get_Attribute (Var, 2).Value;
@@ -87,14 +86,12 @@ begin
     end;
     Debug.Log ("Got variable " & Name.Image & "=" & Value.Image);
   end loop;
-  if Ctx.Get_Nb_Children (Root) = 2 then
-    Class := Ctx.Get_Child (Root, 1);
-  end if;
 
-  -- Check and store actions
+  -- Check and store actions (first, because they are referred by rules)
   --------------------------
-  for I in 1 .. Ctx.Get_Nb_Children (Class) loop
-    Node := Ctx.Get_Child (Class, I);
+  Actions_Root := Ctx.Get_Child (Root, Ctx.Get_Nb_Children (Root));
+  for I in 1 .. Ctx.Get_Nb_Children (Actions_Root) loop
+    Node := Ctx.Get_Child (Actions_Root, I);
     -- Get name
     Name := Expand (Ctx.Get_Attribute (Node, 1).Value.Image);
     -- Get action and check variables
@@ -132,9 +129,9 @@ begin
 
   -- Check and store Rules
   ------------------------
-  Class := Ctx.Get_Brother (Class);
-  for I in 1 .. Ctx.Get_Nb_Children (Class) loop
-    Node := Ctx.Get_Child (Class, I);
+  Rules_Root := Ctx.Get_Child (Root, Ctx.Get_Nb_Children (Root) - 1);
+  for I in 1 .. Ctx.Get_Nb_Children (Rules_Root) loop
+    Node := Ctx.Get_Child (Rules_Root, I);
 
     -- Scan
     Child := Ctx.Get_Child (Node, 1);
