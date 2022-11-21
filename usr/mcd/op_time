@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Remove spaces and tabs => one arg
-arg=`echo -n $* | sed "s/[ \t]//g"`
+arg=`echo -n $* | sed "s/[ \t]//g" | sed "s/:/::/g"`
 # Launch with string
 mcdt op_time.mcd ":$arg:"
 
