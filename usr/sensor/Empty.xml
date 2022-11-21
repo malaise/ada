@@ -2,9 +2,9 @@
 <!DOCTYPE Sensor SYSTEM "Sensor.dtd">
 
 <Sensor>
-  <Actions>
-  </Actions>
   <Rules>
   </Rules>
+  <Actions>
+  </Actions>
 </Sensor>
 
