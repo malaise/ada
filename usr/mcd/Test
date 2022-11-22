@@ -624,7 +624,7 @@ fi
 
 if `match $arg op_time` ; then
   title op_time
-  ./op_time 4.45 x 2 + 3.15 > out 2> err
+  ./op_time 4.45 x 2 + 3:15 > out 2> err
   echo "12h45m00s000" > exp
   comp out exp
   comp err nul
