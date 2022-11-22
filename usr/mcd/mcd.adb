@@ -19,18 +19,25 @@ procedure Mcd is
   end Set_Error_Code;
 
   Termin_Error : exception;
-  procedure Error (Message : in String; Raise_Error : in Boolean := True) is
+  procedure Error (Message : in String;
+                   Raise_Error : in Boolean := True;
+                   Close_Io : in Boolean := False) is
   begin
     Basic_Proc.Put_Line_Error (Mixed_Str(Argument.Get_Program_Name) & " error: "
                             & Message & ".");
     if Io_Flow.Is_Interactive then
       -- Continue on error
       Io_Flow.Clear_Interactive;
+      if Close_Io then
+        Close;
+      end if;
     else
       -- Terminate on error
       Mcd_Parser.Dump_Stack;
       Mcd_Mng.Dump_Stack;
-      Close;
+      if Close_Io then
+        Close;
+      end if;
       Set_Error_Code;
       if Raise_Error then
         raise Termin_Error;
@@ -113,6 +120,7 @@ exception
   when Except:others =>
     Error ("Exception "
               & Mixed_Str(Ada.Exceptions.Exception_Name (Except))
-              & " raised", Raise_Error => False);
+              & " raised", Raise_Error => False, Close_Io => True);
+    Close;
 end Mcd;
 
