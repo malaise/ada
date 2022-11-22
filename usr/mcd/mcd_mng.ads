@@ -172,6 +172,7 @@ package Mcd_Mng is
    Normal,
    Regmatch,
    Regsplit,
+   Regsubst,
    Canarbi,
    Canfrac,
    Caninte,

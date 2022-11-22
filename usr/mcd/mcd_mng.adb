@@ -288,7 +288,7 @@ package body Mcd_Mng is
     procedure Set_Debug (Set : in Item_Rec);
 
     function Reg_Match (Pattern, Str : Item_Rec) return Item_Rec;
-
+    function Reg_Substr (Str, Pattern, By : Item_Rec) return Item_Rec;
     function Reg_Split (Str, Pattern, Max_Substr, Reg : Item_Rec)
              return Item_Rec;
 
@@ -367,7 +367,7 @@ package body Mcd_Mng is
   subtype Cond_List   is Operator_List range Ifthen  .. Etfi;
   subtype Prog_List   is Operator_List range Call    .. Callbrk;
   subtype Io_List     is Operator_List range Format  .. Exec;
-  subtype String_List is Operator_List range Strnull .. Regsplit;
+  subtype String_List is Operator_List range Strnull .. Regsubst;
   subtype Can_List    is Operator_List range Canarbi .. Canprog;
   subtype Time_List   is Operator_List range Clock   .. Dateimg;
   subtype Exec_List   is Operator_List range Nop     .. Help;
@@ -1203,6 +1203,10 @@ package body Mcd_Mng is
         when Regmatch =>
           -- push whether B matches regex A
           Pop(A); Pop(B); Push (Misc.Reg_Match(A, B));
+          S := A;
+        when Regsubst =>
+          -- push C with strings matching B replaced by A
+          Pop(A); Pop(B); Pop(C); Push (Misc.Reg_Substr(C, B, A));
           S := A;
         when Regsplit =>
           -- split D into substrings or regex C, max is B. Store in array A

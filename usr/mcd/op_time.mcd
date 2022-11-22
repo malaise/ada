@@ -22,7 +22,7 @@ ssize 1 /= [ "Invalid argument" E pushr call ] ifcall
 
 # Function to convert Tos (string) to a real
 [ # Replace ":" by "."
-  dup 1 ":" strloc dup isnull [ pop ] [ "." strovw ] ifte call 
+  ":" "." regsubst
   dup canreal [ strreal 2 retn ] ifcall
   dup caninte [ strinte toreal 2 retn ] ifcall
 "Invalid operand " swap strcat E pushr call ] C popr

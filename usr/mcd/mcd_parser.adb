@@ -229,6 +229,8 @@ package body Mcd_Parser is
    Regmatch => (Nosy, "push where B matches regex A                      ", As.U.Asu_Null, False),
    Regsplit => (Nosy, "push number of substrings of D matching C         ",
     As.U.Tus ("B max substrings are stored in array A"), False),
+   Regsubst => (Nosy, "push C after replacing by A                       ",
+    As.U.Tus ("the strings that match regex B"), False),
    Canarbi  => (Nosy, "push whether A (str) can be an arbitrary          ", As.U.Asu_Null, False),
    Canfrac  => (Nosy, "push whether A (str) can be a fraction            ", As.U.Asu_Null, False),
    Caninte  => (Nosy, "push whether A (str) can be an integer            ", As.U.Asu_Null, False),

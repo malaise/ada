@@ -188,6 +188,25 @@ package body Misc is
       raise Invalid_Argument;
   end Reg_Match;
 
+  function Reg_Substr (Str, Pattern, By : Item_Rec) return Item_Rec is
+    Res : Item_Rec(Chrs);
+  begin
+    if Str.Kind /= Chrs or else Pattern.Kind /= Chrs
+    or else By.Kind /= Chrs then
+      raise Invalid_Argument;
+    end if;
+
+    Res := Str;
+    Res.Val_Text := As.U.Tus (Str_Util.Regex.Substit (
+        Within   => Str.Val_Text.Image,
+        Criteria => Pattern.Val_Text.Image,
+        By       => By.Val_Text.Image) );
+    return Res;
+  exception
+    when Str_Util.Regex.Invalid_Regular_Expression =>
+      raise Invalid_Argument;
+  end Reg_Substr;
+
   function Reg_Split (Str, Pattern, Max_Substr, Reg : Item_Rec)
              return Item_Rec is
     Val : Item_Rec (Chrs);
