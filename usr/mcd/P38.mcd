@@ -1,4 +1,3 @@
-
 # Fuel for the P38, cruising at FL 250
 [ "Error. Expecting xx:yy or xxxxNm or xxxxl or xxxxkg or full" putl
 ssize popn 1 setexit retall
@@ -42,13 +41,12 @@ a popr
   e 3 popa
 # Time
 "^[0-9]?[0-9]:[0-9][0-9]$" c 4 popa
-  [ dup 1 ":" strloc dup isntnull [ "." strovw ] [ pop ] ifte call
+  [ ":" "." regsubst
     # Will add extra
-    strinte toreal degfr u pushr a popr ] e 4 popa
+    strreal degfr u pushr a popr ] e 4 popa
 # Full
 "^full$" c 5 popa
   [ pop -1.0 0.0 a popr ] e 5 popa
-
 # Loop checking a versus each criteria
 5 i popr
 [
@@ -75,9 +73,8 @@ S pushr retacal ] S copyr call
 # If Full (w < -1.0) then set w to max and set t to the corresponding time
 w pushr isneg [ s pushr w copyr f pushr / t popr ] ifcall
 
-# Function to replace '.' by ":" and remove leading spaces, from top of stack
-[ dup 1 "." strloc dup isntnull [ ":" strovw ] [ pop ] ifte call
-dup "[^ ]" regmatch 1 strdel
+# Function to replace '.' by ":" and remove leading space, from top of stack
+[ "\." ":" regsubst dup "[^ ]" regmatch 1 strdel
 ] F popr
 
 # Put weight and flight time in h.mn
