@@ -78,7 +78,7 @@ package Str_Util is
   --  beginning (if Shift_Left is False).
   -- Return the remaining string.
   -- Raises Constraint_Error if At_Index is not within From'First .. From'Last.
-  No_Gap : Character renames  Aski.Nul;
+  No_Gap : Character renames Aski.Nul;
   function Remove (From : String;
                    At_Index : Positive;
                    Nb_Char : Natural;
@@ -117,8 +117,8 @@ package Str_Util is
            return String;
 
   -- Puts the string Str in a string of fixed length Len.
-  -- If Str is shorter than Len, it is aligned at right or left and padded
-  -- If Str is longer  than Len, it's head or tail is truncated
+  --  If Str is shorter than Len, it is aligned at right or left and padded
+  --  If Str is longer  than Len, it's head or tail is truncated
   -- Str : String to put in the returned string
   -- Len : Number of characters of the returned string
   -- Align_Left : If string is shorter than Len characters,
@@ -210,13 +210,14 @@ package Str_Util is
   -- Delimiter number must match (as many stop as start and in consistent
   --  sequence, e.g. "{}}{" is forbidden), otherwise the exception
   --  Delimiter_Mismatch is raised.
-  -- On option Recursive, loops re-avaluating as long as possible (otherwise
-  --  only one pass)
+  -- On option Muliple_Passes, loops re-evaluating as long as possible
+  --  (otherwise only one pass)
   -- On option No_Check_Stop, extra stops are accepted ("{}}" is OK)
   -- On option Skip_Backslashed, backslashed delimiters are skipped (and
   --  the backslashes before the delimiters and backslash are removed)
   -- If no callback is set (Resolv = null) then variables are replaced by
   --  empty strings.
+  Inv_Delimiter, Delimiter_Mismatch : exception;
   function Eval_Variables (Str : String;
                            Start_Delimiter, Stop_Delimiter : in String;
                            Resolv : access
@@ -225,7 +226,6 @@ package Str_Util is
                            No_Check_Stop : Boolean;
                            Skip_Backslashed : Boolean)
            return String;
-  Inv_Delimiter, Delimiter_Mismatch : exception;
 
   -- Locate an escape sequence within the Within_Str string,
   --  starting searching from From_Index.
