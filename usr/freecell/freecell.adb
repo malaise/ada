@@ -1,4 +1,4 @@
-with Con_Io, Argument, Basic_Proc, Environ;
+with Con_Io, Argument, Basic_Proc, Environ, As.U, Trace;
 with Cards, Table, Memory, Movements;
 procedure Freecell is
   Event : Table.Event_Rec;
@@ -26,6 +26,12 @@ procedure Freecell is
 
   use type Cards.Deck.Full_Suit_List;
 begin
+  -- Init traces to debug
+  Trace.Init_Env (
+    (As.U.Tus ("Memory"), As.U.Tus ("Movements"), As.U.Tus ("Table")),
+    "Debug",
+    "Freecell.log");
+
   -- Optional game num
   begin
     if Argument.Get_Nbre_Arg = 0 then
