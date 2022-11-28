@@ -2,9 +2,28 @@ with Ada.Calendar;
 with Environ, Argument, Sys_Calls, Images, Hexa_Utils, Bit_Ops, Upper_Str,
      Str_Util, Gets, Parser, Ada_Words, Directory;
 package body Trace is
+  -- Private operations
+  procedure Init_Env_Name;
 
   -- Public utilities
   -------------------
+  -- Init the environement
+  --  to a given mask for some loggers and a given log file
+  procedure Init_Env (Loggers : in As.U.Asu_Array;
+                      Mask : in String;
+                      File : in String) is
+  begin
+    -- Setenv <proc>_TRACE_<logger> to <mask> for each logger
+    for Logger of Loggers loop
+      Sys_Calls.Setenv (Env_Proc.Image & "_TRACE_" & Logger.Image, Mask);
+    end loop;
+
+    -- Setenv <proc>_TRACEFILE to <file> is set
+    if File /= "" then
+      Sys_Calls.Setenv (Trace.Env_Proc.Image & "_TRACEFILE", File);
+    end if;
+  end Init_Env;
+
   -- Operations on Severities
   function "And" (L, R : Severities) return Severities is
     (Severities(Bit_Ops."And" (Natural(L), Natural(R))));
@@ -112,30 +131,38 @@ package body Trace is
       return Default;
   end Parse;
 
-
   -- Private operations
   ---------------------
+  -- Private: Init Env_Name if necessary
+  procedure Init_Env_Name is
+    C : Character;
+  begin
+    if not Env_Proc.Is_Null then
+      return;
+    end if;
+    Env_Proc := As.U.Tus (Directory.Basename (Argument.Get_Program_Name));
+    -- Same as Process except non alphanum characters replaced by '_'
+    for I in 1 .. Env_Proc.Length loop
+      C := Env_Proc.Element (I);
+      if (C < '0' or else C > '9')
+      and then (C < 'A' or else C > 'Z')
+      and then (C < 'a' or else C > 'z') then
+        Env_Proc.Replace_Element (I, '_');
+      end if;
+    end loop;
+  end Init_Env_Name;
+
   -- Private: Minimal init: global process name, global maks, stderr and flow
   type File_Type_Access is access all Text_Line.File_Type;
   Flow : File_Type_Access;
   Async_Flow : Boolean := False;
   procedure Basic_Init is
     Flow_Name : As.U.Asu_Us;
-    C : Character;
   begin
     if Process.Is_Null then
       -- Init process name
       Process := As.U.Tus (Directory.Basename (Argument.Get_Program_Name));
-      -- Same as Process except non alphanum characters replaced by '_'
-      Env_Proc := Process;
-      for I in 1 .. Env_Proc.Length loop
-        C := Env_Proc.Element (I);
-        if (C < '0' or else C > '9')
-        and then (C < 'A' or else C > 'Z')
-        and then (C < 'a' or else C > 'z') then
-          Env_Proc.Replace_Element (I, '_');
-        end if;
-      end loop;
+      Init_Env_Name;
       -- Open Stderr
       Stderr.Open (Text_Line.Out_File, Sys_Calls.Stderr);
       -- Get global mask
@@ -221,7 +248,7 @@ package body Trace is
     end Do_Init;
 
     -- Severities
-    ----------
+    -------------
     procedure Set_Mask (Mask : in Severities) is
     begin
       Do_Init;

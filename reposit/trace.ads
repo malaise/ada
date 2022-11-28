@@ -1,4 +1,5 @@
-private with As.U, Text_Line, Mutexes;
+with As.U;
+private with Text_Line, Mutexes;
 -- Log messages in a file or flow
 package Trace is
 
@@ -32,6 +33,17 @@ package Trace is
 
   -- The output of trace is protected by a mutex (but not the other
   --  operations on loggers).
+
+  -- ENVIRONMENT
+  ---------------
+  -- Init the environement (to be called before init of the loggers)
+  --  to a given mask for some loggers and a given log file
+  -- Set the severity of the provided loggers to the provided mask
+  -- Set the trace file to the provided name (if set);
+  procedure Init_Env (Loggers : in As.U.Asu_Array;
+                      Mask : in String;
+                      File : in String);
+
 
   -- SEVERITIES
   -------------
@@ -117,10 +129,9 @@ private
 
   -- Global basic init, sets the following variables
   procedure Basic_Init;
-    -- - Process name
+  -- - Process name
   Process : As.U.Asu_Us;
-  -- Name of process for ENV definitions (Process with non alphanum replaced
-  -- by '_')
+  -- Environment process name, where non-alphanum characters are replaed by '_'
   Env_Proc : As.U.Asu_Us;
   -- - Global severity mask
   Default : constant Severities := Error + Fatal;
