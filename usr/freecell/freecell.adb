@@ -30,7 +30,7 @@ begin
   Trace.Init_Env (
     (As.U.Tus ("Memory"), As.U.Tus ("Movements"), As.U.Tus ("Table")),
     "Debug",
-    "Freecell.log");
+    "/tmp/Freecell.log");
 
   -- Optional game num
   begin

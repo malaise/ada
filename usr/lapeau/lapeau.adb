@@ -30,7 +30,7 @@ begin
   Trace.Init_Env (
     (As.U.Tus ("Memory"), As.U.Tus ("Movements"), As.U.Tus ("Table")),
     "Debug",
-    "Lapeau.log");
+    "/tmp/Lapeau.log");
 
   -- Optional game num and play stacking policy
   begin
