@@ -20,9 +20,25 @@ package Tree_Mng is
 
   -- Build the tree of source dependencies of Origin
   procedure Build (Origin : in Sourcer.Src_Dscr;
-                   Specs_Mode, Revert_Mode,
-                   Tree_Mode, Shortest_Mode, Direct_Mode, Once_Mode,
-                   File_Mode, Bodies_Mode, Restrict_Mode,
+                   -- Only consider dependencies within specs
+                   Specs_Mode,
+                   -- Tree of units recursively withing Origin
+                   Revert_Mode,
+                   -- Build the full tree
+                   Tree_Mode,
+                   -- Keep the shortest path
+                   Shortest_Mode,
+                   -- Scan only the first level (when not full tree)
+                   Direct_Mode,
+                   -- Show only one path between each unit
+                   Once_Mode,
+                   -- List the files (not the units)
+                   File_Mode,
+                   -- In revert mode, also consider bodies withing unit
+                   Bodies_Mode,
+                   -- Skip limited and private with
+                   Restrict_Mode,
+                   -- Show loops of with
                    Loop_Mode : in Boolean);
 
 end Tree_Mng;

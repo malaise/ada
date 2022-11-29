@@ -85,7 +85,7 @@ package Sourcer is
   package Withing_List_Mng is new H_Withing_List_Mng.Unique;
   Withing_List : Withing_List_Mng.Unique_List_Type;
 
-  -- Parse sources and build lists
+  -- Parse sources (paths defined in Sort) and build lists of Srcs and Names
   -- Reports errors on stderr and raises Error
   Error_Raised : exception;
   procedure Build_Lists;
