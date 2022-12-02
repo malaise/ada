@@ -1,6 +1,6 @@
 Xml_Checker
 ===========
-Version: V25.3
+Version: V25.5
 
 'Parser version: V43.2 +
 Generator version: V19.2 +
@@ -359,12 +359,12 @@ dtd_generator [ <options> ] [ { <xml_file> } ]
 The options tune the behavior as follows (a value of '0' disables the check):
 
 * Deviation: The maximum number of changes introduced by a new set of
-children, before which the element is declared as a choice
+children, after which the precise sequence of children is replaced by a choice
 ('(Elt|Elt|Elt...)*').
-* Elements: The maximum number of children of an element, before which the
-element is declared as ANY.
-* Enums: The maximum number of values of an enumerated attribute, before which
-the attribute is declared as NMTOKEN.
+* Elements: The maximum number of children of an element, after which the
+sequence or choice of children is replaced by ANY.
+* Enums: The maximum number of values of an enumerated attribute, after which
+the list of values is replaced by NMTOKEN.
 * Width: The maximum width in output flow for the lists of sub-elements and
 for the lists of attribute values.
 
