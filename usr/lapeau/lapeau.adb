@@ -255,9 +255,12 @@ begin
 
         end case;
       when Table.Right_Pressed =>
-        if Status = Selectable
-        or else (Status = Selected
-                 and then Selected_Source = Event.Card) then
+        if Event.Card /= null
+        and then Event.Card.Suit /= Cards.Deck.Empty
+        and then (Status = Selectable
+          or else (Status = Selected
+                 and then Selected_Source = Event.Card)) then
+          -- Try to move to Done
           Stack := Cards.The_Dones (Event.Card.Suit)'Access;
           if Stack.Prev /= null then
              Card := Stack.Prev;
