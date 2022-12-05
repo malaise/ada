@@ -1,5 +1,5 @@
 #!/bin/bash
-# Loop of tests of Geohash encoding e and decoding
+# Loop of tests of Geohash encoding and decoding
 
 # Path to random
 export RAND="$HOME/ada/usr/misc/random"

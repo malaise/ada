@@ -20,13 +20,22 @@ function check {
   fi
   echo "t_geohash $* => $res"
 }
+# Stop loop on Ctrl-C
+export CPID=0
+function stop_loop {
+  if [ "$CPID" != 0 ] ; then
+    kill $CPID
+    CPID=0
+  fi
+}
+trap 'echo "Aborted"; stop_loop; exit 1' SIGINT SIGTERM
 
 # 5s of loop of random tests
 echo "5s of random tests"
 ./LoopRndTest&
 export CPID=$!
 sleep 5
-kill $CPID
+stop_loop
 res=$?
 if [ $res -ne 0 ] ; then
   error "Random test failed"
