@@ -1,0 +1,56 @@
+#!/bin/bash
+# Loop of tests of mapcode encoding and decoding
+
+# Path to random
+export RAND="$HOME/ada/usr/misc/random"
+
+# Precision
+export PRECISION=8
+
+# Return a random from in [$1 .. $2[
+function rnd {
+
+  echo "" | awk -v RAND="$RAND" -v V1=$1 -v V2=$2 '
+    {
+      cmd=RAND" "V1" "V2
+      cmd | getline V
+      close(cmd)
+      printf "%.9f", V
+      exit
+    }'
+}
+
+# On sigterm or sigint
+let N=0
+function term {
+  echo "Terminated after $N iterations."
+  exit 0
+}
+trap "term" SIGINT SIGTERM
+
+# Infinite main loop
+while true ; do
+  let N=$N+1
+  # Set a random position P
+  export PLat=`rnd  -90.0  90.0`
+  export PLon=`rnd -180.0 180.0`
+  # Get its mapcode with precision P
+  RefHash=`t_mapcode -c $PLat $PLon AAA P$PRECISION | tail -n 2 | cut -d ' ' -f 3`
+
+  # Get the corresponding position
+  RefPos=`t_mapcode -d $RefHash | tail -n 1`
+  RefLat=`echo -n $RefPos | cut -d ' ' -f 2`
+  RefLon=`echo -n $RefPos | cut -d ' ' -f 3`
+  # Get the correspondig mapcode with precision P
+  ResHash=`t_mapcode -c $RefLat $RefLon AAA P$PRECISION | tail -n 2 | cut -d ' ' -f 3`
+
+  # Check 
+  echo -n "$RefHash -> $RefLat $RefLon -> $ResHash"
+  if [ "$RefHash" != "$ResHash" ] ; then
+    echo " => ERROR":
+    exit 1
+  else
+    echo " => OK"
+  fi
+done 
+

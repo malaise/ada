@@ -3,5 +3,29 @@ if [ "$1" = "clean" ]  ; then
   exit 0
 fi
 
+# Stop loop on Ctrl-C
+export CPID=0
+function stop_loop {
+  if [ "$CPID" != 0 ] ; then
+    kill $CPID
+    CPID=0
+  fi
+}
+trap 'echo "Aborted"; stop_loop; exit 1' SIGINT SIGTERM
+
+# 5s of loop of random tests
+echo "5s of random tests"
+./LoopRndTest&
+export CPID=$!
+sleep 5
+stop_loop
+res=$?
+if [ $res -ne 0 ] ; then
+  error "Random test failed"
+fi
+sleep 1
+echo ""
+
+# Full test in test mode
 ./fulltest -t -d
 
