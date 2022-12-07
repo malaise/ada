@@ -13,11 +13,11 @@ function stop_loop {
 }
 trap 'echo "Aborted"; stop_loop; exit 1' SIGINT SIGTERM
 
-# 5s of loop of random tests
-echo "5s of random tests"
+# 7s of loop of random tests
+echo "7s of random tests"
 ./LoopRndTest&
 export CPID=$!
-sleep 5
+sleep 7
 stop_loop
 res=$?
 if [ $res -ne 0 ] ; then
