@@ -6,7 +6,9 @@
   <Var Name="Auth" Value="/var/log/auth.log"/>
   <Rules>
     <Rule>
-      <Scan File="${Syslog}" Criteria="BANNING"></Scan>
+      <Scan File="${Syslog}" Criteria="BANNING">
+        <Past Format="%b %d %H:%M:%S" Seconds="3600"/>
+      </Scan>
       <Execute Action="Antibot"/>
     </Rule>
     <Rule>

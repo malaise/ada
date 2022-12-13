@@ -1,6 +1,6 @@
 Sensor
 ======
-Version: 8.0
+Version: 9.0
 
 Sensor scans some files and triggers actions when finding specific events. +
 It is usefull to raise alerts when some log messages are matching criteria.
@@ -32,9 +32,9 @@ The configuration file then defines rules. Each rule consists in:
 * an optional scanning period in seconds (default 60.0, min 0.1)
 * the criteria (regular expression) to match
 * an optional tail size to scan (default 100 lines, 0 for infinite)
+* an optional format of time (expected at a fixed offset in each line of the
+file), allowing to discard "old" entries (e.g. the ones before we started)
 * an optional number of past seconds to scan (default 1 hour, 0 for infinite)
-and the format of time (expected at a fixed offset in each line of the file).
-See Date_Text for the definition of format used to scan dates and times.
 
 - execution definition
 
@@ -42,6 +42,9 @@ See Date_Text for the definition of format used to scan dates and times.
 * a history of alerts to store (default 100) in order to avoid repeating an
 action for the same reason
 * the latency between two successive executions of the action
+
+See the package Date_Text for the definition of the format used to scan dates
+and times.
 
 .Actions
 Then the configuration file defines several actions. +
@@ -73,6 +76,7 @@ Example:
   <Rules>
     <Rule>
       <Scan File="${INPUT}" Period="60" Criteria="${TRIGGER}" Tail="10">
+        <Past Format="%b %d %H:%M:%S" Seconds="3600"/>
       </Scan>
       <Execute Action="LogTrigger" History="5" Latency="1.5"/>
     </Rule>

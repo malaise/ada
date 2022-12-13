@@ -4,6 +4,9 @@ with Event_Mng, Timers, Any_Def, As.U.Utils, Sys_Calls, Aski, Long_Longs,
 with Debug, Actions, Rules, Searcher;
 package body Executor is
 
+  -- Start time (to skip previous logs)
+  Start_Time : Ada.Calendar.Time;
+
   -- List or Timers and data
   type Timer_Rec is record
     Tid : Timers.Timer_Id;
@@ -27,7 +30,7 @@ package body Executor is
     use type As.U.Asu_Us, Rules.History_Access;
   begin
      -- Search the pattern in the tail of the file
-     Searcher.Search (Rule.File.Image, Rule.Tail,
+     Searcher.Search (Rule.File.Image, Start_Time, Rule.Tail,
                       Rule.Aging, Rule.Time_Format,
                       Rule.Pattern,
                       Matches);
@@ -155,6 +158,8 @@ package body Executor is
     Max_Period : Timers.Period_Range := 0.0;
     Id : Timers.Timer_Id;
   begin
+    -- Init start time
+    Start_Time := Ada.Calendar.Clock;
     -- Set sigterm callback
     Event_Mng.Set_Sig_Term_Callback (Exit_Handler'Access);
     -- Arm the timers, each associated to a rule

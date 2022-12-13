@@ -1,4 +1,4 @@
-with Ada.Calendar, Ada.Exceptions;
+with Ada.Exceptions;
 with Bloc_Io, Aski, Long_Longs, Trace, Date_Text;
 with Debug;
 package body Searcher is
@@ -31,6 +31,7 @@ package body Searcher is
   -- Search the Pattern in the Tail last lines of File
   -- Clear and set the list to the matching lines
   procedure Search (File_Name : in String;
+                    Start     : in Ada.Calendar.Time;
                     Tail      : in Rules.Tail_Length;
                     Aging     : in Duration;
                     Time_Fmt  : in As.U.Asu_Us;
@@ -128,7 +129,7 @@ package body Searcher is
     end if;
 
     -- Time filter
-    if Aging /= 0.0 then
+    if not Time_Fmt.Is_Null then
       if Matches.Is_Empty then
         return;
       end if;
@@ -164,20 +165,25 @@ package body Searcher is
           end if;
         end if;
         Line_Time := Time_Of (Time);
-        -- Remove lines before ref time
-        if Line_Time >= Ref_Time then
+        if Line_Time < Start then
+          -- Remove lines before start time
+          Debug.Logger.Log_Debug (" Before start "
+                                  & Matches.Access_Current.Image);
+          Matches.Delete (Moved => Moved);
+        elsif Aging /= 0.0 and then Line_Time < Ref_Time then
+          -- Remove lines before ref time
+          Debug.Logger.Log_Debug (" Old " & Matches.Access_Current.Image);
+          Matches.Delete (Moved => Moved);
+        else
           -- Keep
           Moved := Matches.Check_Move;
           if Moved then
             Matches.Move_To;
           end if;
-        else
-          -- Drop
-          Debug.Logger.Log_Debug (" Old " & Matches.Access_Current.Image);
-          Matches.Delete (Moved => Moved);
         end if;
         exit when not Moved;
       end loop;
+
       if Debug.Logger.Is_On (Dump_Severity) then
         Dump_List ("In time", Matches);
       end if;
