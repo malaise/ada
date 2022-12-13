@@ -1,6 +1,6 @@
 Sensor
 ======
-Version: 9.0
+Version: 10.0
 
 Sensor scans some files and triggers actions when finding specific events. +
 It is usefull to raise alerts when some log messages are matching criteria.
@@ -43,6 +43,9 @@ file), allowing to discard "old" entries (e.g. the ones before we started)
 action for the same reason
 * the latency between two successive executions of the action
 
+NOTE: It is usefull to define the format of the time even if no past delay is
+defined, because this allows skipping the log messages that are older than
+the startup of sensor. +
 See the package Date_Text for the definition of the format used to scan dates
 and times.
 
@@ -76,7 +79,7 @@ Example:
   <Rules>
     <Rule>
       <Scan File="${INPUT}" Period="60" Criteria="${TRIGGER}" Tail="10">
-        <Past Format="%b %d %H:%M:%S" Seconds="3600"/>
+        <Time Format="%b %d %H:%M:%S" Past="3600"/>
       </Scan>
       <Execute Action="LogTrigger" History="5" Latency="1.5"/>
     </Rule>

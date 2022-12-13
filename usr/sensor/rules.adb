@@ -1,4 +1,4 @@
-with Sys_Calls, Long_Long_Limited_List;
+with Long_Long_Limited_List;
 package body Rules is
 
   procedure Set (To : out Rule_Rec; Val : in Rule_Rec) is
@@ -9,12 +9,9 @@ package body Rules is
   package Rules_Mng is new Long_Long_Limited_List (Rule_Rec, Set);
   Rules : Rules_Mng.List_Type;
 
-  -- Check and store a Rule
+  -- Store a Rule
   procedure Store (Rule : Rule_Rec) is
   begin
-    if not Sys_Calls.File_Check (Rule.File.Image) then
-      raise File_Not_Found;
-    end if;
     Rules.Rewind (Rules_Mng.Prev, Check_Empty => False);
     Rules.Insert (Rule);
   end Store;

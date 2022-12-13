@@ -30,8 +30,7 @@ package Rules is
     Matches : Asu_Access;
   end record;
 
-  -- Check and store a rule
-  File_Not_Found : exception;
+  -- Store a rule
   procedure Store (Rule : Rule_Rec);
 
   -- Get the number of stored rules
