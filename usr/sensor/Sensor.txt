@@ -1,6 +1,6 @@
 Sensor
 ======
-Version: 10.0
+Version: 11.0
 
 Sensor scans some files and triggers actions when finding specific events. +
 It is usefull to raise alerts when some log messages are matching criteria.
@@ -32,7 +32,7 @@ The configuration file then defines rules. Each rule consists in:
 * an optional scanning period in seconds (default 60.0, min 0.1)
 * the criteria (regular expression) to match
 * an optional tail size to scan (default 100 lines, 0 for infinite)
-* an optional format of time (expected at a fixed offset in each line of the
+* the format of time (expected at a fixed offset in each line of the
 file), allowing to discard "old" entries (e.g. the ones before we started)
 * an optional number of past seconds to scan (default 1 hour, 0 for infinite)
 
@@ -43,11 +43,12 @@ file), allowing to discard "old" entries (e.g. the ones before we started)
 action for the same reason
 * the latency between two successive executions of the action
 
-NOTE: It is usefull to define the format of the time even if no past delay is
-defined, because this allows skipping the log messages that are older than
-the startup of sensor. +
-See the package Date_Text for the definition of the format used to scan dates
-and times.
+NOTE: See the package Date_Text for the definition of the format used to scan dates
+and times. +
+The format of the time can be empty (if there is no time in the log file or if
+its format is not supported), and then the past seconds *must* be set to 0. 
+In this case, at the startup of sensor, the old log messages cannot be skipped
+and may trigger actions.
 
 .Actions
 Then the configuration file defines several actions. +

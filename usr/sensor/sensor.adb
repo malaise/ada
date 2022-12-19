@@ -200,14 +200,13 @@ begin
             & " has invalid tail size " & Ctx.Get_Attribute (Child, "Tail"));
         Check_Ok := False;
     end;
-    -- Optional Time
-    if Ctx.Get_Nb_Children (Child) = 0 then
-      Debug.Log ("  No Time");
-      Rule.Aging := 0.0;
+    -- "Optional" Time
+    Child := Ctx.Get_Child (Child, 1);
+    -- Get time format
+    Rule.Time_Format := Expand (Ctx.Get_Attribute (Child, "Format"));
+    if Rule.Time_Format.Is_Null then
+      Debug.Log ("  Got empty time format");
     else
-      Child := Ctx.Get_Child (Child, 1);
-      -- Get time, format
-      Rule.Time_Format := Expand (Ctx.Get_Attribute (Child, "Format"));
       declare
         Dummy_Len : Natural;
       begin
@@ -220,21 +219,27 @@ begin
               & " has invalid format " & Rule.Time_Format.Image);
           Check_Ok := False;
       end;
-      -- Past age in seconds
-      begin
-        Rule.Aging := Duration'Value (
-          Expand (Ctx.Get_Attribute (Child, "Past")));
-        if Rule.Aging <= 0.0 then
-          raise Constraint_Error;
-        end if;
-        Debug.Log ("  Got past seconds " & Rule.Aging'Img);
-      exception
-        when others =>
-          Basic_Proc.Put_Line_Error ("Rule at line "
-              & Ctx.Get_Line_No (Child)'Img
-              & " has invalid past " & Ctx.Get_Attribute (Child, "Past"));
-          Check_Ok := False;
-      end;
+    end if;
+    -- Past age in seconds
+    begin
+      Rule.Aging := Duration'Value (
+        Expand (Ctx.Get_Attribute (Child, "Past")));
+      if Rule.Aging < 0.0 then
+        raise Constraint_Error;
+      end if;
+      Debug.Log ("  Got past seconds " & Rule.Aging'Img);
+    exception
+      when others =>
+        Basic_Proc.Put_Line_Error ("Rule at line "
+            & Ctx.Get_Line_No (Child)'Img
+            & " has invalid past " & Ctx.Get_Attribute (Child, "Past"));
+        Check_Ok := False;
+    end;
+    if Rule.Time_Format.Is_Null and then Rule.Aging /= 0.0 then
+      Basic_Proc.Put_Line_Error ("Rule at line "
+          & Ctx.Get_Line_No (Child)'Img
+          & " must define Past=0 because of empty time format");
+      Check_Ok := False;
     end if;
 
     -- Execute

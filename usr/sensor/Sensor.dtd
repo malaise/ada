@@ -23,7 +23,7 @@
                Tail CDATA "100">
 <!-- - the format of the time in the file (see Date_Text) -->
 <!-- - the number of past seconds to scan (0 for infinite) -->
-<!ELEMENT Scan (Time?)>
+<!ELEMENT Scan (Time)>
 <!ATTLIST Time Format CDATA #REQUIRED
                Past CDATA "3600">
 <!ELEMENT Time EMPTY>
