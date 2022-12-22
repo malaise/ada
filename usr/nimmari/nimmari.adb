@@ -52,7 +52,7 @@ procedure Nimmari is
 
   use type Common.Result_List;
 begin
-  Logger.Init;
+  Logger.Init ("Nimmari");
   -- Parse arguments
   Arg_Dscr := Argument_Parser.Parse (Keys);
   if not Arg_Dscr.Is_Ok then
@@ -104,7 +104,7 @@ begin
     One_Go:
     loop
       -- Compute game, check end
-      Compute.Play(Row, Remove, Result);
+      Compute.Play (Row, Remove, Result);
       Logger.Log_Debug ("Machine played: Row" & Row'Img & " ");
       Put (Remove);
       Logger.Log_Debug (" Result -> " & Result'Img);
