@@ -29,6 +29,9 @@ package body Executor is
     Hist : As.U.Asu_Us;
     use type As.U.Asu_Us, Rules.History_Access;
   begin
+     -- Init result
+     Rule.Nb_Match.all := 0;
+     Rule.Matches.all.Set_Null;
      -- Search the pattern in the tail of the file
      Searcher.Search (Rule.File.Image, Start_Time, Rule.Tail,
                       Rule.Aging, Rule.Time_Format,
@@ -83,8 +86,6 @@ package body Executor is
                     Flush : Boolean) return Boolean is
     Rule : Rules.Rule_Rec;
     Now : Ada.Calendar.Time;
-    Nb_Match : Natural;
-    Matches : As.U.Asu_Us;
     use type Ada.Calendar.Time;
 
     -- Expand the command and execute it if not empty
@@ -120,16 +121,12 @@ package body Executor is
     end if;
     -- Expand the command and execute it if not empty
     Launch (Rule.Action.Image, Rule.Matches.Image);
-    -- Save and reset result, and and reset latency reference
-    Nb_Match := Rule.Nb_Match.all;
-    Matches := Rule.Matches.all;
+    -- Reset latency reference
     Rule.Previous.all := Now;
-    Rule.Nb_Match.all := 0;
-    Rule.Matches.Set_Null;
     -- Execute actions triggered by repetitions of action
     Actions.Set_Action (Rule.Action.Image);
-    for Repeat of Actions.Occurs (Rule.Action.Image, Nb_Match) loop
-      Launch (Repeat.Image, Matches.Image);
+    for Repeat of Actions.Occurs (Rule.Action.Image, Rule.Nb_Match.all) loop
+      Launch (Repeat.Image, Rule.Matches.Image);
     end loop;
     Actions.Unset_Action;
     return False;
