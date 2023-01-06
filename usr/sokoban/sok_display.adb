@@ -286,8 +286,12 @@ package body Sok_Display is
           Menu_Win.Put ("           ", Foreground => Ink,
                       Background => Paper, Move => False);
           Menu_Win.Move ( (1, Write_Col));
-          Menu_Win.Put ("   SAVE    ", Foreground => Ink,
+          Menu_Win.Put ("           ", Foreground => Ink,
                       Background => Paper, Move => False);
+          Menu_Win.Move ( (1, Write_Col));
+          Menu_Win.Put ("   SAVE   ", Foreground => Ink,
+                      Background => Paper, Move => False,
+                      Row_Off => False, Col_Off => True);
           Menu_Win.Move ( (2, Write_Col));
           Menu_Win.Put ("           ", Foreground => Ink,
                       Background => Paper, Move => False);
@@ -320,8 +324,12 @@ package body Sok_Display is
         Menu_Win.Put ("           ", Foreground => Ink,
                     Background => Paper, Move => False);
         Menu_Win.Move ( (1, Get_New_Col));
-        Menu_Win.Put (" GOTO NEW  ", Foreground => Ink,
+        Menu_Win.Put ("           ", Foreground => Ink,
                     Background => Paper, Move => False);
+        Menu_Win.Move ( (1, Get_New_Col));
+        Menu_Win.Put (" GOTO NEW ", Foreground => Ink,
+                    Background => Paper, Move => False,
+                    Row_Off => False, Col_Off => True);
         Menu_Win.Move ( (2, Get_New_Col));
         Menu_Win.Put ("           ", Foreground => Ink,
                     Background => Paper, Move => False);
@@ -330,8 +338,12 @@ package body Sok_Display is
         Menu_Win.Put ("           ", Foreground => Ink,
                     Background => Paper, Move => False);
         Menu_Win.Move ( (1, Break_Col));
-        Menu_Win.Put ("    EXIT   ", Foreground => Ink,
+        Menu_Win.Put ("           ", Foreground => Ink,
                     Background => Paper, Move => False);
+        Menu_Win.Move ( (1, Break_Col));
+        Menu_Win.Put ("   EXIT   ", Foreground => Ink,
+                    Background => Paper, Move => False,
+                    Row_Off => False, Col_Off => True);
         Menu_Win.Move ( (2, Break_Col));
         Menu_Win.Put ("           ", Foreground => Ink,
                     Background => Paper, Move => False);

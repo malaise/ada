@@ -80,6 +80,17 @@ package body Con_Io is
     Logger.Log_Debug ("Window finalization");
   end Finalize;
 
+  -- In advance definition of internal graphic put
+  procedure Put (Con      : in Console;
+                 Con_Attr : in Boolean;
+                 C        : in Character;
+                 X        : in X_Range;
+                 Y        : in Y_Range);
+  procedure Put (Con      : in Console;
+                 Con_Attr : in Boolean;
+                 S        : in String;
+                 X        : in X_Range;
+                 Y        : in Y_Range);
 
   -- Can be called to initialise consoles
   -- If not called, this init will be called together with first con_io
@@ -664,7 +675,6 @@ package body Con_Io is
     return Name.Get_Access.Current_Pos;
   end Position;
 
-
   -- Internal set attributes for the window
   procedure Set_Attributes_From_Window (
                      Win        : not null access Window_Data;
@@ -709,7 +719,11 @@ package body Con_Io is
                         C          : in String;
                         Foreground : in Colors := Current;
                         Background : in Colors := Current;
-                        Move       : in Boolean := True) is
+                        Move       : in Boolean := True;
+                        Row_Off    : in Boolean := False;
+                        Col_Off    : in Boolean := False) is
+    X : X_Range;
+    Y : Y_Range;
   begin
     if Language.Put_Length (C) /= 1 then
       -- Internal error put a "Warning" character
@@ -719,9 +733,27 @@ package body Con_Io is
     elsif C /= Lfs then
       Set_Attributes_From_Window (Win, Foreground, Background);
       -- Put character
-      X_Mng.X_Put_String (Win.Con.Get_Access.Id, C,
-                          Win.Upper_Left.Row + Win.Current_Pos.Row,
-                          Win.Upper_Left.Col + Win.Current_Pos.Col);
+      if not Row_Off and then not Col_Off then
+        -- No offset => direct to X_Mng
+        X_Mng.X_Put_String (Win.Con.Get_Access.Id, C,
+                            Win.Upper_Left.Row + Win.Current_Pos.Row,
+                            Win.Upper_Left.Col + Win.Current_Pos.Col);
+      else
+        -- Offset => graphic
+        To_Xy (Win.Con,
+               (Win.Upper_Left.Row + Win.Current_Pos.Row,
+                Win.Upper_Left.Col + Win.Current_Pos.Col),
+               X, Y);
+        -- Apply offset(s)
+        if Row_Off then
+          Y := Y + Win.Con.Font_Height / 2;
+        end if;
+        if Col_Off then
+           X := X +  Win.Con.Font_Width / 2;
+        end if;
+        -- Write with current attributes
+        Put (Win.Con, False, C, X, Y);
+      end if;
     end if;
     if Move then
       if C = Lfs then
@@ -742,10 +774,13 @@ package body Con_Io is
                  C          : in Character;
                  Foreground : in Colors := Current;
                  Background : in Colors := Current;
-                 Move       : in Boolean := True) is
+                 Move       : in Boolean := True;
+                 Row_Off    : in Boolean := False;
+                 Col_Off    : in Boolean := False) is
   begin
     Check_Win (Name);
-    Put_1_Char (Name.Get_Access, C & "", Foreground, Background, Move);
+    Put_1_Char (Name.Get_Access, C & "", Foreground, Background, Move,
+                Row_Off, Col_Off);
   end Put;
 
   -- Idem with a string
@@ -753,7 +788,9 @@ package body Con_Io is
                  S          : in String;
                  Foreground : in Colors := Current;
                  Background : in Colors := Current;
-                 Move       : in Boolean := True) is
+                 Move       : in Boolean := True;
+                 Row_Off    : in Boolean := False;
+                 Col_Off    : in Boolean := False) is
     Ifirst, Ilast : Natural;
     Last : Natural;
     Acc : access Window_Data;
@@ -765,11 +802,32 @@ package body Con_Io is
     Plf : Boolean;
 
     procedure X_Put (Str : in String) is
+      X : X_Range;
+      Y : Y_Range;
     begin
-      if Str'Length /= 0 then
+      if Str'Length = 0 then
+        return;
+      end if;
+      if not Row_Off and then not Col_Off then
+        -- No offset => direct to X_Mng
         X_Mng.X_Put_String (Con.Id, Str,
                 Acc.Upper_Left.Row + Acc.Current_Pos.Row,
                 Acc.Upper_Left.Col + Acc.Current_Pos.Col);
+      else
+        -- Offset => graphic
+        To_Xy (Acc.Con,
+               (Acc.Upper_Left.Row + Acc.Current_Pos.Row,
+                Acc.Upper_Left.Col + Acc.Current_Pos.Col),
+               X, Y);
+        -- Apply offset(s)
+        if Row_Off then
+          Y := Y + Con.Font_Height / 2;
+        end if;
+        if Col_Off then
+           X := X +  Con.Font_Width / 2;
+        end if;
+        -- Write with current attributes
+        Put (Acc.Con, False, Str, X, Y);
       end if;
     end X_Put;
 
@@ -783,6 +841,10 @@ package body Con_Io is
     Con := Acc.Con.Get_Access;
     Saved_Pos :=  Acc.Current_Pos;
     Win_Last_Col := Acc.Lower_Right.Col - Acc.Upper_Left.Col;
+    -- Col offset leads to reduce width by 1
+    if Col_Off then
+      Win_Last_Col := Win_Last_Col - 1;
+    end if;
     Set_Attributes_From_Window (Acc, Foreground, Background);
     -- Put chunks of string due to Lfs or too long slices
     Ifirst := Indexes'First;
@@ -800,7 +862,7 @@ package body Con_Io is
       end if;
       -- Truncate to fit window
       -- Last - first <= Win_last_col - Pos
-      if Acc.Current_Pos.Col + Ilast - Ifirst  > Win_Last_Col then
+      if Acc.Current_Pos.Col + Ilast - Ifirst > Win_Last_Col then
          Ilast := Ifirst + Win_Last_Col - Acc.Current_Pos.Col;
       end if;
       -- Set Last to last char to put
@@ -833,10 +895,12 @@ package body Con_Io is
   procedure Put_Line (Name       : in Window;
                       S          : in String;
                       Foreground : in Colors := Current;
-                      Background : in Colors := Current) is
+                      Background : in Colors := Current;
+                      Row_Off    : in Boolean := False;
+                      Col_Off    : in Boolean := False) is
   begin
     -- Puts the string
-    Put (Name, S, Foreground, Background);
+    Put (Name, S, Foreground, Background, Row_Off, Col_Off);
     -- New line
     New_Line (Name);
   end Put_Line;
@@ -846,10 +910,12 @@ package body Con_Io is
                   W          : in Wide_Character;
                   Foreground : in Colors := Current;
                   Background : in Colors := Current;
-                  Move       : in Boolean := True) is
+                  Move       : in Boolean := True;
+                  Row_Off    : in Boolean := False;
+                  Col_Off    : in Boolean := False) is
   begin
     Put (Name, Language.Wide_To_String (W & ""),
-         Foreground, Background, Move);
+         Foreground, Background, Move, Row_Off, Col_Off);
   end Putw;
 
   -- Idem with a wide string
@@ -857,20 +923,24 @@ package body Con_Io is
                   S          : in Wide_String;
                   Foreground : in Colors := Current;
                   Background : in Colors := Current;
-                  Move       : in Boolean := True) is
+                  Move       : in Boolean := True;
+                  Row_Off    : in Boolean := False;
+                  Col_Off    : in Boolean := False) is
   begin
     Put (Name, Language.Wide_To_String (S),
-         Foreground, Background, Move);
+         Foreground, Background, Move, Row_Off, Col_Off);
   end Putw;
 
   -- Idem but appends a Lf
   procedure Putw_Line (Name       : in Window;
                        S          : in Wide_String;
                        Foreground : in Colors := Current;
-                       Background : in Colors := Current) is
+                       Background : in Colors := Current;
+                       Row_Off    : in Boolean := False;
+                       Col_Off    : in Boolean := False) is
   begin
     Put_Line (Name, Language.Wide_To_String (S),
-              Foreground, Background);
+              Foreground, Background, Row_Off, Col_Off);
   end Putw_Line;
 
   -- Idem with a unicode number
@@ -878,11 +948,13 @@ package body Con_Io is
                   U          : in Unicode_Number;
                   Foreground : in Colors := Current;
                   Background : in Colors := Current;
-                  Move       : in Boolean := True) is
+                  Move       : in Boolean := True;
+                  Row_Off    : in Boolean := False;
+                  Col_Off    : in Boolean := False) is
     S : constant Unicode_Sequence (1 .. 1) := (1 => U);
   begin
     Put (Name, Language.Unicode_To_String (S),
-         Foreground, Background, Move);
+         Foreground, Background, Move, Row_Off, Col_Off);
   end Putu;
 
   -- Idem with a unicode sequence
@@ -890,20 +962,24 @@ package body Con_Io is
                   S          : in Unicode_Sequence;
                   Foreground : in Colors := Current;
                   Background : in Colors := Current;
-                  Move       : in Boolean := True) is
+                  Move       : in Boolean := True;
+                  Row_Off    : in Boolean := False;
+                  Col_Off    : in Boolean := False) is
   begin
     Put (Name, Language.Unicode_To_String (S),
-         Foreground, Background, Move);
+         Foreground, Background, Move, Row_Off, Col_Off);
   end Putu;
 
   -- Idem but appends a Lf
   procedure Putu_Line (Name       : in Window;
                        S          : in Unicode_Sequence;
                        Foreground : in Colors := Current;
-                       Background : in Colors := Current) is
+                       Background : in Colors := Current;
+                       Row_Off    : in Boolean := False;
+                       Col_Off    : in Boolean := False) is
   begin
     Put_Line (Name, Language.Unicode_To_String (S),
-              Foreground, Background);
+              Foreground, Background, Row_Off, Col_Off);
   end Putu_Line;
 
   -- Puts CR
@@ -1722,16 +1798,20 @@ package body Con_Io is
                          Screen.Current_Xor_Mode);
   end Set_Screen_Attributes;
 
-  procedure Put (Con : in Console;
-                 C   : in Character;
-                 X   : in X_Range;
-                 Y   : in Y_Range) is
+  -- Internal
+  procedure Put (Con      : in Console;
+                 Con_Attr : in Boolean;
+                 C        : in Character;
+                 X        : in X_Range;
+                 Y        : in Y_Range) is
     Acc : access Console_Data;
     Ly : Y_Range;
   begin
     Check_Con (Con);
     Acc := Con.Get_Access;
-    Set_Screen_Attributes (Con);
+    if Con_Attr then
+      Set_Screen_Attributes (Con);
+    end if;
     Ly := Y;
     if Acc.Y_Mode = Con_Io_Mode then
       Ly := Acc.Y_Max - Ly;
@@ -1740,22 +1820,42 @@ package body Con_Io is
     X_Mng.X_Put_Char_Pixels (Acc.Id, Character'Pos(C), X, Ly);
   end Put;
 
-  procedure Put (Con : in Console;
-                 S   : in String;
-                 X   : in X_Range;
-                 Y   : in Y_Range) is
+  -- Internal
+  procedure Put (Con      : in Console;
+                 Con_Attr : in Boolean;
+                 S        : in String;
+                 X        : in X_Range;
+                 Y        : in Y_Range) is
     Ly : Y_Range;
     Acc : access Console_Data;
   begin
     Check_Con (Con);
     Acc := Con.Get_Access;
-    Set_Screen_Attributes (Con);
+    if Con_Attr then
+      Set_Screen_Attributes (Con);
+    end if;
     Ly := Y;
     if Acc.Y_Mode = Con_Io_Mode then
       Ly := Acc.Y_Max - Ly;
     end if;
     Ly := Ly + Con.Get_Access.Font_Offset;
     X_Mng.X_Put_String_Pixels (Acc.Id, S, X, Ly);
+  end Put;
+
+  procedure Put (Con : in Console;
+                 C   : in Character;
+                 X   : in X_Range;
+                 Y   : in Y_Range) is
+  begin
+    Put (Con, True, C, X, Y);
+  end Put;
+
+  procedure Put (Con : in Console;
+                 S   : in String;
+                 X   : in X_Range;
+                 Y   : in Y_Range) is
+  begin
+    Put (Con, True, S, X, Y);
   end Put;
 
   procedure Draw_Point (Con : in Console;

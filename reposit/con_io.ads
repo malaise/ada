@@ -259,11 +259,15 @@ package Con_Io is
   -- Lf is the only special Ascii character which is interpreted.
   -- If not Move, the cursor position is not updated
   --  (Lf would be ignored then)
+  -- The characters can be shifted by half a row right and half a column down
+  --  from the cursor position
   procedure Put (Name       : in Window;
                  C          : in Character;
                  Foreground : in Colors := Current;
                  Background : in Colors := Current;
-                 Move       : in Boolean := True);
+                 Move       : in Boolean := True;
+                 Row_Off    : in Boolean := False;
+                 Col_Off    : in Boolean := False);
 
   -- Idem with a string
   -- If not Move, the cursor position is not updated
@@ -272,53 +276,69 @@ package Con_Io is
                  S          : in String;
                  Foreground : in Colors := Current;
                  Background : in Colors := Current;
-                 Move       : in Boolean := True);
+                 Move       : in Boolean := True;
+                 Row_Off    : in Boolean := False;
+                 Col_Off    : in Boolean := False);
 
   -- Idem and append a Lf
   procedure Put_Line (Name       : in Window;
                       S          : in String;
                       Foreground : in Colors := Current;
-                      Background : in Colors := Current);
+                      Background : in Colors := Current;
+                      Row_Off    : in Boolean := False;
+                      Col_Off    : in Boolean := False);
 
   -- Idem with a wide character
   procedure Putw (Name       : in Window;
                   W          : in Wide_Character;
                   Foreground : in Colors := Current;
                   Background : in Colors := Current;
-                  Move       : in Boolean := True);
+                  Move       : in Boolean := True;
+                  Row_Off    : in Boolean := False;
+                  Col_Off    : in Boolean := False);
 
   -- Idem with a wide string
   procedure Putw (Name       : in Window;
                   S          : in Wide_String;
                   Foreground : in Colors := Current;
                   Background : in Colors := Current;
-                  Move       : in Boolean := True);
+                  Move       : in Boolean := True;
+                  Row_Off    : in Boolean := False;
+                  Col_Off    : in Boolean := False);
 
   -- Idem and append a Lf
   procedure Putw_Line (Name       : in Window;
                        S          : in Wide_String;
                        Foreground : in Colors := Current;
-                       Background : in Colors := Current);
+                       Background : in Colors := Current;
+                       Row_Off    : in Boolean := False;
+                       Col_Off    : in Boolean := False);
 
   -- Idem with a unicode number
   procedure Putu (Name       : in Window;
                   U          : in Unicode_Number;
                   Foreground : in Colors := Current;
                   Background : in Colors := Current;
-                  Move       : in Boolean := True);
+                  Move       : in Boolean := True;
+                  Row_Off    : in Boolean := False;
+                  Col_Off    : in Boolean := False);
 
   -- Idem with a unicode sequence
   procedure Putu (Name       : in Window;
                   S          : in Unicode_Sequence;
                   Foreground : in Colors := Current;
                   Background : in Colors := Current;
-                  Move       : in Boolean := True);
+                  Move       : in Boolean := True;
+                  Row_Off    : in Boolean := False;
+                  Col_Off    : in Boolean := False);
 
   -- Idem and append a Lf
   procedure Putu_Line (Name       : in Window;
                        S          : in Unicode_Sequence;
                        Foreground : in Colors := Current;
-                       Background : in Colors := Current);
+                       Background : in Colors := Current;
+                       Row_Off    : in Boolean := False;
+                       Col_Off    : in Boolean := False);
   -- Put Lf
   procedure New_Line (Name   : in Window;
                       Number : in Positive := 1);
