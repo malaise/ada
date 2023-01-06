@@ -29,9 +29,6 @@ package body Executor is
     Hist : As.U.Asu_Us;
     use type As.U.Asu_Us, Rules.History_Access;
   begin
-     -- Init result
-     Rule.Nb_Match.all := 0;
-     Rule.Matches.all.Set_Null;
      -- Search the pattern in the tail of the file
      Searcher.Search (Rule.File.Image, Start_Time, Rule.Tail,
                       Rule.Aging, Rule.Time_Format,
@@ -65,7 +62,7 @@ package body Executor is
        end loop;
      end if;
 
-     -- Save the new lines in history and concat them
+     -- Save the new lines in history and append them to the mathching
      Matches.Rewind;
      loop
        -- Store in history
@@ -73,6 +70,7 @@ package body Executor is
          Debug.Log ("  Saving " & Matches.Access_Current.Image);
          Rule.History.Push (Matches.Access_Current.all);
        end if;
+       -- Append this new mathcing line to the list of matching
        Rule.Nb_Match.all := Rule.Nb_Match.all + 1;
        Rule.Matches.all := Rule.Matches.all
                          & Matches.Access_Current.all & Aski.Lf;
@@ -115,20 +113,22 @@ package body Executor is
     if Rule.Latency /= 0.0
         and then Rule.Previous.all + Rule.Latency > Now
         and then not Flush then
-      -- Within latency
+      -- Within latency, these matches will be processed later on
       Debug.Log ("  Within latency");
       return False;
     end if;
     -- Expand the command and execute it if not empty
     Launch (Rule.Action.Image, Rule.Matches.Image);
-    -- Reset latency reference
-    Rule.Previous.all := Now;
     -- Execute actions triggered by repetitions of action
     Actions.Set_Action (Rule.Action.Image);
     for Repeat of Actions.Occurs (Rule.Action.Image, Rule.Nb_Match.all) loop
       Launch (Repeat.Image, Rule.Matches.Image);
     end loop;
     Actions.Unset_Action;
+    -- Reset result, and reset latency reference
+    Rule.Nb_Match.all := 0;
+    Rule.Matches.Set_Null;
+    Rule.Previous.all := Now;
     return False;
   end Execute;
 

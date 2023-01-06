@@ -1,6 +1,6 @@
 Sensor
 ======
-Version: 11.1
+Version: 11.2
 
 Sensor scans some files and triggers actions when finding specific events. +
 It is usefull to raise alerts when some log messages are matching criteria.
