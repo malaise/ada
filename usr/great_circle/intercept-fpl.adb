@@ -293,7 +293,7 @@ package body Fpl is
   end Append_App;
 
   -- Save Fpl file
-  Append_Suffix : constant String := "-App";
+  Append_Suffix : constant String := "_App";
   procedure Save is
     Path, Prefix, Suffix : As.U.Asu_Us;
     Num : My_Math.Inte;
