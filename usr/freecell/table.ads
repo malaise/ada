@@ -35,7 +35,8 @@ package Table is
   type Event_List is (Left_Pressed, Left_Released,
                       Right_Pressed, Right_Released,
                       Enter, Leave,
-                      Quit, New_Game, Start, Purge, Undo, Redo);
+                      Quit, New_Game, Start, Purge, Undo, Redo,
+                      Num);
   subtype Card_Event_List is Event_List range Left_Pressed .. Leave;
   subtype Menu_Event_List is Event_List range Quit .. Redo;
   type Event_Rec (Kind : Event_List:= Quit) is record
@@ -44,6 +45,8 @@ package Table is
         Card : Cards.Card_Access;
       when Menu_Event_List =>
         null;
+      when Num =>
+        Col : Con_Io.Col_Range;
     end case;
   end record;
   procedure Next_Event (Event : out Event_Rec);

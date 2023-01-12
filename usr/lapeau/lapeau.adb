@@ -89,6 +89,9 @@ begin
         Movements.Reset;
         Memory.Start_Game (Memory.Random_Num);
         Table.Update_Policy;
+      when Table.Num =>
+        -- Table adjusts cursor pos
+        null;
       when Table.Start =>
         Game_Num := Table.Get_Num;
         Reset;

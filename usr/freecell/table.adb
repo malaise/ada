@@ -50,6 +50,7 @@ package body Table is
   -- Get Num
   Start_Num     : constant := 19;
   Num_Txt : Con_Io.Unicode_Sequence (1 .. 6);
+  Stop_Num : constant := Start_Num + Num_Txt'Length - 1;
   Num_Last : Natural;
   Num_Pos : Positive;
   Num_Insert : Boolean;
@@ -78,6 +79,30 @@ package body Table is
     Num_Pos := 1;
     Num_Insert := False;
   end Reset_Get;
+
+  -- Adjust Get cursor col (Num_Pos) when click in Get field
+  procedure Adjust_Cursor (Click_Col : Con_Io.Col_Range) is
+    Last : Natural;
+  begin
+    -- Locate end of significant text
+    Last := 0;
+    for I in reverse Num_Txt'Range loop
+      if Num_Txt(I) /= Aski.Unicode.Spc_U then
+        Last := I;
+        exit;
+      end if;
+    end loop;
+    if Last = 0 then
+      -- No significant text => move to first col
+      Num_Pos := 1;
+    elsif Click_Col > Start_Num + Last - 1 then
+      -- Click right of the col after last char => move just after last char
+      Num_Pos := Last + 1;
+    else
+      -- Otherwise (within text or just after) => Move cursor to click col
+      Num_Pos := Click_Col - Start_Num + 1;
+    end if;
+  end Adjust_Cursor;
 
   -- Needs to be called only once, create the table, move the stacks, cards, menu...
   procedure Init is
@@ -279,6 +304,9 @@ package body Table is
         when Start_Purge .. Stop_Purge => Event := (Kind => Purge);
         when Start_Undo  .. Stop_Undo  => Event := (Kind => Undo);
         when Start_Redo  .. Stop_Redo  => Event := (Kind => Redo);
+        when Start_Num   .. Stop_Num   =>
+          Event := (Kind => Num,
+                    Col => Square.Col - Start_Num);
         when others                    => null;
       end case;
     end if;
@@ -306,10 +334,17 @@ package body Table is
         when Redo =>
           Menu_Window.Move (0, Start_Redo);
           Menu_Window.Put (" Redo ", Menu_Back, Menu_Fore, False);
+        when Num =>
+          -- Adjust cursor pos in get field
+          Adjust_Cursor (Square.Col);
         when others =>
           null;
       end case;
-      Last_Pressed := Event.Kind;
+      if Event.Kind = Num then
+        Last_Pressed := Leave;
+      else
+        Last_Pressed := Event.Kind;
+      end if;
       return False;
     else
       Put_Menu;
