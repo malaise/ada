@@ -692,7 +692,9 @@ package body Con_Io is
   end Set_Attributes_From_Window;
 
   -- Internal increment col by one or row by one...
-  procedure Move_1 (Win : not null access Window_Data) is
+  procedure Move_1 (Win : not null access Window_Data;
+                    Row_Off : in Boolean) is
+    Win_Last_Row : Row_Range;
   begin
     if Win.Current_Pos.Col /= Win.Lower_Right.Col
                             - Win.Upper_Left.Col then
@@ -701,12 +703,16 @@ package body Con_Io is
     else
       -- 1st col
       Win.Current_Pos.Col := Col_Range'First;
-      if Win.Current_Pos.Row /=
-         Win.Lower_Right.Row - Win.Upper_Left.Row then
+      Win_Last_Row := Win.Lower_Right.Row - Win.Upper_Left.Row;
+      -- Row offset leads to reduce height by 1
+      if Row_Off and then Win_Last_Row /= 0 then
+        Win_Last_Row := Win_Last_Row - 1;
+      end if;
+      if Win.Current_Pos.Row /= Win_Last_Row then
         -- Next line
         Win.Current_Pos.Row := Row_Range'Succ(Win.Current_Pos.Row);
       else
-        -- No scroll :-( first row
+        -- No way to scroll :-( => first row
         Win.Current_Pos.Row := Row_Range'First;
       end if;
     end if;
@@ -760,7 +766,7 @@ package body Con_Io is
         -- End of current row
         Win.Current_Pos.Col := Win.Lower_Right.Col - Win.Upper_Left.Col;
       end if;
-      Move_1 (Win);
+      Move_1 (Win, Row_Off);
     end if;
   end Put_1_Char;
 
@@ -842,7 +848,7 @@ package body Con_Io is
     Saved_Pos :=  Acc.Current_Pos;
     Win_Last_Col := Acc.Lower_Right.Col - Acc.Upper_Left.Col;
     -- Col offset leads to reduce width by 1
-    if Col_Off then
+    if Col_Off and then Win_Last_Col /= 0 then
       Win_Last_Col := Win_Last_Col - 1;
     end if;
     Set_Attributes_From_Window (Acc, Foreground, Background);
@@ -873,7 +879,7 @@ package body Con_Io is
       -- Update position : last character + one
       Con_Io.Move (Name, Acc.Current_Pos.Row,
                          Acc.Current_Pos.Col + Ilast - Ifirst);
-      Move_1 (Acc);
+      Move_1 (Acc, Row_Off);
       -- Issue Lf
       if Plf then
         Put_1_Char (Acc, Lfs);

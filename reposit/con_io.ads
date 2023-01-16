@@ -259,8 +259,8 @@ package Con_Io is
   -- Lf is the only special Ascii character which is interpreted.
   -- If not Move, the cursor position is not updated
   --  (Lf would be ignored then)
-  -- The characters can be shifted by half a row right and half a column down
-  --  from the cursor position
+  -- The characters can be shifted by half a row down and half a column right
+  --  from the cursor position (the cursor itself is not shifted)
   procedure Put (Name       : in Window;
                  C          : in Character;
                  Foreground : in Colors := Current;
