@@ -1,6 +1,6 @@
 Master Mind
 ===========
-V2.0
+V2.1
 
 This is the classic "Master Mind" game, where the goal is to guess a secret
 combination of colors, by successive tries and answers.
@@ -141,20 +141,22 @@ the pin will be *moved* from the selected cell into the target cell. +
 by double clicking on it.
 
 .Clear a full proposal (row)
-by double clicking in the corresponding answer area. If the proposal is not
-complete, or if has already been answered previously, then it will be cleared.
+by double clicking in the corresponding answer area when it shows "*XXXX*".
+In this case the proposal is not complete or it has already been answered
+previously, then it will be cleared.
 
-NOTE: Beware that if the proposal is complete and not already answered, then it
-will be answered (at first click).
+NOTE: Beware that if the answer area shows "*????*", this means that the
+proposal is complete and not already answered. Then it will be answered at first
+click in the answer area (see below).
 
 .Copy an answered proposal
-by double clicking in the corresponding answer area. This will copy the
-answered proposal into the first empty proposal.
+by double clicking in the corresponding answer area (even empty) of an anwsered
+proposal.  This will copy the answered proposal into the first empty proposal.
 
 Submitting a proposal
 ~~~~~~~~~~~~~~~~~~~~~
-Once a proposal is complete, the corresponding answer area shows "????", and a
-simple click in this answer triggers the submition.
+Once a proposal is complete, the corresponding answer area shows "*????*",
+and a simple click in this answer triggers the submition.
 
 If the selected proposal is not just above the last anwered, then it is
 swapped with the one there, then answered.

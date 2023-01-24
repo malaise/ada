@@ -2,7 +2,7 @@
 with Basic_Proc, Argument, Argument_Parser, As.U, Int_Img, Rnd;
 with Common, Action, Mmind_Asc, Screen, Response;
 procedure Mmind is
-  Version : constant String := "V1.0";
+  Version : constant String := "V2.1";
   -- Options
   Text_Mode : Boolean;
   Default_Level : constant Common.Last_Level_Range

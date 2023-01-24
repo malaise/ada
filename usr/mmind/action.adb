@@ -1,6 +1,9 @@
-with Con_Io;
+with Con_Io, Trace.Loggers;
 with Common, Screen, Response;
 package body Action is
+
+  -- Trace logger
+  Logger : Trace.Loggers.Logger;
 
   -- Current level
   Level : Common.Last_Level_Range;
@@ -49,6 +52,7 @@ package body Action is
     Screen.Init;
     Level := Common.Get_Level;
     Action.Show_Codes := Show_Codes;
+    Logger.Init ("Action");
   end Init;
 
   -- Terminate the game
@@ -271,16 +275,21 @@ package body Action is
             Col => Mouse_Status.Col));
         if Clicked then
           Double_Click := Mouse_Status.Double_Click;
+          if Double_Click then
+            Logger.Log_Debug ("Double click");
+          end if;
         end if;
       end;
 
       -- Handle click or release
       if Clicked then
+        Logger.Log_Debug ("Click");
         Treat_Click;
         Go_On := True;
         Prev_Status := Curr_Status;
         Curr_Status := Status_List'Succ (Curr_Status);
       else
+        Logger.Log_Debug ("Release");
         Treat_Release (Go_On, Exit_Game, Color_Move);
         Prev_Status := Curr_Status;
         Curr_Status := (if Color_Move then Click_Dest else Default_Status);

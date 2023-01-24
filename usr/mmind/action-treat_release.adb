@@ -213,10 +213,21 @@ begin
                               History(Release_Orig).Column_No,
                               Show => False);
     end if;
+  elsif Double_Click then
+    -- Double click on a selected color or selected answered propal => Unselect
+    if History(Release_Orig).Selection_Kind = Screen.Color then
+       Screen.Put_Selected_Color (Color => History(Release_Orig).Color_No,
+                                 Selected => False);
+    elsif History(Release_Orig).Selection_Kind = Screen.Propal then
+      Screen.Put_Default_Pos (History(Release_Orig).Propal_No,
+                              History(Release_Orig).Column_No,
+                              Show => False);
+    end if;
   end if;
 
   -- Invalid release
   if not Valid then
+    Logger.Log_Debug ("  Release Discard");
     -- Discard
     if History(Prev_Status).Selection_Kind = Screen.Color then
       Screen.Put_Selected_Color (Color => History(Prev_Status).Color_No,
@@ -231,6 +242,7 @@ begin
     return;
   end if;
 
+  Logger.Log_Debug ("  Release status: " & Curr_Status'Img);
   -- Treat release
   case History(Curr_Status).Selection_Kind is
     when Screen.Exit_Game =>
@@ -304,10 +316,7 @@ begin
       -- Move color if origin or if a different color or double click
       --  otherwise it is a unselect
       Go_On := True;
-      if Curr_Status = Release_Orig then
-        -- Selecting a origin color in the colors
-        Color_Move := True;
-      elsif Double_Click then
+      if Double_Click then
         -- Copy color into first available cell (if any)
         Find_Available_Cell;
         if Available_Propal /= No_Propal then
@@ -326,6 +335,9 @@ begin
             Moved := True;
           end if;
         end if;
+      elsif Curr_Status = Release_Orig then
+        -- Selecting a origin color in the colors
+        Color_Move := True;
       elsif History(Release_Orig).Selection_Kind = Screen.Color then
         -- Selecting another color or unselecting the color
         Color_Move := History(Curr_Status).Color_No
@@ -346,7 +358,7 @@ begin
 
     when Screen.Propal =>
       Go_On := True;
-      if Curr_Status = Release_Orig then
+      if Curr_Status = Release_Orig and then not Double_Click then
         -- Selecting a origin color in the propal
         Color_Move := True;
       elsif History(Release_Orig).Selection_Kind = Screen.Color then
