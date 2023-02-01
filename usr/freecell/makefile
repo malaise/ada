@@ -10,7 +10,7 @@ CLIBS := $(CARDS_SLIBS) $(X11_SLIBS)
 LARGS_freecell.stat := $(CARDS_ALIBS) $(X11_ALIBS)
 
 TXT := Freecell
-DOCOPTS_Lapeau := -a toc
+DOCOPTS_Freecell := -a toc
 
 include $(TEMPLATES)/ada.mk
 
