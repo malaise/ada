@@ -43,7 +43,7 @@ package X_Mng.Cards is
                           Squared : in Boolean);
   -- True for Empty slot, Squared or not
   function Is_Empty (Acard : Card) return Boolean;
-  -- True for Empty Quared slot
+  -- True for Empty Squared slot
   function Is_Squared (Acard : Card) return Boolean;
 
   -- Create a Symbol
