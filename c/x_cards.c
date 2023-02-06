@@ -68,10 +68,9 @@ static void setBackgroundPixmap (const card* aCard, const Pixmap pixmap) {
 }
 
 /* Set border color */
-static void setBorder (const card* aCard, const unsigned long color,
-                       const int width) {
+static void setBorder (const card* aCard, const unsigned long color) {
   XSetWindowBorder (display, aCard->xWindow, color);
-  XSetWindowBorderWidth (display, aCard->xWindow, width);
+  XSetWindowBorderWidth (display, aCard->xWindow, 1);
 }
 
 /* Color of a suit */
@@ -185,9 +184,9 @@ extern card* createEmpty (const boolean squared, void *ref) {
   if ((aCard = createCommon(ref)) == NULL) return NULL;
 
   if (squared) {
-    setBorder (aCard, emptyBorderColor, 1);
+    setBorder (aCard, emptyBorderColor);
   } else {
-    setBorder (aCard, backgroundColor, 1);
+    setBorder (aCard, backgroundColor);
   }
   unSelect (aCard);
 
@@ -215,7 +214,7 @@ extern card* createSymbol (const suitList suit, void *ref) {
   XShapeCombineMask(display, aCard->xWindow, ShapeClip, 0, 0,
       clipMask, ShapeSet);
 
-  setBorder (aCard, emptyBorderColor, 1);
+  setBorder (aCard, emptyBorderColor);
   unSelect (aCard);
 
   return aCard;
@@ -242,7 +241,7 @@ extern card* createCard (const suitList suit, const int value, void *ref) {
   XShapeCombineMask(display, aCard->xWindow, ShapeClip, 0, 0,
       clipMask, ShapeSet);
 
-  setBorder (aCard, blackColor, 1);
+  setBorder (aCard, blackColor);
   unSelect (aCard);
   return aCard;
 }
@@ -300,9 +299,9 @@ extern void unSelect (card* aCard) {
 extern void turnOver (card* aCard, const boolean faceUp) {
   aCard->faceUp = faceUp;
   if (faceUp) {
-    setBorder (aCard, blackColor, 1);
+    setBorder (aCard, blackColor);
   } else {
-    setBorder (aCard, whiteColor, 5);
+    setBorder (aCard, whiteColor);
   }
   unSelect (aCard);
 }
