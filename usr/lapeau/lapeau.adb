@@ -1,4 +1,4 @@
-with Con_Io, Argument, Basic_Proc, As.U, Trace;
+with Con_Io, Argument, Basic_Proc;
 with Cards, Table, Memory, Movements;
 procedure Lapeau is
   Event : Table.Event_Rec;
@@ -26,11 +26,10 @@ procedure Lapeau is
 
   use type Cards.Deck.Full_Suit_List;
 begin
-  -- Init traces to debug
-  Trace.Init_Env (
-    (As.U.Tus ("Memory"), As.U.Tus ("Movements"), As.U.Tus ("Table")),
-    "Debug",
-    "/tmp/Lapeau.log");
+  -- Init traces to debug: Not useful any more
+  -- Trace.Init_Env (
+  --   (As.U.Tus ("Memory"), As.U.Tus ("Movements"), As.U.Tus ("Table")),
+  --   "Debug", "/tmp/Lapeau.log");
 
   -- Optional game num and play stacking policy
   begin
