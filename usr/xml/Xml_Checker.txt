@@ -1,6 +1,6 @@
 Xml_Checker
 ===========
-Version: V25.5
+Version: V25.6
 
 'Parser version: V44.0 +
 Generator version: V19.2 +

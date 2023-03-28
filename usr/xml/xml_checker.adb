@@ -5,7 +5,7 @@ with As.U.Utils, Argument, Argument_Parser, Xml_Parser.Generator,
      Trace.Loggers, Mixed_Str, Long_Longs, Normalization;
 procedure Xml_Checker is
   -- Current version
-  Version : constant String := "V25.5";
+  Version : constant String := "V25.6";
 
   procedure Ae_Re (E : in Ada.Exceptions.Exception_Id;
                    M : in String := "")
@@ -115,7 +115,7 @@ procedure Xml_Checker is
     01 => As.U.Tus ("Put this help"),
     02 => As.U.Tus ("Put versions"),
     03 => As.U.Tus ("Canonicalize xml"),
-    04 => As.U.Tus ("Make text compatible ('>' -> ""&gt;"""),
+    04 => As.U.Tus ("Make text compatible ('>' -> ""&gt;"")"),
     05 => As.U.Tus ("Copy tree then dump the copy"),
     06 => As.U.Tus ("Dump expanded Xml tree"),
     07 => As.U.Tus ("Use a specific dtd or skip doctype"),
