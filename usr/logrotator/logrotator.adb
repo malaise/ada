@@ -3,7 +3,7 @@ with Long_Longs, Aski, Basic_Proc, Argument, Argument_Parser, As.U, Normal,
      Trace.Loggers, Text_Line, Timers, Chronos.Passive_Timers, Sys_Calls;
 procedure Logrotator is
   -- Current version
-  Version : constant String := "2.0";
+  Version : constant String := "2.1";
 
   -- Trace logger
   Logger : Trace.Loggers.Logger;
@@ -32,14 +32,14 @@ procedure Logrotator is
   Max_Size : Long_Longs.Ll_Natural := 0;
   -- Max number of files
   Max_Files_Max : constant := 999;
-  Max_Files : Positive := 1;
+  Max_Files : Positive := Max_Files_Max + 1;
 
   -- Help
   procedure Usage is
   begin
     Basic_Proc.Put_Line_Error (
      "Usage: " & Argument.Get_Program_Name
-               & " [ <period> ] [ <cycle> ] [ <size> ] <file_name>");
+               & " [ <period> ] [ <cycle> ] [ <size> [ <files> ] ] <file_name>");
     for Key of Keys loop
       Basic_Proc.Put_Line_Error (
         "  " & Argument_Parser.Image (Key));
@@ -163,6 +163,9 @@ procedure Logrotator is
 
     -- Cycle
     if Arg_Dscr.Is_Set (06) then
+      if Max_Size = 0 then
+        Error ("Argument <files> requires a <size> to be set");
+      end if;
       begin
         Max_Files := Positive'Value (Arg_Dscr.Get_Option (06));
         if Max_Files > Max_Files_Max + 1 then
