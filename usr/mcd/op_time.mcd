@@ -15,7 +15,7 @@ false d popr
 " <oper> ::= + | - | x | * | /" putl
 " <num1> ::= <dur>" putl
 " <dur>  ::= Hours[.MinutesSecondsMiliseconds] | now" putl
-" <num2> is <dur> if <oper> is + or -, otherwise an int or float" putl
+" <num2> is <dur> if <oper> is + or -, otherwise an int or a float (fraction of hours)" putl
 1 setexit ssize popn retall ] E popr
 
 ssize 1 /= [ "Invalid argument" E pushr call ] ifcall
