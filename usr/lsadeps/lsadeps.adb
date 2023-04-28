@@ -3,7 +3,7 @@ with As.U, Argument, Argument_Parser, Basic_Proc, Mixed_Str, Directory, Trace;
 with Debug, Sourcer, Tree_Mng, Sort, Output, Checker;
 procedure Lsadeps is
 
-  Version : constant String := "V17.00";
+  Version : constant String := "V17.01";
 
   -- The keys and descriptor of parsed keys
   Nok : Character renames Argument_Parser.No_Key_Char;
@@ -232,6 +232,9 @@ procedure Lsadeps is
   -- Perfo severity
   use type Trace.Severities;
   Perfo : constant Trace.Severities := Trace.Debug * 2;
+
+  -- Did we detect a loop
+  Loop_Detected : Boolean;
 
   use type As.U.Asu_Us;
 
@@ -613,13 +616,19 @@ begin
   Tree_Mng.Build (Target_Dscr, Specs_Mode, Revert_Mode,
                   Tree_Mode, Shortest, Direct_Mode,
                   Once_Mode,
-                  Files_Mode, Bodies_Mode, Restrict_Mode, Loop_Mode);
+                  Files_Mode, Bodies_Mode, Restrict_Mode, Loop_Mode,
+                  Loop_Detected);
   Debug.Logger.Log (Perfo, "Tree built");
 
   -------------------
   -- PUT LIST/TREE --
   -------------------
-  if not Loop_Mode then
+  if Loop_Mode then
+    if Loop_Detected then
+      -- Exit with Error if a loop found
+      Basic_Proc.Set_Error_Exit_Code;
+    end if;
+  else
     -- Back to original dir
     Check_Dir ("");
     Output.Put (Revert_Mode, Tree_Mode, Shortest, Files_Mode, Tree_Tab,

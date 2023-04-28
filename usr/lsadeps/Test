@@ -254,6 +254,10 @@ cd ..
 
 # Check redundant with
 lsadeps -c $CHKDIR > $CHKDIR/res
+res=$?
+if [ "$res" != "1" ] ; then
+  error "Exit code $res differs from expected 1"
+fi 
 cat << EOF > $CHKDIR/exp
 Unit Unit1#UB withes Unit3 already withed by parent Unit1#US
 Unit Unit1.Child1#US withes Unit3 already withed by parent Unit1#US
@@ -272,6 +276,10 @@ fi
 
 # Check loops
 lsadeps -L $CHKDIR/Unit1 > $CHKDIR/res
+res=$?
+if [ "$res" != "1" ] ; then
+  error "Exit code $res differs from expected 1"
+fi 
 cat << EOF > $CHKDIR/exp
 Loop detected:
   Unit1#US
@@ -291,6 +299,10 @@ fi
 # This does not compile
 mv $CHKDIR/unit6L.ads $CHKDIR/unit6.ads
 lsadeps -Ls $CHKDIR/Main > $CHKDIR/res
+res=$?
+if [ "$res" != "1" ] ; then
+  error "Exit code $res differs from expected 1"
+fi 
 cat << EOF > $CHKDIR/exp
 Loop detected:
   Unit1#US

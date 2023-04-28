@@ -22,6 +22,9 @@ package body Tree_Mng is
   -- Do we show loops
   Loop_Mode : Boolean;
 
+  -- Did we detect a loop
+  Loop_Detected : Boolean := False;
+
   -- Do we display files or units
   File_Mode : Boolean;
 
@@ -411,6 +414,7 @@ package body Tree_Mng is
       Rope.Search (Origin, Rope_Found);
       if Rope_Found then
         -- Current Origin already exists => Looping
+        Loop_Detected := True;
         Dump_Loop (Specs_Mode, Origin);
         Tree.Insert_Child ((Origin, Looping => True));
         Tree.Move_Father;
@@ -515,8 +519,11 @@ package body Tree_Mng is
                    Specs_Mode, Revert_Mode,
                    Tree_Mode, Shortest_Mode, Direct_Mode, Once_Mode,
                    File_Mode, Bodies_Mode, Restrict_Mode,
-                   Loop_Mode : in Boolean) is
+                   Loop_Mode : in Boolean;
+                   Loop_Detected : out Boolean) is
   begin
+    -- Global variable of loop detection
+    Standard.Tree_Mng.Loop_Detected := False;
     -- Global (constants) file and restrict modes
     Standard.Tree_Mng.File_Mode := File_Mode;
     Standard.Tree_Mng.Restrict_Mode := Restrict_Mode;
@@ -569,6 +576,7 @@ package body Tree_Mng is
     if Debug.Logger.Debug_On then
       Tree.Iterate (Dump_One'Access, False);
     end if;
+    Loop_Detected := Standard.Tree_Mng.Loop_Detected;
   end Build;
 
 end Tree_Mng;

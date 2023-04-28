@@ -1,16 +1,17 @@
 lsadeps
 =======
-V17.00
+V17.01
 
 Lsadeps lists ada dependencies between files or units, optionally in reverse
 order. +
 Alternatively it lists units of a directory +
-Alternatively it checks redundant "with" clauses between specs and bodies.
+Alternatively it checks redundant "with" clauses between specs and bodies. +
+Alternatively it checks circular dependencies.
 
-Modes and inputs
-----------------
-There are three main functions: Show dependencies, list units, and check
-redundant "with". +
+Functions and inputs
+--------------------
+There are four main functions: Show dependencies, list units, check
+redundant "with" and report loops. +
 
  Usage: lsadeps <version> | <help> | <depend> | <list> | <check> | <loop>
 
@@ -113,7 +114,7 @@ relative), while 'exclude' must specify templates of simple directory names
 'bodies' option is allowed only in 'revert' mode
 
 .Tree optimizations
-When the the option 'tree' is set, then the hole tree of
+When the the option 'tree' is set, then the whole tree of
 dependancies is built and displayed, which might be very time-consuming.
 
 When the option 'tree' is not set, then the analysis of dependencies
@@ -179,6 +180,9 @@ This function analyses the dependencies of <target_unit> and reports circular
 dependencies. +
 On option, it reports only loops of specifications.
 
+Transverse conventions and constraints
+--------------------------------------
+
 Ada language selection
 ~~~~~~~~~~~~~~~~~~~~~~
 The files are parsed according to the default Ada language version 'Ada2012',
@@ -200,7 +204,7 @@ Results are put on stdout.
 Show dependencies
 ~~~~~~~~~~~~~~~~~
 In the dependency function, local units are listed first, then "remote" ones in
-the order of the include directives and they are sorted by alphabetical order.
+the order of the include directives, and they are sorted by alphabetical order.
 With the tree and direct options, the units appear in the same order as in the
 "with" directives.
 
@@ -238,10 +242,7 @@ and with 0 otherwise.
 
 Check redundant "with"
 ~~~~~~~~~~~~~~~~~~~~~~
-This function checks that no redundant "with" clause appear in the body and
-sub-units of each unit.
-
-It reports redundancy with messages like: +
+This function reports redundancy with messages like: +
 "'Unit <unit> withes <withed> already withed by parent <unit>'", +
 - where <unit> is the path of the unit, followed by '#', then either 'US' (Unit
 Spec), 'UB' (Unit Body) or 'SU' (SubUnit) +
@@ -267,6 +268,9 @@ Example:
     B#UB
     C#US
     A#US
+
+Lsadeps exits with 1 if at least one circular dependency is detected or on
+error, and with 0 otherwise.
 
 Examples of use
 ---------------

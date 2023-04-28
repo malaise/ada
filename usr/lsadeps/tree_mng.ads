@@ -39,7 +39,9 @@ package Tree_Mng is
                    -- Skip limited and private with
                    Restrict_Mode,
                    -- Show loops of with
-                   Loop_Mode : in Boolean);
+                   Loop_Mode : in Boolean;
+                   -- Did we detect a loop (Loop_Mode or not)
+                   Loop_Detected : out Boolean);
 
 end Tree_Mng;
 
