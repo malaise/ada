@@ -1,13 +1,16 @@
 # Convert several kinds:
-# km <-> Nm    0 decimal, the default
-# cm  -> in    Inches + fraction
-# C  <-> F
-# hP <-> Hg    0 / 2 decimals
-# ms  -> kt
-# €  <-> f     2 decimals
-# m  <-> ft
-# l  <-> gal   0 / 1 decimal
-# mi  -> Nm
+# km  <-> Nm    0 decimal, the default
+# mi   -> Nm
+# m   <-> ft
+# ms   -> kt
+# cm   -> in    Inches + fraction
+# C   <-> F
+# hPa <-> Hg    0 / 2 decimals
+# €   <-> f     2 decimals
+# lga <-> gal   0 / 1 decimal
+# gal <-> l
+# lbs <-> l
+# kg  <-> l
 # Process inputs one by one
 # Each input is a string made of an inte or a real, and a unit
 
@@ -15,7 +18,8 @@
 [
   "Error. Invalid argument " put putl
   "Expecting strings of <num><unit>, where <num> is an inte or a real" putl
-  " and <unit> is one of: km Nm cm C F hPa Hg ms € f m ft l gal mi lbs kg" putl
+  " and <unit> is one of: " put
+  "km Nm mi cm C F hPa Hg ms € f m ft gal l-gal lbs l-lbs kg l-kg" putl
   1 setexit ssize popn retall
 ] Z popr
 
@@ -50,7 +54,12 @@ strcat
 # Stored in registers a to o and A to O
 "km" a popr [ W pushr call 1.852 / round put "Nm" putl ] A popr
 "Nm" b popr [ W pushr call 1.852 * round put "km" putl ] B popr
-"cm" c popr
+"mi" c popr [ W pushr call 0.8684210526 * round put "Nm" putl ] C popr
+"m" d popr [ W pushr call 3.28084 * round put "ft" putl ] D popr
+"ft" e popr [ W pushr call 3.28084 / round put "m" putl ] E popr
+"ms" f popr [ W pushr call 1000.0 / 3600.0 * 1.852 / round
+  put "kt" putl ] F popr
+"cm" g popr
 [ W pushr call
   # Convert into inches and round to 1/8th
   0.393701 * 8.0 * round
@@ -61,45 +70,45 @@ strcat
   toarbi @8 mkfrac dup @0:1 =
   [ pop "" ] [ strof 3 5 strsub 2 "/" strovw ] ifte call
   1 format pushle put """" put putl
-] C popr
-"C" d popr [ 1.8 * 32.0 + round put "F" putl ] D popr
-"F" e popr [ 32.0 - 1.8 / round put "C" putl ] E popr
-"hPa" f popr [ W pushr call 0.029529983071445 * X pushr call
-put "Hg" putl ] F popr
-"Hg" g popr [ W pushr call 0.029529983071445 / round put "hP" putl ] G popr
-"ms" h popr [ W pushr call 1000.0 / 3600.0 * 1.852 / round
-put "kt" putl ] H popr
-"€" i popr [ W pushr call 6.55957 * X pushr call put "f" putl ] I popr
-"f" j popr [ W pushr call 6.55957 / X pushr call put "€" putl ] J popr
-"m" k popr [ W pushr call 3.28084 * round put "ft" putl ] K popr
-"ft" l popr [ W pushr call 3.28084 / round put "m" putl ] L popr
-"l" m popr [ W pushr call 3.785411784 / Y pushr call put "gal" putl ] M popr
+] G popr
+"C" h popr [ 1.8 * 32.0 + round put "F" putl ] H popr
+"F" i popr [ 32.0 - 1.8 / round put "C" putl ] I popr
+"hPa" j popr [ W pushr call 0.029529983071445 * X pushr call
+  put "Hg" putl ] J popr
+"Hg" k popr [ W pushr call 0.029529983071445 / round put "hP" putl ] K popr
+"€" l popr [ W pushr call 6.55957 * X pushr call put "f" putl ] L popr
+"f" m popr [ W pushr call 6.55957 / X pushr call put "€" putl ] M popr
 "gal" n popr [ W pushr call 3.785411784 * round put "l" putl ] N popr
-"mi" o popr [ W pushr call 0.8684210526 * round put "Nm" putl ] O popr
+"l-gal" o popr [ W pushr call 3.785411784 / Y pushr call put "gal" putl ] O popr
 "lbs" p popr [ W pushr call 0.5649868 * round put "l" putl ] P popr
-"kg" q popr [ W pushr call 1.2455828 * round put "l" putl ] Q popr
+"l-lbs" q popr [ W pushr call 0.5649868 / round put "lbs" putl ] Q popr
+"kg" r popr [ W pushr call 1.2455828 * round put "l" putl ] R popr
+"l-kg" s popr [ W pushr call 1.2455828 / round put "kg" putl ] S popr
 
-"" r popr
 # Registers up to t and T included are available
+""
+t copyr
+u popr
 
 # Loop on each argument
 [
   ssize 0 = ifret
   x copyr
-  # Check syntax: int or real, then 1, 2 or 3 letters of unit
-  dup "^-?[0-9]+(\.[0-9]+)?[a-zA-Z€]{1,3}$" regmatch isnull Z pushr ifcall
+  # Check syntax: int or real,
+  #  then 1 to 5 letters of unit, possibly including a '-' inside
+  dup "^-?[0-9]+(\.[0-9]+)?[-a-zA-Z€]{1,5}$" regmatch isnull Z pushr ifcall
   # Extract val and unit
-  dup "[a-zA-Z€]" regmatch u popr
-  dup 1 u pushr 1 - strsub dup
+  dup "[a-zA-Z€]" regmatch w popr
+  dup 1 w pushr 1 - strsub dup
   caninte [ strinte toreal ] [ strreal ] ifte call v popr
-  dup strlen u pushr swap strsub u popr
+  dup strlen w pushr swap strsub w popr
   # Loop: search for matching unit, error if not found
   a
   [
     # End of list of units => no match
     dup pushr "" = [ pop x pushr Z pushr call ] ifcall
     # Check if match
-    dup pushr u pushr =
+    dup pushr w pushr =
     # If unit matches => call conversion and switch to next input
     [ v pushr swap regind 26 - indreg pushr call 2 retn ] ifcall
     # Else try next unit
