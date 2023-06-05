@@ -36,8 +36,10 @@ procedure Xwords is
   Topnum_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Topnum;
   Topof_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Topof;
   Percent_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Percent;
+  Anamode_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Anamode;
   Anagrams_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Anagrams;
   Ananouns_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Ananouns;
+  Ananame_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Ananame;
   Search_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Search;
   In_Anagram_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.In_Anagram;
   Research_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Re_Search;
@@ -228,41 +230,65 @@ procedure Xwords is
   function Ananouns_Set return Boolean is
     (Afpx.Decode_Field (Ananouns_Fld, 0) /= " ");
 
-  -- List anagrams of word
+  -- Anagrams of word
   Analen_Prefix : constant String := "-- ";
   Analen_Suffix : constant String := " --";
   -- Previous list of anagrams
   Prev_Word : As.U.Asu_Us;
-  Prev_Anagrams : Afpx.Line_List_Mng.List_Type;
+  Anagrams_List : As.U.Utils.Asu_Ua.Unb_Array;
+  -- In Anagrams mode
+  In_Anagrams : Boolean;
+
+  -- Switch to Anagrams mode
+  procedure Switch_To_Anagrams (To_Anagrams : in Boolean) is
+  begin
+    if To_Anagrams then
+      Afpx.Reset_Field (Anamode_Fld);
+      Afpx.Clear_Field (Get_Fld);
+      Afpx.Encode_Field (Ananame_Fld, (0, 0), Prev_Word.Image);
+      Afpx.Clear_Field (Anagrams_Fld);
+      Afpx.Utils.Center_Field ("Reset", Anagrams_Fld, 0);
+      In_Anagrams := True;
+    else
+      Afpx.Clear_Field (Anamode_Fld);
+      Afpx.Clear_Field (Get_Fld);
+      Afpx.Clear_Field (Ananame_Fld);
+      Afpx.Reset_Field (Anagrams_Fld);
+      In_Anagrams := False;
+    end if;
+  end Switch_To_Anagrams;
+
+  -- List anagrams of word
   procedure Do_Anagrams is
-    Anagrams_List : As.U.Utils.Asu_Ua.Unb_Array;
     Word : As.U.Asu_Us;
     Char : Character;
     Length : Natural;
   begin
+    if In_Anagrams then
+      -- Quit Anagrams mode
+      Switch_To_Anagrams (False);
+      Afpx.Line_List.Delete_List (Deallocate => False);
+      return;
+    end if;
     -- Clear result
     Status := Ok;
     Afpx.Line_List.Delete_List (Deallocate => False);
     -- Get word and check it
     Word := As.U.Tus (Strip (Afpx.Decode_Field (Get_Fld, 0, False)));
+
+    -- Check pattern
     if Word.Is_Null then
-      Afpx.Line_List.Insert_Copy (Prev_Anagrams);
-      if Afpx.Line_List.Is_Empty then
-        List_Content := Empty;
-        Status := Ok;
-      else
-        Afpx.Encode_Field (Get_Fld, (0, 0), Prev_Word.Image);
-        Afpx.Line_List.Rewind;
-        List_Content := Anagrams;
-        Status := Found;
-      end if;
+      Afpx.Line_List.Insert (Us2Afpx (
+          As.U.Tus ("ERROR: Missing letter.")));
+      List_Content := Error;
+      Status := Error;
       return;
     end if;
     for I in 1 .. Word.Length loop
       Char := Word.Element (I);
       if Char < 'a' or else Char > 'z' then
         Afpx.Line_List.Insert (Us2Afpx (
-            As.U.Tus ("ERROR: Invalid character in word.")));
+            As.U.Tus ("ERROR: Invalid letter.")));
         List_Content := Error;
         Status := Error;
         return;
@@ -276,6 +302,7 @@ procedure Xwords is
     History_List.Insert (Word);
 
     -- Copy in Afpx list
+    Afpx.Line_List.Delete_List (Deallocate => False);
     Length := 0;
     for I in 1 .. Anagrams_List.Length loop
       -- Insert length
@@ -294,12 +321,11 @@ procedure Xwords is
       List_Content := Empty;
       Status := Ok;
     else
-      Prev_Word := Word;
-      Prev_Anagrams.Delete_List;
-      Prev_Anagrams.Insert_Copy (Afpx.Line_List);
       List_Content := Anagrams;
       Status := Found;
     end if;
+    Prev_Word := Word;
+    Switch_To_Anagrams (True);
 
   exception
     when Analist.Too_Long =>
@@ -434,7 +460,6 @@ procedure Xwords is
   end Do_Command;
 
   -- Search the content of Get_Fld in the list of anagrams
-  Len_Regex : Reg_Exp.Compiled_Pattern;
   procedure Search_In_Anagrams (Is_Regex : in Boolean) is
     In_Crit, Crit, Curr : As.U.Asu_Us;
     Ok : Boolean;
@@ -468,40 +493,28 @@ procedure Xwords is
       Crit := As.U.Tus (Str_Util.Substit (Crit.Image, "*", ".*"));
     end if;
 
-    -- Compile patterns
-    if Len_Regex.Is_Free then
-      -- Length delimieters are "-- xx --"
-      Len_Regex.Compile (Ok, Analen_Prefix & "[0-9]+" & Analen_Suffix);
-    end if;
+    -- Compile pattern
     Crit_Regex.Compile (Ok, Crit.Image);
     if not Ok then
       Put_Error ("Invalid search criteria");
       return;
     end if;
 
-    -- Search matching in list
-    if Afpx.Line_List.Is_Empty then
-      return;
-    end if;
-    Afpx.Line_List.Rewind;
-    loop
-      -- Read words, skip Length indicators
-      Afpx.Line_List.Read (Afpx_Item, Moved => Moved);
-      Curr := As.U.Tus (Lower_Str (Language.Unicode_To_String (
-                               Afpx_Item.Str(1 .. Afpx_Item.Len))) );
-      if not Len_Regex.Match (Curr.Image, True)
-      and then Crit_Regex.Match (Curr.Image, True) then
+    -- Search in list of anagrams
+    for I in 1 .. Anagrams_List.Length loop
+      -- Read words
+      Curr := As.U.Tus (Lower_Str (Anagrams_List.Element (I).Image));
+      if Crit_Regex.Match (Curr.Image, True) then
         -- A real word
         Matches.Append (Curr);
       end if;
-      exit when not Moved;
     end loop;
 
     -- Show result
     History_List.Insert (In_Crit);
     List_Content := Words;
     Status := Found;
-    Afpx.Line_List.Delete_List;
+    Afpx.Line_List.Delete_List (Deallocate => False);
     for I in 1 .. Matches.Length loop
       Afpx.Line_List.Insert (Us2Afpx (Matches.Element (I)));
     end loop;
@@ -628,6 +641,8 @@ begin
       Load_Anagrams.Stop;
       Loading_Anagrams := False;
   end;
+  -- Not in anagrams
+  Switch_To_Anagrams (False);
 
   Status := Ok;
 
@@ -704,7 +719,7 @@ begin
       when Afpx.Keyboard =>
         case Ptg_Result.Keyboard_Key is
           when Afpx.Return_Key =>
-            if  List_Content = Anagrams then
+            if In_Anagrams then
               Search_In_Anagrams (False);
             else
               Do_Command (Search_Fld);
@@ -754,7 +769,7 @@ begin
               (if Ananouns_Set then " " else "X"));
 
           when Search_Fld .. Del_Noun_Fld =>
-            if  List_Content = Anagrams
+            if In_Anagrams
             and then (Ptg_Result.Field_No = Search_Fld
               or else Ptg_Result.Field_No = Research_Fld) then
               Search_In_Anagrams (Ptg_Result.Field_No = Research_Fld);
