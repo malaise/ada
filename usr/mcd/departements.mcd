@@ -6,6 +6,12 @@
 isstdio ~ [ false inecho ] ifcall
 # Delay before putting the answer
 4.0 a popr
+# Delay between two questions
+2.0 b popr
+
+# Function that waits during some seconds (ToS) or any input
+# If in flow is stdio, then only wait (no input)
+[ isstdio [ sleep ] [ inkeytim pop ] ifte call ] I popr
 
 # Load the file with numbers and names
 "departements.dat" readlins
@@ -51,10 +57,10 @@ D pushr retacal ] D popr
 [
 # Take a random number from 1 to N
 rnd N pushr toreal * trunc 1 +
-# Put its Num during some seconds
-dup n swap pusha put ": " put a pushr sleep
-# Put its Name and wait for input (drop it)
-N swap pusha putl isstdio [ 2 sleep ] [ inkey pop ] ifte call
+# Put its Num during some seconds or any input
+dup n swap pusha put ": " put a pushr I pushr call
+# Put its Name and wait for some seconds or any input
+N swap pusha putl b pushr I pushr call
 # Loop
 M pushr retacal ] M copyr call
 
