@@ -1,5 +1,5 @@
 # Compute felt temperature (in C)
-# from ambiant temperature Ta (in C) and vind V (in km/h)
+# from ambiant temperature Ta (in C) and wind V (in km/h)
 # if V < 4.8 then
 #   Res := Ta + 0.2 * (0.1345 * Ta - 1.59) * V;
 # else
