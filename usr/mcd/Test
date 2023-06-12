@@ -189,6 +189,14 @@ if `match $arg chat` ; then
   sleep 5
   stop
   sleep 0.5
+  dig="[0-9]"
+  exp="^  [3456] attitudes vues en ${dig}${dig}h${dig}${dig}m${dig}${dig}s${dig}${dig}${dig}\.*$"
+  tail=`tail -1 out`
+  echo -n "$tail" | grep -Eq "$exp"
+  if [ $? -ne 0 ] ; then
+    error "Unexpected output \"$tail\"."
+  fi
+  comp err nul
   echo "OK"
 fi
 
@@ -328,6 +336,7 @@ if `match $arg departements` ; then
   sleep 5
   stop
   sleep 0.5
+  comp err nul
   echo "OK"
 fi
 
