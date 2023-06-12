@@ -1,6 +1,6 @@
 Mcd
 ===
-V21.0
+V21.1
 
 Mcd (My Calculator for Desk) is a text oriented reverse polish calculator.
 
@@ -47,7 +47,7 @@ anchor:XArguments[]
 Besides the help mode (argument "-h" or "--help"), mcd arguments are used to
 specify the input/output flow:
 
-* -a <bus_address> : mcd will subscribe (as active) on a data bus. See the
+* -a <bus_addr> : mcd will subscribe (as active) on a data bus. See the
 package 'autobus' for more details on this communication channel. Mcd will get
 its inputs from this bus and will send its outputs on it.
 * -t <tcp_portname_or_num> : mcd will accept a TCP connection on the specified
@@ -74,13 +74,13 @@ integer.
 mcd performs calculations with absolute precision.
 * fraction (frac): '@<number>:<number>' is a fraction (numerator / denominator)
 of two arbi numbers.
-* real (real): is a real number (15 digits, from -1.79E308 .. 1.79E308).
+* real (real): is a real number (15 digits, within -1.79E308 .. 1.79E308).
 * boolean (bool): is 'True' or 'False'.
 * string (str): '"text"' or ':text:' is an Ada string.
-* subprogram (prog): '[ <subprogram> ]' is a set of operands or operators to be
-excuted as a sub-program.
+* subprogram (prog): '[ <subprogram> ]' is a set of operands and/or operators to
+be excuted as a sub-program.
 * register (reg): 'A' .. 'Z' and 'a' .. 'z' is a memory cell where an operand
-can be stored and retrieved.
+can be stored and then retrieved.
 
 A number is an operand of kind inte, real, arbi or frac.
 
@@ -545,7 +545,7 @@ launching mcd with instructions provided as arguments and/or in files.
 
 Example, with the file t.mcd containing the instructions "ssize putl putl"
 (note that the arguments needed by a program are provided *before* the file
-with the program).
+of this program).
 
   mmcdt :A: -e t.mcd
   ->    1
@@ -561,9 +561,9 @@ file is needed (note that the arguments are provided *after* the file name).
   ->B
 
 .Interactive programs
-Interactive programs must be launched on a input/output channel (bus, TCP or
-UDP) or on an input file. The instructions inkey and instr allow such program
-to get characters and string from a tty.
+Interactive programs must be launched on a input/output channel (autobus,
+TCP or UDP) or on an input file. The instructions inkey and instr allow such
+program to get characters and string from a tty.
 
 Errors
 ------

@@ -7,9 +7,14 @@ procedure Mcd is
   The_End : Mcd_Mng.End_Status_List;
   use type Mcd_Mng.End_Status_List;
 
-  procedure Close is
+  procedure Close (Hide_Errors : in Boolean) is
   begin
     Io_Flow.Close;
+  exception
+    when others =>
+      if not Hide_Errors then
+        raise;
+      end if;
   end Close;
 
   procedure Set_Error_Code is
@@ -29,14 +34,14 @@ procedure Mcd is
       -- Continue on error
       Io_Flow.Clear_Interactive;
       if Close_Io then
-        Close;
+        Close (True);
       end if;
     else
       -- Terminate on error
       Mcd_Parser.Dump_Stack;
       Mcd_Mng.Dump_Stack;
       if Close_Io then
-        Close;
+        Close (True);
       end if;
       Set_Error_Code;
       if Raise_Error then
@@ -113,7 +118,7 @@ begin
   end if;
 
   -- Done
-  Close;
+  Close (False);
 exception
   when Termin_Error =>
     null;
@@ -121,6 +126,6 @@ exception
     Error ("Exception "
               & Mixed_Str(Ada.Exceptions.Exception_Name (Except))
               & " raised", Raise_Error => False, Close_Io => True);
-    Close;
+    Close (True);
 end Mcd;
 

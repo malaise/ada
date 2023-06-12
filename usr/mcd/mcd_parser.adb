@@ -477,9 +477,9 @@ package body Mcd_Parser is
     end Put_Line;
   begin
     Put_Line ("Usage: " & Argument.Get_Program_Name
-            & " [ -a <bus_address> | <udp> | -t <tcp_port> | -f <file> ]"
-            & "          // default stdin");
-    Put_Line (" or    " & Argument.Get_Program_Name & " -h | --help");
+            & " [ -a <bus_addr> | <udp> | -t <tcp_port> | -f <file>"
+            & " | -h | --help ]");
+    Put_Line ("Default is stdin and stdout.");
     Put_Line ("  <udp>      ::= -u <udp_spec> | -U <udp_spec>");
     Put_Line ("  <udp_spec> ::= [<ipm_lan_name_or_num>]:<udp_port>");
     Put_Line ("  <port>     ::= <port_name> | <port_num>");
