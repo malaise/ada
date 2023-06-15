@@ -8,20 +8,28 @@ procedure Gc is
   procedure Usage is
   begin
     Basic_Proc.Put_Line_Output ("Usage: " & Argument.Get_Program_Name
-      & " [ -x ] | [ --gui ]      // interactive mode");
+      & " [ -x ] | [ --gui ]      // and default: interactive mode");
+    Basic_Proc.Put_Line_Output ("   or: " & Argument.Get_Program_Name
+      & " -r | -- regexp          // show the regexp for each kind of position");
     Basic_Proc.Put_Line_Output ("   or: " & Argument.Get_Program_Name
       & " add.mm.ssss/oddd.mm.ssss add.mm.ssss/oddd.mm.ssss");
     Basic_Proc.Put_Line_Output ("   or: " & Argument.Get_Program_Name
       & " add.ijklmn/oddd.ijklmn add.ijklmn/oddd.ijklmn");
+    Basic_Proc.Put_Line_Output ("     where a is N or S and o is E or W.");
     Basic_Proc.Put_Line_Output ("   or: " & Argument.Get_Program_Name
       & " [<context>:]<mapcode> [<context>:]<mapcode>");
     Basic_Proc.Put_Line_Output ("   or: " & Argument.Get_Program_Name
-      & " <open_location_code> <open_location_code>");
+      & " <open_loc_code> <open_loc_code>");
+    Basic_Proc.Put_Line_Output (
+      "     where <open_loc_code> ::= { <letter_or_digit> } + [ { <letter_or_digit> } ]");
     Basic_Proc.Put_Line_Output ("   or: " & Argument.Get_Program_Name
       & " <geohash36_code> <geohash36_code>");
+    Basic_Proc.Put_Line_Output (
+      "     where <geohash36_code> ::= { <letter_or_digit> } [ @GH36 ]");
     Basic_Proc.Put_Line_Output ("   or: " & Argument.Get_Program_Name
       & " <geohash_code> <geohash_code>");
-    Basic_Proc.Put_Line_Output (" where a is N or S and o is E or W.");
+    Basic_Proc.Put_Line_Output (
+      "     where <geohash_code> ::= { <letter_or_digit> } [ @GH ]");
   end Usage;
 
   Use_Afpx : Boolean;
@@ -55,6 +63,19 @@ procedure Gc is
                := "[23456789bBCdDFgGhHjJKlLMnNPqQrRtTVWX]+(@GH36)?";
   Gh_Pattern : constant String
                := "[0123456789bcdefghjkmnpqrstuvwxyz]+(@HH)?";
+
+  -- Display the regexp pattern for each kind
+  procedure Regexps is
+  begin
+    Basic_Proc.Put_Line_Output ("Regular expression pattern for each kind of position:");
+    Basic_Proc.Put_Line_Output ( "  <sexadecimal>   ::= " & Sexa_Pattern);
+    Basic_Proc.Put_Line_Output ( "  <decimal>       ::= " & Deci_Pattern);
+    Basic_Proc.Put_Line_Output ( "  <mapcode>       ::= " & Map_Pattern);
+    Basic_Proc.Put_Line_Output ( "  <open_loc_code> ::= " & Olc_Pattern);
+    Basic_Proc.Put_Line_Output ( "  <Gh36>          ::= " & Gh36_Pattern);
+    Basic_Proc.Put_Line_Output ( "  <Gh>            ::= " & Gh_Pattern);
+  end Regexps;
+
 
   Mode_Field  : constant Afpx.Field_Range := Afpx_Xref.Main.Mode;
   subtype A_Flds is Afpx.Field_Range
@@ -588,6 +609,11 @@ begin
     and then (Argument.Get_Parameter = "-h"
       or else Argument.Get_Parameter = "--help") then
     Usage;
+    return;
+  elsif Argument.Get_Nbre_Arg = 1
+    and then (Argument.Get_Parameter = "-r"
+      or else Argument.Get_Parameter = "--regepx") then
+    Regexps;
     return;
   elsif Argument.Get_Nbre_Arg = 0 then
     Use_Afpx := True;
