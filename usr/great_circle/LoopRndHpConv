@@ -3,7 +3,7 @@
 # Set a random position P1 (lat, long),
 # Set a random position P2 (lat, long),
 # Compute hp_gc from P1 to P2, as reference
-# For each kind (sexa, deci, map, olc gh36 and gh):
+# For each kind (sexa, deci, map, olc, gh36 and gh):
 # - Convert P1 and P2 into the kind
 # - Compute hp_gc between these values
 # - Check heading and distance versus reference
