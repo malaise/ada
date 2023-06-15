@@ -79,7 +79,7 @@ function check {
 # Regenerate interception scenario
 if [ "$1" = "generate_intercept" ] ; then
   awk '
-    ( ($0 == "") || ($1 == "#") ) {
+    ( ($0 == "") || ($1 ~ /^#/ ) ) {
       print
       next
     }
