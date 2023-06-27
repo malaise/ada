@@ -33,7 +33,7 @@ package body Setup is
             raise Utils.Abort_Game;
           end if;
         when Afpx.Fd_Event =>
-          -- Connected
+          -- Connected?
           exit when Communication.Is_Connected;
         when Afpx.Mouse_Button =>
           if Result.Field_No = Afpx_Xref.Setup.Cancel then
@@ -114,18 +114,20 @@ package body Setup is
     Abort_Game := False;
     Communication.Set_Callback (Receive'Access);
 
-    -- Init ship names
-    Ship := Fleet.Ship_List'First;
-    for I in Afpx_Xref.Setup.Aircraftcarrier
-              .. Afpx_Xref.Setup.Submarines + 1 loop
-      if Afpx.Is_Put_Kind (I) then
-        Fleet.Ship_Names(Ship) := As.U.Tus (Afpx.Decode_Field (I, 0));
-        Ship := Fleet.Ship_List'Succ (Ship);
-      end if;
-    end loop;
-    -- Copy to second submarine
-    Fleet.Ship_Names(Ship) :=
-          Fleet.Ship_Names(Fleet.Ship_List'Pred (Ship));
+    -- Init ship names once
+    if Fleet.Ship_Names(Fleet.Ship_List'First).Is_Null then
+      Ship := Fleet.Ship_List'First;
+      for I in Afpx_Xref.Setup.Aircraftcarrier
+                .. Afpx_Xref.Setup.Submarines + 1 loop
+        if Afpx.Is_Put_Kind (I) then
+          Fleet.Ship_Names(Ship) := As.U.Tus (Afpx.Decode_Field (I, 0));
+          Ship := Fleet.Ship_List'Succ (Ship);
+        end if;
+      end loop;
+      -- Copy to second submarine
+      Fleet.Ship_Names(Ship) :=
+            Fleet.Ship_Names(Fleet.Ship_List'Pred (Ship));
+    end if;
 
     -- Init for setup
     Action := Idle;

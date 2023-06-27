@@ -2,6 +2,26 @@ with Ada.Exceptions;
 with Con_Io, Afpx, As.U, Str_Util;
 with Afpx_Xref, Utils, Communication, Fleet;
 package body Battle is
+  -- Description of the prococol
+  -- 1) Connection (handled by the package Communication)
+  --    The client sends "C" each second
+  --    The sever send "Z" when it accepts
+  -- 2) Setup
+  --    When the user has completed positionning its ships, send "D"
+  --    When "D" has been sent and received then start playing
+  -- 3) Playing
+  --    A player sends "S<cell>"
+  --     <cell> is row ('A' to 'Y') and col ('1' to 'a')
+  --    The other player replies with "R<cell><result>[<ship>]"
+  --     <result> is 'M' (missed or already shot), 'H' (a ship is hit)
+  --       'S' (a ship is hit and sunk), or 'E' (the last ship is hit and sunk)
+  --    <ship> is the ship name un mixed case, appended when not missed
+  -- 4) Resetting
+  --    Once a game is ended (a player has replied 'E') any player can send 'Z'
+  --     to reset the game and restart the setup
+  -- 5) Termination
+  --    Any side can send "E" at any time to terminate the game
+
 
   -- A cell
   type Cell_State is record

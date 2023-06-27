@@ -3,8 +3,9 @@ package Communication is
   -- Has a signal been received
   function Sig_Received return Boolean;
 
-  -- Wait until a partner is connected
+  -- Initialise connection with server
   -- When client, send a "C" (client) each second
+  -- A Fd_Event will be generated when connection is completed
   Init_Error : exception;
   procedure Connect (Addr : in String; Server : in Boolean);
   -- Are we connected? if yes, stop connecting
@@ -25,5 +26,4 @@ package Communication is
   procedure Close;
 
 end Communication;
-
 

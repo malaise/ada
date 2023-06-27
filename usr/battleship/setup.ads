@@ -1,9 +1,9 @@
 package Setup is
 
-  -- Connect, return True if success
+  -- Wait for connection, return True if success
   function Init (Addr : String; Server : Boolean) return Boolean;
 
-  -- Define fleet
+  -- Let the user define the fleet
   procedure Define;
 
 end Setup;

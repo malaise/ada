@@ -54,7 +54,7 @@ package body Communication is
   -- Supervision callback
   procedure Supervise (Report : in Autobus.Sup_Report);
 
-  -- Wait until a partner is connected
+  -- Initialise connection with partner
   -- When client, send a "C" (client) each second
   procedure Connect (Addr : in String; Server : in Boolean) is
   begin
@@ -89,8 +89,9 @@ package body Communication is
   -- Are we connected? if yes, stop connecting
   function Is_Connected return Boolean is
   begin
-    if Connected then
-      -- Done, cancel timer if client and cancel observer
+    if Connected and then Subs.Is_Init then
+      -- First call after connected
+      -- Cancel timer if client and cancel observer
       if not Server then
         Tid.Delete;
       end if;
