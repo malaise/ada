@@ -1,6 +1,6 @@
 Battle Ship
 ===========
-V1.0
+V1.01
 
 General purpose
 ---------------
@@ -10,7 +10,7 @@ and must sink the fleet of his opponent.
 The game is decomposed in two steps:
 
 - Setup: Each player defines his own fleet,
-- Battle: The players try to sink the opponent fleet by shooting  alternatively.
+- Battle: The players try to sink the opponent fleet by shooting alternatively.
 
 Starting the game
 -----------------
@@ -20,17 +20,19 @@ The arguments of the games are:
   also be provided),
 - an optional -s flag for the server (also game leader).
 
+There must be one server and one client.
+
 The game is blocked as long as a client and a server are not connected. The
 title is 'Connecting as server' or 'Connecting as client' during this time.
 
 
 Setting up the fleet
 --------------------
-This step consists in positioning your fleet on the grid.
+This step consists in positionning your fleet on the grid.
 
 Rules
 ~~~~~
-Each grid is a square of 100 squares numbered from A to J vertically and from 1
+Each grid is a square of 100 cells numbered from A to J vertically and from 1
 to 10 horizontally.
 
 Each fleet is composed of:
@@ -65,7 +67,7 @@ anchor:XGrid[] Example:
 Graphical interface
 ~~~~~~~~~~~~~~~~~~~
 The screen is decomposed in two areas: the 'grid' (with the ships placed so
-far) on the left and the available 'actions' on the right.
+far) on the left, and the available 'actions' on the right.
 
 Actions are the list of available ships (the ones that are not already in the
 grid), plus a 'Cancel' button while setting a ship, plus a 'Delete' button
@@ -74,7 +76,7 @@ the ships are placed in the grid),
 
 .Setting a ship
 
-- Select an available ship in the kist of 'actions' area
+- Select an available ship in the list of 'actions' area
   * The ship becomes enhanced and the other ships of the list are masked,
   * A Cancel button appears.
 - Click in a square in the 'grid'. If it is valid:
@@ -137,7 +139,7 @@ The screen is decomposed in two areas:
 
 - Your  local grid on the left, with your ships and the results of the
  opponent's shoots,
-- the target grid on the right, with the results of your shoot.
+- the target grid on the right, with the results of your shoots.
 
 .Waiting for the opponent to play
 When it is your opponent go to shoot, the title is 'Waiting' and your local grid
@@ -196,8 +198,8 @@ Protocol
 - If it is client it periodically sends a "C".
 - When the server receives a "C" it sends a "Z". Both games enter the set-up
   phase.
-- When a game has completed its set-up it sends a "D".
-- When a game has completed its set-up and received a "D" it starts playing:
+- When a stup has completed its set-up it sends a "D".
+- When a stup has completed its set-up and ahs received a "D" it starts playing:
   * the server starts shooting (displays the 'shoot' mode and send the shoot)
   * the client waits for the shoot (displays the shoot received), and replies
 - When the game is ended the server displays the buttons Restart and Exit and
