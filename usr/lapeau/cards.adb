@@ -73,5 +73,11 @@ package body Cards is
     end if;
   end X_To_Card;
 
+  -- Is a stack a Done stack
+  function Is_Done_Stack (Card : Card_Access) return Boolean is
+  begin
+    return Card.Xcard.Is_Symbol;
+  end Is_Done_Stack;
+
 end Cards;
 

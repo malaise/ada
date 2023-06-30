@@ -93,5 +93,12 @@ package body Cards is
     return Card.Xcard.Get_Name in Play_Stack_Range;
   end Is_Play_Stack;
 
+  -- Is a stack a Done stack
+  function Is_Done_Stack (Card : Card_Access) return Boolean is
+  begin
+    return Card.Xcard.Is_Symbol;
+  end Is_Done_Stack;
+
+
 end Cards;
 

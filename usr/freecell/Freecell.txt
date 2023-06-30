@@ -1,6 +1,6 @@
 Freecell
 ========
-V4.1
+V4.2
 
 Freecell is a famous solitaire card game.
 
@@ -56,7 +56,8 @@ this number is invalid.
 .On the right side are the functions that interact with the current game:
 
 Purge::
-This button moves in the Done stacks as many cards as possible.
+This button moves in the Done stacks as many cards as possible. +
+A double (left) click on any Done stack has the same effect.
 
 Undo::
 This button un-does one by one the previous card movements (potentially up

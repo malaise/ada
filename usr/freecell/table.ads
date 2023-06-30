@@ -34,7 +34,7 @@ package Table is
   -- Wait infinitely for next event, on card, on menu or Break
   type Event_List is (Left_Pressed, Left_Released,
                       Right_Pressed, Right_Released,
-                      Enter, Leave,
+                      Double_Click, Enter, Leave,
                       Quit, New_Game, Start, Purge, Undo, Redo,
                       Num);
   subtype Card_Event_List is Event_List range Left_Pressed .. Leave;

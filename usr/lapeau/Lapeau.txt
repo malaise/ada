@@ -1,6 +1,6 @@
 La Peau
 =======
-V4.1
+V4.2
 
 "La Peau" is a solitaire card game.
 
@@ -65,7 +65,8 @@ current policy is indicated.
 
 Purge::
 This button moves in the Done stacks as many cards as possible, according to
-the current stacking policy.
+the current stacking policy. +
+A double (left) click on any Done stack has the same effect.
 
 Undo::
 This button un-does one by one the previous card movements (potentially up

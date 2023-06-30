@@ -53,6 +53,8 @@ package Cards is
   -- Is a stack a Play or a Tmp stack
   function Is_Play_Stack (Card : Card_Access) return Boolean;
 
+  -- Is a stack a Done stack
+  function Is_Done_Stack (Card : Card_Access) return Boolean;
   ----------------------
   -- Suits and Colors --
   ----------------------

@@ -25,6 +25,25 @@ procedure Lapeau is
   end Reset;
 
   use type Cards.Deck.Full_Suit_List;
+
+  -- Save selection, purge and restore selection
+  procedure Purge is
+  begin
+    -- Save selection
+    Tmp_Card := Selected_Source;
+    Reset;
+    Movements.Purge;
+    -- Restore selection if it has not been purged in Done stack
+    if Tmp_Card /= null
+    and then Tmp_Card.Stack.Suit = Cards.Deck.Empty then
+      Selected_Source := Tmp_Card;
+      Tmp_Card.Xcard.Do_Select;
+      Status := Selected;
+    end if;
+  end Purge;
+
+  use type Table.Event_List;
+
 begin
   -- Init traces to debug: Not useful any more
   -- Trace.Init_Env (
@@ -118,17 +137,7 @@ begin
           Table.Update_Policy;
         end if;
       when Table.Purge =>
-        -- Save selection
-        Tmp_Card := Selected_Source;
-        Reset;
-        Movements.Purge;
-        -- Restore selection if it has not been purged in Done stack
-        if Tmp_Card /= null
-        and then Tmp_Card.Stack.Suit = Cards.Deck.Empty then
-          Selected_Source := Tmp_Card;
-          Tmp_Card.Xcard.Do_Select;
-          Status := Selected;
-        end if;
+        Purge;
       when Table.Undo =>
         if Memory.Can_Undo then
           Reset;
@@ -256,7 +265,7 @@ begin
             end if;
 
         end case;
-      when Table.Right_Pressed =>
+      when Table.Right_Pressed | Table.Double_Click =>
         if Event.Card /= null
         and then Event.Card.Suit /= Cards.Deck.Empty
         and then (Status = Selectable
@@ -284,6 +293,11 @@ begin
               Table.Console.Set_Pointer_Shape (Con_Io.Arrow);
             end if;
           end if;
+        elsif Event.Kind = Table.Double_Click
+        and then Event.Card /= null
+        and then Cards.Is_Done_Stack (Event.Card.Stack) then
+          -- Double click on a Done stack
+          Purge;
         end if;
       when Table.Right_Released =>
         null;

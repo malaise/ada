@@ -241,8 +241,8 @@ package body Table is
           Time := Ada.Calendar.Clock;
           if Event = Prev_Click
           and then Time - Prev_Time < Console.Get_Double_Click_Delay then
-            -- Yes => transform into a righ click
-            Event := (Right_Pressed, Acc);
+            -- Yes
+            Event := (Double_Click, Acc);
             Prev_Click := No_Click;
             Prev_Time := Perpet.Origin;
           else

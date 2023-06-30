@@ -45,6 +45,9 @@ package Cards is
   --  null if not found in cards or stacks
   function X_To_Card (Ref : X_Mng.External_Reference) return Card_Access;
 
+  -- Is a stack a Done stack
+  function Is_Done_Stack (Card : Card_Access) return Boolean;
+
   ----------------------
   -- Suits and Colors --
   ----------------------
