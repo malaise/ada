@@ -274,6 +274,14 @@ begin
       when Table.Right_Released =>
         null;
     end case;
+
+    -- Unselect after double click
+    if Event.Kind = Table.Double_Click
+    and then Event.Card /= null
+    and then Event.Card.Xcard.Is_Selected then
+      Event.Card.Xcard.Un_Select;
+    end if;
+
   end loop;
 exception
   when Invalid_Argument =>
