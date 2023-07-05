@@ -266,7 +266,7 @@ package body Mutexes is
   ----------------------------------------------------------------------------
 
   function Get (A_Mutex      : in out Mutex;
-                Waiting_Time : in Duration;
+                Waiting_Time : in Duration := Infinite;
                 Kind         : in Access_Kind := Read) return Boolean is
     Result : Boolean;
   begin
@@ -313,15 +313,12 @@ package body Mutexes is
     return Result;
   end Get;
 
-  function Get (A_Mutex : in out Mutex) return Boolean is
-    (Get (A_Mutex, -1.0, Read));
-
   -- Get a mutex : infinite wait
   procedure Get (A_Mutex      : in out Mutex;
                  Kind         : in Access_Kind := Read) is
     Dummy : Boolean;
   begin
-    Dummy := Get (A_Mutex, -1.0, Kind);
+    Dummy := Get (A_Mutex, Infinite, Kind);
   end Get;
 
   -- Release a mutex

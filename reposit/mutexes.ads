@@ -21,25 +21,27 @@ package Mutexes is
               Recursive : Boolean) is tagged limited private;
   subtype Simple_Mutex is Mutex (Simple, False);
 
+
   -- Get access to a mutex.
   -- Simple mutex provides exclusive access (Access_Kind is not significant).
   -- With RW mutex (Read_Write or Write_Read), simultaneous read are possible,
   --  but there is only one writer at a time and no reader at that time.
   -- If delay is negative, wait until mutex is got,
+  Infinite : constant Duration := -1.0;
   -- If delay is null, try and give up if not free,
-  -- If delay is positive, try during the specified delay.
+  -- If delay is positive, try during the specified delay and return True
+  --  if access is granted (False = timeout).
   -- Raises Already_Got if the mutex is not Recursive and if the current task
   --  has already got the simple mutex or if it has already got the RW mutex
   --  for write.
   -- Note that there is no check of "Read then Write" deadlock.
   Already_Got : exception;
   function Get (A_Mutex      : in out Mutex;
-                Waiting_Time : in Duration;
+                Waiting_Time : in Duration := Infinite;
                 Kind         : in Access_Kind := Read) return Boolean;
   -- Get access to a mutex : infinite wait.
   procedure Get (A_Mutex      : in out Mutex;
                  Kind         : in Access_Kind := Read);
-  function Get (A_Mutex : in out Mutex) return Boolean;
 
 
   -- Release access to a mutex.
