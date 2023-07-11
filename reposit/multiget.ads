@@ -1,4 +1,4 @@
--- Allows to get/unget/re-get items (from a input flow?)
+-- Allows to get/unget/re-get items (from a input flow)
 private with Dynamic_List;
 generic
   -- The type of item got
@@ -46,8 +46,8 @@ package Multiget is
   function Nb_Unget (Getter : Multigetter) return Unget_Range;
 
   -- Ungets one or several gets (0 for all, Nb_Unget)
-  -- Raises To_Many_Unget if Number > Nb_Unget (e.g. recording inactive)
-  To_Many_Unget : exception;
+  -- Raises Too_Many_Unget if Number > Nb_Unget (e.g. recording inactive)
+  Too_Many_Unget : exception;
   procedure Unget (Getter : in out Multigetter; Number : in Natural := 1);
 
   -- Resets the unget buffer

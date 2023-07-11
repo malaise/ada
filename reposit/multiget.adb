@@ -99,11 +99,11 @@ package body Multiget is
      else Getter.Item_List.Get_Position - Getter.Offset);
 
   -- Ungets one or several gets (0 for all, Nb_Unget)
-  -- Raises To_Many_Unget if Number > Nb_Unget (e.g. recording inactive)
+  -- Raises Too_Many_Unget if Number > Nb_Unget (e.g. recording inactive)
   procedure Unget (Getter : in out Multigetter; Number : in Natural := 1) is
   begin
     if not Getter.Recording then
-      raise To_Many_Unget;
+      raise Too_Many_Unget;
     end if;
     if Number = 0 then
       -- Unget all
@@ -115,7 +115,7 @@ package body Multiget is
       return;
     end if;
     if Number > Nb_Unget (Getter) then
-      raise To_Many_Unget;
+      raise Too_Many_Unget;
     end if;
     if Getter.Item_List.Get_Position = 1 then
       -- Already ungot all items but first, simulate move at index -1
