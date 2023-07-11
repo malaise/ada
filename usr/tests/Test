@@ -1954,7 +1954,7 @@ fi
 # t_syslin
 if `match $arg t_syslin` ; then
   title t_syslin
-  try t_syslin syslin3.dat
+  try t_syslin data/syslin3.dat
   cat << EOF >exp
 > 3  2  1   0<
 > 2  1 -1   5<
@@ -1963,7 +1963,7 @@ Unable to solve: Determinant is nul.
 EOF
   comp err nul
   comp out exp
-  try t_syslin syslin2.dat
+  try t_syslin data/syslin2.dat
   cat << EOF >exp
 >2   1      7<
 >1   2      8<

@@ -1,12 +1,10 @@
 with U_Rand, Basic_Proc, Normalization, Text_Line;
 procedure T_Urand is
-    Test_File : Text_Line.File_Type;
-    File_Name : constant String := "T_URAND.DAT";
-    subtype A_Result is String(1..12);
-    type Results_Type is array(1..6) of A_Result;
-    Actual_Results : Results_Type;
+    subtype Result is String(1..12);
+    type Results is array(1..6) of Result;
+    Tmp_Result : Result;
     Results_Ok : Boolean := True;
-    Expected_Results : constant Results_Type
+    Expected_Results : constant Results
                      := (1=>"  6533892.00",
                          2=>" 14220222.00",
                          3=>"  7275067.00",
@@ -20,25 +18,17 @@ begin
       U_Rand.Next (Gen, Rnum);
     end loop;
 
-    Test_File.Create_All (File_Name);
-    for I in 1 .. 6 loop
-      U_Rand.Next (Gen, Rnum);
-      Test_File.Put (Normalization.Normal_Fixed (2.0 ** 24 * Rnum,
-                                                A_Result'Length, 9, '0'));
-      Test_File.New_Line;
-    end loop;
-
-    Test_File.Close_All;
-    Test_File.Open_All (Text_Line.In_File, File_Name);
     Basic_Proc.Put_Output ("Expected Results    ");
     Basic_Proc.Put_Line_Output ("Actual Results");
 
-    for I in 1 .. 6 loop
-      Actual_Results(I) := Text_Line.Trim(Test_File.Get);
+    for I in Results'Range loop
+      U_Rand.Next (Gen, Rnum);
       Basic_Proc.Put_Output (Expected_Results(I));
       Basic_Proc.Put_Output ("         ");
-      Basic_Proc.Put_Line_Output (Actual_Results(I));
-      if Actual_Results(I) /= Expected_Results(I) then
+      Tmp_Result := Normalization.Normal_Fixed (2.0 ** 24 * Rnum,
+                                                Tmp_Result'Length, 9, '0');
+      Basic_Proc.Put_Line_Output (Tmp_Result);
+      if Tmp_Result  /= Expected_Results(I) then
         Results_Ok := False;
       end if;
     end loop;
