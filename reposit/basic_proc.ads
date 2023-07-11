@@ -1,3 +1,4 @@
+-- Basic interactions procedures: input, output, exit code
 package Basic_Proc is
 
   -- Any Put can raise (for ex on EPIPE)

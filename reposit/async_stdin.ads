@@ -1,3 +1,4 @@
+-- Handle user inputs asynchronously (call a callback with the input text)
 with Sys_Calls;
 package Async_Stdin is
 

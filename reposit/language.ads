@@ -1,5 +1,5 @@
-with Unicode, Utf_8;
 -- Set the language for character encoding
+with Unicode, Utf_8;
 package Language is
 
   -- When called with Get_Env, then Lang_Utf_8 is set if a Getenv on "LANG"

@@ -1,10 +1,11 @@
+-- Dynamic list of limited private type
+-- Indexes and positions are long_long
 private with Ada.Finalization;
 with Long_Longs;
 generic
   -- Type of the element of the list
   type Element_Type is limited private;
   with procedure Set (To : out Element_Type; Val : in Element_Type);
-
 package Long_Long_Limited_List is
 
   -- Descriptor of the list

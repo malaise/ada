@@ -1,6 +1,6 @@
+-- Mathematical types, constants and operations
 with Ada.Numerics;
 with Long_Longs;
--- Mathematical types, constants and operations
 package My_Math is
 
   subtype Inte is Long_Longs.Ll_Integer;

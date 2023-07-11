@@ -5,6 +5,7 @@ package body Mutexes is
   function Image (Id : in Ada.Task_Identification.Task_Id) return String
            renames Ada.Task_Identification.Image;
 
+  -- Trace (on stdout) a message if ENV TRACE_Mutexes is "Y" or "Yes"
   Debug_Set : Boolean := False;
   Debug_On : Boolean := False;
   procedure Trace (Id : in Ada.Task_Identification.Task_Id;
@@ -26,6 +27,8 @@ package body Mutexes is
     when Sys_Calls.Env_Not_Set =>
       null;
   end Trace;
+
+  ----------------------------------------------------------------------------
 
   -- The protected object which implements the simple mutex
   protected body Si_Mutex_Protect is
@@ -98,8 +101,7 @@ package body Mutexes is
       requeue Queues(Current_Queue) with abort;
     end Mutex_Get;
 
-    -- Releases the lock. No Check of kind but the lock must have been
-    -- got.
+    -- Releases the lock. No Check of kind but the lock must have been got.
     procedure Mutex_Release (Full : in Boolean) is
     begin
       if Readers > 0 then
@@ -194,7 +196,7 @@ package body Mutexes is
 
   ----------------------------------------------------------------------------
 
-  -- The write/read access lock and queues. No time.
+  -- The protected object which implements the write/read mutex
   protected body Wr_Mutex_Protect is
 
     -- Gets the lock. Blocking.
@@ -265,6 +267,7 @@ package body Mutexes is
 
   ----------------------------------------------------------------------------
 
+  -- The API, implementing timeout and dispatching to the proper kind
   function Get (A_Mutex      : in out Mutex;
                 Waiting_Time : in Duration := Infinite;
                 Kind         : in Access_Kind := Read) return Boolean is

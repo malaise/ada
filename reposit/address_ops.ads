@@ -1,4 +1,4 @@
--- Operation on addresses
+-- Operations on addresses
 with System;
 with Long_Longs;
 package Address_Ops is

@@ -1,3 +1,4 @@
+-- Scan a date from text, format a date into a text
 with Ada.Calendar;
 with Day_Mng;
 package Date_Text is

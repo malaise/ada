@@ -1,3 +1,4 @@
+-- Defintion of Ada keywords (depending on Ada version)
 with Trilean;
 package Ada_Words.Keywords is
 

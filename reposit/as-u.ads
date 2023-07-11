@@ -1,3 +1,4 @@
+-- Management of unbounded strings
 private with Ada.Finalization;
 package As.U is
 

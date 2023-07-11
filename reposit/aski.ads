@@ -1,4 +1,4 @@
--- Strict ANSI character definition and conversion to/from Unicode
+-- Strict ANSI character definition
 with Ada.Characters.Latin_1;
 package Aski is
 

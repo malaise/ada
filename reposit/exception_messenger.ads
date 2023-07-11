@@ -1,4 +1,3 @@
-with Ada.Exceptions, Ada.Unchecked_Deallocation;
 -- In Ada.Exceptions, the string returned by Exception_Message may be truncated
 -- (to no less than 200 characters).
 -- This package allows storing in a global pool a "long" message and
@@ -11,6 +10,7 @@ with Ada.Exceptions, Ada.Unchecked_Deallocation;
 -- Application shall ensure that exceptions raised through Exception_Messenger
 --  are caught and that Exception_Message is called on their occurence,
 --  otherwise the pool will keep on growing.
+with Ada.Exceptions, Ada.Unchecked_Deallocation;
 with As.U;
 package Exception_Messenger is
 

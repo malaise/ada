@@ -1,3 +1,4 @@
+-- Acctivate periodically a given task (preemptive)
 private with Timers;
 generic
 

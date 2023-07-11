@@ -1,3 +1,5 @@
+-- Some types for Afpx.
+-- Some of them are used through Afpx API
 with As.U, Unicode, Con_Io;
 package Afpx_Typ is
 

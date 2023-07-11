@@ -1,3 +1,4 @@
+-- Assert validity of prerequists
 -- Note that the overall Assertion behavior can be de-activated at compile time
 package Assertion is
 

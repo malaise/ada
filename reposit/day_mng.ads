@@ -1,8 +1,7 @@
+-- Convert Ada.Calendar.Day_Duration from/to Hours, Minutes, Seconds and Millis
+--  and other similar convertions
 with Ada.Calendar;
 package Day_Mng is
-
-  -- Convert Ada.Calendar.Day_Duration
-  --  in Hours, Minutes, Seconds and Millisec
 
   subtype T_Hours     is Natural range 0 ..  23;
   subtype T_Minutes   is Natural range 0 ..  59;

@@ -1,6 +1,6 @@
+-- Log messages in a file or flow
 with As.U;
 private with Text_Line, Mutexes;
--- Log messages in a file or flow
 package Trace is
 
   -- General concepts for Basic_Logger (defined hereafter)

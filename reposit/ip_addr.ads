@@ -1,3 +1,4 @@
+-- Parse or put an IP address (4 bytes)
 with Socket, Tcp_Util;
 package Ip_Addr is
   -- Separator between addr and port (for parsing an image)

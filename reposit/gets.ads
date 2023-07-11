@@ -1,3 +1,4 @@
+-- Get from a string an Integer, a Ll_Integer, a Llu_Natural, a Float, a Real...
 with Long_Longs, My_Math, Arbitrary;
 package Gets is
   -- Get an Integer, a Ll_Integer, a Llu_Natural, a Float, a Real, a Duration

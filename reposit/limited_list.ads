@@ -1,3 +1,5 @@
+-- Dynamic list of limited private type
+-- Indexes and positions are integers
 with Long_Long_Limited_List;
 generic
   -- Type of the element of the list

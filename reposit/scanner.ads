@@ -1,7 +1,7 @@
+-- Convert data (string) into a sequence of Anys, according to a given
+--  format (string)
 with Any_Def, Unbounded_Arrays;
 package Scanner is
-  -- Convert data (string) into a sequence of Anys, according to a given
-  --  format (string)
 
   -- An array and a sequence of Anys
   type Any_Array is array (Positive range <>) of Any_Def.Any;

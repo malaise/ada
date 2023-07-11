@@ -1,6 +1,6 @@
+-- Store several strings into one, (using a specific character as separator).
 private with Unbounded_Arrays;
 with Aski, As.U;
--- Store several strings into one, (using a specific character as separator).
 package Many_Strings is
 
   -- Separator of strings in a Many_String image

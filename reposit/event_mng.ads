@@ -1,6 +1,6 @@
+-- Event (on fd, timer, signal...) management
 with Sys_Calls, Timers;
 private with Trace;
--- Event management
 package Event_Mng is
 
   -------------------

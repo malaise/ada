@@ -1,6 +1,6 @@
+-- Various convertions from numbers to string
 with Ada.Calendar;
 with Long_Longs, Arbitrary;
--- Various convertions from numbers to string
 package Images is
 
   -- Image of a discrete type (Mixed_String)

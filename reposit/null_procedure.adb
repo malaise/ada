@@ -1,3 +1,4 @@
+-- Null procedure
 procedure Null_Procedure is
 begin
   null;

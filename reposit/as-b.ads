@@ -1,3 +1,4 @@
+-- Management of bounded strings
 package As.B is
 
   -- Bounded strings

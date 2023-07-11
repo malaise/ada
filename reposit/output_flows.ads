@@ -1,3 +1,4 @@
+-- Homogeneous access to Stdout, Stderr (synchronous or not) or a file
 private with As.U, Dynamic_List, Smart_Alias;
 with Text_Line;
 package Output_Flows is

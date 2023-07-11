@@ -1,3 +1,5 @@
+-- Look successively in a rule (set of patterns) to find a pattern
+--   with which a given string matches.
 with Parser;
 package Pattern is
 

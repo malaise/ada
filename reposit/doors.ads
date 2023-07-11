@@ -1,3 +1,4 @@
+-- Doors to synchronize several threads
 with Conditions;
 package Doors is
 

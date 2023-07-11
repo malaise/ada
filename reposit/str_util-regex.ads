@@ -1,6 +1,5 @@
 -- More powerfull search and substitution in strings,
---  based on regular expressions (extended, case sensitive and matching
---  newline).
+--  based on regular expressions (extended, case sensitive and matching newline)
 with As.U.Utils;
 with Reg_Exp;
 package Str_Util.Regex is

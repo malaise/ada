@@ -1,5 +1,5 @@
-with C_Types;
 -- Lzf compression
+with C_Types;
 package Lzf is
 
   -- An array of bytes to (un)compress

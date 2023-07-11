@@ -1,4 +1,3 @@
-
 --------------------------------------------------------------------------
 -- The following is an implementation of a "universal" random number    --
 -- generator algorithm developed by Dr. George Marsaglia of the         --
@@ -8,7 +7,6 @@
 -- 16 bit integer arithmetic and 24 bit floating point. This algorithm  --
 -- does not generate random numbers < 2**-24.
 --------------------------------------------------------------------------
-
 package U_Rand is
 
   M1 : constant := 179;

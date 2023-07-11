@@ -1,3 +1,4 @@
+-- A hashed list is a storage of elements that are accessed through hashing
 private with Long_Long_Limited_List;
 with Long_Longs, Hashing;
 generic

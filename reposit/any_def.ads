@@ -1,3 +1,4 @@
+-- Defintion of type Anyi, which cen be an integer, a float, text...
 with System;
 with Trilean, Long_Longs, My_Math, As.U, Arbitrary;
 package Any_Def is

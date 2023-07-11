@@ -1,3 +1,4 @@
+-- Conditions to synchronize several threads
 with Locks;
 private with Ada.Task_Identification;
 package Conditions is

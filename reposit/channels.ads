@@ -1,3 +1,5 @@
+-- Communication channels (reliable and not reliable) on which to
+--  exchange typed messages
 package Channels is
 
   -----------------

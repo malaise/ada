@@ -1,3 +1,5 @@
+-- A unique list is a hashed list where at most one element of a given value
+--  (in the sense of "=") is stored.
 generic
 package Hashed_List.Unique is
 

@@ -1,8 +1,3 @@
-with Ada.Finalization;
-with Long_Longs;
-private with Magic_Numbers, Queues, Text_Char, Byte_To_Unicode,
-             Long_Long_Limited_Pool, Hashed_List.Unique;
-with As.U, Trees, Trilean;
 -- Parse a Xml file or string.
 -- Call callback while parsing, or provide access to the tree after parsing.
 -- Limitations:
@@ -16,6 +11,12 @@ with As.U, Trees, Trilean;
 --    XML_PARSER_MAP_DIR to the path where Byte_To_Unicode can find the mapping
 --    file, named <ENCODING>.xml (in uppercase, ex: ISO-8859-9.xml).
 --  * Namespaces are not checked for the validity of URI references.
+
+with Ada.Finalization;
+with Long_Longs;
+private with Magic_Numbers, Queues, Text_Char, Byte_To_Unicode,
+             Long_Long_Limited_Pool, Hashed_List.Unique;
+with As.U, Trees, Trilean;
 package Xml_Parser is
 
   -- Version incremented at each significant change

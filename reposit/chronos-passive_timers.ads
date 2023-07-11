@@ -1,3 +1,5 @@
+-- A passive timer is a kind of chorono that allows to know if a
+--  timeout as expired (instead of reading time)
 with Timers;
 package Chronos.Passive_Timers is
 

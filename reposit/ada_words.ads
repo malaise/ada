@@ -1,3 +1,4 @@
+-- Basic lexical definition of Words in Ada
 package Ada_Words is
 
   -- Space, Tab or newline

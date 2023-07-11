@@ -1,3 +1,4 @@
+-- Timers that generate Timeout in  Event_Mng
 private with Smart_Reference, Dynamic_List;
 with Any_Def, Perpet, Virtual_Time;
 package Timers is

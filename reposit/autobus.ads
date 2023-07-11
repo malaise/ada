@@ -1,4 +1,4 @@
--- Simple API for reliable message passing
+-- Simple API for exchanging messages (reliably or not) through channels
 private with Ada.Finalization;
 private with Chronos.Passive_Timers, Dynamic_List, Reg_Exp, Timers,
              Limited_List;
@@ -38,7 +38,7 @@ package Autobus is
   --  the partners, each of them dispatching the message to the local observers.
   -- Each partner on a reliable bus can be
   --  * either active: it periodically sends a live message, so that the other
-  --    partner cat detect its death in any circumstance with a watchdog,
+  --    partner can detect its death in any circumstance with a watchdog,
   --  * or passive: its sudden death can only be detected by the closure of the
   --    TCP connection.
   --  Active mode can be useful for servers, while passive mode might be more

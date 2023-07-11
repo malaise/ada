@@ -1,5 +1,5 @@
-with C_Types;
 -- Lz4 compression
+with C_Types;
 package Lz4 is
 
   -- An array of bytes to (un)compress

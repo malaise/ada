@@ -1,3 +1,4 @@
+-- Operations on complex numbers
 with My_Math;
 package Complexes is
 

@@ -1,5 +1,5 @@
-with C_Types;
 -- Snappy compression
+with C_Types;
 package Snappy is
 
   -- An array of bytes to (un)compress

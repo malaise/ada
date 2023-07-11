@@ -1,3 +1,4 @@
+-- Basic management of playing cards, at X11 level
 generic
 package X_Mng.Cards is
 

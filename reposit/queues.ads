@@ -1,3 +1,4 @@
+-- FIFO, LIFO and circular queues
 with Long_Longs;
 package Queues is
   subtype Len_Range is Long_Longs.Ll_Natural;

@@ -1,3 +1,4 @@
+-- Managment of input/output screens
 with As.U, Unicode, Con_Io, Long_Long_Limited_List;
 with Afpx_Typ;
 package Afpx is

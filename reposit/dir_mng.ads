@@ -1,5 +1,5 @@
-with As.U, Dynamic_List, Directory;
 -- Make a list of entries of a directory
+with As.U, Dynamic_List, Directory;
 package Dir_Mng is
 
   -- List of entries in a directory

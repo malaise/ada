@@ -1,8 +1,8 @@
-with C_Types, Long_Longs;
 -- Lz4-like compression of large buffer.
 -- The algorithm is quite similar to lz4, but enhanced to support large
 --  reference offset (see implementation details in the body).
 -- As a consequence, the compressed format is not compatible with lz4.
+with C_Types, Long_Longs;
 package Lz4L is
 
   -- A (large) array of bytes to (un)compress

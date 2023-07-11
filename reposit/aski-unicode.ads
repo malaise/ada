@@ -1,4 +1,4 @@
--- Strict ANSI character definition and conversion to/from Unicode
+-- Strict ANSI character conversion to/from Unicode
 with Unicode;
 package Aski.Unicode is
   -- Usefull redefinitions

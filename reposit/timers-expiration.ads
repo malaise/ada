@@ -1,10 +1,8 @@
+--------------------------------------------------------------------
+-- The operations of this package are used by Event_Mng and X_Mng --
+-- They should not be used by "normal" applications               --
+--------------------------------------------------------------------
 package Timers.Expiration is
-
-  --------------------------------------------------------------------
-  -- The operations of this package are used by Event_Mng and X_Mng --
-  -- They should not be used by "normal" applications               --
-  --------------------------------------------------------------------
-
   -- For each timer for which the expiration time/delay is reached
   --  its callback is called
   --  then, if periodical it is re-armed (and may expire)

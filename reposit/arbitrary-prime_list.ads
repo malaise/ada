@@ -1,3 +1,4 @@
+-- Search prime numbers of arbitrary precision
 package Arbitrary.Prime_List is
 
   subtype Positive_Number is Number;

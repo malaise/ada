@@ -1,3 +1,5 @@
+-- Dynamic list Dynamic list of limited private type
+-- Indexes and positions are arbitrary precision numbers
 private with Ada.Finalization;
 generic
   -- Type of the element of the list

@@ -1,3 +1,4 @@
+-- Inputs / outputs on console (X11 window)
 private with Ada.Calendar;
 private with Smart_Reference, Dynamic_List, Perpet;
 with As.U, X_Mng, Timers, Unicode, Aski.Unicode;

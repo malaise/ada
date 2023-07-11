@@ -1,7 +1,7 @@
+-- Management of directory and file names
 private with System;
 private with Smart_Reference;
 with As.U, Sys_Calls;
--- Management of directory and file names
 package Directory is
 
   Max_Dir_Name_Len : constant := 1024;

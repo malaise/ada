@@ -1,4 +1,4 @@
--- Bencoder library that encodes  Xml <-> Bencode
+-- Bencoder library that encodes Xml <-> Bencode
 with C_Types;
 package Bencode is
 

@@ -1,3 +1,4 @@
+-- Ada preprocessor for conditional compilation
 with Basic_Proc, Trace.Loggers, As.U, Argument, Argument_Parser, Long_Longs,
      Mixed_Str, Str_Util.Regex, Ada_Words, Text_Line, Unbounded_Arrays,
      Many_Strings, Reg_Exp, Unlimited_Pool;

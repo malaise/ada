@@ -1,4 +1,4 @@
--- Parser of keywords
+-- Parser of user-defined keywords
 private with Hashed_List.Unique;
 with As.U;
 generic

@@ -1,3 +1,4 @@
+-- Put an int I, a mod, a digits... in a string of fixed length Len.
 with My_Math;
 package Normalization is
 

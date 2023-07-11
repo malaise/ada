@@ -1,3 +1,4 @@
+-- Type from C, for interfacing with C
 package C_Types is
 
   -- Basic types

@@ -1,7 +1,6 @@
+-- Stores the content of a file in a hashed list, one entry per line
 with As.U, Long_Longs, Hashing, Hashed_List;
 package File_Hash is
-
-  -- Stores the content of a file in a hashed list, one entry per line
 
   -- The goal is to store the hash of the line (0 to FFF) and a reasonable
   --  length of the line (x?) in *FFF.

@@ -1,7 +1,6 @@
+-- Extracts arguments from command line
 with As.U;
 package Argument is
-
-  -- Extracts arguments from command line:
 
   -- Each argument of the command line can be preceeded by a key sequence:
   --  a separator ('-') and a key string.

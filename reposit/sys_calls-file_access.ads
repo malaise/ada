@@ -1,3 +1,4 @@
+-- Manage rights of users to access files
 package Sys_Calls.File_Access is
 
   -- Check that a user (User_Id, Group_Id) has access (read/write/exec)

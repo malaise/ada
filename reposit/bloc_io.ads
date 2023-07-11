@@ -1,4 +1,4 @@
--- Perform read/write of several Element_Type in file
+-- Read/write blocks of several Element_Type in file
 private with System;
 private with Ada.Finalization;
 with Ada.Io_Exceptions;
