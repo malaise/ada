@@ -1,4 +1,4 @@
-with U_Rand, Basic_Proc, Normalization, Text_Line;
+with U_Rand, Basic_Proc, Normalization;
 procedure T_Urand is
     subtype Result is String(1..12);
     type Results is array(1..6) of Result;
