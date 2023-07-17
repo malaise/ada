@@ -13,6 +13,8 @@ if [ "$1" = "clean" ]  ; then
   clean
   exit 0
 fi
+# Finally clean if no error
+export final_clean="1"
 
 # Error message
 function error {
@@ -109,10 +111,12 @@ function comp {
   if [ $ok -eq 1 ] ; then
     if [ $res -ne 0 ] ; then
       error "File $1 differs from expected $2."
+      finaL_clean=0
     fi
   else
     if [ $res -eq 0 ] ; then
       error "File $1 should differs from expected $2."
+      finaL_clean=0
     fi
   fi
 }
@@ -1587,6 +1591,34 @@ EOF
   echo "OK"
 fi
 
+# t_pattern
+if `match $arg t_pattern` ; then
+  echo -e auto | t_pattern >out 2>err
+  cat << EOF >exp
+Called Cb ( 3, 20, 1, tail: >foo<).
+OK
+Called Cb ( 3, 10, 2, tail: >foo<).
+OK
+Called Cb ( 3, 30, 1, tail: >alias<).
+OK
+Called Cb ( 3, 100, 0, tail: >notif<>alias<).
+OK
+Called Cb ( 3, 40, 1, tail: ).
+OK
+Called Cb ( 3, 40, 1, tail: ).
+OK
+Called Cb ( 3, 10, 1, tail: >foo<).
+OK
+Called Cb ( 3, 10, 2, tail: >foo<).
+OK
+Auto test OK.
+EOF
+  comp err nul
+  comp out exp
+  echo "OK"
+fi
+
+
 # t_perpet
 if `match $arg t_perpet` ; then
   title t_perpet
@@ -2471,6 +2503,9 @@ EOF
   echo "OK"
 fi
 
-clean
+# Cean except if error
+if [ "$final_clean" = "1" ] ; then
+  clean
+fi
 echo "Done."
 

@@ -1,3 +1,4 @@
+-- Interactive test of Pattern, one command triggers an automatic test:q
 with Basic_Proc, As.U, Parser, Pattern, Lower_Str;
 procedure T_Pattern is
 
@@ -339,6 +340,9 @@ begin
     exception
       when Pattern.Invalid_Pattern =>
         Basic_Proc.Put_Line_Output ("EXCEPTION: Invalid_Pattern");
+      when Basic_Proc.End_Error =>
+        -- End of input flow
+        exit;
     end;
   end loop;
   Pattern.Del_Rule (Mr);
