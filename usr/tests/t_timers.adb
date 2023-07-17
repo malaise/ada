@@ -7,7 +7,7 @@
 -- Escape suspends the Periodic and the Single (if not expired)
 -- Return resumes them
 
-with Basic_Proc, Afpx, Timers, Rnd, Event_Mng, Mixed_Str;
+with Basic_Proc, Afpx, Afpx_Xref, Timers, Rnd, Event_Mng, Mixed_Str;
 procedure T_Timers is
 
   -- Afpx stuff
@@ -134,7 +134,7 @@ begin
   end loop;
 
   -- Afpx init
-  Afpx.Use_Descriptor (6);
+  Afpx.Use_Descriptor (Afpx_Xref.T_Timers.Dscr_Num);
 
 
   loop

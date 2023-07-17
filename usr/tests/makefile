@@ -5,6 +5,7 @@ ADAVIEW := $(REPOSIT)
 ADACTL := true
 
 AFPX := true
+AFPX_XREF := afpx_xref
 
 EXES := $(filter-out t_smart_int, $(ALLUNITS))
 

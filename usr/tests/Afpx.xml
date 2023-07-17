@@ -8,7 +8,7 @@
     <Default_Background Color="Dark_Grey"/>
   </Color_Definitions>
 
-  <Descriptor Num="1" Background="Brown">
+  <Descriptor Num="1" Background="Brown" Name="t_afpx">
 
     <List>
       <Geometry Up="6" Left="48" Low="20" Right="78"/>
@@ -173,7 +173,7 @@
 
 
   <!-- For T_Timers -->
-  <Descriptor Num="6">
+  <Descriptor Num="6" Name="T_Timers">
 
     <Field Num="1" Kind="Put">
       <Geometry Up="0" Left="0" Low="24" Right="79"/>
