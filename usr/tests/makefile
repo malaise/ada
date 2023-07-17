@@ -7,7 +7,7 @@ ADACTL := true
 AFPX := true
 AFPX_XREF := afpx_xref
 
-EXES := $(filter-out t_smart_int, $(ALLUNITS))
+EXES := $(filter-out afpx_xref t_smart_int, $(ALLUNITS))
 
 CLIBS := $(X11_SLIBS)
 CLIBS_t_async := $(PCRE_SLIBS)
