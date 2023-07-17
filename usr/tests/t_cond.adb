@@ -1,3 +1,4 @@
+-- Test a Condition with 4 clients
 with Protected_Put, Conditions;
 procedure T_Cond is
   pragma Priority(10);

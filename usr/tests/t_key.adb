@@ -1,3 +1,4 @@
+-- Test Con_Io input of keyboard keys
 with Ada.Wide_Text_Io;
 with Con_Io, Basic_Proc, Images, Language;
 procedure T_Key is

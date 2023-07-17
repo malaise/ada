@@ -1,6 +1,7 @@
+-- Automatic or interactive test Argument_Parser
+-- The definition of expected keys is fixed
 with As.U.Utils, Argument, Argument_Parser, Environ, Basic_Proc, Int_Img,
      Aski, Sys_Calls, Command, Many_Strings, Parser, Str_Util;
-
 procedure T_Arg_Parser is
 
   -- ENV variables used internally

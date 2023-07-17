@@ -1,3 +1,4 @@
+-- Interactive program to test Hashing (of integers²)
 with As.B, Console, Upper_Str, Normal, Hashing, Basic_Proc;
 procedure T_Hash is
 

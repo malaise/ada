@@ -1,6 +1,6 @@
-with Basic_Proc, Argument, Socket, Ip_Addr;
 -- Take a LAN or host, and optional netmask (default FFFFFFFF meaning host)
 -- Find it in network interfaces and display host Id and bcast address
+with Basic_Proc, Argument, Socket, Ip_Addr;
 procedure T_Iface is
 
   Host_Lan, Mask : Socket.Host_Id;

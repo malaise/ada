@@ -1,5 +1,5 @@
 -- Put on stderr the parsed lexical elements, and on stdout the text
---  returned by Ada_Parser
+--  returned by Ada_Parser, parsing the file provided as argument
 with Argument, Text_Char, Text_Line, Sys_Calls, Ada_Parser, Mixed_Str;
 procedure T_Ada_Parser is
 

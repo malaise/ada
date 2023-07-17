@@ -1,3 +1,4 @@
+-- Show Con_Io colors, possibly redefined by arguements
 with Con_Io, Argument, Mixed_Str, Int_Img;
 procedure T_Color is
   Console : aliased Con_Io.Console;

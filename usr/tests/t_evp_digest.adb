@@ -1,3 +1,5 @@
+-- List available digest algorithms, or compute the digest of text (provided
+--  as argument)
 with Basic_Proc, Argument, Evp_Digest, Hexa_Utils, Int_Img, Lower_Str, Text_Line;
 procedure T_Evp_Digest is
 

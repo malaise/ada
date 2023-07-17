@@ -1,5 +1,5 @@
+-- Test Many_Strings with a fixed set of words, then with te arguments
 with Basic_Proc, Argument, Many_Strings, As.U;
-
 procedure T_Many_Strings is
   -- Automatic test is:
   -- Empty, Empty, "toto", Empty, "titi", Empty, Empty, Empty
@@ -29,7 +29,7 @@ begin
   Str.Cat ("titi" & Many_Strings.Separator);
   Str.Cat ("" & Many_Strings.Separator);
 
-  -- test words
+  -- Test words
   for I in 1 .. Str.Nb loop
     if Str.Nth (I) /= Auto_Res(I) then
       Basic_Proc.Put_Line_Error ("ERROR: element No" & I'Img

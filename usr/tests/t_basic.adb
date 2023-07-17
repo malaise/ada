@@ -1,3 +1,4 @@
+-- Test some functions of Basic_Proc; fixed sequence
 with Basic_Proc;
 procedure T_Basic is
   Str : String(1 .. 255);

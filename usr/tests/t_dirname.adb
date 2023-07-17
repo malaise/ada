@@ -1,3 +1,4 @@
+-- Parse dirname, prefix, suffix... of a file name
 with Basic_Proc, Directory;
 procedure T_Dirname is
 begin

@@ -1,3 +1,4 @@
+-- Fetch HTTP URL provided as argument and dump result
 with Basic_Proc, Argument, Http, Mixed_Str, Int_Img;
 procedure T_Http is
   function Code_Image (Code : Integer) return String renames Int_Img;

@@ -1,3 +1,4 @@
+-- Test Sys_Calls.Getenv on argument or on "GETENV"
 with Basic_Proc, Sys_Calls, Argument;
 procedure T_Getenv is
 

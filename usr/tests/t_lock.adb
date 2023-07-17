@@ -1,3 +1,4 @@
+-- Test a Lock with 4 clients
 with Protected_Put, Locks;
 procedure T_Lock is
   pragma Priority(10);
@@ -52,7 +53,7 @@ procedure T_Lock is
 
   Clients : array (1 .. Nb_Clients) of Client;
 
-begin -- T_Cond
+begin -- T_Lock
 
   -- Close the lock
   Lock.Close;

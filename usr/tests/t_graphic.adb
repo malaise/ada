@@ -1,3 +1,5 @@
+-- Test Con_Io graphic features
+-- Colors can be defined through arguments
 with Con_Io, Argument, Int_Img;
 procedure T_Graphic is
   Console : aliased Con_Io.Console;

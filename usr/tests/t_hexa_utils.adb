@@ -1,3 +1,4 @@
+-- Put hexa value of numbers from Arg1 to Arg2 (default: all integers)
 with Basic_Proc, Hexa_Utils, Argument;
 procedure T_Hexa_Utils is
   Min, Max : Integer;

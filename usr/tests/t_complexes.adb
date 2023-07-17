@@ -1,5 +1,5 @@
+-- Test basic operations on 2 Complex numbers provided as arguments
 with Argument, Complexes, Basic_Proc;
-
 procedure T_Complexes is
   C1, C2 : Complexes.Complex;
   P : Complexes.Polar;

@@ -1,3 +1,4 @@
+-- Test a LIFO (of integers), fixed sequence
 with Queues;
 with Basic_Proc;
 procedure T_Lifo is

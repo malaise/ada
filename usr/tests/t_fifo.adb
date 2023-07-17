@@ -1,3 +1,4 @@
+-- Test a FIFO (of integers), fixed sequence
 with Queues;
 with Basic_Proc;
 procedure T_Fifo is

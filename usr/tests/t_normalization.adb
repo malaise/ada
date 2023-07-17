@@ -1,3 +1,5 @@
+-- Interactive test of Normalization of a float
+-- Or automatic test f fixed values
 with Aski, Normalization, Gets, Async_Stdin, Basic_Proc, Argument, As.U,
      Unbounded_Arrays, Command, Many_Strings;
 procedure T_Normalization is

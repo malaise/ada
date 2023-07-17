@@ -1,3 +1,5 @@
+-- Convert arguments nums to letters and letters to nums
+--  also allows switching the scale for further conversions
 with Ada.Exceptions;
 with As.U, Basic_Proc, Argument, Arbitrary, Num_Letters;
 procedure T_Num_Letters is
@@ -18,15 +20,12 @@ procedure T_Num_Letters is
   begin
     N := Num_Letters.Num_Of (Words.Image, Scale);
     Basic_Proc.Put_Line_Output (Image (N));
-    -- Back to default scale
-    Scale := Num_Letters.Long;
     Words.Set_Null;
---  exception
---    when Error:others =>
---      Scale := Num_Letters.Long;
---      Words.Set_Null;
---      Basic_Proc.Put_Line_Output (" Exception "
---        & Ada.Exceptions.Exception_Name (Error));
+  exception
+    when Error:others =>
+      Words.Set_Null;
+      Basic_Proc.Put_Line_Output (" Exception "
+        & Ada.Exceptions.Exception_Name (Error));
   end Put_Words;
 
 begin
@@ -39,6 +38,7 @@ begin
       Str : constant String := Argument.Get_Parameter (Occurence => I);
     begin
       if Str = "-l" then
+        -- Change scale for next num
         Scale := Num_Letters.Long;
         Kind := Switch;
       elsif Str = "-s" then
@@ -68,8 +68,6 @@ begin
       exception
         when Constraint_Error =>
           Basic_Proc.Put_Line_Output ("Invalid number");
-          -- Back to default scale
-          Scale := Num_Letters.Long;
           Kind := Error;
       end;
     end if;
@@ -77,11 +75,8 @@ begin
       -- No error
       begin
         Basic_Proc.Put_Line_Output (Num_Letters.Letters_Of (N, Scale));
-        -- Back to default scale
-        Scale := Num_Letters.Long;
       exception
         when Error:others =>
-          Scale := Num_Letters.Long;
           Basic_Proc.Put_Line_Output (" Exception "
             & Ada.Exceptions.Exception_Name (Error));
       end;

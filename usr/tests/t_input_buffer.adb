@@ -1,3 +1,4 @@
+-- Test Input_Buffer on a file or stdin
 with Basic_Proc, Text_Char, Argument, Input_Buffer;
 procedure T_Input_Buffer is
 
@@ -47,7 +48,7 @@ begin
   -- Init buffer, delimiter is line feed
   Buffer.Set (Notifier'Unrestricted_Access);
 
-  -- "infinite" Loop
+  -- "Infinite" Loop
   Buf_Len := 0;
   Buf := (others => ' ');
   loop

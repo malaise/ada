@@ -1,3 +1,5 @@
+-- Test Bloc_Io with a fixed expected content
+-- If file "data/bloc_io.blk" exists then read it, otherwise create it
 with Ada.Exceptions;
 with Bloc_Io, Basic_Proc, Sys_Calls;
 

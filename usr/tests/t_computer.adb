@@ -1,3 +1,5 @@
+-- Set some variables in Computer and then evaluate and compute an expression
+-- Variables and expression are defined as arguments
 with Basic_Proc, Argument, Computer, Str_Util, Arbitrary;
 procedure T_Computer is
   procedure Usage is

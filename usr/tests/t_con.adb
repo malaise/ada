@@ -1,7 +1,8 @@
+-- Test Con_Io (2 consoles in parallel)
+-- Offset and width of the Get string can be overwritten by arguments
 with Ada.Exceptions, Ada.Calendar;
 with Protected_Put, Normal, Argument, Timers, Language, Trace.Loggers;
 with Con_Io;
-
 procedure T_Con is
 
   Logger : Trace.Loggers.Logger;

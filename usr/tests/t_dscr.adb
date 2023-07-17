@@ -1,3 +1,5 @@
+-- Dump and show one (the argument) or all the Afpx descriptors of current
+--  Afpx.xml
 with Basic_Proc, Argument, Afpx, Con_Io, Normal, Mixed_Str, Language, Int_Img;
 procedure T_Dscr is
   Dscr_No : Afpx.Descriptor_Range;

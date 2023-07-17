@@ -1,3 +1,5 @@
+-- Test Command, in shell mode or direct fork/exec
+-- Program and args are provided as arguments
 with As.U, Argument, Many_Strings, Basic_Proc, Command;
 procedure T_Command is
 

@@ -1,3 +1,4 @@
+-- Show several images of random durations
 with Basic_Proc, Rnd, Images, Key_Pressed, Argument;
 procedure T_Dur_Image is
   First : Boolean := True;

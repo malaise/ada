@@ -1,3 +1,4 @@
+-- Test Init_Mng, with a task that sends an event each second
 with Protected_Put, Init_Mng;
 procedure T_Init_Mng is
 

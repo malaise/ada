@@ -1,3 +1,5 @@
+-- Scan and put as date several strings
+-- Format and strings are provided as arguments
 with Ada.Calendar;
 with Basic_Proc, Argument, As.U, Date_Text, Images;
 procedure T_Date_Text is

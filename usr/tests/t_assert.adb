@@ -1,3 +1,4 @@
+-- Test Assert, fixed set of assertions, result depends on ENV ASSERT_ACTION
 with Basic_Proc, Assertion;
 procedure T_Assert is
 

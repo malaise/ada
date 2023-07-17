@@ -1,3 +1,4 @@
+-- Test File_Hash  by searching some lines within a file (provided as arguments)
 with Argument, Basic_Proc, File_Hash, Images;
 procedure T_File_Hash is
   -- Allocate list on Heap i.o. stack

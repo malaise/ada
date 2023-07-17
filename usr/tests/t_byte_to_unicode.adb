@@ -1,3 +1,4 @@
+-- Test Byte_To_Unicode with a given table as argument
 with Argument, Basic_Proc, Unicode, Byte_To_Unicode, Normal, Images;
 procedure T_Byte_To_Unicode is
   Map : Byte_To_Unicode.Map;

@@ -1,3 +1,5 @@
+-- Convert XML <-> Bencode, file as argument
+-- On option, check order or sort Bencode entires
 with Basic_Proc, Argument, As.U, Text_Line, Bencode,
      Trilean, Hexa_Utils, Upper_Str;
 procedure T_Bencode is

@@ -1,3 +1,4 @@
+-- Test As.U (unbounded strings), fixed sequence of operations
 with As.U, Int_Img, Basic_Proc;
 procedure T_Asu is
 

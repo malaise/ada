@@ -1,3 +1,4 @@
+-- Test various operations between two Arbitrary.Fractions (arguments)
 with Basic_Proc, Argument, Arbitrary.Fractions, Str_Util;
 procedure T_Fraction is
 

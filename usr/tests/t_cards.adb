@@ -1,3 +1,4 @@
+-- Test X_Mng.Cards basic features, fixed sequence
 with As.U, Basic_Proc, Argument, Con_Io, X_Mng.Cards, Dynamic_List, Rnd;
 procedure T_Cards is
 

@@ -1,3 +1,5 @@
+-- Test a Dynamic_List of integers, fixed sequence of operations and
+--  copy a (possibly random) list
 with Basic_Proc, Dynamic_List, Normal, Rnd, Argument;
 procedure T_Dyn_List is
   package My_Dyn_List is new Dynamic_List (Element_Type => Integer);

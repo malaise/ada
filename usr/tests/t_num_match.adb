@@ -1,3 +1,4 @@
+-- Test Num with num and criteria arguments, for integer and arbitrary
 with Basic_Proc, Argument, Arbitrary, Match, Images;
 procedure T_Num_Match is
 

@@ -1,5 +1,5 @@
 #!/bin/bash
-
+# Test afpx_rnb on Afpx.xml
 export AFPX_RNB_TRACEFILE=afpx_rnb.log
 
 if [ \( "$1" = "-h" \) -o \( "$1" = "--help" \) ] ; then

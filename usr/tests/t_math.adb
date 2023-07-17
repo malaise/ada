@@ -1,3 +1,4 @@
+-- test My_Math various operation on one and two reals
 with My_Math, Basic_Proc, Images;
 procedure T_Math is
 

@@ -1,3 +1,5 @@
+-- Test Perpet delta between 2 dates, either provided as argument
+--  or inpout interactively
 with Ada.Calendar;
 with Perpet, Day_Mng, Normal, Basic_Proc, Argument, Reg_Exp,
      Gets, Images;

@@ -1,3 +1,4 @@
+-- Pour one fixed Any of each kind
 with System;
 with Any_Def, Trilean, As.U, Address_Ops, Basic_Proc, Mixed_Str, Arbitrary;
 use Any_Def;
@@ -6,7 +7,7 @@ procedure T_Any is
   Addr : System.Address;
 begin
 
-  -- Prepare some specific valuies
+  -- Prepare some specific values
   A2 := (Str_Kind, As.U.Tus ("Another string"));
   Addr := Address_Ops."+" (System.Null_Address, 212121);
 

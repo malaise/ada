@@ -1,3 +1,4 @@
+-- Test As.B (bounded strings), fixed sequence of operations
 with As.B, Int_Img, Basic_Proc;
 procedure T_Asb is
 

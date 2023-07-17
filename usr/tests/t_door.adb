@@ -1,3 +1,4 @@
+-- Test a Door with 4 clients
 with Protected_Put, Doors;
 procedure T_Door is
   pragma Priority(10);

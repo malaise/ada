@@ -1,3 +1,5 @@
+-- Test exception messenger with a short and a long mesage (560 characters),
+--  fixed
 with Ada.Exceptions;
 with As.U, Basic_Proc, Exception_Messenger;
 procedure T_Exception_Messenger is

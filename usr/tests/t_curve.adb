@@ -1,3 +1,4 @@
+-- Test Curve (2 successive windows) of a fixed function with fixed scales
 with My_Math, Curve;
 procedure T_Curve is
 

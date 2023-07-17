@@ -1,6 +1,6 @@
-with Ada.Exceptions, Ada.Calendar;
+-- Split then re-pack several durations input interactively
+with Ada.Calendar, Ada.Exceptions;
 with Basic_Proc, Day_Mng, Gets;
-
 procedure T_Day_Mng is
 
   Dur : Ada.Calendar.Day_Duration;

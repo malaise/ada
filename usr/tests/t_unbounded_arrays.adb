@@ -1,3 +1,4 @@
+-- Test Unbounded_Arrays of Natural, fixed sequence of operations
 with Basic_Proc, As.U, Unbounded_Arrays, Int_Img;
 procedure T_Unbounded_Arrays is
 

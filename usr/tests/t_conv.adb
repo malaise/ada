@@ -1,3 +1,4 @@
+-- Test host <-> network conversion of a fixed value
 with Basic_Proc, C_Types, Convert, Hexa_Utils, Upper_Str;
 procedure T_Conv is
 

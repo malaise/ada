@@ -1,3 +1,5 @@
+-- Test Arbitrary.Limited_List, fixed sequence of operations and
+--  copy a (possibly random) list
 with Basic_Proc, Arbitrary.Limited_List, Normal, Rnd, Argument;
 procedure T_Arbi_List is
   procedure Set (To : out Integer; Val : in Integer) is

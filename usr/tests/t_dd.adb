@@ -1,5 +1,5 @@
+-- Test Dyn_Data with several loops (provided as argument) of 256 allocate/free
 with Basic_Proc, Argument, Dyn_Data;
-
 procedure T_Dd is
 
   subtype Data is String (1 .. 1024);

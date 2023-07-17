@@ -1,3 +1,5 @@
+-- Test various operations on one and two arbitrary numbers (arguments)
+--  or random numbers (with comparison with integer results)
 with Argument, Arbitrary.Factors, Rnd, Int_Img, Mixed_Str,
      My_Math, Basic_Proc, Key_Pressed;
 procedure T_Arbitrary is

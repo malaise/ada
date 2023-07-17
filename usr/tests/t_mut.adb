@@ -1,5 +1,6 @@
+-- Test  a mutex of Mutexes (kind and and number of clients are provided as
+--   arguments)
 with Basic_Proc, Mutexes, Schedule, Argument, Upper_Char, Sys_Calls, Normal;
-
 procedure T_Mut is
   pragma Priority(10);
 

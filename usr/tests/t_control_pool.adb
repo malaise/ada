@@ -1,3 +1,4 @@
+-- Test a Control_Pool with 9 clients in parallel
 with Ada.Calendar;
 with Rnd, Event_Mng, Control_Pool, Images, Protected_Put;
 procedure T_Control_Pool is

@@ -1,3 +1,4 @@
+-- Interactive test of Normal and Normalization of modulus
 with Basic_Proc, Normal, Normalization, Gets;
 procedure T_Normal is
   I : Integer;

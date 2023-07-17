@@ -1,3 +1,5 @@
+-- Put entries of directories
+-- If one arg is provided, then use it to create a tmp dir
 with Ada.Calendar, Ada.Text_Io;
 with As.U, Basic_Proc, Directory, Sys_Calls, Argument, Day_Mng, Normal,
      Normalization;

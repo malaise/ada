@@ -1,3 +1,4 @@
+-- Interactive test of Argument
 with As.U, Argument, Basic_Proc, Upper_Char, Gets, Normal;
 use  Basic_Proc;
 procedure T_Arg is

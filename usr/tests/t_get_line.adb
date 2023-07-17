@@ -1,5 +1,5 @@
--- One argument : file name
 -- Tests get_line
+-- One argument: file name, outputs the parsed content of the file
 with Argument, Get_Line, Normal, Basic_Proc;
 procedure T_Get_Line is
 

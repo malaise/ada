@@ -1,7 +1,8 @@
+-- Output a fixed string on Stdout (define 2 ways), Async_Stderr and a file
 with Basic_Proc, Many_Strings, Command, Output_Flows, Text_Line, Sys_Calls;
 procedure T_Output_Flows is
   F1, F2, F3 : Output_Flows.Output_Flow;
-  File_Name : constant String := "t_output_flows.dat";
+  File_Name : constant String := "data/t_output_flows.dat";
   Str : constant String := "File OK";
   Cmd : Many_Strings.Many_String;
   Res_Out : aliased Command.Flow_Rec(Command.Str);

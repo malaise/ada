@@ -1,3 +1,5 @@
+-- Test a Channel or a Bus, fixed messages
+-- Need to start 2 instances, a publisher and a subscriber, on the same channel/bus
 with Ada.Exceptions;
 with Basic_Proc, Argument, Event_Mng, Socket, Timers, Channels;
 procedure T_Channels is

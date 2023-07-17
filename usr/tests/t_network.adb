@@ -1,3 +1,4 @@
+-- Test Network with a fixed configuration
 with Ada.Exceptions;
 with Basic_Proc, Network;
 procedure T_Network is

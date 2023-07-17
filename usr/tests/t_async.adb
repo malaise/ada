@@ -1,3 +1,6 @@
+-- Test Async_Stdin
+-- Needs to start one instance as server and one as client, either on a Autobus
+--  or on a TCP connection or with two UDP ports
 with Ada.Exceptions;
 with Argument, Basic_Proc, Aski, Async_Stdin, Event_Mng, Socket, Socket_Util,
      Tcp_Util, Ip_Addr, Sys_Calls, Autobus, As.U;
