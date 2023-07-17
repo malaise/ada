@@ -1,3 +1,7 @@
+-- Test Tcp_Util connection and overflow
+-- Start a server (-a <port>) and a client (<host><port>)
+-- Client options: blocking (-b) and/or timeout (-t) 5.1s
+-- Message is fixed (many spaces)
 with Ada.Exceptions;
 with Basic_Proc, Argument, Mixed_Str, Images,
      Event_Mng, Ip_Addr, Socket, Tcp_Util, Trace.Loggers;

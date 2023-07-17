@@ -1,6 +1,7 @@
--- Stores ENV variables in a unique list
--- Modifies and retrieve list entries according to arguments
---  <name> | <name>=<value> | dump
+-- Stores all ENV variables in a hashed unique list
+-- Modifies entries according to arguments (name=value)
+-- Retrieve list entries (name)
+-- Or dump the list ("--dump")
 with Hashed_List.Unique, Argument, As.B, Str_Util, Sys_Calls;
 procedure T_Ul is
 
@@ -74,7 +75,7 @@ begin
   -- Process argument: variable (re) definition or get
   Sys_Calls.Put_Line_Output ("Processing arguments:");
   for I in 1 .. Argument.Get_Nbre_Arg loop
-    if Argument.Get_Parameter (Occurence => I) = "dump" then
+    if Argument.Get_Parameter (Occurence => I) = "--dump" then
       -- Dump the list
       Sys_Calls.Put_Line_Output ("List dump:");
       My_Ul.Iterate (Ul, Iteration'Access);

@@ -1,4 +1,4 @@
--- Test timers
+-- Test timers, with Afpx
 -- Periodical : 1 then each 3 secs
 -- Single     : 1 then [1, 5] secs re-created in the callback
 -- Funny      : 0 then in [2.1, 2.9[ with callback (10 times)
@@ -7,7 +7,8 @@
 -- Escape suspends the Periodic and the Single (if not expired)
 -- Return resumes them
 
-with Basic_Proc, Afpx, Afpx_Xref, Timers, Rnd, Event_Mng, Mixed_Str;
+with Basic_Proc, Afpx, Timers, Rnd, Event_Mng, Mixed_Str;
+with Afpx_Xref;
 procedure T_Timers is
 
   -- Afpx stuff

@@ -1,5 +1,5 @@
+-- Test 3 passive timers of fixed configuration
 with Basic_Proc, Chronos.Passive_Timers, Timers;
-
 procedure T_Passive_Timers is
 
   procedure Put (Timer : in String; Expired : in Boolean) is

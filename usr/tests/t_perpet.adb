@@ -1,3 +1,4 @@
+-- Interactive test of Perpet: date +/- delta
 with Ada.Calendar;
 with Perpet, Basic_Proc, Gets, Console;
 procedure T_Perpet is

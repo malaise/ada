@@ -1,3 +1,5 @@
+-- Check creation of several Tmp files in directory "data"
+-- Fixed sequence of operations
 with Sys_Calls, Temp_File, Directory;
 procedure T_Temp_File is
   Temp_Dir : constant String := "data";

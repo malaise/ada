@@ -1,3 +1,5 @@
+-- Convert fixed and random unicodes to/from UTF16
+-- Arg is the number of random loops
 with Ada.Wide_Text_Io;
 with Images, Basic_Proc, Utf_16, Rnd, Key_Pressed, Argument;
 procedure T_Utf16 is

@@ -1,7 +1,7 @@
+-- Test Smart_Reference with 2 references (on integers)
 with Basic_Proc, Smart_Reference;
 with T_Smart_Int;
 procedure T_Smart_Ref is
-
 
   package Int_Ref is new Smart_Reference
       (T_Smart_Int.Lim, T_Smart_Int.Set, T_Smart_Int.Fin);

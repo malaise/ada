@@ -1,3 +1,4 @@
+-- Test X_Mng. Fixed Line and dump of input events
 with Ada.Calendar;
 with C_Types, X_Mng, Event_Mng, Timers, Argument, As.B, Null_Procedure,
      Language;

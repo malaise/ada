@@ -1,3 +1,4 @@
+-- Dump the result of ssuccessie Key_Pressed Get_Key
 with Basic_Proc, Key_Pressed, Hexa_Utils;
 procedure T_Pressed is
   Char : Character;

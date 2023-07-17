@@ -1,3 +1,7 @@
+-- Parse a string according to a separator, both provided as arguments
+-- Dump words, indexes, and parse all in one
+-- With arguments " " "check size", make infinite loop of préating a
+--  temporary itérator
 with Basic_Proc, Parser.All_In_One, Argument, Mixed_Str;
 procedure T_Parser is
 

@@ -1,3 +1,4 @@
+-- Test Async_Stdin, output the async inputs in a pipe file (arg1)
 with Ada.Exceptions;
 with Argument, Aski, Event_Mng, Sys_Calls, Async_Stdin, Text_Line;
 

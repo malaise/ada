@@ -1,6 +1,6 @@
+-- This is the child of t_proc_father that tests Proc_Family communication
 with Ada.Exceptions;
 with Sys_Calls, Proc_Family, Event_Mng, Trace.Loggers;
-
 procedure T_Proc_Child is
 
   Str : String (1 .. 1024);

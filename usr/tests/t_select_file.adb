@@ -1,11 +1,12 @@
+-- Test Select file (Afpx). Dump the selected file name on stdout
 with Basic_Proc, As.B, Select_File;
-
+with Afpx_Xref;
 procedure T_Select_File is
 
   Read : Boolean;
   File : As.B.Asb_Bs(500);
 
-  package My_Select_File is new Select_File (10,
+  package My_Select_File is new Select_File (Afpx_Xref.Select_File.Dscr_Num,
                                              Read_Title  => "Test read",
                                              Write_Title => "Test write");
 

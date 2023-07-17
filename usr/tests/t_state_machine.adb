@@ -1,3 +1,5 @@
+-- Test State_Machine. Arg1 is the file name defining the machines and Arg2 is
+-- the machine name. Events are then read from stdin.
 with Argument, Basic_Proc, As.U, Mixed_Str, State_Machine, Xml_Parser;
 procedure T_State_Machine is
 
@@ -229,21 +231,21 @@ begin
         Orig_State  := State_Id (Ctx.Get_Attribute (Elt, "OrigState"));
       exception
         when Constraint_Error =>
-          Error ("Unknwon state " & Ctx.Get_Attribute (Elt, "OrigState"));
+          Error ("Unknown state " & Ctx.Get_Attribute (Elt, "OrigState"));
           return;
       end;
       begin
         Event  := Event_Id (Ctx.Get_Attribute (Elt, "Event"));
       exception
         when Constraint_Error =>
-          Error ("Unknwon event " & Ctx.Get_Attribute (Elt, "Event"));
+          Error ("Unknown event " & Ctx.Get_Attribute (Elt, "Event"));
           return;
       end;
       begin
         Dest_State  := State_Id (Ctx.Get_Attribute (Elt, "DestState"));
       exception
         when Constraint_Error =>
-          Error ("Unknwon state " & Ctx.Get_Attribute (Elt, "DestState"));
+          Error ("Unknown state " & Ctx.Get_Attribute (Elt, "DestState"));
           return;
       end;
       My_Add_Transition (Orig_State, Event, Dest_State);

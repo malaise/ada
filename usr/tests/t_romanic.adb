@@ -1,6 +1,6 @@
 -- Test romanic 2 arabic conversion
 -- With no arg, loops on all values (1 to 3999)
---  otherwise converts arguments
+--  otherwise converts each argument
 with Ada.Exceptions;
 with Basic_Proc, Argument, Romanic;
 

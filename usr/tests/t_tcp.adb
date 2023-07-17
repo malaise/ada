@@ -1,6 +1,8 @@
+-- Test a TCP (header) connection (at Socket and Event_Mng level)
+-- Start one server and some clients
+--  Port is fixed (test_tcp) and message as well ("Ah que coucou!")
 with Ada.Exceptions;
 with As.U, Basic_Proc, Argument, Socket, Event_Mng;
-
 procedure T_Tcp is
 
   Arg_Error : exception;

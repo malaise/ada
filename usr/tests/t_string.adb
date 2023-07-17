@@ -1,3 +1,5 @@
+-- Automatic test of some Str_Util functions (fixed seuqnec on fixed strings)
+-- Or interactive input of the string and the operation (and parameters)
 with Ada.Exceptions;
 with Aski, As.U.Utils, Basic_Proc, Str_Util.Regex, Many_Strings, Gets,
      Upper_Str, Lower_Str, Mixed_Str, Upper_Char, Environ, Argument;

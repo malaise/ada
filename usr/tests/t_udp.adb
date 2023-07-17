@@ -1,3 +1,6 @@
+-- Test a UDP client sending periodically a message to a server
+-- Host and port are specified as arguments
+-- The message is fixed ("Ah que coucou!")
 with Ada.Exceptions;
 with As.U, Basic_Proc, Argument, Socket, Event_Mng;
 

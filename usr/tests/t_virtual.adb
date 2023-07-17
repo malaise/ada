@@ -1,3 +1,5 @@
+-- Test Virtual time, active and passive timers, and a timed queue
+-- Fixed sequence of operations
 with Basic_Proc, Images, Virtual_Time, Timers, Event_Mng,
      Chronos.Passive_Timers, Queues.Timed;
 procedure T_Virtual is

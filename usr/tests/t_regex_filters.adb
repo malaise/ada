@@ -1,3 +1,5 @@
+-- Store a filter of Regex_Filters according to arguments,
+--  and then check each line of stdin versus it
 with Basic_Proc, Argument, Regex_Filters, Parser, Mixed_Str;
 procedure T_Regex_Filters is
   procedure Usage is

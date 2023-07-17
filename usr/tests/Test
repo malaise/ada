@@ -1026,7 +1026,7 @@ if `match $arg t_file_hash` ; then
   try t_file_hash t_file_hash.adb begin
   cat << EOF >exp
 begin -> 
-FOUND at line 9 >begin<
+FOUND at line 10 >begin<
 EOF
   comp err nul
   comp out exp
@@ -1648,6 +1648,29 @@ fi
 if `match $arg t_proc_father` ; then
   title t_proc_father...
   try t_proc_father t_proc_child
+  export PID=`tail -1 out | cut -d " " -f 5`
+  cat << EOF >exp_head
+Father:  3 should be closed in child but not  4.
+Father: I am father of  ${PID}
+Father: Fds are  6,  7 and  9
+Father: Read >Child: Fds are  0,  1 and  2<
+Father: Read >Child: Read >F2C<<
+EOF
+  cat << EOF >exp_tail
+Father: Read >Child: Read >F2C<<
+Father: Read 0
+Father: child pid  ${PID} has exited with code  0
+EOF
+  # Compare head and tail
+  head -5 out >out_head
+  tail -3 out >out_tail
+  comp err nul
+  comp out_head exp_head
+  comp out_tail exp_tail
+  # Make a pseudo exp and clean heads and tails
+  echo "..." >>exp_head
+  cat exp_head exp_tail >exp
+  rm exp_head exp_tail out_head out_tail
   echo "OK"
 fi
 

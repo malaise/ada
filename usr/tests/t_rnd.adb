@@ -1,3 +1,8 @@
+-- Test Rnd depending on arguments
+-- Specify the generator kind and the mode
+--  colors: 1000 random colors then summary
+--  max: a random natural below max
+--  statistics: 1_000_000 random positive, the average and standard deviation
 with Ada.Calendar;
 with Argument, Argument_Parser, Rnd, Basic_Proc,
      My_Math, Normalization,

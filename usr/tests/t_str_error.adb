@@ -1,3 +1,7 @@
+-- Parse /usr/include/errno.h
+-- Given a mnemonic dump its errno number, or reverse (allows several of them)
+-- Or dumps the parsed entries (definition or alias)
+-- Or lists each errno number with its definition and aliases
 with Ada.Exceptions;
 with Basic_Proc, Sys_Calls, Normal, As.U, Reg_Exp,
      Str_Util, Command, Many_Strings, Argument, Parser,

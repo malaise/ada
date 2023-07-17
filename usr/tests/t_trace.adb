@@ -1,3 +1,4 @@
+-- Test 2 basic and 2 standard loggers (fixed sequence)
 with Trace.Loggers, Basic_Proc;
 procedure T_Trace is
 

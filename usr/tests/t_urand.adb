@@ -1,3 +1,4 @@
+-- Test U_Rand (fixed set of 6 expected values)
 with U_Rand, Basic_Proc, Normalization;
 procedure T_Urand is
     subtype Result is String(1..12);

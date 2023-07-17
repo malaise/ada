@@ -1,7 +1,7 @@
 -- Test Afpx main functions (fixed DSCR)
 -- Arguement is the directory for the files to put in the list
-with Argument, Afpx, Afpx_Xref, Con_Io, Dir_Mng, Timers, Language, Basic_Proc,
-      Mixed_Str;
+with Argument, Afpx, Con_Io, Dir_Mng, Timers, Language, Basic_Proc, Mixed_Str;
+with Afpx_Xref;
 procedure T_Afpx is
 
   procedure Dir_Sort is new Dir_Mng.File_List_Mng.Sort (Dir_Mng.Less_Than);

@@ -1,3 +1,4 @@
+-- Test of Str_Util.Navigator (fixed string and operations)
 with Basic_Proc, Normal;
 with Str_Util.Navigator;
 procedure T_Strnav is

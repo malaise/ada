@@ -1,3 +1,4 @@
+-- Test  fixed sequence of operations on a Tree
 with Basic_Proc, Trees;
 procedure T_Trees is
 

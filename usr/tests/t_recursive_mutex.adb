@@ -1,3 +1,4 @@
+-- Test recursive mutex, between the main a one task
 with Protected_Put, Mutexes, Mixed_Str;
 procedure T_Recursive_Mutex is
 

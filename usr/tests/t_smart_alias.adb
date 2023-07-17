@@ -1,3 +1,4 @@
+-- Test Smart_Alias with 2 aliases on integers
 with Basic_Proc, Smart_Alias;
 with T_Smart_Int;
 procedure T_Smart_Alias is

@@ -1,3 +1,4 @@
+-- For T_Smart_Alias and T_Smart_Ree, a limited type (based on integer)
 package T_Smart_Int is
   type Lim is limited private;
 

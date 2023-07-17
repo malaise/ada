@@ -1,7 +1,7 @@
+-- Test Read-Write mutex with 10 clients, detect deadlock (inactivity)
 with Ada.Calendar, Ada.Task_Identification;
 with Mutexes, Schedule, Rnd, Normal, Argument, Basic_Proc, Protected_Put,
      Protected_Var, Images;
--- Test Read-Write mutex
 procedure T_Read_Write is
   pragma Priority(10);
 

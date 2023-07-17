@@ -1,4 +1,5 @@
--- Test timed queue
+-- Test timed queue (5 natural 0..9) with operations got interactively,
+--  including an autotest
 with Ada.Calendar;
 with Argument, Aski, Queues.Timed, Basic_Proc, Gets, Lower_Char, Mixed_Str;
 procedure T_Timeq is

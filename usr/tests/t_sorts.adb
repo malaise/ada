@@ -1,3 +1,6 @@
+-- Several loops (number in argument, default infinite and stopping on
+--  any key pressed). Each loop fills up to 25 random values and compares the
+--  result of 3 sorting algorithms
 with Basic_Proc, Sorts, Rnd, Normal, Key_Pressed, Argument;
 procedure T_Sorts is
 

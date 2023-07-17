@@ -1,3 +1,6 @@
+-- Test Tcp_Util, asynchronous connection, overflow...
+-- Role (client or server) port and server host are set by arguments
+-- Message is fixed ("Ah que coucou!")
 with Ada.Exceptions;
 with Basic_Proc, As.U, Argument, Lower_Str, Event_Mng, Socket, Tcp_Util;
 procedure T_Tcp_Util is

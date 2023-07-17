@@ -1,3 +1,4 @@
+-- Test Text_Char, fixed sequence of random get/unget on file provided as arg
 with Argument, Text_Char, Sys_Calls, Rnd, Queues, As.U;
 procedure T_Text_Char is
   Qsize : constant := 5;

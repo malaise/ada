@@ -1,3 +1,7 @@
+-- Convert either a unicode, a UTF-8, a UTF-16 or a string into
+-- a set of unicodes, a set of UTF-8 and a set of f UTF-16 characteters,
+--   and a string
+-- Arguments are the mode of the input, and exanums or string
 with Utf_8, Utf_16, Unicode,
      Argument, Basic_Proc, As.U, Gets, Hexa_Utils, Upper_Str;
 procedure T_Utf is

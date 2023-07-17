@@ -1,3 +1,5 @@
+-- Test Text_Line on several files provided as arg (stdin if empty)
+-- Dump the content of each file
 with Sys_Calls, Argument, Text_Line;
 procedure T_Text_Line is
 

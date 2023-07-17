@@ -1,3 +1,5 @@
+-- Test Xml_generator (fixed content), put the result
+-- Argument "-w" enables checking for warnings
 with Basic_Proc, Xml_Parser.Generator, Sys_Calls, Argument, Mixed_Str;
 procedure T_Xml_Gen is
   Dscr : Xml_Parser.Generator.Ctx_Type;

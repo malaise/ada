@@ -1,3 +1,9 @@
+-- Parse the 3 dtds data/xml*.xml, either as file or as string, then
+-- With Arg Rnd, loop randomly on each of data/xml*.xml, otherwise process
+--  files provided as arg
+-- Read file into a string
+-- Parse the prologue, get the Dtd num from PI Interface_Version (major number),
+--  then parse the elements with this Dtd
 with Ada.Exceptions;
 with As.U.Utils, Argument, Xml_Parser, Normal, Basic_Proc, Sys_Calls,
      Text_Line, Str_Util.Regex, Directory, Dir_Mng, Upper_Str, Rnd;

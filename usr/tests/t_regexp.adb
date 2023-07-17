@@ -1,6 +1,7 @@
+-- Automatic test or check versus a pattern several sentences,
+--  provided as arguments
 with Argument, Argument_Parser, Reg_Exp, Int_Img, Str_Util,
      Text_Line, Basic_Proc, As.U;
-
 procedure T_Regexp is
   -- The keys
   Keys : constant Argument_Parser.The_Keys_Type := (

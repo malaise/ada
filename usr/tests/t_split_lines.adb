@@ -1,3 +1,5 @@
+-- Split lines, max line len is arg1 and max nb lines is arg2
+--  other args are concatenated ( " " between each) and the result is split
 with Argument, Parser, As.U.Utils, Basic_Proc, Split_Lines;
 procedure T_Split_Lines is
 

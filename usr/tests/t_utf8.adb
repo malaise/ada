@@ -1,3 +1,5 @@
+-- Convert fixed and random unicodes to/from UTF8
+-- Arg is the number of random loops
 with Images, Basic_Proc, Utf_8, Rnd, Key_Pressed, Argument;
 procedure T_Utf8 is
   package Image16 is new Images.Int_Image16 (Natural);

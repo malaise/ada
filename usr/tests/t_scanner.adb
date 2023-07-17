@@ -1,3 +1,4 @@
+-- Scan each of arg2 ... argn according to format arg1
 with Basic_Proc, Argument, As.U, Any_Def, Scanner;
 procedure T_Scanner is
   Scan_Format : As.U.Asu_Us;

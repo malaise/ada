@@ -1,5 +1,6 @@
+-- Test Proc_Family communication (through pipes)
+-- This is the father of t_proc_child
 with Sys_Calls, Proc_Family, Many_Strings, Argument, Event_Mng;
-
 -- Note on lsof result
 -- Father: 0r, 1w, 2w: stdin, stdout and stderr
 --         3r, 4r: Fd1 and Fd2 on Program_Name
@@ -9,7 +10,7 @@ with Sys_Calls, Proc_Family, Many_Strings, Argument, Event_Mng;
 -- Child: 0r, 1w, 2w: stdin, stdout and stderr, dups of 7r, 10w and 12w
 --        3r, 5w: Event_Mng pipe (Fd1=3r of father has been closed on exec,
 --                 so it is reused)
---        4r: Fd2 of father that does has have close on exec
+--        4r: Fd2 of father that has close on exec
 --        7r, 10w, 12w: the pipes from/to father (8w, 9r, 11r are closed
 --                      after procreation)
 

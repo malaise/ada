@@ -1,10 +1,7 @@
 -- One argument : file name
 -- Reads this file describing a linear system (get_line & get_float)
 -- Solve linear system and put solution
-
-with Basic_Proc, As.U.Utils, Argument, Normal, Syslin, Images, Get_Line,
-     Gets;
-
+with Basic_Proc, As.U.Utils, Argument, Normal, Syslin, Images, Get_Line, Gets;
 procedure T_Syslin is
 
   package My_Syslin is new Syslin(Float);
