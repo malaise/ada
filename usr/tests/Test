@@ -130,7 +130,6 @@ function match {
   fi
 }
 
-
 # Start list of function
 arg="$1"
 if [ -z "$arg" ] ; then
@@ -2435,6 +2434,7 @@ fi
 # t_xml_string
 if `match $arg t_xml_string` ; then
   title t_xml_string
+  # xml_1
   try t_xml_string data/xml_1.xml
   cat << EOF >exp
 Parsing file data/dtd_1.dtd
@@ -2456,6 +2456,8 @@ Got Elements:
 EOF
   comp err nul
   comp out exp
+
+  # xml_2
   try t_xml_string data/xml_2.xml
   cat << EOF >exp
 Parsing file data/dtd_1.dtd
@@ -2478,6 +2480,8 @@ Got Elements:
 EOF
   comp err nul
   comp out exp
+
+  # xml_3
   try t_xml_string data/xml_3.xml
   cat << EOF >exp
 Parsing file data/dtd_1.dtd
@@ -2523,10 +2527,22 @@ Xml_Parser error at line 7 of xml: Element superscript is not defined in dtd.
 EOF
   comp out exp
   comp err exp1
+
+  # Failure of normal parsing of xml_3 (with xml_checker)
+  type xml_checker >/dev/null 2>&1
+  if [ $? -eq 0 ] ; then
+    try -n xml_checker data/xml_3.xml
+    grep -q "Element italic is not defined in dtd." err
+    res=$?
+    if [ $res -ne 0 ] ; then
+      error "xml_check on xml_3.xml has produced unexpected result"
+    fi
+  fi
+
   echo "OK"
 fi
 
-# Cean except if error
+# Clean except if error
 if [ "$final_clean" = "1" ] ; then
   clean
 fi
