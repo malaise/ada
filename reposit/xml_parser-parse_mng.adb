@@ -985,6 +985,7 @@ package body Parse_Mng  is
     Char : Character;
     Len : Natural;
     Is_File : Boolean;
+    use type As.U.Asu_Us;
   begin
     -- Only one DOCTYPE allowed
     if not Ctx.Doctype.Name.Is_Null then
@@ -1076,7 +1077,13 @@ package body Parse_Mng  is
       -- Parse dtd file of doctype directive if no alternate file
       --  and (for string flows) if clean Dtd is provided
       Util.Push_Flow (Ctx.Flow);
-      -- Check validity of dtd file
+      -- Build full path of dtd file and check validity
+      if Ctx.Flow.Curr_Flow.Name = String_Flow
+      and then not Ctx.Dtd_Root.Is_Null then
+        -- Use Dtd_Root provided with the string flow if necessary
+        -- (DOCTYPE has a relative path)
+        Doctype_File.Prepend (Ctx.Dtd_Root & "/");
+      end if;
       Full_File := Build_Full_Name (Doctype_File, Ctx.Flow.Curr_Flow.Name);
       if Full_File.Image = Dtd.String_Flow
       or else Full_File.Image = Dtd.Internal_Flow then

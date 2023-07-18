@@ -20,7 +20,7 @@ with As.U, Trees, Trilean;
 package Xml_Parser is
 
   -- Version incremented at each significant change
-  Major_Version : constant String := "44";
+  Major_Version : constant String := "45";
   function Version return String;
 
   -----------
@@ -273,6 +273,8 @@ package Xml_Parser is
   -- Parse the prologue of a string
   -- Then one can call Get_Prologue on Ctx
   --  (Calling Get_Root_Element will raise Status_Error);
+  -- Dtd_Root indicates the root directory to use if the DOCTYPE file name is
+  --  a relative path
   -- May raise Status_Error if Ctx is not clean
   procedure Parse_Prologue (Ctx        : out Ctx_Type;
                             Str        : in String;
@@ -286,6 +288,7 @@ package Xml_Parser is
                             Compatible : in Boolean := False;
                             Use_Dtd    : in Boolean := True;
                             Dtd_File   : in String  := "";
+                            Dtd_Root   : in String  := "";
                             Namespace  : in Boolean := False;
                             Warn_Cb    : in Warning_Callback_Access := null;
                             Parse_Cb   : in Parse_Callback_Access := null);
@@ -820,7 +823,7 @@ private
     Preserved : As.U.Asu_Us;
     -- Use Dtd
     Use_Dtd : Boolean := True;
-    Dtd_File : As.U.Asu_Us;
+    Dtd_File, Dtd_Root : As.U.Asu_Us;
     -- Check and fill namespaces
     Namespace : Boolean := False;
     -- Check also and report warnings
