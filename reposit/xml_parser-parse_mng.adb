@@ -1079,10 +1079,10 @@ package body Parse_Mng  is
       Util.Push_Flow (Ctx.Flow);
       -- Build full path of dtd file and check validity
       if Ctx.Flow.Curr_Flow.Name = String_Flow
-      and then not Ctx.Dtd_Root.Is_Null then
-        -- Use Dtd_Root provided with the string flow if necessary
+      and then not Ctx.Dtd_Path.Is_Null then
+        -- Use Dtd_Path provided with the string flow if necessary
         -- (DOCTYPE has a relative path)
-        Doctype_File.Prepend (Ctx.Dtd_Root & "/");
+        Doctype_File.Prepend (Ctx.Dtd_Path & "/");
       end if;
       Full_File := Build_Full_Name (Doctype_File, Ctx.Flow.Curr_Flow.Name);
       if Full_File.Image = Dtd.String_Flow

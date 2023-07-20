@@ -201,7 +201,7 @@ procedure T_Xml_String is
     -- Parse string of file provided as arg
     Basic_Proc.Put_Line_Output ("Parsing prologue of string of file " & Name);
     Xml_Parser.Clean_Dtd (Dtd);
-    Ctx.Parse_Prologue (Read_File (Name), Dtd, Parse_Ok, Dtd_Root => Data_Dir);
+    Ctx.Parse_Prologue (Read_File (Name), Dtd, Parse_Ok, Dtd_Path => Data_Dir);
     if not Parse_Ok then
       Basic_Proc.Put_Line_Error (Ctx.Get_Parse_Error_Message);
       Basic_Proc.Set_Error_Exit_Code;

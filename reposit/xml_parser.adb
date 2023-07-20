@@ -452,7 +452,7 @@ package body Xml_Parser is
     Ctx.Compatible := False;
     Ctx.Use_Dtd := True;
     Ctx.Dtd_File.Set_Null;
-    Ctx.Dtd_Root.Set_Null;
+    Ctx.Dtd_Path.Set_Null;
     Ctx.Namespace := False;
     Ctx.Warnings := null;
     Ctx.Callback := null;
@@ -579,7 +579,7 @@ package body Xml_Parser is
                             Compatible : in Boolean := False;
                             Use_Dtd    : in Boolean := True;
                             Dtd_File   : in String  := "";
-                            Dtd_Root   : in String  := "";
+                            Dtd_Path   : in String  := "";
                             Namespace  : in Boolean := False;
                             Warn_Cb    : in Warning_Callback_Access := null;
                             Parse_Cb   : in Parse_Callback_Access := null) is
@@ -609,7 +609,7 @@ package body Xml_Parser is
     Ctx.Compatible := Compatible;
     Ctx.Use_Dtd := Use_Dtd;
     Ctx.Dtd_File := As.U.Tus (Dtd_File);
-    Ctx.Dtd_Root := As.U.Tus (Dtd_Root);
+    Ctx.Dtd_Path := As.U.Tus (Dtd_Path);
     Ctx.Namespace := Namespace;
     Ctx.Warnings := Warn_Cb;
     Ctx.Callback := Parse_Cb;
