@@ -1,9 +1,9 @@
 -- Generates a Xml file (or stdout), or string from a tree
-with Aski, Int_Img, Text_Line, Sys_Calls, Str_Util;
+with Int_Img, Text_Line, Sys_Calls, Str_Util;
 package body Xml_Parser.Generator is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "2";
+  Minor_Version : constant String := "3";
   function Version return String is ("V" & Major_Version & "." & Minor_Version);
 
   -- Common delimiter definitions

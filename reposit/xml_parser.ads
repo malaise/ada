@@ -16,11 +16,11 @@ with Ada.Finalization;
 with Long_Longs;
 private with Magic_Numbers, Queues, Text_Char, Byte_To_Unicode,
              Long_Long_Limited_Pool, Hashed_List.Unique;
-with As.U, Trees, Trilean;
+with As.U, Trees, Trilean, Aski;
 package Xml_Parser is
 
   -- Version incremented at each significant change
-  Major_Version : constant String := "47";
+  Major_Version : constant String := "48";
   function Version return String;
 
   -----------
@@ -209,15 +209,17 @@ package Xml_Parser is
   -- On option, keep separators unchanged in attributes and text
   -- On option, make text compatible ('>' -> "&gt;")
   -- On option do not check compliance with Dtd
-  -- On option force an external Dtd different from the DOCTYPE directive
-  --  (does not affect the internal DTD)
+  -- On option force an external Dtd file different from the DOCTYPE directive
+  --  (does not affect the internal DTD).
+  --  Use No_File to discard the external (keeping the internal DTD if any)
   -- On option check and fill namespace informations
   -- If a warning callback is set then it is called for each warning detected
   -- If a parsing callback is set then it is called for each node creation
   --  and for each element end, and no tree is build (see above)
   -- May raise File_Error if error accessing the File_Name,
   --           Status_Error if Ctx is not clean
-  Stdin : constant String := "";
+  Stdin : constant String;
+  No_File : constant String;
   procedure Parse (Ctx        : out Ctx_Type;
                    File_Name  : in String;
                    Ok         : out Boolean;
@@ -541,6 +543,8 @@ package Xml_Parser is
   Internal_Error : exception;
 
 private
+  Stdin : constant String := "";
+  No_File : constant String := Aski.Nul_S;
 
   ---------------
   -- NODE TYPE --

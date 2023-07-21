@@ -1,4 +1,4 @@
-with Aski, Lower_Str, Upper_Str, Mixed_Str, As.U.Utils;
+with Lower_Str, Upper_Str, Mixed_Str, As.U.Utils;
 separate (Xml_Parser)
 
 package body Parse_Mng  is
@@ -1208,6 +1208,7 @@ package body Parse_Mng  is
   procedure Parse_Start_To_Root (Ctx : in out Ctx_Type;
                                  Adtd : in out Dtd_Type) is
     Char : Character;
+    use type As.U.Asu_Us;
   begin
     -- Autodetect encoding and check
     if Ctx.Flow.Curr_Flow.Is_File then
@@ -1252,7 +1253,8 @@ package body Parse_Mng  is
     Check_Xml (Ctx);
     -- Parse dtd alternate file if requested to do so
     if Ctx.Use_Dtd
-    and then not Ctx.Dtd_File.Is_Null then
+    and then not Ctx.Dtd_File.Is_Null
+    and then Ctx.Dtd_File /= No_File then
       Util.Push_Flow (Ctx.Flow);
       -- Parse dtd file provided instead of doctype directive
       Dtd.Parse (Ctx, Adtd, Ctx.Dtd_File);
@@ -1969,16 +1971,18 @@ package body Parse_Mng  is
     Dtd.Init (Adtd);
     Util.Push_Flow (Ctx.Flow);
     -- Parse Dtd
-    if not Ctx.Doctype.Int_Def.Is_Null then
+    if Ctx.Use_Dtd and then not Ctx.Doctype.Int_Def.Is_Null then
       -- Internal directive
       Dtd.Switch_Input (Ctx, Adtd, Ctx.Doctype.Int_Def, False); --## rule line off Aliasing
       Adtd.Xml_Found := False;
     end if;
-    if not Ctx.Dtd_File.Is_Null then
+    if not Ctx.Dtd_File.Is_Null
+    and then Ctx.Dtd_File /= No_File then
       -- Parse alternate Dtd provided by caller
       Steps_Logger.Log_Info ("Parsing DTD");
       Dtd.Parse (Ctx, Adtd, Ctx.Dtd_File);
-    elsif not Ctx.Doctype.Name.Is_Null then
+    elsif Ctx.Dtd_File /= No_File
+    and then not Ctx.Doctype.Name.Is_Null then
       if not Ctx.Doctype.File.Is_Null then
         -- Check validity of dtd file
         if not Ctx.Dtd_Path.Is_Null then

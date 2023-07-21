@@ -1,9 +1,9 @@
 Xml_Checker
 ===========
-Version: V25.7
+Version: V26.1
 
-'Parser version: V47.0 +
-Generator version: V19.2 +
+'Parser version: V48.0 +
+Generator version: V19.3 +
 Dtd_checker version: V4.0 +
 Dtd_generator version: V3.1'
 
@@ -16,8 +16,8 @@ Syntax
 xml_checker[ { <option> } ] [ { <file> } ]
  <option> ::= <silent> | <progress> | <dump> | <raw> | <width> | <one> | <split>
             | <expand> | <keep> | <namespace> | <canonical> | <normalize>
-            | <compat> | <check_dtd> | <validate> | <tree> | <update_mix>
-            | <copytree> | <warnings>
+            | <compat> | <check_dtd> | <no_dtd> | <validate> | <tree>
+            | <update_mix> | <copytree> | <warnings>
             | <help> | <version>
  <help>        ::= -h | --help      : Put this help
  <version>     ::= -v | --version   : Put versions
@@ -26,7 +26,7 @@ xml_checker[ { <option> } ] [ { <file> } ]
  <copytree>    ::= -c | --copytree  : Copy tree then dump the copy
  <dump>        ::= -D | --dump      : Dump expanded Xml tree
  <check_dtd>   ::= -d <Dtd> | --dtd=<Dtd>
-                                    : Use a specific dtd or skip doctype
+                                    : Use a specific external dtd file
  <expand>      ::= -E | --expand    : Expand general entities
                                     :  and attributes with default
  <keep>        ::= -k <c|d|n|a> | --keep=<comments|cdata|none|all>
@@ -36,6 +36,7 @@ xml_checker[ { <option> } ] [ { <file> } ]
                                     :  markers)
                                     : Keep all (default)
  <update_mix>  ::= -m | --mixed     : Update Mixed tag in tree
+ <no_dtd>      ::= -N | --no_dtd    : Do not use dtd
  <namespace>   ::= -n | --namespace : Put Namespace^Suffix
  <normalize>   ::= --no-normalize   : Do not normalize attributes and text
  <one>         ::= -1 | --one       : Put one attribute per line
@@ -141,11 +142,13 @@ validation of the XML versus DTD.
 
 Checks
 ~~~~~~
+-N | --no_dtd: :: Do not check versus the DTD (internal and/or external) the XML
+content.
+
 -d [ <Dtd> ] | --dtd=[<Dtd>]: :: for check with a specific external DTD file.
 Use this option to set the external DTD if the XML file has no DOCTYPE,
-or to overwrite the one of DOCTYPE directive (SYSTEM or PUBLIC). +
-You can also use ''-d ""'' or ''--dtd=""'' to force discarding the complete
-DOCTYPE directive, including internal DTD.
+or to overwrite the one of DOCTYPE directive (SYSTEM or PUBLIC). The internal
+DTD (if any) is still used. +
 
 anchor:Warnings[]-w | --warnings: :: for check and report warnings. The warnings
 that can be reported are:
