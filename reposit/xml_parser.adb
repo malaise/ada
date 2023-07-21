@@ -708,6 +708,7 @@ package body Xml_Parser is
                    Compatible : in Trilean.Trilean := Trilean.Other;
                    Use_Dtd    : in Trilean.Trilean := Trilean.Other;
                    Dtd_File   : in String  := "";
+                   Dtd_Path   : in String  := "";
                    Namespace  : in Trilean.Trilean := Trilean.Other;
                    Warn_Cb    : in Warning_Callback_Access := null) is
     use type Trilean.Trilean;
@@ -735,6 +736,7 @@ package body Xml_Parser is
     if Use_Dtd /= Trilean.Other then
       Ctx.Use_Dtd := Trilean.Tri2Boo (Use_Dtd);
       Ctx.Dtd_File := As.U.Tus (Dtd_File);
+      Ctx.Dtd_Path := As.U.Tus (Dtd_Path);
     end if;
     if Namespace /= Trilean.Other then
       Ctx.Namespace := Trilean.Tri2Boo (Namespace);

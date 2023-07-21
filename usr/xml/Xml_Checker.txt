@@ -1,8 +1,8 @@
 Xml_Checker
 ===========
-Version: V25.6
+Version: V25.7
 
-'Parser version: V46.0 +
+'Parser version: V47.0 +
 Generator version: V19.2 +
 Dtd_checker version: V4.0 +
 Dtd_generator version: V3.1'
@@ -115,7 +115,7 @@ or keep CDATA sections unchanged, or keep none (remove comments and CDATA
 markers) or keep all unchanged, which is the default.
 
 -n | --namespace: :: for namespace checks and expansion. Add checks that the
-input flowflow is namespace-well-formed and namespace-valid (see
+input flow is namespace-well-formed and namespace-valid (see
 http://www.w3.org/TR/REC-xml-names) and expand namespaces as
 '<namespace>^<suffix>.' +
 This option should be used together with option xref:Expand[Expand] in order to
@@ -133,7 +133,8 @@ text. By default the text is normalized and, if the xref:Expand[expand] option
 is set, the attributes are normalized as well. +
 This option forces no normalization of the text and of the expanded attributes.
 
--c | --compat: :: for make text "compatible" by replacing \'>' by "&amp;gt;".
+-c | --compat: :: for make text "compatible" by replacing, for example, \'>' by
+"&amp;gt;".
 
 anchor:Validate[]-V | --validate: :: shortcut for "-E -kc", usefull for
 validation of the XML versus DTD.
@@ -142,9 +143,9 @@ Checks
 ~~~~~~
 -d [ <Dtd> ] | --dtd=[<Dtd>]: :: for check with a specific external DTD file.
 Use this option to set the external DTD if the XML file has no DOCTYPE,
-or to overwrite the one of DOCTYPE directive. +
-You can use ''-d ""'' or ''--dtd=""'' to force discarding the complete DOCTYPE
-directive (include internal DTD).
+or to overwrite the one of DOCTYPE directive (SYSTEM or PUBLIC). +
+You can also use ''-d ""'' or ''--dtd=""'' to force discarding the complete
+DOCTYPE directive, including internal DTD.
 
 anchor:Warnings[]-w | --warnings: :: for check and report warnings. The warnings
 that can be reported are:

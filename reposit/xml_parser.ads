@@ -20,7 +20,7 @@ with As.U, Trees, Trilean;
 package Xml_Parser is
 
   -- Version incremented at each significant change
-  Major_Version : constant String := "46";
+  Major_Version : constant String := "47";
   function Version return String;
 
   -----------
@@ -210,6 +210,7 @@ package Xml_Parser is
   -- On option, make text compatible ('>' -> "&gt;")
   -- On option do not check compliance with Dtd
   -- On option force an external Dtd different from the DOCTYPE directive
+  --  (does not affect the internal DTD)
   -- On option check and fill namespace informations
   -- If a warning callback is set then it is called for each warning detected
   -- If a parsing callback is set then it is called for each node creation
@@ -325,6 +326,7 @@ package Xml_Parser is
                    Compatible : in Trilean.Trilean := Trilean.Other;
                    Use_Dtd    : in Trilean.Trilean := Trilean.Other;
                    Dtd_File   : in String  := "";
+                   Dtd_Path   : in String  := "";
                    Namespace  : in Trilean.Trilean := Trilean.Other;
                    Warn_Cb    : in Warning_Callback_Access := null);
 
