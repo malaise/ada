@@ -14,9 +14,9 @@
 
 with Ada.Finalization;
 with Long_Longs;
-private with Magic_Numbers, Queues, Text_Char, Byte_To_Unicode,
+private with Magic_Numbers, Queues, Text_Char, Byte_To_Unicode, Aski,
              Long_Long_Limited_Pool, Hashed_List.Unique;
-with As.U, Trees, Trilean, Aski;
+with As.U, Trees, Trilean;
 package Xml_Parser is
 
   -- Version incremented at each significant change
