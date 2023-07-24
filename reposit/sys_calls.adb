@@ -310,7 +310,7 @@ package body Sys_Calls is
     File_Name4C : constant String := Str_For_C (File_Name);
     Stat4C : C_Stat_Rec;
     Res : C_Types.Int;
-    use Bit_Ops; --## rule line off Use
+    use Bit_Ops;
   begin
     Res := C_File_Stat(File_Name4C'Address, Stat4C'Address);
     if Res = C_Error then
@@ -336,7 +336,7 @@ package body Sys_Calls is
       with Import => True, Convention => C, External_Name => "chmod";
     File_Name4C : constant String := Str_For_C (File_Name);
     Res : C_Types.Int;
-    use Bit_Ops; --## rule line off Use
+    use Bit_Ops;
   begin
     Res := C_Chmod (File_Name4C'Address,
                     C_Types.Uint32(Rights and 8#00007777#));
@@ -690,7 +690,7 @@ package body Sys_Calls is
     C_F_Getfd : constant C_Types.Int := 1;
     C_F_Setfd : constant C_Types.Int := 2;
     C_Fd_Cloexec : constant C_Types.Int := 1;
-    use Bit_Ops; --## rule line off Use
+    use Bit_Ops;
   begin
     -- Get status
     Stat := C_Fcntl (Integer(Fd), C_F_Getfd, 0);

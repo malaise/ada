@@ -100,7 +100,7 @@ package body Reg_Exp is
     Str4C : constant String := String4C (Criteria);
     Cflags : Integer := 0;
     use type System.Address, Language.Language_List;
-    use Bit_Ops; --## rule line off Use
+    use Bit_Ops;
   begin
     Check_Pcre_Version;
     Compiled.Lang := Language.Get_Language;
@@ -206,7 +206,7 @@ package body Reg_Exp is
     J : Positive;
     use type System.Address;
     use type Language.Language_List;
-    use Bit_Ops; --## rule line off Use
+    use Bit_Ops;
   begin
     -- Init results
     Match_Info := (others => No_Match);
