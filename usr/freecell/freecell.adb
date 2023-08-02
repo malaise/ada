@@ -1,5 +1,5 @@
 with Con_Io, Argument, Basic_Proc, Environ;
-with Cards, Table, Memory, Movements;
+with Cards, Table, Memory, Movements, As.U, Trace;
 procedure Freecell is
   Event : Table.Event_Rec;
   Mov : Movements.Movement;
@@ -44,10 +44,10 @@ procedure Freecell is
 
   use type Table.Event_List;
 begin
-  -- Init traces to debug: Not useful any more
-  -- Trace.Init_Env (
-  --   (As.U.Tus ("Memory"), As.U.Tus ("Movements"), As.U.Tus ("Table")),
-  --   "Debug", "/tmp/Freecell.log");
+  -- Init traces to debug
+  Trace.Init_Env (
+    (As.U.Tus ("Memory"), As.U.Tus ("Movements"), As.U.Tus ("Table")),
+    "Debug", "/tmp/Freecell.log");
 
   -- Optional game num
   begin
