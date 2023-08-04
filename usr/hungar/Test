@@ -10,10 +10,15 @@ fi
 
 echo "Testing hungar"
 for file in $FILES; do
-  echo $file
+  echo -n $file
   hungar $file >/dev/null
   res=$?
-  if [ $res -ne 0 ] ; then
+  if [ $res -eq 0 ] ; then
+    echo " OK"
+  elif [ $res -eq 2 ] ; then
+    echo " => Not found" 
+  elif [ $res -ne 0 ] ; then
+    echo ""
     echo "ERROR." 2>&1
     exit $res
   fi

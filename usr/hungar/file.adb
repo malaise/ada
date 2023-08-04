@@ -1,5 +1,4 @@
 with As.U.Utils, Basic_Proc, My_Math, Get_Line, Gets;
-
 package body File is
 
   Max_Dim : constant := Types.Max_Dim;
@@ -36,7 +35,7 @@ package body File is
       My_Get_Line.Open (File_Name);
     exception
       when others =>
-        Basic_Proc.Put_Line_Error ("ERROR opening file " & File_Name);
+        Basic_Proc.Put_Line_Error ("ERROR opening file " & File_Name & ".");
         raise Read_Error;
     end;
 
@@ -99,7 +98,7 @@ package body File is
         when others =>
           Basic_Proc.Put_Line_Error ("ERROR, when reading data at line "
                 & My_Get_Line.Count'Image (My_Get_Line.Get_Line_No)
-                & " of file " & File_Name);
+                & " of file " & File_Name & ".");
           My_Get_Line.Close;
           raise Read_Error;
       end;
@@ -112,7 +111,7 @@ package body File is
         if My_Get_Line.Get_Word_Number /= Dim then
           Basic_Proc.Put_Line_Error ("ERROR in file. Wrong number of words at line "
                 & My_Get_Line.Count'Image(My_Get_Line.Get_Line_No)
-                & " of file " & File_Name);
+                & " of file " & File_Name & ".");
           My_Get_Line.Close;
           raise Read_Error;
         end if;
@@ -125,7 +124,7 @@ package body File is
       Read_Next_Significant_Line;
       Basic_Proc.Put_Line_Error ("ERROR. Unexpected data at line "
             & My_Get_Line.Count'Image (My_Get_Line.Get_Line_No)
-            & " of file " & File_Name);
+            & " of file " & File_Name & ".");
       My_Get_Line.Close;
       raise Read_Error;
     exception

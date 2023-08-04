@@ -1,4 +1,4 @@
-with Ada.Calendar;
+with Ada.Calendar, Ada.Exceptions;
 with Normal, Argument, Basic_Proc, Day_Mng, Console, Normalization;
 with Types, File, Euristic;
 
@@ -9,6 +9,7 @@ procedure Hungar is
   Loc_J : Types.Index_Range;
   Nb_Iterations : Positive;
   Max_Iter_Digits : constant := 3;
+  Nok_Exit_Code : constant Natural := 2;
   Start_Time : Ada.Calendar.Time;
 
 begin
@@ -105,6 +106,7 @@ begin
     else
       -- Not done
       Basic_Proc.Put_Line_Output ("No solution found.");
+      Basic_Proc.Set_Exit_Code (Nok_Exit_Code);
     end if;
   end Solve;
 
@@ -163,6 +165,10 @@ begin
 
 exception
   when File.Read_Error =>
-    null;
+    Basic_Proc.Set_Error_Exit_Code;
+  when Error:others =>
+    Basic_Proc.Put_Line_Error ("ERROR: Exception " &
+        Ada.Exceptions.Exception_Name (Error) & " raised.");
+    Basic_Proc.Set_Error_Exit_Code;
 end Hungar;
 

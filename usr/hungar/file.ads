@@ -1,5 +1,4 @@
 with Types;
-
 package File is
 
   -- Delta above which one considers it is zero (for loss printing)
