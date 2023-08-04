@@ -1,9 +1,8 @@
 with Ada.Calendar, Ada.Exceptions;
-with Normal, Argument, Basic_Proc, Day_Mng, Console, Normalization;
+with Normal, Argument, Basic_Proc, Day_Mng, Console, Normalization, Environ,
+     Mixed_Str;
 with Types, File, Euristic;
-
 procedure Hungar is
-  Dim : Natural;
   Sigma : Float;
   Loc_Ideal_Note, Ideal_Note, Loc_Note : Float;
   Loc_J : Types.Index_Range;
@@ -11,25 +10,37 @@ procedure Hungar is
   Max_Iter_Digits : constant := 3;
   Nok_Exit_Code : constant Natural := 2;
   Start_Time : Ada.Calendar.Time;
+  -- Setenv HUNGAR_MAX_LOOPS to "Default" leads to (Dim^2+1)*10
+  -- Otherwise 0 or default (no set or invalid) leads to infinite
+  Max_Iter_Name : constant String := "HUNGAR_MAX_LOOPS";
+  Max_Iter_Default : constant String := "Default";
+  Max_Iter : Natural;
 
 begin
+  Start_Time := Ada.Calendar.Clock;
   if Argument.Get_Nbre_Arg /= 1 then
     Basic_Proc.Put_Line_Output ("Syntax error. Usage : hungar <file_name>");
     return;
   end if;
 
-  Start_Time := Ada.Calendar.Clock;
-
   Solve:
   declare
     Mattrix : constant not null Types.Mattrix_Rec_Access :=
       new Types.Mattrix_Rec'(File.Read (Argument.Get_Parameter));
+    Dim : constant Natural := Mattrix.Dim;
     Done : Boolean;
   begin
+    -- Max iterations
+    if Mixed_Str (Environ.Getenv (Max_Iter_Name)) = Max_Iter_Default then
+      -- "Default"
+      Max_Iter := (Dim * Dim + 1) * 10;
+    else
+      -- Value or inifinite
+      Max_Iter := 0;
+      Environ.Get_Nat (Max_Iter_Name, Max_Iter);
+    end if;
 
-    Dim := Mattrix.Dim;
-
-    Euristic.Search (Mattrix.all, Nb_Iterations, Done);
+    Euristic.Search (Mattrix.all, Max_Iter, Nb_Iterations, Done);
 
     if Done then
       Basic_Proc.Put_Line_Output ("Result:");

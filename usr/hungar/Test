@@ -11,6 +11,10 @@ fi
 echo "Testing hungar"
 for file in $FILES; do
   echo -n $file
+  if [ $file = test60.dat ] ; then
+    # (60 * 60 + 1) * 2
+    export HUNGAR_MAX_LOOPS=7202
+  fi
   hungar $file >/dev/null
   res=$?
   if [ $res -eq 0 ] ; then

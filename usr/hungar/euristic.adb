@@ -482,11 +482,11 @@ package body Euristic is
   end Reduce;
 
   procedure Search (Mattrix : in out Types.Mattrix_Rec;
+                    Max_Iterations : in Natural;
                     Nb_Iterations : out Positive;
                     Done : out Boolean) is
     Transfer : Zero_Transfer_Tab (1 .. Mattrix.Dim, 1 .. Mattrix.Dim);
     Nb_Loop  : Positive := 1;
-    Max_Loop : constant Positive := Mattrix.Dim * Mattrix.Dim + 1;
   begin
     -- Init for search : one zero/row and / col
     Logger.Init;
@@ -499,7 +499,8 @@ package body Euristic is
        end if;
        -- Try to search
        Euristic_Search (Mattrix, Done, Transfer);
-       exit when Done or else Nb_Loop >= Max_Loop;
+       exit when Done
+       or else (Max_Iterations /= 0 and then Nb_Loop >= Max_Iterations);
        -- Euristic failed : reduce
        Reduce (Mattrix, Transfer);
        Nb_Loop := Nb_Loop + 1;
