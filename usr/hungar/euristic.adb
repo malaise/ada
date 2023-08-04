@@ -1,5 +1,4 @@
 with As.U, Rnd, Sorts, Basic_Proc, Normal, Trace.Loggers;
-
 package body Euristic is
   Logger : Trace.Loggers.Logger;
   Line : As.U.Asu_Us;
@@ -326,7 +325,8 @@ package body Euristic is
 
   end Euristic_Search;
 
-  procedure Reduce (Mattrix : in out Types.Mattrix_Rec; Transfer : in Zero_Transfer_Tab) is
+  procedure Reduce (Mattrix : in out Types.Mattrix_Rec;
+                    Transfer : in Zero_Transfer_Tab) is
     -- Index in mattrix
     subtype Index_Range is Types.Index_Range range 1 .. Mattrix.Dim;
     -- Rows and colums marqued

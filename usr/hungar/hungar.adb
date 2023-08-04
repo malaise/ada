@@ -1,6 +1,5 @@
 with Ada.Calendar, Ada.Exceptions;
-with Normal, Argument, Basic_Proc, Day_Mng, Console, Normalization, Environ,
-     As.U, Mixed_Str;
+with Normal, Argument, Basic_Proc, Day_Mng, Console, Normalization, As.U;
 with Types, File, Euristic;
 procedure Hungar is
   Sigma : Float;
@@ -10,36 +9,78 @@ procedure Hungar is
   Max_Iter_Digits : constant := 3;
   Nok_Exit_Code : constant Natural := 2;
   File_Name : As.U.Asu_Us;
-  Quiet : Boolean := False;
+  Progress : Boolean;
   Start_Time : Ada.Calendar.Time;
-  -- Setenv HUNGAR_MAX_LOOPS to "Default" leads to (Dim^2+1)*10
-  -- Otherwise 0 or default (no set or invalid) leads to infinite
-  Max_Iter_Name : constant String := "HUNGAR_MAX_LOOPS";
-  Max_Iter_Default : constant String := "Default";
-  Max_Iter : Natural;
+  Start_Arg : Positive;
+  -- Max iterations, default is 0 => infinite
+  -- Limited with no value is -1 => (Dim^2+1)*10
+  Max_Iter : Integer;
+  Default_Iter : constant Integer := -1;
 
+  Quit_Error: exception;
   procedure Syntax_Error is
   begin
     Basic_Proc.Put_Line_Output (
-      "Syntax error. Usage : hungar [ -q | --quiet ] <file_name>");
-    Basic_Proc.Set_Error_Exit_Code;
-    return;
+      "Syntax error. Usage: hungar [ --progress ] [ --max [=<val> ] <file_name>");
+    Basic_Proc.Put_Line_Output ("  Default is no max");
+    Basic_Proc.Put_Line_Output ("  Default max is (Dim^2+1)*10");
+    raise Quit_Error;
   end Syntax_Error;
 
 begin
   Start_Time := Ada.Calendar.Clock;
+  Start_Arg := 1;
+  Progress := False;
+  Max_Iter := 0;
   if Argument.Get_Nbre_Arg = 0 then
     Syntax_Error;
-  elsif Argument.Get_Nbre_Arg = 1 then
-    Argument.Get_Parameter (File_Name, Occurence => 1);
-  elsif Argument.Get_Nbre_Arg = 2
-  and then (Argument.Get_Parameter (Occurence => 1) = "-q"
-       or else Argument.Get_Parameter (Occurence => 1) = "--quiet") then
-    Quiet := True;
-    Argument.Get_Parameter (File_Name, Occurence => 2);
-  else
-    Syntax_Error;
   end if;
+  loop
+    if Start_Arg > 3 then
+      -- Too many options
+      Syntax_Error;
+    elsif Argument.Get_Parameter (Occurence => Start_Arg) = "--help" then
+      Syntax_Error;
+    elsif Argument.Get_Parameter (Occurence => Start_Arg) = "--progress" then
+      if Progress then
+        -- Option appears twice
+        Syntax_Error;
+      end if;
+      Progress := True;
+      Start_Arg := Start_Arg + 1;
+    elsif Argument.Get_Parameter (Occurence => Start_Arg) = "--max" then
+      if Max_Iter /= 0 then
+        -- Option appears twice
+        Syntax_Error;
+      end if;
+      -- No value => default
+      Max_Iter := Default_Iter;
+      Start_Arg := Start_Arg + 1;
+    elsif Argument.Get_Parameter (Occurence => Start_Arg)'Length > 6
+    and then Argument.Get_Parameter (Occurence => Start_Arg)(1..6) = "--max="
+    then
+      if Max_Iter /= 0 then
+        -- Option appears twice
+        Syntax_Error;
+      end if;
+      declare
+        Str : constant String
+            := Argument.Get_Parameter (Occurence => Start_Arg);
+      begin
+        Max_Iter := Positive'Value (Str(7 .. Str'Last));
+      exception
+        when others =>
+          Syntax_Error;
+      end;
+      Start_Arg := Start_Arg + 1;
+    elsif Start_Arg = Argument.Get_Nbre_Arg then
+      -- Last arg is the file name
+      Argument.Get_Parameter (File_Name, Occurence => Start_Arg);
+      exit;
+    else
+      Syntax_Error;
+    end if;
+  end loop;
 
   Solve:
   declare
@@ -48,17 +89,12 @@ begin
     Dim : constant Natural := Mattrix.Dim;
     Done : Boolean;
   begin
-    -- Max iterations
-    if Mixed_Str (Environ.Getenv (Max_Iter_Name)) = Max_Iter_Default then
-      -- "Default"
+    -- Max iterations default value
+    if Max_Iter = Default_Iter then
       Max_Iter := (Dim * Dim + 1) * 10;
-    else
-      -- Value or inifinite
-      Max_Iter := 0;
-      Environ.Get_Nat (Max_Iter_Name, Max_Iter);
     end if;
 
-    Euristic.Search (Mattrix.all, Max_Iter, not Quiet, Nb_Iterations, Done);
+    Euristic.Search (Mattrix.all, Max_Iter, Progress, Nb_Iterations, Done);
 
     if Done then
       Basic_Proc.Put_Line_Output ("Result:");
@@ -194,6 +230,8 @@ begin
 
 exception
   when File.Read_Error =>
+    Basic_Proc.Set_Error_Exit_Code;
+  when Quit_Error =>
     Basic_Proc.Set_Error_Exit_Code;
   when Error:others =>
     Basic_Proc.Put_Line_Error ("ERROR: Exception " &

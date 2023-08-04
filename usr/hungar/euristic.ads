@@ -1,5 +1,4 @@
 with Types;
-
 package Euristic is
 
   -- Search a solution
