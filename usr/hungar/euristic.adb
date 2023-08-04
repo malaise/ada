@@ -483,6 +483,7 @@ package body Euristic is
 
   procedure Search (Mattrix : in out Types.Mattrix_Rec;
                     Max_Iterations : in Natural;
+                    Progress : in Boolean;
                     Nb_Iterations : out Positive;
                     Done : out Boolean) is
     Transfer : Zero_Transfer_Tab (1 .. Mattrix.Dim, 1 .. Mattrix.Dim);
@@ -492,7 +493,7 @@ package body Euristic is
     Logger.Init;
     Init_Search (Mattrix);
     loop
-       if not Logger.Debug_On then
+       if not Logger.Debug_On and then Progress then
          -- Progress bar
          Basic_Proc.Put_Output (".");
          Basic_Proc.Flush_Output;
@@ -505,7 +506,9 @@ package body Euristic is
        Reduce (Mattrix, Transfer);
        Nb_Loop := Nb_Loop + 1;
     end loop;
-    Basic_Proc.New_Line_Output;
+    if not Logger.Debug_On and then Progress then
+      Basic_Proc.New_Line_Output;
+    end if;
     if Done then
       -- Euristic success: set mattrix to 1 (affected) or 0 (not affected)
       -- Affected if Transfer is squared

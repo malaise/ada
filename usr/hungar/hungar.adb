@@ -1,6 +1,6 @@
 with Ada.Calendar, Ada.Exceptions;
 with Normal, Argument, Basic_Proc, Day_Mng, Console, Normalization, Environ,
-     Mixed_Str;
+     As.U, Mixed_Str;
 with Types, File, Euristic;
 procedure Hungar is
   Sigma : Float;
@@ -9,6 +9,8 @@ procedure Hungar is
   Nb_Iterations : Positive;
   Max_Iter_Digits : constant := 3;
   Nok_Exit_Code : constant Natural := 2;
+  File_Name : As.U.Asu_Us;
+  Quiet : Boolean := False;
   Start_Time : Ada.Calendar.Time;
   -- Setenv HUNGAR_MAX_LOOPS to "Default" leads to (Dim^2+1)*10
   -- Otherwise 0 or default (no set or invalid) leads to infinite
@@ -16,17 +18,33 @@ procedure Hungar is
   Max_Iter_Default : constant String := "Default";
   Max_Iter : Natural;
 
+  procedure Syntax_Error is
+  begin
+    Basic_Proc.Put_Line_Output (
+      "Syntax error. Usage : hungar [ -q | --quiet ] <file_name>");
+    Basic_Proc.Set_Error_Exit_Code;
+    return;
+  end Syntax_Error;
+
 begin
   Start_Time := Ada.Calendar.Clock;
-  if Argument.Get_Nbre_Arg /= 1 then
-    Basic_Proc.Put_Line_Output ("Syntax error. Usage : hungar <file_name>");
-    return;
+  if Argument.Get_Nbre_Arg = 0 then
+    Syntax_Error;
+  elsif Argument.Get_Nbre_Arg = 1 then
+    Argument.Get_Parameter (File_Name, Occurence => 1);
+  elsif Argument.Get_Nbre_Arg = 2
+  and then (Argument.Get_Parameter (Occurence => 1) = "-q"
+       or else Argument.Get_Parameter (Occurence => 1) = "--quiet") then
+    Quiet := True;
+    Argument.Get_Parameter (File_Name, Occurence => 2);
+  else
+    Syntax_Error;
   end if;
 
   Solve:
   declare
     Mattrix : constant not null Types.Mattrix_Rec_Access :=
-      new Types.Mattrix_Rec'(File.Read (Argument.Get_Parameter));
+      new Types.Mattrix_Rec'(File.Read (File_Name.Image));
     Dim : constant Natural := Mattrix.Dim;
     Done : Boolean;
   begin
@@ -40,7 +58,7 @@ begin
       Environ.Get_Nat (Max_Iter_Name, Max_Iter);
     end if;
 
-    Euristic.Search (Mattrix.all, Max_Iter, Nb_Iterations, Done);
+    Euristic.Search (Mattrix.all, Max_Iter, not Quiet, Nb_Iterations, Done);
 
     if Done then
       Basic_Proc.Put_Line_Output ("Result:");

@@ -9,6 +9,7 @@ package Euristic is
   -- Or Done is False
   procedure Search (Mattrix : in out Types.Mattrix_Rec;
                     Max_Iterations : in Natural;
+                    Progress : in Boolean;
                     Nb_Iterations : out Positive;
                     Done : out Boolean);
 
