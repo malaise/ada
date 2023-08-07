@@ -1,6 +1,13 @@
 #!/bin/bash
 
-# $* orTest
+# No stop on error
+export STOPERROR=1
+if [ "$1" = "-n" ] ; then
+  shift
+  STOPERROR=0
+fi
+
+# $* or Test
 if [ -n "$1" ] ; then
   export PROG="$*"
 else
@@ -18,9 +25,12 @@ while [ $res -eq 0 ] ; do
   echo `date +"%Y-%m-%dT%H:%M:%S"`" Iteration "$n":"
   $PROG
   if [ $? -ne 0 ] ; then
-    echo "Failed!"
-    exit 1
-  elif [ $ABORT -eq 1 ] ; then
+    if [ $STOPERROR -eq 1 ] ; then
+      echo "Failed!"
+      exit 1
+    fi
+  fi
+  if [ $ABORT -eq 1 ] ; then
     echo "Loop aborted"
     exit 0
   fi
