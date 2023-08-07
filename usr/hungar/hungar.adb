@@ -1,6 +1,6 @@
 with Ada.Calendar, Ada.Exceptions;
-with Argument, Argument_Parser, Basic_Proc, Day_Mng, Console,
-     Normal, Normalization, As.U;
+with Argument, Argument_Parser, Basic_Proc, Day_Mng, As.U,
+     Normal, Normalization;
 with Types, File, Euristic;
 procedure Hungar is
   Sigma : Float;
@@ -228,7 +228,6 @@ begin
       Basic_Proc.Put_Line_Output (".");
     end Display_Elapse;
   end Compute_Elapse;
-  Console.Sound;
 
 exception
   when File.Read_Error =>
