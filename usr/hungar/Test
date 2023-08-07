@@ -12,7 +12,8 @@ echo "Testing hungar"
 for file in $FILES; do
   echo -n $file
   if [ $file = test60.dat ] ; then
-    export MAX_LOOPS=--max
+    export MAX_LOOPS="--max=3601"
+    echo -n "..."
   else
     export MAX_LOOPS=""
   fi
