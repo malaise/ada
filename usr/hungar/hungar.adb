@@ -1,5 +1,6 @@
 with Ada.Calendar, Ada.Exceptions;
-with Normal, Argument, Basic_Proc, Day_Mng, Console, Normalization, As.U;
+with Argument, Argument_Parser, Basic_Proc, Day_Mng, Console,
+     Normal, Normalization, As.U;
 with Types, File, Euristic;
 procedure Hungar is
   Sigma : Float;
@@ -11,77 +12,78 @@ procedure Hungar is
   File_Name : As.U.Asu_Us;
   Progress : Boolean;
   Start_Time : Ada.Calendar.Time;
-  Start_Arg : Positive;
+  -- Argument parsing
+  Keys : constant Argument_Parser.The_Keys_Type := (
+    01 => (False, 'h', As.U.Tus ("help"),           False),
+    02 => (False, 'p', As.U.Tus ("progress"),       False),
+    03 => (True,  'm', As.U.Tus ("max"),   False, False, As.U.Tus ("iter")) );
+  Arg_Dscr : Argument_Parser.Parsed_Dscr;
   -- Max iterations, default is 0 => infinite
   -- Limited with no value is -1 => (Dim^2+1)*10
   Max_Iter : Integer;
   Default_Iter : constant Integer := -1;
 
-  Quit_Error: exception;
-  procedure Syntax_Error is
+  procedure Help is
   begin
     Basic_Proc.Put_Line_Output (
-      "Syntax error. Usage: hungar [ --progress ] [ --max [=<val> ] <file_name>");
+      "Usage: " & Argument.Get_Program_Name
+    & " [ -p | --progress ] [ -m [ <val> ] | --max [=<val> ] ] <file_name>");
     Basic_Proc.Put_Line_Output ("  Default is no max");
     Basic_Proc.Put_Line_Output ("  Default max is (Dim^2+1)*10");
+  end Help;
+  Quit_Error: exception;
+  procedure Syntax_Error (Msg : in String) is
+  begin
+    Basic_Proc.Put_Line_Output ("Syntax ERROR. " & Msg);
+    Help;
     raise Quit_Error;
   end Syntax_Error;
 
 begin
   Start_Time := Ada.Calendar.Clock;
-  Start_Arg := 1;
+
+  -- Parse arguments
   Progress := False;
   Max_Iter := 0;
-  if Argument.Get_Nbre_Arg = 0 then
-    Syntax_Error;
+  Arg_Dscr := Argument_Parser.Parse (Keys);
+  if not Arg_Dscr.Is_Ok then
+    Syntax_Error (Arg_Dscr.Get_Error & ".");
   end if;
-  loop
-    if Start_Arg > 3 then
-      -- Too many options
-      Syntax_Error;
-    elsif Argument.Get_Parameter (Occurence => Start_Arg) = "--help" then
-      Syntax_Error;
-    elsif Argument.Get_Parameter (Occurence => Start_Arg) = "--progress" then
-      if Progress then
-        -- Option appears twice
-        Syntax_Error;
-      end if;
-      Progress := True;
-      Start_Arg := Start_Arg + 1;
-    elsif Argument.Get_Parameter (Occurence => Start_Arg) = "--max" then
-      if Max_Iter /= 0 then
-        -- Option appears twice
-        Syntax_Error;
-      end if;
-      -- No value => default
-      Max_Iter := Default_Iter;
-      Start_Arg := Start_Arg + 1;
-    elsif Argument.Get_Parameter (Occurence => Start_Arg)'Length > 6
-    and then Argument.Get_Parameter (Occurence => Start_Arg)(1..6) = "--max="
-    then
-      if Max_Iter /= 0 then
-        -- Option appears twice
-        Syntax_Error;
-      end if;
-      declare
-        Str : constant String
-            := Argument.Get_Parameter (Occurence => Start_Arg);
-      begin
-        Max_Iter := Positive'Value (Str(7 .. Str'Last));
-      exception
-        when others =>
-          Syntax_Error;
-      end;
-      Start_Arg := Start_Arg + 1;
-    elsif Start_Arg = Argument.Get_Nbre_Arg then
-      -- Last arg is the file name
-      Argument.Get_Parameter (File_Name, Occurence => Start_Arg);
-      exit;
-    else
-      Syntax_Error;
-    end if;
-  end loop;
 
+  if Arg_Dscr.Is_Set (01) then
+    if Argument.Get_Nbre_Arg /= 1 then
+      Syntax_Error ("Invalid arguments");
+    end if;
+    Help;
+    return;
+  end if;
+
+  if Arg_Dscr.Is_Set (02) then
+    Progress := True;
+  end if;
+
+  if Arg_Dscr.Is_Set (03) then
+    declare
+      Iter_Str : constant String := Arg_Dscr.Get_Option (03);
+    begin
+      if Iter_Str = "" then
+        Max_Iter := Default_Iter;
+      else
+        Max_Iter := Positive'Value (Iter_Str);
+      end if;
+    exception
+      when others =>
+        Syntax_Error ("Invalid max iterations");
+    end;
+  end if;
+
+  if Arg_Dscr.Get_Nb_Occurences (Argument_Parser.No_Key_Index) /= 1
+  or else Arg_Dscr.Get_Nb_Embedded_Arguments /= 0 then
+    Syntax_Error ("Invalid arguments");
+  end if;
+  File_Name := As.U.Tus (Arg_Dscr.Get_Option (Argument_Parser.No_Key_Index, 1));
+
+  -- Start solving
   Solve:
   declare
     Mattrix : constant not null Types.Mattrix_Rec_Access :=
