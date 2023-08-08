@@ -1,4 +1,4 @@
-with As.U, Con_Io, Directory, Dir_Mng, Str_Util, Language;
+with As.U, Con_Io, Directory, Dir_Mng, Str_Util, Afpx.Utils;
 package body Select_File is
 
   -- Text/get fields
@@ -254,11 +254,9 @@ package body Select_File is
                    when Directory.Socket =>           '=',
                    -- device, fifo ...
                    when Directory.Unknown =>          '?');
-        Afpx_Item.Len := Width;
-        Afpx_Item.Str (1 .. Width) :=
-            Language.String_To_Unicode (
-                Str_Util.Procuste (
-                    Dir_Item.Name.Image & ' ' & Char, Width) );
+        -- Procuste, keep tail
+        Afpx.Utils.Encode_Line ("",  Dir_Item.Name.Image & ' ' & Char, "",
+                                Width, Afpx_Item);
         Afpx.Line_List.Insert (Afpx_Item);
         -- A file/dir name cannot be empty, so empty Current will never match
         if Dir_Item.Name.Image = Current then
