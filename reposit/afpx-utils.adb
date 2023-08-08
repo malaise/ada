@@ -1,4 +1,4 @@
-with Aski.Unicode, Str_Util, Long_Longs;
+with Aski.Unicode, Language, Str_Util, Long_Longs;
 package body Afpx.Utils is
 
   -- Scroll the list according to button
@@ -117,12 +117,48 @@ package body Afpx.Utils is
                      Align_Left : Boolean := True;
                      Keep_Tail : Boolean := True;
                      Show_Cut : Boolean := True) return String is
+    Seq_In : constant  Language.Unicode_Sequence
+           := Language.String_To_Unicode (Str);
+    L : constant Natural := Seq_In'Length;
+    Seq_Out : Language.Unicode_Sequence (1 .. Len);
   begin
-    return Str_Util.Procuste (Str, Len, Align_Left, ' ',
-                              Trunc_Head => Keep_Tail,
-                              Show_Trunc => True,
-                              Head_Mark  => (if Show_Cut then ">>" else "  "),
-                              Tail_Mark  => (if Show_Cut then "<<" else "  "));
+    if L < Len then
+      -- Str is shorter than Len: Pad
+      if Align_Left then
+        -- Copy L characters at left and pad
+        Seq_Out(1 .. L) := Seq_In;
+        Seq_Out(L + 1 .. Len) := (others => Aski.Unicode.Spc_U);
+      else
+        -- Copy L characters at right and pad
+        Seq_Out(Len - L + 1 .. Len) := Seq_In;
+        Seq_Out(1 .. Len - L) := (others => Aski.Unicode.Spc_U);
+      end if;
+    elsif L > Len then
+      -- Str is larger than Len: Trunc
+      if Keep_Tail then
+        if Show_Cut and then Len >= 2 then
+          -- Copy ">>" then Len-2 last characters of Str
+          Seq_Out := Language.String_To_Unicode (">>")
+                   & Seq_In(Seq_In'Last - Len + 1 + 2 .. Seq_In'Last);
+        else
+          -- Copy Len last characters of Str
+          Seq_Out := Seq_In(Seq_In'Last - Len + 1 .. Seq_In'Last);
+        end if;
+      else
+        if Show_Cut and then Len >= 2 then
+          -- Copy Len-2 first characters of Str then " <"
+          Seq_Out := Seq_In(Seq_In'First .. Seq_In'First + Len - 1 - 2)
+                   &  Language.String_To_Unicode ("<<");
+        else
+          -- Copy Len first characters of Str
+          Seq_Out := Seq_In(Seq_In'First .. Seq_In'First + Len - 1);
+        end if;
+      end if;
+    else
+      -- Str is as Len characters: copy
+      Seq_Out := Seq_In;
+    end if;
+    return Language.Unicode_To_String (Seq_Out);
   end Procuste;
 
   -- Protect a field and "revert" its colors, or reset it to its default
