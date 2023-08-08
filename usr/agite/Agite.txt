@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V41.12
+V42.01
 
 General purpose
 ---------------
@@ -2335,7 +2335,7 @@ version 1.7.0 or above:
 --is-bare-repository'.
 
 * A function lists local files by calling 'git ls-files' and
-'git status \-- porcelain .',
+'git status \-- porcelain --untracked-files=all .',
 
 * A function lists local changes by calling 'git status \-- porcelain <path> |
 "."',

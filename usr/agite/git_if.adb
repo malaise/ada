@@ -338,6 +338,7 @@ package body Git_If is
     Cmd.Set ("git");
     Cmd.Cat ("status");
     Cmd.Cat ("--porcelain");
+    Cmd.Cat ("--untracked-files=all");
     Cmd.Cat (".");
     Execute (Cmd, Out_Flow_2'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
@@ -451,6 +452,7 @@ package body Git_If is
     Cmd.Set ("git");
     Cmd.Cat ("status");
     Cmd.Cat ("--porcelain");
+    Cmd.Cat ("--untracked-files=all");
     Cmd.Cat (Path);
     Execute (Cmd, Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
