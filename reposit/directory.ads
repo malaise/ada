@@ -111,6 +111,10 @@ package Directory is
                             File_Prefix, File_Suffix : in String)
            return String;
 
+  -- Transform '\' sequences "\n", "\b", "\t", "\\",
+  --   \xyz" (octal) into bytes
+  function To_Bytes (Str : String) return String;
+
   -- Exceptions
   Name_Error     : exception renames Sys_Calls.Name_Error;
   Open_Error     : exception;

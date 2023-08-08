@@ -1,6 +1,9 @@
+with Ada.Text_Io;
 with Aski, C_Types, Str_Util;
 package body Directory is
   use type System.Address;
+
+  package Int_Io is new Ada.Text_Io.Integer_Io (Integer);
 
   subtype Dir_Str is String (1 .. 256);
 
@@ -565,6 +568,54 @@ package body Directory is
             elsif Dirname(Dirname'Last) = Sep_Char then Dirname & Build_Name
             else Dirname & Sep_Str & Build_Name);
   end Build_File_Name;
+
+  -- Transform '\' sequences into bytes
+  function To_Bytes (Str : String) return String is
+    Res : As.U.Asu_Us := As.U.Tus (Str);
+    I : Positive := 1;
+    Val : Natural range 0 .. 8#777#;
+    Last : Natural;
+  begin
+    while I < Res.Length - 1 loop
+      if Res.Element (I) = '\' then
+        case Res.Element (I + 1) is
+          -- "\c" sequences
+          when 'n' =>
+            Res.Delete (I, I);
+            Res.Replace_Element (I, Aski.Lf);
+          when 'b' =>
+            Res.Delete (I, I);
+            Res.Replace_Element (I, Aski.Spc);
+          when 't' =>
+            Res.Delete (I, I);
+            Res.Replace_Element (I, Aski.Ht);
+          when '\' =>
+            Res.Delete (I, I);
+          -- "\xyz" sequence
+          when '0' .. '9' =>
+            if I <= Res.Length - 3 then
+              begin
+                -- Read octal sequence
+                Int_Io.Get ("8#" & Res.Slice (I + 1, I + 3) & "#" , Val, Last);
+                if Last /= 6 then
+                  raise Constraint_Error;
+                end if;
+                Res.Delete (I, I + 2);
+                Res.Replace_Element (I, Character'Val (Val));
+              exception
+                when others =>
+                  null;
+              end;
+            end if;
+          when others =>
+            null;
+        end case;
+      end if;
+      -- Skip to next char
+      I := I + 1;
+    end loop;
+    return Res.Image;
+  end To_Bytes;
 
 end Directory;
 

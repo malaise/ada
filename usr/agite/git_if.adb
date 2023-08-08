@@ -242,9 +242,7 @@ package body Git_If is
 
   -- Parse file output by '--porcelain' : Nothing if first char is not '"'
   -- Else: remove leading and trailing '"'
-  -- Replace any "\x" by 'x'
   procedure Parse_Filename (Txt : in out As.U.Asu_Us) is
-    I : Positive;
   begin
     if Txt.Length < 2 or else Txt.Element (1) /= '"'
     or else Txt.Element (Txt.Length) /= '"' then
@@ -253,18 +251,11 @@ package body Git_If is
     -- Remove leading and trailing '"'
     Txt.Delete (1, 1);
     Txt.Trail (1);
-    -- Remove any '\' except if it is last char
     if Txt.Is_Null then
       return;
     end if;
-    I := 1;
-    loop
-      if Txt.Element (I) = '\' and then I /= Txt.Length then
-        Txt.Delete (I, I);
-      end if;
-      exit when I = Txt.Length;
-      I := I + 1;
-    end loop;
+    -- Interpret "\n" "\t" and "\xyz" in octal
+    Txt := As.U.Tus (Directory.To_Bytes (Txt.Image));
   end Parse_Filename;
 
   -- Internal: parse a line of "git status --porcelain"
