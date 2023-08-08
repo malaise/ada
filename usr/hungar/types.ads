@@ -4,7 +4,7 @@ package Types is
   -- 0.00 to 100.00 multiplied by 100
   subtype Cell_Range is Natural range 0 .. 10_000;
 
-  Max_Dim : constant := 256;
+  Max_Dim : constant := 999;
   subtype Index_Range is Natural range 0 .. Max_Dim;
   type Mattrix_Tab is array (Index_Range range <>, Index_Range range <>)
                             of Cell_Range;

@@ -14,12 +14,13 @@ package body File is
                 := (others => new Input_Row_Tab);
 
   Loc_Kind : Types.Mattrix_Kind_List;
+  Col : Positive;
 
   function Read (File_Name : String) return Types.Mattrix_Rec is
 
     package My_Get_Line is new Get_Line(Comment => "#");
     Line  : As.U.Utils.Asu_Ua.Unbounded_Array;
-    Dim : Positive;
+    Dim : Types.Index_Range;
     F   : Float_Cell_Range;
 
     procedure Read_Next_Significant_Line is
@@ -86,6 +87,7 @@ package body File is
       -- Parse current line in matrix and vector
       begin
         for J in 1 .. Dim loop
+          Col := J;
           F := Float_Cell_Range (Gets.Get_Int_Float (Line.Element(J).Image));
           if F > 100.00
           or else My_Math.Frac (My_Math.Real (F)) * 100.0 > 100.0 then
@@ -98,6 +100,7 @@ package body File is
         when others =>
           Basic_Proc.Put_Line_Error ("ERROR, when reading data at line "
                 & My_Get_Line.Count'Image (My_Get_Line.Get_Line_No)
+                & " and column " & Col'Img
                 & " of file " & File_Name & ".");
           My_Get_Line.Close;
           raise Read_Error;
@@ -109,7 +112,8 @@ package body File is
 
         -- Check number of words
         if My_Get_Line.Get_Word_Number /= Dim then
-          Basic_Proc.Put_Line_Error ("ERROR in file. Wrong number of words at line "
+          Basic_Proc.Put_Line_Error (
+                  "ERROR in file. Wrong number of words at line "
                 & My_Get_Line.Count'Image(My_Get_Line.Get_Line_No)
                 & " of file " & File_Name & ".");
           My_Get_Line.Close;
