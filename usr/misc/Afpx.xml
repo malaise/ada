@@ -41,13 +41,13 @@
 
     <!-- Get -->
     <Field Num="5" Kind="Get">
-      <Geometry Up="23" Left="1" Low="23" Right="33"/>
+      <Geometry Up="23" Left="11" Low="23" Right="43"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Messages -->
     <Field Num="6" Kind="Put">
-      <Geometry Up="23" Left="35" Low="23" Right="78"/>
+      <Geometry Up="23" Left="45" Low="23" Right="79"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
 
@@ -112,6 +112,12 @@
       <Geometry Up="19" Left="2" Low="21" Right="9"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="1">CANCEL</Init>
+    </Field>
+
+    <Field Num="17" Kind="Button">
+      <Geometry Up="23" Left="2" Low="23" Right="9"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="0" Col="1" Half_Col_Offset="True">Clear</Init>
     </Field>
 
     <!-- Any other field here -->

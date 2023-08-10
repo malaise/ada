@@ -14,6 +14,7 @@ package body Select_File is
   Reread_Fld   : constant Afpx.Field_Range := 14;
   Ok_Fld       : constant Afpx.Field_Range := 15;
   Cancel_Fld   : constant Afpx.Field_Range := 16;
+  Clear_Fld    : constant Afpx.Field_Range := 17;
 
   -- Use Afpx descriptor
   procedure Use_Descriptor is
@@ -52,17 +53,8 @@ package body Select_File is
   function Confirm return Boolean is
     Handle : Afpx.Get_Handle_Rec;
     Ptg_Result : Afpx.Result_Rec;
-    Get_Prot : Boolean;
-    Get_Act : Boolean;
     Res : Boolean;
   begin
-    -- Protect get field
-    Get_Prot := Afpx.Get_Field_Protection (Get_Fld);
-    if not Get_Prot then
-      Afpx.Set_Field_Protection (Get_Fld, True);
-    end if;
-    Afpx.Set_Field_Colors (Get_Fld,
-         Background => Con_Io.Color_Of ("Black"));
     loop
       Afpx.Put_Then_Get (Handle, Ptg_Result);
       case Ptg_Result.Event is
@@ -100,14 +92,6 @@ package body Select_File is
           null;
       end case;
     end loop;
-    -- Restore Get field colors
-    Get_Act := Afpx.Get_Field_Activation (Get_Fld);
-    Afpx.Reset_Field (Get_Fld, Reset_String => False);
-    Afpx.Set_Field_Activation (Get_Fld, Get_Act);
-    -- Restore Get field protection
-    if not Get_Prot then
-      Afpx.Set_Field_Protection (Get_Fld, False);
-    end if;
     return Res;
   end Confirm;
 
@@ -348,6 +332,7 @@ package body Select_File is
     end if;
 
     -- Encode current file name in get field
+    Afpx.Clear_Field (Get_Fld);
     if Current_File'Length > Get_Get_Width then
       Get_Content.Set_Null;
     else
@@ -441,6 +426,10 @@ package body Select_File is
             when Reread_Fld =>
               -- Reread current directory
               Reread;
+            when Clear_Fld =>
+              Get_Content.Set_Null;
+              Afpx.Clear_Field (Get_Fld);
+              Get_Handle.Cursor_Col := Con_Io.Col_Range_First;
             when others => null;
           end case;
         when Afpx.Fd_Event =>
@@ -467,10 +456,12 @@ package body Select_File is
   begin
     Use_Descriptor;
     Afpx.Bell (1);
-    Afpx.Set_Field_Protection (Afpx.List_Field_No, True);
+    Afpx.Utils.Protect_Field (Afpx.List_Field_No, True);
+    Afpx.Utils.Protect_Field (Get_Fld, True);
     Afpx.Set_Field_Activation (Center_Fld, False);
     Afpx.Set_Field_Activation (Reread_Fld, False);
     Afpx.Set_Field_Activation (Cancel_Fld, False);
+    Afpx.Set_Field_Activation (Clear_Fld, False);
     Afpx.Set_Field_Colors(Info_Fld, Foreground => Con_Io.Color_Of ("Orange"));
     Encode_Info (Message);
 
@@ -479,10 +470,12 @@ package body Select_File is
     end loop;
 
     Afpx.Reset_Field (Info_Fld);
+    Afpx.Set_Field_Activation (Clear_Fld, True);
     Afpx.Set_Field_Activation (Cancel_Fld, True);
     Afpx.Set_Field_Activation (Reread_Fld, True);
     Afpx.Set_Field_Activation (Center_Fld, True);
-    Afpx.Set_Field_Protection (Afpx.List_Field_No, False);
+    Afpx.Utils.Protect_Field (Get_Fld, False);
+    Afpx.Utils.Protect_Field (Afpx.List_Field_No, False);
     Get_Handle.Cursor_Field := Get_Fld;
   end Report_Error;
 

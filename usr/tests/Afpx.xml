@@ -285,24 +285,32 @@
 
     <!-- Reread -->
     <Field Num="14" Kind="Button">
-      <Geometry Up="11" Left="2" Low="13" Right="9"/>
+      <Geometry Up="9" Left="2" Low="11" Right="9"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="1">Reread</Init>
     </Field>
 
     <!-- Ok -->
     <Field Num="15" Kind="Button">
-      <Geometry Up="15" Left="2" Low="17" Right="9"/>
+      <Geometry Up="13" Left="2" Low="15" Right="9"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="3">OK</Init>
     </Field>
 
     <!-- Cancel -->
     <Field Num="16" Kind="Button">
-      <Geometry Up="19" Left="2" Low="21" Right="9"/>
+      <Geometry Up="17" Left="2" Low="19" Right="9"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="1">CANCEL</Init>
     </Field>
+
+   <!-- Clear -->
+    <Field Num="17" Kind="Button">
+      <Geometry Up="21" Left="2" Low="21" Right="9"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="0" Col="1" Half_Col_Offset="True">Clear</Init>
+    </Field>
+
 
   </Descriptor>
 
