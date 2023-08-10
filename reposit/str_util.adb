@@ -21,7 +21,7 @@ package body Str_Util is
     Res : String (1 .. Str'Length);
   begin
     for I in reverse Str'Range loop
-      Res (Str'Last - I + 1) := Str(I);
+      Res(Str'Last - I + 1) := Str(I);
     end loop;
     return Res;
   end Swap;
@@ -95,10 +95,10 @@ package body Str_Util is
   end Overwrite;
 
   -- Copy the string Val at the beginning of the string To
-  -- To (To'First .. To'First - Val'Length) := Val;
+  -- To(To'First .. To'First - Val'Length) := Val;
   procedure Copy (Val : in String; To : in out String) is
   begin
-    To (To'First .. To'First + Val'Length - 1) := Val;
+    To(To'First .. To'First + Val'Length - 1) := Val;
   end Copy;
 
   -- Replace a slice by a new string
@@ -166,7 +166,7 @@ package body Str_Util is
                         Source(Source'First .. From - 1)
                       else
                         Source(Source'First .. From - 1)
-                      & Source (Through + 1 .. Source'Last));
+                      & Source(Through + 1 .. Source'Last));
   end Delete;
 
   -- Delete Number characters from From included
@@ -438,26 +438,26 @@ package body Str_Util is
     end if;
     -- Else try to find a separator before Length, up to Mini
     for I in reverse Mini .. Length loop
-      if Separating (Str (Indof (I))) then
-        return Normalize (Str (Str'First .. Indof (I)));
+      if Separating (Str(Indof (I))) then
+        return Normalize (Str(Str'First .. Indof (I)));
       end if;
     end loop;
     -- Else try to find a separator after  Length, up to Maxi
     for I in Length + 1 .. Maxi loop
-      if Separating (Str (Indof (I))) then
-        return Normalize (Str (Str'First .. Indof (I)));
+      if Separating (Str(Indof (I))) then
+        return Normalize (Str(Str'First .. Indof (I)));
       end if;
     end loop;
     -- Else try to find a separator before Mini,   up to 1
     for I in reverse 1 .. Mini - 1 loop
-      if Separating (Str (Indof (I))) then
-        return Normalize (Str (Str'First .. Indof (I)));
+      if Separating (Str(Indof (I))) then
+        return Normalize (Str(Str'First .. Indof (I)));
       end if;
     end loop;
     -- Else try to find a separator after  Maxi,   up to Str'Length
     for I in Maxi + 1 .. Strlen loop
-      if Separating (Str (Indof (I))) then
-        return Normalize (Str (Str'First .. Indof (I)));
+      if Separating (Str(Indof (I))) then
+        return Normalize (Str(Str'First .. Indof (I)));
       end if;
     end loop;
     -- No separator found
@@ -486,9 +486,9 @@ package body Str_Util is
     end if;
     -- Copy
     declare
-      Res : String(1 .. Len) := (others => Gap);
+      Res : String (1 .. Len) := (others => Gap);
     begin
-      Copy (Str, Res (Start .. Len));
+      Copy (Str, Res(Start .. Len));
       return Res;
     end;
   end Center;
