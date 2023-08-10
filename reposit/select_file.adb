@@ -450,7 +450,7 @@ package body Select_File is
         when Afpx.Signal_Event =>
           Signal_Callback;
         when Afpx.Refresh =>
-          null;
+          Reread;
       end case;
     end loop;
 
