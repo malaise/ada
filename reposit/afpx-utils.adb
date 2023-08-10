@@ -1,4 +1,4 @@
-with Aski.Unicode, Language, Str_Util, Long_Longs;
+with Aski.Unicode, Language, Long_Longs;
 package body Afpx.Utils is
 
   -- Scroll the list according to button
@@ -109,6 +109,88 @@ package body Afpx.Utils is
     Context := (others => <>);
   end Reset;
 
+  -- Internal Procuste on Unicode_Sequence
+  subtype Us is Language.Unicode_Sequence;
+  -- If Str fits Width then return Str, padded with space if no Align_Left
+  -- else return ">>" & tail to match Width (if Keep_Tail)
+  --   or return head to match Width and "<<" (if not Keep_Tail)
+  function Procuste (Seq : Us;
+                     Len : Positive;
+                     Align_Left : Boolean := True;
+                     Keep_Tail : Boolean := True;
+                     Show_Cut : Boolean := True) return Us is
+    L : constant Natural := Seq'Length;
+    Res : Language.Unicode_Sequence (1 .. Len);
+  begin
+    if L < Len then
+      -- Str is shorter than Len: Pad
+      if Align_Left then
+        -- Copy L characters at left and pad
+        Res(1 .. L) := Seq;
+        Res(L + 1 .. Len) := (others => Aski.Unicode.Spc_U);
+      else
+        -- Copy L characters at right and pad
+        Res(Len - L + 1 .. Len) := Seq;
+        Res(1 .. Len - L) := (others => Aski.Unicode.Spc_U);
+      end if;
+    elsif L > Len then
+      -- Str is larger than Len: Trunc
+      if Keep_Tail then
+        if Show_Cut and then Len >= 2 then
+          -- Copy ">>" then Len-2 last characters of Str
+          Res := Language.String_To_Unicode (">>")
+                   & Seq(Seq'Last - Len + 1 + 2 .. Seq'Last);
+        else
+          -- Copy Len last characters of Str
+          Res := Seq(Seq'Last - Len + 1 .. Seq'Last);
+        end if;
+      else
+        if Show_Cut and then Len >= 2 then
+          -- Copy Len-2 first characters of Str then " <"
+          Res := Seq(Seq'First .. Seq'First + Len - 1 - 2)
+                   &  Language.String_To_Unicode ("<<");
+        else
+          -- Copy Len first characters of Str
+          Res := Seq(Seq'First .. Seq'First + Len - 1);
+        end if;
+      end if;
+    else
+      -- Str is as Len characters: copy
+      Res := Seq;
+    end if;
+    return Res;
+  end Procuste;
+
+  -- Internal Center on Unicode_Sequence
+  -- Center a String Str in a fixed size
+  -- if Str <= Size pad with Gap after then before Str
+  -- if Str > Size  raise Constraint_Error
+  function Center (Str : Us;
+                   Len : Positive;
+                   Gap : Character := ' ';
+                   Offset : Integer := 0) return Us is
+    Start : Integer;
+  begin
+    if Str'Length > Len then
+      raise Constraint_Error;
+    end if;
+    -- Start position
+    Start := (Len - Str'Length) / 2 + 1 + Offset;
+    if Start <= 0 then
+      Start := 1;
+    end if;
+    if Start + Str'Length > Len  + 1 then
+      Start := Len - Str'Length + 1;
+    end if;
+    -- Copy
+    declare
+      Res : Us(1 .. Len) := (others => Language.Char_To_Unicode (Gap));
+    begin
+      Res(Start .. Start + Str'Length - 1) := Str;
+      return Res;
+    end;
+  end Center;
+
   -- If Str fits Width then return Str, padded with space if no Align_Left
   -- else return ">>" & tail to match Width (if Keep_Tail)
   --   or return head to match Width and "<<" (if not Keep_Tail)
@@ -117,48 +199,10 @@ package body Afpx.Utils is
                      Align_Left : Boolean := True;
                      Keep_Tail : Boolean := True;
                      Show_Cut : Boolean := True) return String is
-    Seq_In : constant  Language.Unicode_Sequence
-           := Language.String_To_Unicode (Str);
-    L : constant Natural := Seq_In'Length;
-    Seq_Out : Language.Unicode_Sequence (1 .. Len);
   begin
-    if L < Len then
-      -- Str is shorter than Len: Pad
-      if Align_Left then
-        -- Copy L characters at left and pad
-        Seq_Out(1 .. L) := Seq_In;
-        Seq_Out(L + 1 .. Len) := (others => Aski.Unicode.Spc_U);
-      else
-        -- Copy L characters at right and pad
-        Seq_Out(Len - L + 1 .. Len) := Seq_In;
-        Seq_Out(1 .. Len - L) := (others => Aski.Unicode.Spc_U);
-      end if;
-    elsif L > Len then
-      -- Str is larger than Len: Trunc
-      if Keep_Tail then
-        if Show_Cut and then Len >= 2 then
-          -- Copy ">>" then Len-2 last characters of Str
-          Seq_Out := Language.String_To_Unicode (">>")
-                   & Seq_In(Seq_In'Last - Len + 1 + 2 .. Seq_In'Last);
-        else
-          -- Copy Len last characters of Str
-          Seq_Out := Seq_In(Seq_In'Last - Len + 1 .. Seq_In'Last);
-        end if;
-      else
-        if Show_Cut and then Len >= 2 then
-          -- Copy Len-2 first characters of Str then " <"
-          Seq_Out := Seq_In(Seq_In'First .. Seq_In'First + Len - 1 - 2)
-                   &  Language.String_To_Unicode ("<<");
-        else
-          -- Copy Len first characters of Str
-          Seq_Out := Seq_In(Seq_In'First .. Seq_In'First + Len - 1);
-        end if;
-      end if;
-    else
-      -- Str is as Len characters: copy
-      Seq_Out := Seq_In;
-    end if;
-    return Language.Unicode_To_String (Seq_Out);
+    return Language.Unicode_To_String (Procuste (
+        Language.String_To_Unicode (Str),
+        Len, Align_Left, Keep_Tail, Show_Cut) );
   end Procuste;
 
   -- Protect a field and "revert" its colors, or reset it to its default
@@ -193,12 +237,15 @@ package body Afpx.Utils is
                          Line : out Afpx.Line_Rec;
                          Keep_Tail : in Boolean := True;
                          Show_Cut : Boolean := True) is
+    Uhead : constant Us := Language.String_To_Unicode (Head);
+    Utext : constant Us := Language.String_To_Unicode (Text);
+    Utail : constant Us := Language.String_To_Unicode (Tail);
   begin
     Clean_Line (Line);
     Afpx.Encode_Line (Line,
-        Head & Procuste (Text, Width - Head'Length - Tail'Length,
+        Uhead & Procuste (Utext, Width - Uhead'Length - Utail'Length,
                          True, Keep_Tail, Show_Cut)
-             & Tail);
+             & Utail);
   end Encode_Line;
 
   -- Center Head+Text+Tail in Line, procuste on Text,
@@ -208,19 +255,23 @@ package body Afpx.Utils is
                          Line : out Afpx.Line_Rec;
                          Keep_Head : in Boolean := True;
                          Show_Cut : Boolean := True) is
+    Uhead : constant Us := Language.String_To_Unicode (Head);
+    Utext : constant Us := Language.String_To_Unicode (Text);
+    Utail : constant Us := Language.String_To_Unicode (Tail);
   begin
-    if Head'Length + Text'Length + Tail'Length <= Width then
+    if Uhead'Length + Utext'Length + Utail'Length <= Width then
       -- Full text fits => center full text
-      Afpx.Encode_Line (Line, Str_Util.Center (Head & Text & Tail, Width));
-    elsif Head'Length + 2 + Tail'Length <= Width then
+      Afpx.Encode_Line (Line,
+          Center (Uhead & Utext & Utail, Width));
+    elsif Uhead'Length + 2 + Tail'Length <= Width then
       -- Procusting Text is enough => Procuste only Text
       Afpx.Encode_Line (Line,
-        Head & Procuste (Text, Width - Head'Length - Tail'Length,
-                         True, not Keep_Head, Show_Cut) & Tail);
+        Uhead & Procuste (Utext, Width - Uhead'Length - Utail'Length,
+                         True, not Keep_Head, Show_Cut) & Utail);
     else
       -- Procusting Text is not enough => Procuste full text
       Afpx.Encode_Line (Line,
-        Procuste (Head & Text & Tail, Width, True, not Keep_Head, Show_Cut));
+        Procuste (Uhead & Utext & Utail, Width, True, not Keep_Head, Show_Cut));
     end if;
   end Center_Line;
 
@@ -232,12 +283,13 @@ package body Afpx.Utils is
                           Clear : in Boolean := True;
                           Keep_Tail : in Boolean := True;
                           Show_Cut : Boolean := True) is
+    Utext : constant Us := Language.String_To_Unicode (Text);
   begin
     if Clear then
       Afpx.Clear_Field (Field);
     end if;
     Afpx.Encode_Field (Field, (Row, 0),
-        Procuste (Text,
+        Procuste (Utext,
                    (if Afpx.Is_Get_Kind (Field) then Afpx.Get_Data_Len (Field)
                     else Afpx.Get_Field_Width (Field)),
                    True, Keep_Tail, Show_Cut));
@@ -251,16 +303,17 @@ package body Afpx.Utils is
                           Keep_Head : in Boolean := True;
                           Show_Cut : Boolean := True;
                           Offset : Integer := 0) is
+    Utext : constant Us := Language.String_To_Unicode (Text);
     Width : constant Afpx.Width_Range := Afpx.Get_Field_Width (Field);
   begin
     Afpx.Clear_Field (Field);
-    if Text'Length <= Afpx.Get_Field_Width (Field) then
-      Afpx.Set_Half_Col_Offset (Field, Row, Width rem 2 /= Text'Length rem 2);
+    if Utext'Length <= Afpx.Get_Field_Width (Field) then
+      Afpx.Set_Half_Col_Offset (Field, Row, Width rem 2 /= Utext'Length rem 2);
       Afpx.Encode_Field (Field, (Row, 0),
-          Str_Util.Center (Text, Width, Offset => Offset) );
+          Center (Utext, Width, Offset => Offset) );
     else
       Afpx.Encode_Field (Field, (Row, 0),
-          Procuste (Text, Width, True, not Keep_Head, Show_Cut));
+          Procuste (Utext, Width, True, not Keep_Head, Show_Cut));
     end if;
   end Center_Field;
 
