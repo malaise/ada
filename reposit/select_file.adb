@@ -153,31 +153,10 @@ package body Select_File is
       return Title_Width;
     end Get_Title_Width;
 
-    -- Remove trailing spaces. No heading nor intermediate spaces allowed
-    procedure Parse_Spaces (Txt : in out As.U.Asu_Us;
-                            Ok : out Boolean) is
-      Str : constant String := Txt.Image;
-      L : Natural;
+    -- Remove trailing spaces
+    procedure Parse_Spaces (Txt : in out As.U.Asu_Us) is
     begin
-      L := 0;
-      for I in reverse Str'Range loop
-        if not Str_Util.Is_Separator (Str(I)) then
-          -- Significant char
-          if L = 0 then
-            L := I;
-          end if;
-        else
-          -- space
-          if L /= 0 then
-            -- Space before significant char
-            Ok := False;
-            return;
-          end if;
-        end if;
-      end loop;
-      -- If all spaces, L = 0 => empty
-      Txt := As.U.Tus (Str(1 .. L));
-      Ok := True;
+      Txt := As.U.Tus (Str_Util.Strip (Txt.Image));
     end Parse_Spaces;
 
     -- Put file name
@@ -309,19 +288,16 @@ package body Select_File is
                                 Name : out As.U.Asu_Us;
                                 Ok : out Boolean) is
     begin
+      Ok := True;
       Afpx.Decode_Field (Get_Fld, 0, Name);
-      Parse_Spaces (Get_Content, Ok);
-      if Ok and then Name.Is_Null then
+      Parse_Spaces (Get_Content);
+      if Name.Is_Null then
         if Allow_Empty then
           Name.Set_Null;
           return;
         else
           Ok := False;
         end if;
-      end if;
-      if not Ok then
-        Error (E_File_Name);
-        return;
       end if;
       begin
         -- Value to return if not dir
