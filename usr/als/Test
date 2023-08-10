@@ -145,7 +145,7 @@ echo "OK"
 # Access rights
 title "In ., executables and not readable"
 echo "als  als.stat  lib  Test" > exp
-als --access='**x' > res
+als -e "AdaCtl" --access='**x' > res
 cmp res exp > /dev/null 2>&1
 if [ $? -ne 0 ] ; then
   error "als --access=**x result res differs from exp"
