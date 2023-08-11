@@ -462,7 +462,7 @@ package body Select_File is
     Afpx.Set_Field_Activation (Reread_Fld, False);
     Afpx.Set_Field_Activation (Cancel_Fld, False);
     Afpx.Set_Field_Activation (Clear_Fld, False);
-    Afpx.Set_Field_Colors(Info_Fld, Foreground => Con_Io.Color_Of ("Orange"));
+    Afpx.Set_Field_Colors(Info_Fld, Foreground => Con_Io.Color_Of ("Red"));
     Encode_Info (Message);
 
     while not Confirm loop
