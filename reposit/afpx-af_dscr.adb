@@ -132,14 +132,20 @@ package body Af_Dscr is
   -- Load a field
   procedure Load_Field (Field_No : in Absolute_Field_Range;
         Load_Colors : in Boolean;
-        Load_Chars  : in Boolean) is
+        Load_Chars  : in Boolean;
+        Reset_Activation : in Boolean;
+        Reset_Protection : in Boolean) is
     Field : constant Afpx_Typ.Field_Rec := Fields(Field_No);
     Nb_Chars : constant Positive := Field.Height * Field.Width;
     use type Absolute_Field_Range;
   begin
     Check (Field_No);
-    Fields(Field_No).Activated := True;
-    Fields(Field_No).Isprotected := False;
+    if Reset_Activation then
+      Fields(Field_No).Activated := True;
+    end if;
+    if Reset_Protection then
+      Fields(Field_No).Isprotected := False;
+    end if;
     if Load_Colors then
       Fields(Field_No).Colors := Init_Colors(Field_No);
     end if;

@@ -205,23 +205,27 @@ package body Afpx.Utils is
         Len, Align_Left, Keep_Tail, Show_Cut) );
   end Procuste;
 
-  -- Protect a field and "revert" its colors, or reset it to its default
+  -- Protect a field and adapt its background (except for the list)
+  --  or reset it to its default (preserve content and Activation status)
   procedure Protect_Field (Field_No : in Afpx.Absolute_Field_Range;
                            Protect  : in Boolean) is
     Foreground, Backround, Selected : Con_Io.Effective_Colors;
-    Activated : Boolean;
+    use type Absolute_Field_Range;
   begin
     if Protect then
       Afpx.Set_Field_Protection (Field_No, True);
-      Afpx.Get_Field_Colors (Field_No, Foreground, Backround, Selected);
-      Afpx.Set_Field_Colors (Field_No,
-            Foreground => Foreground,
-            Background => Afpx.Get_Descriptor_Background);
+      if Field_No /= List_Field_No then
+        Afpx.Get_Field_Colors (Field_No, Foreground, Backround, Selected);
+        Afpx.Set_Field_Colors (Field_No,
+              Foreground => Foreground,
+              Background => Afpx.Get_Descriptor_Background);
+      end if;
     else
-      -- Reset all except field activation
-      Activated := Afpx.Get_Field_Activation (Field_No);
-      Afpx.Reset_Field (Field_No, Reset_String => False);
-      Afpx.Set_Field_Activation (Field_No, Activated);
+      -- Reset protection and colors
+      Afpx.Reset_Field (Field_No, Reset_Colors => True,
+                                  Reset_String => False,
+                                  Reset_Activation => False,
+                                  Reset_Protection => True);
     end if;
   end Protect_Field;
 

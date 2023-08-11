@@ -49,8 +49,8 @@ package Afpx.Utils is
                      Show_Cut : Boolean := True) return String;
 
 
-  -- Protect a field and "revert" its colors, or reset it to its default (keep
-  --  its Activation status)
+  -- Protect a field and adapt its background (except for the list)
+  --  or reset it to its default (preserve content and Activation status)
   procedure Protect_Field (Field_No : in Afpx.Absolute_Field_Range;
                            Protect  : in Boolean);
 

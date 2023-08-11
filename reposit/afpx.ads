@@ -98,15 +98,16 @@ package Afpx is
   --              Invalid_Field (Field_No too big)
   procedure Clear_Field (Field_No : in Field_Range);
 
-  -- Reset the field from initial definition in file colors and / or  content,
-  -- The field becomes activated and not protected.
+  -- Reset the field from initial definition in file colors, content and status
   -- Reset_String also resets half offsets
   -- Reset_String is meaningless if Field_No is List_Field_No
   -- Exceptions : No_Descriptor (no Descriptor in use),
   --              Invalid_Field (Field_No too big)
   procedure Reset_Field (Field_No : in Absolute_Field_Range;
                          Reset_Colors : in Boolean := True;
-                         Reset_String : in Boolean := True);
+                         Reset_String : in Boolean := True;
+                         Reset_Activation : in Boolean := True;
+                         Reset_Protection : in Boolean := True);
 
   -- Height and width of a field
   -- Exceptions : No_Descriptor (no Descriptor in use),

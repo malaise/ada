@@ -55,7 +55,10 @@ package body Afpx is
     -- Load a field's characters and/or colors from init
     procedure Load_Field (Field_No : in Absolute_Field_Range;
                           Load_Colors : in Boolean;
-                          Load_Chars  : in Boolean);
+                          Load_Chars  : in Boolean;
+                          Reset_Activation : in Boolean;
+                          Reset_Protection : in Boolean);
+
 
   end Af_Dscr;
 
@@ -434,11 +437,15 @@ package body Afpx is
   -- Reset the field from initial definition in file
   procedure Reset_Field (Field_No : in Absolute_Field_Range;
                          Reset_Colors : in Boolean := True;
-                         Reset_String : in Boolean := True) is
+                         Reset_String : in Boolean := True;
+                         Reset_Activation : in Boolean := True;
+                         Reset_Protection : in Boolean := True) is
+
     Fn : constant Absolute_Field_Range := Field_No;
   begin
     Af_Dscr.Check(Fn);
-    Af_Dscr.Load_Field (Fn, Reset_Colors, Reset_String);
+    Af_Dscr.Load_Field (Fn, Reset_Colors, Reset_String,
+                        Reset_Activation, Reset_Protection);
     Af_Dscr.Current_Dscr.Modified := True;
     Af_Dscr.Fields(Fn).Modified := True;
   end Reset_Field;
