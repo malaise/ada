@@ -3,7 +3,7 @@ with As.U, Argument, Argument_Parser, Basic_Proc, Mixed_Str, Directory, Trace;
 with Debug, Sourcer, Tree_Mng, Sort, Output, Checker;
 procedure Lsadeps is
 
-  Version : constant String := "V17.01";
+  Version : constant String := "V17.02";
 
   -- The keys and descriptor of parsed keys
   Nok : Character renames Argument_Parser.No_Key_Char;
@@ -83,18 +83,20 @@ procedure Lsadeps is
     Basic_Proc.Put_Line_Error (
      "       <exclude>     ::= " & Argument_Parser.Image (Keys(11)));
     Basic_Proc.Put_Line_Error (
-     " <list>        ::= [ <files> ] [ <subunits> ] [ <children> ] "
-                           & Argument_Parser.Image (Keys(12)));
+     " <list>        ::= " & Argument_Parser.Image (Keys(12))
+                           & " [ <files> ] [ <subunits> ] [ <children> ] ");
     Basic_Proc.Put_Line_Error (
-     "                   [ <path_unit> ]");
+     "                               [ <path_unit> ]");
     Basic_Proc.Put_Line_Error (
      "   <subunits>    ::= " & Argument_Parser.Image (Keys(13)));
     Basic_Proc.Put_Line_Error (
      "   <children>    ::= " & Argument_Parser.Image (Keys(14)));
     Basic_Proc.Put_Line_Error (
-     " <check>       ::= " & Argument_Parser.Image (Keys(3)) & " [ <target_dir> ]");
+     " <check>       ::= " & Argument_Parser.Image (Keys(3))
+                           & " [ <target_dir> ]");
     Basic_Proc.Put_Line_Error (
-     " <loop>        ::= " & Argument_Parser.Image (Keys(20)) & " [ <specs> ] <target_unit>");
+     " <loop>        ::= " & Argument_Parser.Image (Keys(20))
+                           & " [ <specs> ] <target_unit>");
     Basic_Proc.Put_Line_Error (
      "Dependency function by default lists units on which <target_unit> depends,");
     Basic_Proc.Put_Line_Error (

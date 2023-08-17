@@ -1,6 +1,6 @@
 lsadeps
 =======
-V17.01
+V17.02
 
 Lsadeps lists ada dependencies between files or units, optionally in reverse
 order. +
