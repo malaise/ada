@@ -114,6 +114,8 @@ package body Tree is
     procedure Init is
     begin
       Afpx.Use_Descriptor (Afpx_Xref.History.Dscr_Num);
+      Afpx.Clear_Field (Afpx_Xref.History.Title);
+      Afpx.Encode_Field (Afpx_Xref.History.Title, (0, 2), "Tree");
       Get_Handle := (others => <>);
       -- List characteristics
       List_Width := Afpx.Get_Field_Width (Afpx.List_Field_No);
