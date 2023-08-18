@@ -650,10 +650,10 @@ package body Cherry is
       -- Encode current branch
       Encode_Branch;
       -- Encode Title
-      Utils.X.Center_Field ("Cherry pick from " & Branch
+      Utils.X.Center_Field (Branch
                             & (if Reference = "" then ""
                                else " with ref " & Reference),
-                            Afpx_Xref.Cherry.Title,
+                            Afpx_Xref.Cherry.Sub_Title,
                             Keep_Head => False);
       -- Encode Root
       Utils.X.Encode_Field (Root, Afpx_Xref.Cherry.Root);

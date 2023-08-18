@@ -38,7 +38,7 @@ begin
   end if;
 
   -- Confirm file restoration
-  if Confirm ("Ready to restore:",
+  if Confirm ("Restore",
               (if File = "/"  then "Full commit" else File)) then
     if File = "/" then
       Commits.Rewind;

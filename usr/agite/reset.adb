@@ -23,7 +23,7 @@ begin
 
   if Ref /= "" then
     -- A ref => Hard / Soft / Mixed reset to ref
-    Utils.X.Center_Field ("Reset to " & Ref, Afpx_Xref.Reset.Title);
+    Utils.X.Center_Field (Ref, Afpx_Xref.Reset.Title);
     if Comment /= "" then
       -- Comment of target commit
       Utils.X.Encode_Field (Comment, Afpx_Xref.Reset.Comment);
@@ -32,7 +32,7 @@ begin
                           Afpx_Xref.Reset.Warning);
   else
     -- No ref => Hard / Soft / Mixed reset to head or clean
-    Utils.X.Center_Field ("Reset to HEAD", Afpx_Xref.Reset.Title);
+    Utils.X.Center_Field ("HEAD", Afpx_Xref.Reset.Title);
   end if;
 
   -- Main loop

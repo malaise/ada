@@ -232,16 +232,20 @@ package body Push_Pull is
                                  Menu = Pull_Remote);
       case Menu is
         when Push =>
-          Utils.X.Center_Field ("Push " & Branch_Tag,
-                                Afpx_Xref.Push_Pull.Title);
+          if Branch_Tag = "" then
+            Utils.X.Center_Field ("Push", Afpx_Xref.Push_Pull.Title);
+          else
+            Utils.X.Center_Field ("Push tag", Afpx_Xref.Push_Pull.Title);
+            Utils.X.Center_Field (Branch_Tag, Afpx_Xref.Push_Pull.Sub_Title);
+          end if;
         when Pull_Remote =>
-          Utils.X.Center_Field (Branch_Tag, Afpx_Xref.Push_Pull.Sub_Title);
-          Utils.X.Center_Field ("Select remote", Afpx_Xref.Push_Pull.Title);
+          Utils.X.Center_Field ("Pull", Afpx_Xref.Push_Pull.Title);
+          Utils.X.Center_Field ("Select remote", Afpx_Xref.Push_Pull.Sub_Title);
           Utils.X.Center_Field ("OK", Afpx_Xref.Push_Pull.Push);
           Afpx.Reset_Field (Afpx_Xref.Push_Pull.Entries);
         when Pull_Branch =>
-          Utils.X.Center_Field ("Get from " & Branch_Tag,
-                                Afpx_Xref.Push_Pull.Title);
+          Utils.X.Center_Field ("Pull from " & Branch_Tag,
+                                Afpx_Xref.Push_Pull.Title, Keep_Head => False);
           Utils.X.Center_Field ("Select branch",
                                 Afpx_Xref.Push_Pull.Sub_Title);
           -- Main action will be set by List_Change
