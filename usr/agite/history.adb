@@ -678,7 +678,7 @@ package body History is
       -- Save position in List and read it
       Hash := Hash_Of;
       if List (Root, Branch, "", "", False, Allow_Modif, Allow_Tag,
-               Hash, False) then
+               Hash, True) then
         return True;
       end if;
       -- Restore screen
