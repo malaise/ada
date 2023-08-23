@@ -1,6 +1,6 @@
 #!/bin/bash
 if [ -z "$ADACONTROL_PATH" ] ; then
-  export ADACONTROL_PATH=/usr/bin/adactl
+  export ADACONTROL_PATH=/usr/local/src/adactl/src/adactl
 fi
 if [ -z "$GNATPATH" ] ; then
   export GNATPATH=/usr/local/gnat/bin
@@ -10,8 +10,15 @@ export WDIR=AdaCtl
 
 # Help
 if [ \( "$1" = "-h" \) -o \( "$1" = "--help" \) ] ; then
-  echo "Usage: `basename $0` [ -C | --only_clean | -c | --clean ]  [ <directory_path> " 1>&2
+  echo "Usage: `basename $0` [ -C | --only_clean | -c | --clean ]  [ <directory_path>" 1>&2
+  echo "    or `basename $0` -v | --version" 1>&2
   exit 1
+fi
+
+# Version
+if [ \( "$1" = "-v" \) -o \( "$1" = "--version" \) ] ; then
+  $ADACONTROL_PATH -h version
+  exit 0
 fi
 
 # Optional clean and only_clean
