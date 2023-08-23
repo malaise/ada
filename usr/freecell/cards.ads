@@ -55,6 +55,10 @@ package Cards is
 
   -- Is a stack a Done stack
   function Is_Done_Stack (Card : Card_Access) return Boolean;
+
+  -- Image of a card access
+  function Image (Card : Card_Access) return String;
+
   ----------------------
   -- Suits and Colors --
   ----------------------

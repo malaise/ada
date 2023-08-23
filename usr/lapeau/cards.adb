@@ -79,5 +79,9 @@ package body Cards is
     return Card.Xcard.Is_Symbol;
   end Is_Done_Stack;
 
+  -- Image of a card access
+  function Image (Card : Card_Access) return String is
+  (if Card  /= null then Card.Image else "");
+
 end Cards;
 

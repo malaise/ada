@@ -1,6 +1,7 @@
-with Con_Io, Argument, Basic_Proc, Environ;
-with Cards, Table, Memory, Movements, As.U, Trace;
+with Con_Io, Argument, Basic_Proc, Environ, As.U, Trace.Loggers;
+with Cards, Table, Memory, Movements;
 procedure Freecell is
+  Logger : Trace.Loggers.Logger;
   Event : Table.Event_Rec;
   Mov : Movements.Movement;
   Stack, Card : Cards.Card_Access;
@@ -43,11 +44,14 @@ procedure Freecell is
   end Purge;
 
   use type Table.Event_List;
+
 begin
   -- Init traces to debug
   Trace.Init_Env (
-    (As.U.Tus ("Memory"), As.U.Tus ("Movements"), As.U.Tus ("Table")),
+    (As.U.Tus ("Main"), As.U.Tus ("Memory"),
+     As.U.Tus ("Movements"), As.U.Tus ("Table")),
     "Debug", "/tmp/Freecell.log");
+  Logger.Init ("Main");
 
   -- Optional game num
   begin
@@ -62,6 +66,7 @@ begin
     when others =>
       raise Invalid_Argument;
   end;
+
   -- Global init
   Table.Init;
 
@@ -72,6 +77,14 @@ begin
   -- Play game
   loop
     Table.Next_Event (Event);
+    Logger.Log_Debug ("Status: " & Status'Img & " "
+        & "SelSrc: " & Cards.Image (Selected_Source) & " "
+        & "SelTrg: " & Cards.Image (Selected_Target) & " "
+        & "Event: " & Event.Kind'Img & " "
+        & (case Event.Kind is
+           when Table.Card_Event_List => Event.Card.Image,
+           when Table.Menu_Event_List => "",
+           when Table.Num => Event.Col'Img) );
     case Event.Kind is
       when Table.Quit =>
         -- End of game
@@ -118,56 +131,69 @@ begin
               -- Entering a selectable source
               Table.Console.Set_Pointer_Shape (Con_Io.Hand);
               Status := Selectable;
+              Logger.Log_Debug ("  movable card becomes selectable");
+            else
+              Logger.Log_Debug ("  drop cause unmovable card");
             end if;
           when Selectable =>
             -- Impossible, we must leave it first, and become None
-            null;
+            Logger.Log_Debug ("  drop cause status");
           when Selected =>
             if Movements.Can_Move (Selected_Source, Event.Card) then
               -- Entering a eligible target
               Table.Console.Set_Pointer_Shape (Con_Io.Target);
               Event.Card.Xcard.Do_Select;
               Status := Targetable;
+              Logger.Log_Debug ("  card can move and becomes targetable");
+            else
+              Logger.Log_Debug ("  drop cause card cannot move");
             end if;
           when Targetable | Targeted =>
             -- Impossible, we must leave it first, and become Selected
-            null;
+            Logger.Log_Debug ("  drop cause status");
         end case;
       when Table.Leave =>
         case Status is
           when None =>
             -- Leaving a non movable card
-            null;
+            Logger.Log_Debug ("  drop cause status");
           when Selectable =>
             -- Leaving a selectable source
             Table.Console.Set_Pointer_Shape (Con_Io.Arrow);
             Status := None;
+            Logger.Log_Debug ("  selectable card becomes normal");
           when Selected =>
             -- Leaving a selected source
             Table.Console.Set_Pointer_Shape (Con_Io.Hand);
+            Logger.Log_Debug ("  selected card remains selected");
           when Targetable =>
             -- Leaving an eligible target
             Table.Console.Set_Pointer_Shape (Con_Io.Hand);
             Event.Card.Xcard.Un_Select;
             Status := Selected;
+            Logger.Log_Debug ("  targetable card becomes normal");
           when Targeted =>
             -- Leaving a selected target
             Table.Console.Set_Pointer_Shape (Con_Io.Hand);
             Event.Card.Xcard.Un_Select;
             Selected_Target := null;
             Status := Selected;
+            Logger.Log_Debug ("  targeted card becomes normal");
         end case;
       when Table.Left_Pressed =>
         case Status is
           when None =>
             -- Pressing in a non movable card
-            null;
+            Logger.Log_Debug ("  drop cause status");
           when Selectable =>
             -- Left pressing a selectable source => toggle select
             if Event.Card /= Selected_Source then
               Event.Card.Xcard.Do_Select;
               Selected_Source := Event.Card;
               Status := Selected;
+              Logger.Log_Debug ("  selectable card becomes selected");
+            else
+              Logger.Log_Debug ("  drop cause card is the source");
             end if;
           when Selected =>
             -- Pressing again the selected card => unselect
@@ -176,29 +202,33 @@ begin
               Event.Card.Xcard.Un_Select;
               Selected_Source := null;
               Status := Selectable;
+              Logger.Log_Debug ("  selected card becomes selectable");
+            else
+              Logger.Log_Debug ("  drop cause card is the source");
             end if;
           when Targetable =>
             -- Pressing in an eligible target
             Selected_Target := Event.Card;
             Status := Targeted;
+            Logger.Log_Debug ("  targetable card becomes targeted");
           when Targeted =>
             -- Impossible, we must leave or release first
-            null;
+           Logger.Log_Debug ("  drop cause status");
         end case;
       when Table.Left_Released =>
         case Status is
           when None =>
             -- Releasing in a non movable card
-            null;
+            Logger.Log_Debug ("  drop cause status");
           when Selectable =>
             -- Releasing in a selectable card
-            null;
+            Logger.Log_Debug ("  drop cause status");
           when Selected =>
             -- Releasing in the selected source
-            null;
+            Logger.Log_Debug ("  drop cause status");
           when Targetable =>
             -- Impossible
-            null;
+            Logger.Log_Debug ("  drop cause status");
           when Targeted =>
             -- Releasing in Selected target
             -- Set movement
@@ -217,10 +247,13 @@ begin
                 Movements.Move (Mov, True);
               else
                 Reset;
+                Logger.Log_Debug ("  drop cause card cannot move");
               end if;
             else
               Reset;
+              Logger.Log_Debug ("  drop cause no selected source or target");
             end if;
+
         end case;
       when Table.Right_Pressed | Table.Double_Click =>
         if Event.Card /= null
@@ -264,15 +297,19 @@ begin
             else
               Table.Console.Set_Pointer_Shape (Con_Io.Hand);
             end if;
+          else
+            Logger.Log_Debug ("  drop cause card cannot move");
           end if;
         elsif Event.Kind = Table.Double_Click
         and then Event.Card /= null
         and then Cards.Is_Done_Stack (Event.Card.Stack) then
           -- Double click on a Done stack
           Purge;
+        else
+          Logger.Log_Debug ("  drop cause cannot purge");
         end if;
       when Table.Right_Released =>
-        null;
+        Logger.Log_Debug ("  drop right release");
     end case;
 
     -- Unselect after double click
@@ -280,9 +317,13 @@ begin
     and then Event.Card /= null
     and then Event.Card.Xcard.Is_Selected then
       Event.Card.Xcard.Un_Select;
+      Logger.Log_Debug ("  Unselect after douvle click");
     end if;
 
+    Logger.Log_Debug ("Status is now " & Status'Img);
+
   end loop;
+
 exception
   when Invalid_Argument =>
     Basic_Proc.Put_Line_Error ("ERROR: Invalid argument.");
