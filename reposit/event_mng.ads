@@ -41,7 +41,9 @@ package Event_Mng is
   --   Unregister with null, then no Signal_Event will be returned,
   --   Register an empty procedure for only the generation of the event.
   -- By default (at init), signal policy is the UNIX default behaviour
-  --  (see Reset_Default_Signals_Policy).
+  --  (see Reset_Default_Signals_Policy), but setting any of these
+  --  callbacks or calling Wait or Pause first initializes all the callbacks
+  --  to ignore (Nul_Procedure)
   procedure Set_Sig_Term_Callback (Callback : in Sig_Callback);
   procedure Set_Sig_Child_Callback (Callback : in Sig_Callback);
   procedure Set_Sig_Usr1_Callback (Callback : in Sig_Callback);
@@ -65,7 +67,7 @@ package Event_Mng is
   procedure Send_Dummy_Signal;
 
 
-  -- Signal handling is the capability to catch SigTerm (and Sigint),
+  -- Signal handling is the capability to catch SigTerm (and SigInt),
   --  SigChild and dummy signal, and report them
   -- This is automatically activated when setting a signal callback,
   --  when calling Wait (or Pause) or when sending a dummy signal
