@@ -397,7 +397,7 @@ package body Table is
       if Dur = Timers.Infinite_Seconds and then not Event_Pool.Is_Empty then
         -- Event expected and present
         Event := Event_Pool.Pop;
-        Logger.Log_Debug ("  Popping " & Event.Kind'Img &
+        Logger.Log_Debug ("  Wait: Popping " & Event.Kind'Img &
             (if Event.Kind in Card_Event_List then
              " " & Event.Card.Image else "") );
         return Event;
@@ -408,9 +408,11 @@ package body Table is
                                 Time_Out => Expiration);
       case Stat is
         when Con_Io.Break =>
+          Logger.Log_Debug ("  Wait: Break");
           Event := (Kind => Quit);
           Event_Pool.Push (Event);
         when Con_Io.Mouse_Button =>
+          Logger.Log_Debug ("  Wait: Mouse");
           Console.Get_Mouse_Event (Mouse_Event, Con_Io.X_Y);
           if Mouse_Event.Xref /= X_Mng.Null_Reference then
             if Decode_Card_Event (Mouse_Event, Event) then
@@ -426,11 +428,13 @@ package body Table is
           end if;
           Console.Get_Mouse_Event (Mouse_Event, Con_Io.X_Y);
         when Con_Io.Refresh =>
+          Logger.Log_Debug ("  Wait: Refresh");
           Put_Menu;
         when Con_Io.Timeout =>
+          Logger.Log_Debug ("  Wait: Tiemout");
           return Event;
         when others =>
-          null;
+          Logger.Log_Debug ("  Wait: " & Stat'Img);
       end case;
     end loop;
   end Wait;
