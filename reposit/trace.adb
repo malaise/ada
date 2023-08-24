@@ -242,7 +242,7 @@ package body Trace is
         -- Init once
         Basic_Init;
         Mask := Get_Mask (Name);
-        Flus := Async_Flow;
+        Flus := not Async_Flow;
         Init := True;
       end if;
     end Do_Init;

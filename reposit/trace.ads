@@ -38,6 +38,8 @@ package Trace is
   ---------------
   -- Init the environement (to be called before init of the loggers)
   --  to a given mask for some loggers and a given log file
+  -- BEWARE that some (basic) loggers may initialize during program elaboration,
+  --  so before Init_Env is called
   -- Set the severity of the provided loggers to the provided mask
   -- Set the trace file to the provided name (if set);
   procedure Init_Env (Loggers : in As.U.Asu_Array;
@@ -75,12 +77,13 @@ package Trace is
   --         replaced by '_')
   --        file is "stdout", "stderr", "async_stdout", "async_stderr",
   --         or any file name (see Output_Flows), possibly with
-  --         ${PID}, ${CMD}, ${HOST} or ${DATE}, which are expanded.
-  --         Default is stderr.
-  -- Initialize the logger, either with a name or anonymous,
-  --  and set its mask from ENV
+  --         ${PID}, ${CMD}, ${HOST} or ${DATE}, which are expanded
+  --         Default is stderr
+
+  -- Define the logger, either with a name or anonymous, and it will get its
+  --  mask from ENV at first usage
   -- If name is not valid (i.e. not and Ada identifier) then the logger
-  --  is disabled (Mask=0).
+  --  is disabled (Mask=0)
   -- If Name is not empty and <proc>_TRACE_<Name> is set (even empty)
   -- or Name is empty and <proc>_TRACE is set, then the mask is set to
   --  Fatal|Error|mask
