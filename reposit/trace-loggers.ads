@@ -12,7 +12,7 @@ package Trace.Loggers is
   --        file is "stdout", "stderr", "async_stdout", "async_stderr",
   --         or any file name (see Output_Flows), possibly with
   --         ${PID}, ${CMD}, ${HOST} or ${DATE}, which are expanded.
-  --         Default is stderr.
+  -- Default is stderr.
 
   -- A logger of traces
   type Logger is tagged private;
@@ -80,6 +80,7 @@ package Trace.Loggers is
   procedure Set_Flush (A_Logger : in out Logger; Each : in Boolean);
 
   -- Flush logs of a logger
+  -- Raise Not_Init if logger is not init
   procedure Flush (A_Logger : in out Logger);
 
   -- By default, Errors (Fatal & Error) are also logged on stderr if the

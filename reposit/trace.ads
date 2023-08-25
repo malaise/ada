@@ -71,14 +71,12 @@ package Trace is
 
   -- BASIC LOGGER
   ---------------
-  -- All the basic loggers of a process trace in a given flow, which can be set in
-  --  the environment variable <Process>_TRACEFILE="file"
+  -- All the basic loggers of a process trace in a given flow, which can be set
+  --  by the environment variable <Process>_TRACEFILE="file"
   --  where <Process> is the process name (no path, non alphanum characters
   --         replaced by '_')
-  --        file is "stdout", "stderr", "async_stdout", "async_stderr",
-  --         or any file name (see Output_Flows), possibly with
-  --         ${PID}, ${CMD}, ${HOST} or ${DATE}, which are expanded
-  --         Default is stderr
+  --        file is "stdout", "stderr", or any file name
+  -- Default is stderr
 
   -- Define the logger, either with a name or anonymous, and it will get its
   --  mask from ENV at first usage
@@ -128,10 +126,10 @@ private
   -- Utilities for child packages
   Lock : Mutexes.Simple_Mutex;
 
-  -- Operations and variables for Trace.Loggers
+  -- Operations and variables for child packages
 
-  -- Global basic init, sets the following variables
-  procedure Basic_Init;
+  -- Global init, sets the following variables
+  procedure Global_Init;
   -- - Process name
   Process : As.U.Asu_Us;
   -- Environment process name, where non-alphanum characters are replaed by '_'

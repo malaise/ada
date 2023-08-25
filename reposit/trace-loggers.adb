@@ -26,8 +26,8 @@ package body Trace.Loggers is
       return;
     end if;
 
-    -- Do basic init if not yet done
-    Basic_Init;
+    -- Do global init if not yet done
+    Global_Init;
 
     -- No log until local logger is init
     ------------------------------------
@@ -199,10 +199,8 @@ package body Trace.Loggers is
                  Name     : in String := "") is
     Txt : As.U.Asu_Us;
   begin
-    -- Init as anonymous if needed
-    if not A_Logger.Inited then
-      Init (A_Logger, Name);
-    end if;
+    -- Init if needed
+    Init (A_Logger, Name);
     -- Check severity
     if (Severity and A_Logger.Mask) = 0 then
       return;
@@ -219,7 +217,6 @@ package body Trace.Loggers is
 
     -- Put also on stderr if needed
     if not Flow_Is_Stderr
-    and then Errors_On_Stderr
     and then (Severity and Errors) /= 0 then
       Stderr.Put_Line (Txt.Image);
       -- Flush if set on logger
@@ -282,8 +279,8 @@ package body Trace.Loggers is
 
   -- Flush logs of a logger
   procedure Flush (A_Logger : in out Logger) is
-    pragma Unreferenced (A_Logger);
   begin
+    Check_Init (A_Logger);
     Flow.Flush;
   end Flush;
 

@@ -152,12 +152,8 @@ package body Trace is
     end loop;
   end Init_Env_Name;
 
-  -- Private: Minimal init: global process name, global maks, stderr and flow
-  type File_Type_Access is access all Text_Line.File_Type;
-  Flow : File_Type_Access;
-  Async_Flow : Boolean := False;
-  procedure Basic_Init is
-    Flow_Name : As.U.Asu_Us;
+  -- Private: Global init: global process name, global maks and stderr
+  procedure Global_Init is
   begin
     if Process.Is_Null then
       -- Init process name
@@ -167,43 +163,49 @@ package body Trace is
       Stderr.Open (Text_Line.Out_File, Sys_Calls.Stderr);
       -- Get global mask
       Global_Mask := Parse (Environ.Getenv (Env_Proc.Image & "_TRACE_ALL"));
-      -- Open flow
-      Flow_Name := As.U.Tus (Environ.Getenv (Env_Proc.Image & "_TRACEFILE"));
-      if Flow_Name.Is_Null or else Flow_Name.Image = "Stderr"
-      or else Flow_Name.Image = "Async_Stderr" then
-        -- Stderr
-        Flow := Stderr'Access;
-      elsif Flow_Name.Image = "Stdout"
-      or else Flow_Name.Image = "Async_Stdout" then
-        -- Stdout
-        Flow := new Text_Line.File_Type;
-        Flow.Open (Text_Line.Out_File, Sys_Calls.Stdout);
-      else
-        -- File (open or create)
-        Flow := new Text_Line.File_Type;
+    end if;
+  end Global_Init;
+
+  -- Init of a basic logger
+  type File_Type_Access is access all Text_Line.File_Type;
+  Flow : File_Type_Access;
+  procedure Basic_Init is
+    Flow_Name : As.U.Asu_Us;
+  begin
+    Global_Init;
+    -- Open flow if necessary
+    if Flow /= null then
+      return;
+    end if;
+    Flow_Name := As.U.Tus (Environ.Getenv (Env_Proc.Image & "_TRACEFILE"));
+    if Flow_Name.Is_Null or else Flow_Name.Image = "Stderr" then
+      -- Stderr
+      Flow := Stderr'Access;
+    elsif Flow_Name.Image = "Stdout" then
+      -- Stdout
+      Flow := new Text_Line.File_Type;
+      Flow.Open (Text_Line.Out_File, Sys_Calls.Stdout);
+    else
+      -- File (open or create)
+      Flow := new Text_Line.File_Type;
+      begin
         begin
-          begin
-            Flow.Open_All (Text_Line.Out_File, Flow_Name.Image);
-          exception
-            when Text_Line.Name_Error =>
-              Flow.Create_All (Flow_Name.Image);
-          end;
+          Flow.Open_All (Text_Line.Out_File, Flow_Name.Image);
         exception
-          when others =>
-            Flow := Stderr'Access;
+          when Text_Line.Name_Error =>
+            Flow.Create_All (Flow_Name.Image);
         end;
-      end if;
-      if Flow_Name.Image = "Async_Stderr"
-      or else Flow_Name.Image = "Async_Stdout" then
-        Async_Flow := True;
-      end if;
+      exception
+        when others =>
+          Flow := Stderr'Access;
+      end;
     end if;
   end Basic_Init;
 
   -- Private: Get mask for a process
   function Get_Mask (Name : in String) return Severities is
   begin
-    Basic_Init;
+    Global_Init;
     if Name /= "" and then not Ada_Words.Is_Identifier (Name) then
       return Severities'First;
     end if;
@@ -242,7 +244,6 @@ package body Trace is
         -- Init once
         Basic_Init;
         Mask := Get_Mask (Name);
-        Flus := not Async_Flow;
         Init := True;
       end if;
     end Do_Init;
@@ -306,18 +307,32 @@ package body Trace is
     ----------
     procedure Log (Severity : in Severities;
                    Message  : in String) is
+      Txt : As.U.Asu_Us;
     begin
       Do_Init;
       -- Check severity
       if (Severity and Mask) = 0 then
         return;
       end if;
+      Txt := As.U.Tus (Format (Name, Severity, Message));
+
       -- Put message and flush
       Lock.Get;
       Flow.Put_Line (Format (Name, Severity, Message));
       if Flus then
         Flow.Flush;
       end if;
+
+     -- Put also on stderr if needed
+      if Flow /= Stderr'Access
+      and then (Severity and Errors) /= 0 then
+        Stderr.Put_Line (Txt.Image);
+        -- Flush if set on logger
+        if Flus then
+          Stderr.Flush;
+        end if;
+      end if;
+
       Lock.Release;
     exception
       when others =>

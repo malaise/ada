@@ -37,8 +37,8 @@ package body Trace.Queue is
       return;
     end if;
 
-    -- Do basic init if not yet done
-    Basic_Init;
+    -- Do global init if not yet done
+    Global_Init;
 
     -- No log until local logger is init
     ------------------------------------
