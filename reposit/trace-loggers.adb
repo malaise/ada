@@ -60,7 +60,7 @@ package body Trace.Loggers is
       begin
         Flow_Is_Stderr := True;
         File_Name := As.U.Tus (Output_Flows.Stderr_Name);
-        Flow.Set (File_Name.Image, Stderr'Access);
+        Flow.Set (Memory.Eval (File_Name.Image), Stderr'Access);
       exception
         when Output_Flows.Already_Error =>
           -- Stderr is already registered, cannot use the File access provided
