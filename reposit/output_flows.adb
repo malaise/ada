@@ -192,7 +192,7 @@ package body Output_Flows is
       when Async_Stdout =>
         Async_Stdin.Flush_Out;
       when Async_Stderr =>
-        Async_Stdin.Flush_Out;
+        Async_Stdin.Flush_Err;
     end case;
   exception
     when Constraint_Error =>
