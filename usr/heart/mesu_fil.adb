@@ -31,7 +31,7 @@ package body Mesu_Fil is
       begin
         begin
           -- Reuse or create Txt file for writing
-          Txt_File.Open_All (Text_Line.Out_File, File_Name);
+          Txt_File.Open_All (Text_Line.Out_File, File_Name, Text_Line.Trunc);
         exception
           when Text_Line.Name_Error =>
             Txt_File.Create_All (File_Name);

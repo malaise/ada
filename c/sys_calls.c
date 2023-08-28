@@ -330,11 +330,12 @@ extern int get_immediate (int fd) {
 /* Rights are -rw-r--r-- */
 #define FD_ACCESS_RIGHTS (S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH)
 extern int fd_create (const char *path) {
-  return creat(path, FD_ACCESS_RIGHTS);
+  return creat(path, FD_ACCESS_RIGHTS );
 }
 
-extern int fd_open (const char *path, int mode) {
+extern int fd_open (const char *path, int mode, int write_flag) {
   int flags;
+
   switch (mode) {
     case READ_ONLY:
       flags = O_RDONLY;
@@ -348,6 +349,21 @@ extern int fd_open (const char *path, int mode) {
     default:
       return (-1);
   }
+
+  switch (write_flag) {
+    case START:
+    break;
+    case APPEND:
+      flags |= O_APPEND;
+    break;
+    case TRUNC:
+      flags |= O_TRUNC;
+    break;
+    default:
+      return (-1);
+    break;
+  }
+
   return open(path, flags);
 }
 

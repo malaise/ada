@@ -556,7 +556,7 @@ package body Sys_Calls is
 
   -- Create
   -- May raise Name_Error
-  function Create (Name : String) return File_Desc is
+  function Create (Name  : String) return File_Desc is
     Name4C : constant String := Name & Aski.Nul;
     function C_Fd_Create (Path : System.Address) return C_Types.Int
       with Import => True, Convention => C, External_Name => "fd_create";
@@ -572,18 +572,26 @@ package body Sys_Calls is
 
   -- Open
   -- May raise Name_Error
-  function Open (Name : String; Mode : File_Mode) return File_Desc is
+  function Open   (Name : String; Mode : File_Mode;
+                   Write_Flag : Write_Flags := Start) return File_Desc is
     Name4C : constant String := Name & Aski.Nul;
     Modes4C : constant array (File_Mode) of Integer := (
       In_File    => 0,
       Out_File   => 1,
       Inout_File => 2);
-    function C_Fd_Open (Path : System.Address; Mode : C_Types.Int)
-                       return C_Types.Int
+    Flags4C : constant array (Write_Flags) of Integer := (
+      Start  => 0,
+      Append => 1,
+      Trunc  => 2);
+    function C_Fd_Open (Path : System.Address; Mode : C_Types.Int;
+                        Flags : C_Types.Int) return C_Types.Int
       with Import => True, Convention => C, External_Name => "fd_open";
     Res : C_Types.Int;
   begin
-    Res := C_Fd_Open (Name4C'Address, Modes4C(Mode));
+    if Mode = In_File and then Write_Flag /= Start then
+      raise Status_Error;
+    end if;
+    Res := C_Fd_Open (Name4C'Address, Modes4C(Mode), Flags4C(Write_Flag));
     if Res = C_Error then
       raise Name_Error;
     end if;

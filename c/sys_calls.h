@@ -76,11 +76,15 @@ extern int get_immediate (int fd);
 
 /* Create/open/read/write/close/pipe a fd */
 extern int fd_create (const char *path);
-
+/* Mode */
 #define READ_ONLY  0
 #define WRITE_ONLY 1
 #define READ_WRITE 2
-extern int fd_open (const char *path, int mode);
+/* Write flags */
+#define START  0
+#define APPEND 1
+#define TRUNC  2
+extern int fd_open (const char *path, int mode, int write_flag);
 
 extern int fd_int_read (int fd, void *buffer, int nbytes);
 

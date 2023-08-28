@@ -40,7 +40,8 @@ package body Text_Line is
   --  and open File to it
   procedure Open_All (File : in out File_Type;
                       Mode : in File_Mode;
-                      File_Name : in String := "") is
+                      File_Name : in String := "";
+                      Write_Flag : in Write_Flags := Start) is
     Fd : Sys_Calls.File_Desc;
   begin
     if Is_Open (File) then
@@ -52,7 +53,11 @@ package body Text_Line is
             (case Mode is
                when In_File    => Sys_Calls.In_File,
                when Out_File   => Sys_Calls.Out_File,
-               when Inout_File => Sys_Calls.Inout_File));
+               when Inout_File => Sys_Calls.Inout_File),
+             (case Write_Flag is
+               when Start  => Sys_Calls.Start,
+               when Append => Sys_Calls.Append,
+               when Trunc  => Sys_Calls.Trunc) );
       exception
         when Sys_Calls.Name_Error =>
           raise Name_Error;

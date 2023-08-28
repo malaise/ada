@@ -17,7 +17,8 @@ package body Pers_Fil is
     if Create then
       -- Try to open or create text file
       begin
-        Txt_File.Open_All (Text_Line.Out_File, Person_File_Name);
+        Txt_File.Open_All (Text_Line.Out_File, Person_File_Name,
+                           Text_Line.Trunc);
       exception
         when Text_Line.Name_Error =>
           Txt_File.Create_All (Person_File_Name);

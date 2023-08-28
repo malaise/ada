@@ -205,11 +205,14 @@ package Sys_Calls is
   -- Fd operations
   ----------------
   -- Open / Create
-  -- Fd has CLOEXEC set
   -- May raise Name_Error or System_Error
   type File_Mode is (In_File, Inout_File, Out_File);
+  type Write_Flags is (Start, Append, Trunc);
   function Create (Name : String) return File_Desc;
-  function Open   (Name : String; Mode : File_Mode) return File_Desc;
+  -- May raise Status_Error if Write_Flag is not Start when Mode is In_File
+  function Open   (Name  : String;
+                   Mode  : File_Mode;
+                   Write_Flag : Write_Flags := Start) return File_Desc;
 
   -- Close
   -- May raise System_Error (not open)
@@ -297,6 +300,7 @@ package Sys_Calls is
   -- Exceptions (of File_Stat, Open, Create, Link)
   Name_Error   : exception;
   Access_Error : exception;
+  Status_Error : exception;
 
   -- Exception (of read, write, pipe...)
   System_Error : exception;

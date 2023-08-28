@@ -190,7 +190,7 @@ package body Trace is
       Flow := new Text_Line.File_Type;
       begin
         begin
-          Flow.Open_All (Text_Line.Out_File, Flow_Name.Image);
+          Flow.Open_All (Text_Line.Out_File, Flow_Name.Image, Text_Line.Append);
         exception
           when Text_Line.Name_Error =>
             Flow.Create_All (Flow_Name.Image);

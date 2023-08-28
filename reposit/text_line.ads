@@ -14,6 +14,9 @@ package Text_Line is
   -- The File mode
   type File_Mode is (In_File, Inout_File, Out_File);
 
+  -- The Write flags
+  type Write_Flags is (Start, Append, Trunc);
+
   -- Associate a file desc to a Txt_Line file
   -- May raise Status_Error if File is already open
   procedure Open (File : in out File_Type;
@@ -33,7 +36,8 @@ package Text_Line is
   -- May raise Mode_Error if empty File_Name and Mode = Inout_File
   procedure Open_All (File : in out File_Type;
                       Mode : in File_Mode;
-                      File_Name : in String := "");
+                      File_Name : in String := "";
+                      Write_Flag : in Write_Flags := Start);
 
   -- Create (Mode Out_File)
   procedure Create_All (File : in out File_Type;
