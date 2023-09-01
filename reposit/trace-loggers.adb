@@ -1,17 +1,14 @@
 with Ada.Calendar;
-with Environ, Sys_Calls, Images, Bit_Ops, Socket, Computer, Output_Flows;
+with Sys_Calls, Images, Bit_Ops, Socket, Computer, Async_Stdin;
 package body Trace.Loggers is
-
 
   -- Global initialisation
   ------------------------
-  -- Init once :
-  All_Init : Boolean := False;
-  -- - Variables PID CMD HOST DATE
+  Logers_Inited : Boolean := False;
   Memory : Computer.Memory_Type;
-  -- - Common flow
-  Flow_Is_Stderr : Boolean;
-  Flow : Output_Flows.Output_Flow;
+  -- Kind of flow: global or async Stdout / Stderr
+  Flow_Kind : Flow_Kind_List := Global;
+  function Get_Flow_Kind return Flow_Kind_List is (Flow_Kind);
 
   -- Image of our pid
   function Pid_Image is new Images.Int_Image (Sys_Calls.Pid);
@@ -19,59 +16,40 @@ package body Trace.Loggers is
   -- A local basic logger
   package Me is new Basic_Logger ("Trace");
 
-  procedure Full_Init is
-    File_Name : As.U.Asu_Us;
+  procedure Loggers_Init is
+    Flow_Name : As.U.Asu_Us;
   begin
-    if All_Init then
-      return;
+
+    -- Do global and loggers init once
+    if not Logers_Inited then
+      Logers_Inited := True;
+      Global_Init;
+
+      -- No log until local logger is init
+      ------------------------------------
+      -- Get process name and set variables
+
+      Memory.Set ("PID", Pid_Image (Sys_Calls.Get_Pid), False, True);
+      Memory.Set ("CMD", Process_Name.Image, False, True);
+      Memory.Set ("HOST", Socket.Local_Host_Name, False, True);
+      Memory.Set ("DATE", Images.Date_Image (Ada.Calendar.Clock), False, True);
     end if;
-
-    -- Do global init if not yet done
-    Global_Init;
-
-    -- No log until local logger is init
-    ------------------------------------
-    -- Get process name and set variables
-
-    Memory.Set ("PID", Pid_Image (Sys_Calls.Get_Pid), False, True);
-    Memory.Set ("CMD", Process.Image, False, True);
-    Memory.Set ("HOST", Socket.Local_Host_Name, False, True);
-    Memory.Set ("DATE", Images.Date_Image (Ada.Calendar.Clock), False, True);
 
     -- Get flow name and init flow
-    File_Name := As.U.Tus (Environ.Getenv (Env_Proc.Image & "_TRACEFILE"));
+    Flow_Name := As.U.Tus (Memory.Eval (Get_Tracefile));
 
-    if not File_Name.Is_Null
-    and then File_Name.Image /= Output_Flows.Stderr_Name then
-      -- Try to open regular file
-      begin
-        Flow.Set (File_Name.Image);
-        Flow_Is_Stderr := False;
-      exception
-        when others =>
-          -- File cannot be created, use stderr
-          File_Name.Set_Null;
-      end;
-    end if;
-
-    if File_Name.Is_Null
-    or else File_Name.Image = Output_Flows.Stderr_Name then
-      -- Open Stderr
-      begin
-        Flow_Is_Stderr := True;
-        File_Name := As.U.Tus (Output_Flows.Stderr_Name);
-        Flow.Set (Memory.Eval (File_Name.Image), Stderr'Access);
-      exception
-        when Output_Flows.Already_Error =>
-          -- Stderr is already registered, cannot use the File access provided
-          Flow.Set (File_Name.Image);
-      end;
+    if Flow_Name.Image = "Asyn_Stdout" then
+      Flow_Kind := Async_Stdout;
+    elsif Flow_Name.Image = "Asyn_Stderrout" then
+      Flow_Kind := Async_Stderr;
+    else
+      Set_Global_Flow (Flow_Name.Image);
+      Flow_Kind := Global;
     end if;
 
     Me.Log (Debug, "Global init done with mask " & Image (Global_Mask)
-                 & " on flow " & File_Name.Image);
-    All_Init := True;
-  end Full_Init;
+                 & " on flow " & Flow_Name.Image);
+  end Loggers_Init;
 
   -- Logger
   ---------
@@ -85,7 +63,7 @@ package body Trace.Loggers is
       return;
     end if;
     -- Global init if necessary
-    Full_Init;
+    Loggers_Init;
     -- Init the logger
     A_Logger.Name := As.U.Tus (Name);
     A_Logger.Mask := Get_Mask (Name);
@@ -190,6 +168,12 @@ package body Trace.Loggers is
     return (A_Logger.Mask and Debug) /= 0;
   end Debug_On;
 
+  -- Does the logger log on Stderr
+  function Flow_Is_Stderr (A_Logger : in out Logger) return Boolean is
+  begin
+    Check_Init (A_Logger);
+    return Flow_Kind = Global and then Global_Is_Stderr;
+  end Flow_Is_Stderr;
 
   -- Logging
   ----------
@@ -209,21 +193,36 @@ package body Trace.Loggers is
 
     -- Put on flow
     Lock.Get;
-    Flow.Put_Line (Txt.Image);
-    -- Flush if set on logger
-    if A_Logger.Flush then
-      Flow.Flush;
-    end if;
+    case Flow_Kind is
+      when Async_Stdout =>
+        -- Put and flush ou Async_Stdout
+        Async_Stdin.Put_Line_Out (Txt.Image);
+        if A_Logger.Flush_Flow then
+          Async_Stdin.Flush_Out;
+        end if;
+      when Async_Stderr =>
+        -- Put and flush ou Async_Stderr
+        Async_Stdin.Put_Line_Err (Txt.Image);
+        if A_Logger.Flush_Flow then
+          Async_Stdin.Flush_Err;
+        end if;
+      when Global =>
+        -- Put and flush on global flow, and put on stderr if need
+        Global_Log (Txt.Image,
+            A_Logger.Flush_Flow,
+            A_Logger.Err_On_Stderr and then (Severity and Errors) /= 0);
+    end case;
 
-    -- Put also on stderr if needed
-    if not Flow_Is_Stderr
+    -- Also put and flush on stderr if needed
+    if Flow_Kind /= Global and then A_Logger.Err_On_Stderr
     and then (Severity and Errors) /= 0 then
       Stderr.Put_Line (Txt.Image);
       -- Flush if set on logger
-      if A_Logger.Flush then
+      if A_Logger.Flush_Flow then
         Stderr.Flush;
       end if;
     end if;
+
     Lock.Release;
   exception
     when others =>
@@ -268,29 +267,48 @@ package body Trace.Loggers is
     Log (A_Logger, Debug, Message, Name);
   end Log_Debug;
 
-
   -- Flushing
   -----------
   -- Configure logger to flush each message
-  procedure Set_Flush (A_Logger : in out Logger; Each : in Boolean) is
+  procedure Set_Flush (A_Logger : in out Logger; Activate : in Boolean) is
   begin
-    A_Logger.Flush := Each;
+    A_Logger.Flush_Flow := Activate;
   end Set_Flush;
+  function Flush_Set (A_Logger : Logger) return Boolean is
+    (A_Logger.Flush_Flow);
+
+  -- Configure logger to also log errors (Fatal & Error) on stderr
+  --  by default)
+  -- Errors_On_Stderr is independant from logger initialisation
+  procedure Errors_On_Stderr (A_Logger : in out Logger;
+                              Activate : Boolean := True) is
+  begin
+    A_Logger.Err_On_Stderr := Activate;
+  end Errors_On_Stderr;
+  function Are_Errors_On_Stderr (A_Logger : Logger) return Boolean is
+    (A_Logger.Err_On_Stderr);
 
   -- Flush logs of a logger
   procedure Flush (A_Logger : in out Logger) is
   begin
     Check_Init (A_Logger);
-    Flow.Flush;
+    -- Flush
+    case Flow_Kind is
+      when Async_Stdout =>
+        Async_Stdin.Flush_Out;
+      when Async_Stderr =>
+        Async_Stdin.Flush_Err;
+      when Global =>
+        Global_Flush;
+    end case;
   end Flush;
 
   -- Destructor: flush global flow
   --------------
   overriding procedure Finalize (A_Logger : in out Logger) is
-    pragma Unreferenced (A_Logger);
   begin
-    if Flow.Is_Set then
-      Flow.Flush;
+    if A_Logger.Inited then
+      Flush (A_Logger);
     end if;
   end Finalize;
 

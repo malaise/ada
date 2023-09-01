@@ -12,7 +12,14 @@ package Trace.Loggers is
   --        file is "stdout", "stderr", "async_stdout", "async_stderr",
   --         or any file name (see Output_Flows), possibly with
   --         ${PID}, ${CMD}, ${HOST} or ${DATE}, which are expanded.
+  -- When not asynchronous, the logger uses the global flow.
   -- Default is stderr.
+  -- By default, errors (Fatal & Error) are also logged on stderr, if the flow
+  --  is not already stderr.
+
+  -- Kind of flow: global or async Stdout / Stderr
+  type Flow_Kind_List is (Global, Async_Stdout, Async_Stderr);
+  function Get_Flow_Kind return Flow_Kind_List;
 
   -- A logger of traces
   type Logger is tagged private;
@@ -53,6 +60,9 @@ package Trace.Loggers is
   function Info_On    (A_Logger : in out Logger) return Boolean;
   function Debug_On   (A_Logger : in out Logger) return Boolean;
 
+  -- Does the logger log on Stderr
+  function Flow_Is_Stderr (A_Logger : in out Logger) return Boolean;
+
   -- Log a message of a given severity (or even several severity levels)
   -- Calling it on a logger not initialized implicitly init it with Name
   procedure Log (A_Logger : in out Logger;
@@ -77,15 +87,20 @@ package Trace.Loggers is
 
   -- Configure logger to flush each message (True by default)
   -- Set_Flush is independant from logger initialisation
-  procedure Set_Flush (A_Logger : in out Logger; Each : in Boolean);
+  procedure Set_Flush (A_Logger : in out Logger; Activate : in Boolean);
+  function Flush_Set (A_Logger : Logger) return Boolean;
+
+  -- Configure logger to also log errors (Fatal & Error) on stderr (True
+  --  by default)
+  -- Errors_On_Stderr is independant from logger initialisation
+  procedure Errors_On_Stderr (A_Logger : in out Logger;
+                              Activate : Boolean := True);
+  function Are_Errors_On_Stderr (A_Logger : Logger) return Boolean;
+
 
   -- Flush logs of a logger
   -- Raise Not_Init if logger is not init
   procedure Flush (A_Logger : in out Logger);
-
-  -- By default, Errors (Fatal & Error) are also logged on stderr if the
-  --  file is not already stderr
-  Errors_On_Stderr : Boolean := True;
 
 private
 
@@ -94,7 +109,8 @@ private
     Inited : Boolean := False;
     Name : As.U.Asu_Us;
     Mask : Severities := 0;
-    Flush : Boolean := True;
+    Flush_Flow : Boolean := True;
+    Err_On_Stderr : Boolean := True;
   end record;
   overriding procedure Finalize (A_Logger : in out Logger);
 

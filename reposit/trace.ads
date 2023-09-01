@@ -38,10 +38,9 @@ package Trace is
   ---------------
   -- Init the environement (to be called before init of the loggers)
   --  to a given mask for some loggers and a given log file
-  -- BEWARE that some (basic) loggers may initialize during program elaboration,
-  --  so before Init_Env is called
   -- Set the severity of the provided loggers to the provided mask
-  -- Set the trace file to the provided name (if set);
+  -- Set the trace file to the provided name (if set)
+  -- The global flow is is updated if necessary
   procedure Init_Env (Loggers : in As.U.Asu_Array;
                       Mask : in String;
                       File : in String);
@@ -76,6 +75,8 @@ package Trace is
   --  where <Process> is the process name (no path, non alphanum characters
   --         replaced by '_')
   --        file is "stdout", "stderr", or any file name
+  -- By default, errors (Fatal & Error) are also logged on stderr, if the flow
+  --  is not already stderr.
   -- Default is stderr
 
   -- Define the logger, either with a name or anonymous, and it will get its
@@ -105,6 +106,9 @@ package Trace is
     function Info_On    return Boolean;
     function Debug_On   return Boolean;
 
+    -- Does the logger log on Stderr
+    function Flow_Is_Stderr return Boolean;
+
     -- Log a message of a given severity (or several severity levels)
     procedure Log (Severity : in Severities;
                    Message  : in String);
@@ -115,7 +119,13 @@ package Trace is
     procedure Log_Debug   (Message  : in String);
 
     -- Configure logger to flush or not each message (True by default)
-    procedure Set_Flush (Each : in Boolean);
+    procedure Set_Flush (Activate : in Boolean);
+    function Flush_Set return Boolean;
+
+    -- Configure logger to also log errors (Fatal & Error) on stderr (True
+    --  by default)
+    procedure Errors_On_Stderr (Activate : Boolean := True);
+    function Are_Errors_On_Stderr return Boolean;
 
     -- Flush logs of a logger
     procedure Flush;
@@ -123,22 +133,32 @@ package Trace is
   end Basic_Logger;
 
 private
-  -- Utilities for child packages
+  -- Operations and variables for child packages
+  -- Local for Global_Log (+Global_Flush)
   Lock : Mutexes.Simple_Mutex;
 
-  -- Operations and variables for child packages
-
-  -- Global init, sets the following variables
+  -- Global init, sets / updates the following variables
   procedure Global_Init;
-  -- - Process name
-  Process : As.U.Asu_Us;
-  -- Environment process name, where non-alphanum characters are replaed by '_'
-  Env_Proc : As.U.Asu_Us;
+  -- Current process name
+  Process_Name : As.U.Asu_Us;
   -- - Global severity mask
-  Default : constant Severities := Error + Fatal;
-  Global_Mask : Severities := Default;
+  Default_Mask : constant Severities := Error + Fatal;
+  Global_Mask : Severities := Default_Mask;
   -- - Stderr output flow
   Stderr : aliased Text_Line.File_Type;
+
+  -- Get tracefile from env
+  function Get_Tracefile return String;
+
+  -- Set/update global flow
+  procedure Set_Global_Flow (New_Flow_Name : in String);
+
+  -- Operations on global flow for all loggers (basic, or not when not async)
+  procedure Global_Log (Message : in String;
+                        Flush : in Boolean;
+                        Log_On_Error : in Boolean);
+  procedure Global_Flush;
+  function Global_Is_Stderr return Boolean;
 
   -- Common format of the output
   function Format (Name     : in String;
