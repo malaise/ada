@@ -342,8 +342,8 @@ begin
     if Event.Kind = Table.Double_Click
     and then Event.Card /= null
     and then Event.Card.Xcard.Is_Selected then
-      Event.Card.Xcard.Un_Select;
-      Logger.Log_Debug ("  Unselect after douvle click");
+      Reset;
+      Logger.Log_Debug ("  Reset after double click");
     end if;
 
     Logger.Log_Debug ("Status is now " & Status'Img);
