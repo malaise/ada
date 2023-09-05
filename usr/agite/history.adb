@@ -139,8 +139,7 @@ package body History is
                  Is_File : Boolean;
                  Allow_Modif : Boolean;
                  Allow_Tag : Boolean;
-                 Hash : Git_If.Git_Hash := Git_If.No_Hash;
-                 Prio_Hash : Boolean := True) return Boolean is
+                 Hash : Git_If.Git_Hash := Git_If.No_Hash) return Boolean is
     -- Are we in root
     On_Root : Boolean;
 
@@ -201,12 +200,17 @@ package body History is
       end if;
     end Init;
 
+    -- Set the init indicator
+    procedure Encode_Init_Indicator (C : Character) is
+    begin
+      Afpx.Encode_Field (Afpx_Xref.History.Init, (0, 0), C & "");
+    end Encode_Init_Indicator;
+
     -- Reset (to ' ') init indicator
     Default_Init_Indicator : constant Character := ' ';
     procedure Reset_Init_Indicator is
     begin
-      Afpx.Encode_Field (Afpx_Xref.History.Init, (0, 0),
-                         Default_Init_Indicator & "");
+      Encode_Init_Indicator (Default_Init_Indicator);
     end Reset_Init_Indicator;
 
     -- Show delta from current in list to comp
@@ -365,7 +369,7 @@ package body History is
       Logs.Read (Log, Git_If.Log_Mng.Current);
       -- Reset
       if Pos = 1 then
-        -- In fact this is a reset to head  (no warning on history change)
+        -- In fact this is a reset to head (no warning on history change)
         Res := Reset (Root, "");
       else
         Str := As.U.Tus (Str_Util.Strip (Image1 (Log.Date)
@@ -466,6 +470,23 @@ package body History is
       -- Search
       Move_At (Hash);
     end Do_Search;
+
+    -- Set current to HEAD of remote (if possible)
+    function Do_Remote_Head return Boolean is
+      Log : Git_If.Log_Entry_Rec;
+      Found : Boolean;
+      use type As.U.Asu_Us;
+    begin
+      Log.Hash := Remote_Head (Branch);
+      if Log.Hash /= Git_If.No_Hash then
+        Found := List_Hash_Search (Logs, Log, From => Git_If.Log_Mng.Absolute);
+        if Found then
+          Move_At (Log.Hash);
+          return True;
+        end if;
+      end if;
+      return False;
+    end Do_Remote_Head;
 
     -- View file or commit details
     type Show_List is (Show_View, Show_Details);
@@ -677,8 +698,7 @@ package body History is
     begin
       -- Save position in List and read it
       Hash := Hash_Of;
-      if List (Root, Branch, "", "", False, Allow_Modif, Allow_Tag,
-               Hash, True) then
+      if List (Root, Branch, "", "", False, Allow_Modif, Allow_Tag, Hash) then
         return True;
       end if;
       -- Restore screen
@@ -694,8 +714,6 @@ package body History is
     Log : Git_If.Log_Entry_Rec;
     -- Head of remote found
     Found : Boolean;
-    -- Do we set remote head
-    Set_Remote_Head : Boolean;
 
     -- Init indicator character (C, R or space)
     Init_Indicator : Character;
@@ -709,50 +727,25 @@ package body History is
     -- Get history list with default length
     Reread (False);
 
-    -- Set current entry
+    -- Set current entry to the provided Hash
     Log.Hash := Git_If.No_Hash;
-    Set_Remote_Head := False;
     Remote_Head_Index := 0;
-    Found := False;
     Init_Indicator := Default_Init_Indicator;
+    Found := False;
     if Hash /= Git_If.No_Hash then
-      if Prio_Hash then
-        -- Set current to Hash provided
-        Log.Hash := Hash;
+      Log.Hash := Hash;
+      Found := List_Hash_Search (Logs, Log, From => Git_If.Log_Mng.Absolute);
+      if Found then
         Init_Indicator := 'C';
       else
-        -- Set current to HEAD of remote (if possible)
-        Log.Hash := Remote_Head (Branch);
-        Set_Remote_Head := True;
-        Init_Indicator := 'R';
+        Init_Indicator := '?';
       end if;
-    elsif On_Root then
-      -- Set current to HEAD of remote (if possible)
-      Log.Hash := Remote_Head (Branch);
-      Set_Remote_Head := True;
-      Init_Indicator := 'R';
-    end if;
-    if Log.Hash /= Git_If.No_Hash then
-      Found := List_Hash_Search (Logs, Log, From => Git_If.Log_Mng.Absolute);
-      if not Found and then Hash /= Git_If.No_Hash
-      and then(not Prio_Hash or else On_Root) then
-        -- Current Head of remote not found => try provided Hash
-        Log.Hash := Hash;
-        Init_Indicator := 'C';
-        Found := List_Hash_Search (Logs, Log, From => Git_If.Log_Mng.Absolute);
-      end if;
-    end if;
-    if not Found then
-      Init_Indicator := '?';
-    end if;
-    if Set_Remote_Head and then Found then
-      Remote_Head_Index := Logs.Get_Position;
     end if;
 
     -- Encode history
     Init_List (Logs);
     Afpx.Update_List (Afpx.Center_Selected);
-    Afpx.Encode_Field (Afpx_Xref.History.Init, (0, 0), Init_Indicator & "");
+    Encode_Init_Indicator (Init_Indicator);
 
     -- Disable buttons if empty list
     if Logs.Is_Empty then
@@ -850,6 +843,15 @@ package body History is
             when Afpx_Xref.History.Search =>
               -- Search got or stored hash
               Do_Search;
+            when Afpx_Xref.History.Remote_Head =>
+              -- Move to head of remote
+              if Do_Remote_Head then
+                Init_Indicator := 'R';
+                Remote_Head_Index := Logs.Get_Position;
+              else
+                Init_Indicator := '?';
+              end if;
+              Encode_Init_Indicator (Init_Indicator);
             when Afpx_Xref.History.Back =>
               -- Back
               return False;
@@ -874,12 +876,11 @@ package body History is
                   Is_File : in Boolean;
                   Allow_Modif : in Boolean;
                   Allow_Tag : in Boolean;
-                  Hash : in Git_If.Git_Hash := Git_If.No_Hash;
-                  Prio_Hash : in Boolean := True) is
+                  Hash : in Git_If.Git_Hash := Git_If.No_Hash) is
     Dummy_Result : Boolean;
   begin
     Dummy_Result := List (Root, Branch, Path, Name, Is_File,
-                          Allow_Modif, Allow_Tag, Hash, Prio_Hash);
+                          Allow_Modif, Allow_Tag, Hash);
   end List;
 end History;
 

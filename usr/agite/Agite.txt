@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V42.05
+V42.06
 
 General purpose
 ---------------
@@ -1051,7 +1051,7 @@ This menu shows the relative path of the selected file or directory,
 and lists the history of the commits (on the selected branch) that have
 affected this file or directory. +
 Git notes are discarded. +
-The newest release (head) is on top.
+The newest release (head) is at the top.
 
 .Branches
 The menu displays on top of screen the current branch, and below, if different,
@@ -1080,19 +1080,8 @@ a ''+''.
 
 Initial selection::
 When the history menu is called, the left selection is initially
-set according to the following criteria, and a character on the top right above
-the list indicates this criteria: +
-
-* If called from the xref:XDetail[detail] menu, then the current entry is set
-to the the one that was detailed, and the indicator shows ''C'' (for current)
-* Otherwise, if the current directory is the root of the repository
-(which is always the case when listing the history of a given branch or when
-setting a tag), then agite tries to set the current entry to the head of
-the remote of the displayed branch, and the indicator shows ''R'' (for remote).
-If this remote head is not found, then the current entry is set to the current
-head and the indicator shows ''?''.
-* Otherwise the current entry is set to the current head and the indicator is
-empty.
+set to the current item in the calling menu, if any, and an indicator at the
+top right of the list shows 'C'. See also the button xref:XRemhd[RemHd].
 
 +
 The indicator is reset when clicking for a left selection or when calling a
@@ -1266,6 +1255,14 @@ If found, this commit becomes left-selected.
 NOTE: Agite store internally the hash value is stored internally until it exits.
 The menus xref:XReflog[reflog], xref:XHist[history] and xref:XTree[tree] share
 this reference for marking and searching.
+
+.RemHd
+anchor:XRemhd[]
+Moves the current (left) selection in the list to the head of the remote
+(parent) branch. In this case, the indicator shows 'R'. Also, the buttons
+'Reorg' and 'Reset' become red when the current selection is below (older) than
+the head of the remote branch. If the head of the remote cannot be identified
+then the inidicator shows '?'.
 
 .Back
 This button returns to the xref:XDir[directory] menu.

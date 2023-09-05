@@ -460,7 +460,7 @@ package body Tree is
   end List;
 
 
- -- Handle the history of a file or dir
+ -- Handle the tree of a file or dir
   --  possibly on a given branch
   procedure List (Root, Branch, Path, Name : in String;
                   Is_File : in Boolean) is

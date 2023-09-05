@@ -3,7 +3,7 @@
 <!-- For agite -->
 
 <Afpx_Descriptors Height="48" Width="55">
-  <Var Name="Version" Value="V42.05"/>
+  <Var Name="Version" Value="V42.06"/>
 
   <!-- List management setup -->
   <Var Name="LmWidth" Value="8"/>
@@ -450,7 +450,7 @@
 
     <!-- List management -->
     <Var Name="LmLeft" Value="${List.Right}+${LmHOffset}"/>
-    <Var Name="LmUp" Value="${List.Up}+21"/>
+    <Var Name="LmUp" Value="${List.Up}+22"/>
     <Var Name="LmSta" Value="1"/>
 
     <Field Num="2" Kind="Button">
@@ -665,20 +665,27 @@
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="1">Search</Init>
     </Field>
-    <Field Num="39" Kind="Put">
+    <Field Num="39" Kind="Button" Name="Remote_Head">
+      <Geometry Up="${Field_38.Low}+2" Left="${LmLeft}" Height="1"
+                Width="${LmWidth}"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="0" Col="1" Half_Col_Offset="True">RemHd</Init>
+    </Field>
+
+    <Field Num="40" Kind="Put">
       <Geometry Up="${Field_2.Up}-1" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">--------</Init>
     </Field>
 
-    <Field Num="40" Kind="Put">
+    <Field Num="41" Kind="Put">
       <Geometry Up="${Field_8.Low}+1" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">--------</Init>
     </Field>
-    <Field Num="41" Kind="Button" Name="Back">
+    <Field Num="42" Kind="Button" Name="Back">
       <Geometry Low="${Screen.Low}-1" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
@@ -2356,8 +2363,8 @@
     </Field>
     <!-- Title reset, Soft, Mixed, Hard, Clean, Cancel -->
     <Field Num="5" Kind="Put">
-      <Geometry Up="${Field_4.Low}+2" Left="${Field_1.Left}"
-                Height="1" Right="${Field_1.Right}"/>
+      <Geometry Up="${Field_4.Low}+2" Left="${Field_1.Left}" Height="1"
+                Right="${Field_1.Right}"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="1">Reset to</Init>
     </Field>
