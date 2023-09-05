@@ -41,7 +41,8 @@ package body Rebase_Mng is
   -- Rebase current branch to head of Reference
   function Do_Rebase (Root : String;
                       Target_Branch, Reference_Branch: String;
-                      Interactive : Boolean) return String is
+                      Interactive : Boolean;
+                      Pushed : Boolean) return String is
     Restart : Boolean;
     Result : As.U.Asu_Us;
     Tmp_Branch : As.U.Asu_Us;
@@ -53,7 +54,9 @@ package body Rebase_Mng is
         & (if Reference_Branch /= "" then " from " & Reference_Branch else ""),
         "on " & Target_Branch,
         Warning => (if Restart then ""
-                    else "This operation will alter the history")) );
+            elsif Pushed then "This operation will alter the pushed history"
+            else "This operation will alter the local history"),
+        Alert => Pushed) );
   begin
     Current_Branch := As.U.Tus (Git_If.Current_Branch);
     -- Check if same rebase as previous and temporary branch still here

@@ -23,8 +23,9 @@ package Branch is
   -- Return OK => Completed
   --        Error => Error not recovered by user (e.g. user abort)
   --     or Cancelled => Cancelled by user before starting, or nothing to do
+  -- Red warning if current commit has been pushed
   type Result_List is (Ok, Error, Cancelled);
-  function Reorg (Root, Rev : String) return Result_List;
+  function Reorg (Root, Rev : String; Pushed : Boolean) return Result_List;
 
 end Branch;
 

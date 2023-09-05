@@ -153,6 +153,9 @@ package body History is
     All_Read : Boolean;
     First_Rename : Ll_Natural;
 
+    -- The current item has been pushed
+    Pushed : Boolean;
+
     -- Get the Hash of an entry
     --  No_Hash if list is empty
     --  Current Afpx position if Position is 0
@@ -340,7 +343,7 @@ package body History is
         Result := Branches.Cancelled;
       else
         -- Reorg success or failure
-        Result := Branches.Reorg (Root, Hash.Image);
+        Result := Branches.Reorg (Root, Hash.Image, Pushed);
       end if;
       if Result = Branches.Cancelled then
         -- Cancel => stay in Branch
@@ -374,7 +377,8 @@ package body History is
       else
         Str := As.U.Tus (Str_Util.Strip (Image1 (Log.Date)
                        & " " & Image2 (Log)));
-        Res := Reset (Root, Hash.Image, Comment => Str.Image);
+        Res := Reset (Root, Hash.Image, Comment => Str.Image,
+                      Pushed => Pushed);
       end if;
       if Res then
         return True;
@@ -512,6 +516,29 @@ package body History is
     -- Index of remote head (0 if unknown)
     Remote_Head_Index : Afpx.Line_List_Mng.Ll_Natural;
 
+    -- Update Push and ink versus remote head
+    procedure Update_Pushed (Index : in Afpx.Line_List_Mng.Ll_Natural) is
+      use type Afpx.Line_List_Mng.Ll_Natural;
+    begin
+      if Remote_Head_Index = 0 then
+        Pushed := True;
+      elsif Index > Remote_Head_Index then
+        Pushed := True;
+      else
+        Pushed := False;
+      end if;
+      if not Afpx.Get_Field_Protection (Afpx_Xref.History.Reorg)
+      and then Pushed then
+        Afpx.Set_Field_Colors (Afpx_Xref.History.Reorg,
+                               Con_Io.Color_Of ("Red"));
+      end if;
+      if not Afpx.Get_Field_Protection (Afpx_Xref.History.Reset)
+      and then Pushed then
+        Afpx.Set_Field_Colors (Afpx_Xref.History.Reset,
+                               Con_Io.Color_Of ("Red"));
+      end if;
+    end Update_Pushed;
+
     -- Normalize Afpx list index
     function Normal is new Normalization.Normal_Mod
       (Afpx.Line_List_Mng.Ll_Natural);
@@ -571,16 +598,7 @@ package body History is
                                 (not On_Root and then Right_Set)
                                  or else Empty);
       -- Set in Red the Reorg et Reset if current ref is below remote head
-      if not Afpx.Get_Field_Protection (Afpx_Xref.History.Reorg)
-      and then Remote_Head_Index /= 0 and then Left > Remote_Head_Index then
-        Afpx.Set_Field_Colors (Afpx_Xref.History.Reorg,
-                               Con_Io.Color_Of ("Red"));
-      end if;
-      if not Afpx.Get_Field_Protection (Afpx_Xref.History.Reset)
-      and then Remote_Head_Index /= 0 and then Left > Remote_Head_Index then
-        Afpx.Set_Field_Colors (Afpx_Xref.History.Reset,
-                               Con_Io.Color_Of ("Red"));
-      end if;
+      Update_Pushed (Left);
       -- Show renamed file name if different
       if Is_File then
         if First_Rename /= 0
@@ -727,9 +745,14 @@ package body History is
     -- Get history list with default length
     Reread (False);
 
+    -- Set remote head
+    Remote_Head_Index := 0;
+    if Do_Remote_Head then
+      Remote_Head_Index := Logs.Get_Position;
+    end if;
+
     -- Set current entry to the provided Hash
     Log.Hash := Git_If.No_Hash;
-    Remote_Head_Index := 0;
     Init_Indicator := Default_Init_Indicator;
     Found := False;
     if Hash /= Git_If.No_Hash then
@@ -740,6 +763,16 @@ package body History is
       else
         Init_Indicator := '?';
       end if;
+    end if;
+    if not Found and then not Logs.Is_Empty then
+      Logs.Rewind;
+    end if;
+
+    -- Adjust Alert/warning
+    if not Logs.Is_Empty then
+      Update_Pushed (Logs.Get_Position);
+    else
+      Update_Pushed (1);
     end if;
 
     -- Encode history

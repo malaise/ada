@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V42.06
+V42.07
 
 General purpose
 ---------------
@@ -2218,10 +2218,11 @@ the history of the current branch (which is reset).
 * The 'Delete' function of the xref:XReflog[reflog] menu also rewrites the
 history.
 
-The confirmation menu for these actions warns you (in red) that the history
-will be rewritten. +
-Besides, the xref:XHist[history] menu on root sets the
-initial entry to the head of the corresponding tracking branch, which should
+The confirmation menu for these actions alerts you (in red) that the history
+will be rewritten and has been pushed, or warns you (in orange) that the
+local history will be modified. +
+Besides, the "RemHd" button of the xref:XHist[history] menu sets the
+current entry to the head of the corresponding tracking branch, which should
 be a safe reference for a xref:XReorg[reorg] or xref:XReset[reset]. When the
 reference is set to below (before) the head of the remote, then these both
 buttons become red. +

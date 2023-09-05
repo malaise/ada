@@ -1,11 +1,12 @@
 with Afpx;
-with Utils.X, Afpx_Xref;
+with Utils.X, Afpx_Xref, Con_Io;
 -- Confirm: OK/Cancel or Yes/No, show (protected) of hide the list
 function Confirm (Title, Action : String;
                   Msg1, Msg2, Msg_Below : String := "";
                   Warning : String := "";
                   Ok_Cancel : Boolean := True;
-                  Show_List : Boolean := False) return Boolean is
+                  Show_List : Boolean := False;
+                  Alert : Boolean := True) return Boolean is
   -- Afpx stuff
   Get_Handle : Afpx.Get_Handle_Rec;
   Ptg_Result   : Afpx.Result_Rec;
@@ -25,6 +26,13 @@ begin
   end if;
   if Warning /= "" then
     Utils.X.Center_Field ("WARNING: " & Warning, Afpx_Xref.Confirm.Warning);
+    if Alert then
+      Utils.X.Center_Field ("ALERT: " & Warning, Afpx_Xref.Confirm.Warning);
+    else
+      Utils.X.Center_Field ("WARNING: " & Warning, Afpx_Xref.Confirm.Warning);
+      Afpx.Set_Field_Colors (Afpx_Xref.Confirm.Warning,
+                             Foreground => Con_Io.Color_Of ("Orange"));
+    end if;
   end if;
   -- Yes / No
   if not Ok_Cancel then

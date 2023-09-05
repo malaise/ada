@@ -197,7 +197,8 @@ package body Branch is
     Cancelled : constant String := Aski.Esc_S;
     function Do_Rebase (Root : String;
                         Target_Branch, Reference_Branch: String;
-                        Interactive : Boolean) return String;
+                        Interactive : Boolean;
+                        Pushed : Boolean) return String;
     -- Reset memory of previous rebase
     procedure Reset (Cherries : in Boolean);
   end Rebase_Mng;
@@ -377,7 +378,7 @@ package body Branch is
         Message2 := As.U.Tus ("to head of " & Sel_Name.Image);
         Previous_Branch := Sel_Name;
         Result := As.U.Tus (Rebase_Mng.Do_Rebase (Root.Image,
-            Sel_Name.Image, Ref_Name.Image, False));
+            Sel_Name.Image, Ref_Name.Image, False, True));
         Init;
       when Cherry_Pick =>
         -- Reset memory of previous rebase
@@ -609,11 +610,11 @@ package body Branch is
   end Handle;
 
   -- Interactively rebase current branch from rev
-  function Reorg (Root, Rev : String) return Result_List is
+  function Reorg (Root, Rev : String; Pushed : Boolean) return Result_List is
     Msg : As.U.Asu_Us;
     use type As.U.Asu_Us;
   begin
-    Msg := As.U.Tus (Rebase_Mng.Do_Rebase (Root, Rev, "", True));
+    Msg := As.U.Tus (Rebase_Mng.Do_Rebase (Root, Rev, "", True, Pushed));
     if Msg.Is_Null then
       return Ok;
     elsif Msg = As.U.Tus (Rebase_Mng.Aborted) then

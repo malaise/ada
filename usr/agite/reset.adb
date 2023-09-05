@@ -1,11 +1,12 @@
 with Afpx;
-with Utils.X, Afpx_Xref, Git_If;
+with Utils.X, Afpx_Xref, Git_If, Con_Io;
 -- Reset (soft/mixed/hard) or clean
 function Reset (Root : String;
                 Ref : String;
                 Only_Hard : Boolean := False;
                 Allow_Clean : Boolean := False;
-                Comment : String := "") return Boolean is
+                Comment : String := "";
+                Pushed : in Boolean := True) return Boolean is
   -- Afpx stuff
   Get_Handle : Afpx.Get_Handle_Rec;
   Ptg_Result   : Afpx.Result_Rec;
@@ -28,8 +29,17 @@ begin
       -- Comment of target commit
       Utils.X.Encode_Field (Comment, Afpx_Xref.Reset.Comment);
     end if;
-    Utils.X.Center_Field ("WARNING: This operation will alter the history",
-                          Afpx_Xref.Reset.Warning);
+    if Pushed then
+      Utils.X.Center_Field (
+        "ALERT: This operation will alter the pushed history",
+        Afpx_Xref.Reset.Warning);
+    else
+      Afpx.Set_Field_Colors (Afpx_Xref.Reset.Warning,
+                             Foreground => Con_Io.Color_Of ("Orange"));
+      Utils.X.Center_Field (
+        "WARNING: This operation will alter the local history",
+        Afpx_Xref.Reset.Warning);
+    end if;
   else
     -- No ref => Hard / Soft / Mixed reset to head or clean
     Utils.X.Center_Field ("HEAD", Afpx_Xref.Reset.Title);
