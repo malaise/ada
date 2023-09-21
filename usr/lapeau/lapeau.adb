@@ -48,8 +48,7 @@ procedure Lapeau is
 begin
   -- Init traces to debug
   Trace.Init_Env (
-    (As.U.Tus ("X_Mng"), As.U.Tus ("Event_Mng"),
-     As.U.Tus ("Main"), As.U.Tus ("Memory"),
+    (As.U.Tus ("Main"), As.U.Tus ("Memory"),
      As.U.Tus ("Movements"), As.U.Tus ("Table")),
     "Debug", "/tmp/Lapeau.log");
   Logger.Init ("Main");
@@ -341,8 +340,14 @@ begin
     -- Unselect after double click
     if Event.Kind = Table.Double_Click
     and then Event.Card /= null
-    and then Event.Card.Xcard.Is_Selected then
-      Reset;
+    and then Event.Card.Xcard.Is_Selected
+    and then Selected_Source /= null then
+      -- Change / keep it as Selectable
+      Selected_Source.Xcard.Un_Select;
+      Event.Card.Xcard.Un_Select;
+      Table.Console.Set_Pointer_Shape (Con_Io.Hand);
+      Selected_Source := null;
+      Status := Selectable;
       Logger.Log_Debug ("  Reset after double click");
     end if;
 
