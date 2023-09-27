@@ -41,7 +41,7 @@ fi
 
 if [ $DO_CALL = 1 ] ; then
   # PATH to GNAT1
-  export PATH=$GNATPATH1:$PATH
+  export PATH=$GNATPATH:$GNATPATH1:$PATH
   # List all views
   views=`make -s --no-print-directory echoadaview`
   incls=""
