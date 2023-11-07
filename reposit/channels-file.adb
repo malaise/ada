@@ -49,8 +49,8 @@ package body File is
       raise File_Error;
   end Close;
 
-  function Next_Host return Tcp_Util.Remote_Host is
-    Host : Tcp_Util.Remote_Host;
+  function Next_Host return Socket_Util.Remote_Host is
+    Host : Socket_Util.Remote_Host;
     Txt : Xml_Parser.Text_Type;
     use type Xml_Parser.Element_Type;
   begin

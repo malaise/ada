@@ -105,11 +105,11 @@ package body Config is
 
   -- Check an IP address format
   function Check_Address (Str : in String) return Boolean is
-    Host : Tcp_Util.Remote_Host;
-    use type Tcp_Util.Remote_Host_List;
+    Host : Socket_Util.Remote_Host;
+    use type Socket_Util.Remote_Host_List;
   begin
     Host := Ip_Addr.Parse (Str);
-    if Host.Kind /= Tcp_Util.Host_Id_Spec then
+    if Host.Kind /= Socket_Util.Host_Id_Spec then
       Log_Error ("Config.Init", "invalid alias address", Str);
       return False;
     end if;
@@ -118,15 +118,15 @@ package body Config is
 
   -- Check a bus name "A-<ip_addr>:<port>"
   function Check_Bus (Addr : String) return Boolean is
-    Host : Tcp_Util.Remote_Host;
-    Port : Tcp_Util.Remote_Port;
-    use type Tcp_Util.Remote_Host_List, Tcp_Util.Remote_Port_List;
+    Host : Socket_Util.Remote_Host;
+    Port : Socket_Util.Remote_Port;
+    use type Socket_Util.Remote_Host_List, Socket_Util.Remote_Port_List;
   begin
     if Addr'Length >= Bus_Prefix'Length
     and then Addr(Addr'First .. Addr'First+1) = Bus_Prefix then
       Ip_Addr.Parse (Addr(Addr'First+2 .. Addr'Last), Host, Port);
-      if Host.Kind = Tcp_Util.Host_Id_Spec
-      and then Port.Kind = Tcp_Util.Port_Num_Spec then
+      if Host.Kind = Socket_Util.Host_Id_Spec
+      and then Port.Kind = Socket_Util.Port_Num_Spec then
         return True;
       end if;
     end if;

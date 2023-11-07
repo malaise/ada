@@ -42,11 +42,11 @@ procedure T_Async is
   Bus : aliased Autobus.Bus_Type;
   Bus_Addr : As.U.Asu_Us;
   Subs : aliased Autobus.Subscriber_Type;
-  Local_Port_Def : Tcp_Util.Local_Port;
-  Remote_Host_Def : Tcp_Util.Remote_Host;
-  Remote_Port_Def : Tcp_Util.Remote_Port;
-  Send_Port_Def : Tcp_Util.Remote_Port;
-  Port_Num : Tcp_Util.Port_Num;
+  Local_Port_Def : Socket_Util.Local_Port;
+  Remote_Host_Def : Socket_Util.Remote_Host;
+  Remote_Port_Def : Socket_Util.Remote_Port;
+  Send_Port_Def : Socket_Util.Remote_Port;
+  Port_Num : Socket_Util.Port_Num;
   Soc : Socket.Socket_Dscr;
   Send_Soc : Socket.Socket_Dscr;
   In_Overflow : Boolean;
@@ -143,10 +143,10 @@ procedure T_Async is
     end if;
   end Discon_Cb;
 
-  procedure Accept_Cb (Unused_Local_Port_Num  : in Tcp_Util.Port_Num;
+  procedure Accept_Cb (Unused_Local_Port_Num  : in Socket_Util.Port_Num;
                        Unused_Local_Dscr      : in Socket.Socket_Dscr;
-                       Unused_Remote_Host_Id  : in Tcp_Util.Host_Id;
-                       Unused_Remote_Port_Num : in Tcp_Util.Port_Num;
+                       Unused_Remote_Host_Id  : in Socket_Util.Host_Id;
+                       Unused_Remote_Port_Num : in Socket_Util.Port_Num;
                        New_Dscr               : in Socket.Socket_Dscr) is
   begin
     Soc := New_Dscr;
@@ -162,8 +162,8 @@ procedure T_Async is
   end Accept_Cb;
 
   -- Connection report Cb
-  procedure Conn_Cb (Unused_Remote_Host_Id  : in Tcp_Util.Host_Id;
-                     Unused_Remote_Port_Num : in Tcp_Util.Port_Num;
+  procedure Conn_Cb (Unused_Remote_Host_Id  : in Socket_Util.Host_Id;
+                     Unused_Remote_Port_Num : in Socket_Util.Port_Num;
                      Connected              : in Boolean;
                      Dscr                   : in Socket.Socket_Dscr) is
   begin
@@ -333,14 +333,14 @@ begin
   elsif Argument.Get_Parameter (Mode_Index) = "-s" then
     Mode := Server;
     declare
-      use type Tcp_Util.Remote_Port_List;
+      use type Socket_Util.Remote_Port_List;
     begin
       Remote_Port_Def := Ip_Addr.Parse (Argument.Get_Parameter (
                                                        Mode_Index + 1));
-      if Remote_Port_Def.Kind = Tcp_Util.Port_Name_Spec then
-        Local_Port_Def := (Tcp_Util.Port_Name_Spec, Remote_Port_Def.Name);
+      if Remote_Port_Def.Kind = Socket_Util.Port_Name_Spec then
+        Local_Port_Def := (Socket_Util.Port_Name_Spec, Remote_Port_Def.Name);
       else
-        Local_Port_Def := (Tcp_Util.Port_Num_Spec, Remote_Port_Def.Num);
+        Local_Port_Def := (Socket_Util.Port_Num_Spec, Remote_Port_Def.Num);
       end if;
     exception
       when others =>
@@ -359,19 +359,19 @@ begin
   or else Argument.Get_Parameter (Mode_Index) = "-U" then
     Mode := Udp;
     declare
-      use type Tcp_Util.Local_Port_List, Tcp_Util.Remote_Host_List,
+      use type Socket_Util.Local_Port_List, Socket_Util.Remote_Host_List,
                Socket.Port_Num;
     begin
       Ip_Addr.Parse (Argument.Get_Parameter (Mode_Index + 1),
                      Remote_Host_Def, Remote_Port_Def);
-      if Remote_Host_Def.Kind = Tcp_Util.Host_Name_Spec
+      if Remote_Host_Def.Kind = Socket_Util.Host_Name_Spec
       and then Remote_Host_Def.Name.Is_Null then
         -- Only a port => broadcast
-        Remote_Host_Def := (Kind => Tcp_Util.Host_Id_Spec,
+        Remote_Host_Def := (Kind => Socket_Util.Host_Id_Spec,
                             Id => Socket.Bcast_Of (Socket.Local_Host_Id));
       end if;
-      Send_Port_Def := (Tcp_Util.Port_Num_Spec, 0);
-      if Remote_Port_Def.Kind = Tcp_Util.Port_Name_Spec then
+      Send_Port_Def := (Socket_Util.Port_Num_Spec, 0);
+      if Remote_Port_Def.Kind = Socket_Util.Port_Name_Spec then
         Send_Port_Def.Num := Socket.Port_Num_Of (
                   Send_Port_Def.Name.Image, Socket.Udp);
       else

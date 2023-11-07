@@ -81,7 +81,7 @@ package body Intra_Dictio is
     Stat : Status.Status_List;
     Sync : Boolean;
     Prio : Args.Prio_Str;
-    From : Tcp_Util.Host_Name;
+    From : Socket_Util.Host_Name;
     Kind : Character;
     Item : Data_Base.Item_Rec;
     Step : As.U.Asu_Us;

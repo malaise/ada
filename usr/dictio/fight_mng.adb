@@ -48,7 +48,7 @@ package body Fight_Mng is
   end Start;
 
 
-  procedure Event (From : in Tcp_Util.Host_Name;
+  procedure Event (From : in Socket_Util.Host_Name;
                    Stat : in Status.Status_List;
                    Sync : in Boolean;
                    Prio : in Args.Prio_Str;

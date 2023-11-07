@@ -1,5 +1,5 @@
 with Ada.Unchecked_Deallocation, Ada.Exceptions;
-with Dynamic_List, Timers, Event_Mng, Trace.Loggers, Socket_Util;
+with As.U, Dynamic_List, Timers, Event_Mng, Trace.Loggers;
 package body Tcp_Util is
 
   -- Debugging
@@ -22,8 +22,8 @@ package body Tcp_Util is
   -- Connecting connection
   type Connecting_Rec is record
     Protocol : Tcp_Protocol_List;
-    Host : Remote_Host;
-    Port : Remote_Port;
+    Host : Socket_Util.Remote_Host;
+    Port : Socket_Util.Remote_Port;
     Delta_Retry : Duration;
     Nb_Tries : Natural;
     Ttl : Socket.Ttl_Range;
@@ -49,7 +49,10 @@ package body Tcp_Util is
 
   -- Search Connecting_Rec by Host, Port
   function Dest_Match (R1, R2 : Connecting_Rec) return Boolean is
-    (R1.Host = R2.Host and then R1.Port = R2.Port);
+    use type Socket_Util.Remote_Host, Socket_Util.Remote_Port;
+  begin
+    return R1.Host = R2.Host and then R1.Port = R2.Port;
+  end Dest_Match;
   function Find_By_Dest is new Con_List_Mng.Search (Dest_Match);
 
   -- Search Connecting_Rec by Fd
@@ -72,8 +75,8 @@ package body Tcp_Util is
   -- Sets connected if connection established
   procedure Try_Connect (
            Protocol  : in Tcp_Protocol_List;
-           Host      : in Remote_Host;
-           Port      : in Remote_Port;
+           Host      : in Socket_Util.Remote_Host;
+           Port      : in Socket_Util.Remote_Port;
            Ttl       : in Socket.Ttl_Range;
            Dscr      : in out Socket.Socket_Dscr;
            Connected : out Boolean) is
@@ -90,20 +93,20 @@ package body Tcp_Util is
 
     -- Connect
     case Host.Kind is
-      when Host_Name_Spec =>
+      when Socket_Util.Host_Name_Spec =>
         case Port.Kind is
-          when Port_Name_Spec =>
+          when Socket_Util.Port_Name_Spec =>
             Dscr.Set_Destination_Name_And_Service (False,
                                    Host.Name.Image, Port.Name.Image);
-          when Port_Num_Spec =>
+          when Socket_Util.Port_Num_Spec =>
             Dscr.Set_Destination_Name_And_Port (False,
                                    Host.Name.Image, Port.Num);
         end case;
-      when Host_Id_Spec =>
+      when Socket_Util.Host_Id_Spec =>
         case Port.Kind is
-          when Port_Name_Spec =>
+          when Socket_Util.Port_Name_Spec =>
             Dscr.Set_Destination_Host_And_Service (Host.Id, Port.Name.Image);
-          when Port_Num_Spec =>
+          when Socket_Util.Port_Num_Spec =>
             Dscr.Set_Destination_Host_And_Port (Host.Id, Port.Num);
         end case;
     end case;
@@ -133,9 +136,10 @@ package body Tcp_Util is
   -- Get dest if success
   -- Call callback
   procedure Handle_Current_Result (Rec : in out Connecting_Rec) is
-    Port : Port_Num;
-    Host : Host_Id;
-    use type Timers.Timer_Status;
+    Port : Socket_Util.Port_Num;
+    Host : Socket_Util.Host_Id;
+    use type Timers.Timer_Status,
+             Socket_Util.Local_Port_List, Socket_Util.Remote_Host_List;
   begin
     Log_Connect.Log_Debug ("Tcp_Util.Handle_Current_Result start");
     -- Remove management data
@@ -153,7 +157,7 @@ package body Tcp_Util is
     else
       -- Giving up
       Log_Connect.Log_Debug ("Tcp_Util.Handle_Current_Result giving up");
-      if Rec.Port.Kind = Port_Name_Spec then
+      if Rec.Port.Kind = Socket_Util.Port_Name_Spec then
         begin
           -- Services may have changed since Connect_To checks
           Port := Socket.Port_Num_Of (Rec.Port.Name.Image, Rec.Protocol);
@@ -164,7 +168,7 @@ package body Tcp_Util is
       else
         Port := Rec.Port.Num;
       end if;
-      if Rec.Host.Kind = Host_Name_Spec then
+      if Rec.Host.Kind = Socket_Util.Host_Name_Spec then
         begin
           -- Hosts may have changed since Connect_To checks
           Host := Socket.Host_Id_Of (Rec.Host.Name.Image);
@@ -371,21 +375,22 @@ package body Tcp_Util is
   -- May make several tries (one each Delta_Retry) before giving up
   -- Return True if synchronous result
   function Connect_To (Protocol      : in Tcp_Protocol_List;
-                       Host          : in Remote_Host;
-                       Port          : in Remote_Port;
+                       Host          : in Socket_Util.Remote_Host;
+                       Port          : in Socket_Util.Remote_Port;
                        Connection_Cb : in Connection_Callback_Access;
                        Delta_Retry   : in Positive_Duration := 1.0;
                        Nb_Tries      : in Natural := 1;
                        Ttl           : in Socket.Ttl_Range := Default_Ttl)
            return Boolean is
     Rec : Connecting_Rec;
+    use type Socket_Util.Local_Port_List, Socket_Util.Remote_Host_List;
   begin
     Init_Debug;
     Log_Connect.Log_Debug ("Tcp_Util.Connect_To start");
     -- Check port and host name
-    if Port.Kind = Port_Name_Spec then
+    if Port.Kind = Socket_Util.Port_Name_Spec then
       declare
-        Dummy_Num : Port_Num;
+        Dummy_Num : Socket_Util.Port_Num;
       begin
         Dummy_Num := Socket.Port_Num_Of (Port.Name.Image, Protocol);
       exception
@@ -393,9 +398,9 @@ package body Tcp_Util is
           raise Name_Error;
       end;
     end if;
-    if Host.Kind = Host_Name_Spec then
+    if Host.Kind = Socket_Util.Host_Name_Spec then
       declare
-        Dummy_Id : Host_Id;
+        Dummy_Id : Socket_Util.Host_Id;
       begin
         Dummy_Id := Socket.Host_Id_Of (Host.Name.Image);
       exception
@@ -425,8 +430,8 @@ package body Tcp_Util is
 
   -- Abort a pending connection
   -- May raise No_Such
-  procedure Abort_Connect (Host : in Remote_Host;
-                           Port : in Remote_Port) is
+  procedure Abort_Connect (Host : in Socket_Util.Remote_Host;
+                           Port : in Socket_Util.Remote_Port) is
     Moved : Boolean;
     Rec : Connecting_Rec;
   begin
@@ -464,8 +469,8 @@ package body Tcp_Util is
   -- Returns a valid (Open) Dscr if the connection has been established
   -- May raise Name_Error if Host.Name or Port.Name is unknown
   function Connect_To (Protocol      : in Tcp_Protocol_List;
-                       Host          : in Remote_Host;
-                       Port          : in Remote_Port;
+                       Host          : in Socket_Util.Remote_Host;
+                       Port          : in Socket_Util.Remote_Port;
                        Timeout       : in Natural_Duration := 1.0;
                        Ttl           : in Socket.Ttl_Range := Default_Ttl)
            return Socket.Socket_Dscr is
@@ -515,7 +520,7 @@ package body Tcp_Util is
   -- Accepting connection
   type Accepting_Rec is record
     Protocol : Tcp_Protocol_List;
-    Port     : Port_Num;
+    Port     : Socket_Util.Port_Num;
     Cb       : Acception_Callback_Access;
     Dscr     : Socket.Socket_Dscr;
     Fd       : Event_Mng.File_Desc;
@@ -545,8 +550,8 @@ package body Tcp_Util is
                             Read : in Boolean) return Boolean is
     Rec : Accepting_Rec;
     New_Dscr : Socket.Socket_Dscr;
-    Port : Port_Num;
-    Host : Host_Id;
+    Port : Socket_Util.Port_Num;
+    Host : Socket_Util.Host_Id;
   begin
     Log_Accept.Log_Debug ("Tcp_Util.Acception_Fd_Cb start with fd " & Fd'Img
                            & "  read " & Read'Img);
@@ -588,10 +593,10 @@ package body Tcp_Util is
   -- Accept connections to a local port
   -- Dscr is set to the socket accepting connections
   procedure Accept_From (Protocol     : in Tcp_Protocol_List;
-                         Port         : in Local_Port;
+                         Port         : in Socket_Util.Local_Port;
                          Acception_Cb : in Acception_Callback_Access;
                          Dscr         : out Socket.Socket_Dscr;
-                         Num          : out Port_Num;
+                         Num          : out Socket_Util.Port_Num;
                          Link_If      : in Socket.Host_Id := Socket.Any_Host) is
     Rec : Accepting_Rec;
     use type Socket.Host_Id;
@@ -614,16 +619,16 @@ package body Tcp_Util is
     end if;
     -- Bind socket
     case Port.Kind is
-      when Port_Name_Spec =>
+      when Socket_Util.Port_Name_Spec =>
         begin
           Rec.Dscr.Link_Service (Port.Name.Image);
         exception
           when Socket.Soc_Name_Not_Found =>
             raise Name_Error;
         end;
-      when Port_Num_Spec =>
+      when Socket_Util.Port_Num_Spec =>
         Rec.Dscr.Link_Port (Port.Num);
-      when Port_Dynamic_Spec =>
+      when Socket_Util.Port_Dynamic_Spec =>
         Rec.Dscr.Link_Dynamic;
     end case;
     Rec.Port := Rec.Dscr.Get_Linked_To;
@@ -649,7 +654,8 @@ package body Tcp_Util is
 
   -- Abort further accepts on port
   -- May raise No_Such
-  procedure Abort_Accept (Protocol : in Tcp_Protocol_List; Num : in Port_Num) is
+  procedure Abort_Accept (Protocol : in Tcp_Protocol_List;
+                          Num      : in Socket_Util.Port_Num) is
     Rec : Accepting_Rec;
     Moved : Boolean;
   begin

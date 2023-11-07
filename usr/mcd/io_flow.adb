@@ -1,5 +1,5 @@
 with As.U.Utils, Argument, Event_Mng, Sys_Calls, Async_Stdin, Text_Line,
-     Socket, Socket_Util, Tcp_Util, Ip_Addr, Autobus;
+     Socket, Socket_Util, Ip_Addr, Autobus;
 with Io_Data, Debug;
 package body Io_Flow is
 
@@ -21,9 +21,9 @@ package body Io_Flow is
   Tmp_Data : As.U.Asu_Us;
 
   -- Udp or tcp socket
-  Host : Tcp_Util.Remote_Host;
-  Port : Tcp_Util.Remote_Port;
-  Send_Port : Tcp_Util.Remote_Port (Tcp_Util.Port_Num_Spec);
+  Host : Socket_Util.Remote_Host;
+  Port : Socket_Util.Remote_Port;
+  Send_Port : Socket_Util.Remote_Port (Socket_Util.Port_Num_Spec);
   Is_Ipm : Boolean;
   Soc : Socket.Socket_Dscr;
   Send_Soc : Socket.Socket_Dscr;
@@ -664,18 +664,18 @@ package body Io_Flow is
   end Open_Tcp_Socket;
 
   procedure Open_Udp_Sockets (Send_Next : in Boolean) is
-    use type Tcp_Util.Remote_Host_List, Socket.Port_Num;
+    use type Socket_Util.Remote_Host_List, Socket.Port_Num;
   begin
     -- Open reception socket
     Soc.Open (Socket.Udp);
-    if Host.Kind = Tcp_Util.Host_Id_Spec
+    if Host.Kind = Socket_Util.Host_Id_Spec
     or else not Host.Name.Is_Null then
       -- An address specified => Ipm
       -- Use Set_Dest to indicate Imp address
       Is_Ipm := True;
     else
       -- No address => broadcast
-      Host := (Kind => Tcp_Util.Host_Id_Spec,
+      Host := (Kind => Socket_Util.Host_Id_Spec,
                Id => Socket.Bcast_Of (Socket.Local_Host_Id));
       Is_Ipm := False;
     end if;

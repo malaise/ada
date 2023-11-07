@@ -2,7 +2,7 @@
 with Ada.Exceptions, Ada.Calendar;
 with As.U, Argument, Basic_Proc, Images, Normal,
      Upper_Str, Str_Util, Text_Line, Sys_Calls,
-     Socket, Event_Mng, Ip_Addr, Tcp_Util, Timers, Hexa_Utils;
+     Socket, Event_Mng, Ip_Addr, Socket_Util, Timers, Hexa_Utils;
 
 procedure Udp_Spy is
 
@@ -11,9 +11,9 @@ procedure Udp_Spy is
 
   -- Parsed Host and Port
   Host_Name : As.U.Asu_Us;
-  Host : Tcp_Util.Remote_Host;
+  Host : Socket_Util.Remote_Host;
   Port_Name : As.U.Asu_Us;
-  Port : Tcp_Util.Remote_Port;
+  Port : Socket_Util.Remote_Port;
   Port_Num : Socket.Port_Num;
 
   -- Kind of dump
@@ -23,7 +23,7 @@ procedure Udp_Spy is
   Put_Host_Name : Boolean;
 
   -- Optional interface
-  Iface : Tcp_Util.Remote_Host;
+  Iface : Socket_Util.Remote_Host;
   -- For parsing arguments
   Nb_Options : Natural;
 
@@ -31,7 +31,7 @@ procedure Udp_Spy is
   File : Text_Line.File_Type;
 
   use type Socket.Host_Id;
-  use type Tcp_Util.Remote_Port_List, Tcp_Util.Remote_Host_List;
+  use type Socket_Util.Remote_Port_List, Socket_Util.Remote_Host_List;
 
   function Inte_Image is new Images.Int_Image (Integer);
 
@@ -228,7 +228,7 @@ begin
     Nb_Options := Nb_Options + 1;
   exception
     when Argument.Argument_Not_Found =>
-      Iface := (Kind => Tcp_Util.Host_Id_Spec, Id => Socket.Any_Host);
+      Iface := (Kind => Socket_Util.Host_Id_Spec, Id => Socket.Any_Host);
     when others =>
       raise Arg_Error;
   end;
@@ -285,11 +285,11 @@ begin
   Event_Mng.Set_Sig_Term_Callback (Signal_Cb'Unrestricted_Access);
 
   -- Set interface
-  if Iface.Kind = Tcp_Util.Host_Name_Spec then
+  if Iface.Kind = Socket_Util.Host_Name_Spec then
     -- Set host id
     begin
       Iface := (
-          Kind => Tcp_Util.Host_Id_Spec,
+          Kind => Socket_Util.Host_Id_Spec,
           Id => Socket.Host_Id_Of (Iface.Name.Image));
     exception
       when Socket.Soc_Name_Not_Found =>
@@ -304,7 +304,7 @@ begin
 
   -- Set port num
   Port := Ip_Addr.Parse (Port_Name.Image);
-  if Port.Kind = Tcp_Util.Port_Name_Spec then
+  if Port.Kind = Socket_Util.Port_Name_Spec then
     begin
       Port_Num := Socket.Port_Num_Of (Port.Name.Image, Socket.Udp);
     exception
@@ -320,7 +320,7 @@ begin
   -- Link to Lan name or num
   Host := Ip_Addr.Parse (Host_Name.Image);
   -- See if Server is Id or Name, if it is a Host or LAN name
-  if Host.Kind = Tcp_Util.Host_Name_Spec then
+  if Host.Kind = Socket_Util.Host_Name_Spec then
     begin
       Soc.Set_Destination_Name_And_Port (True, Host.Name.Image, Port_Num);
     exception

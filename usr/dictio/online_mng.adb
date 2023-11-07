@@ -34,8 +34,8 @@ package body Online_Mng is
     Tid := Timers.Create (T, Timer_Cb'Access);
   end Start_Slave_Timeout;
 
-  No_Master : constant Tcp_Util.Host_Name := As.U.Asu_Null;
-  Current_Master : Tcp_Util.Host_Name := No_Master;
+  No_Master : constant Socket_Util.Host_Name := As.U.Asu_Null;
+  Current_Master : Socket_Util.Host_Name := No_Master;
 
   procedure Reset_Master is
   begin
@@ -77,7 +77,7 @@ package body Online_Mng is
     Fight_Mng.Start (Status.Fight, 1.0, Fight_Actions);
   end Start_Fight;
 
-  procedure Event (From  : in Tcp_Util.Host_Name;
+  procedure Event (From  : in Socket_Util.Host_Name;
                    Stat  : in Status.Status_List;
                    Sync  : in Boolean;
                    Extra : in String := "") is

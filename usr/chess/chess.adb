@@ -1,4 +1,4 @@
-with As.U, Lower_Str, Argument, Tcp_Util, Basic_Proc;
+with As.U, Lower_Str, Argument, Socket_Util, Basic_Proc;
 with Debug, Space, Connection, Human, File, Screen;
 
 procedure Chess is
@@ -9,7 +9,7 @@ procedure Chess is
   Init : As.U.Asu_Us;
   Tmp_Txt : As.U.Asu_Us;
   Wait : Boolean;
-  Port : Tcp_Util.Remote_Port;
+  Port : Socket_Util.Remote_Port;
   Invalid_Argument : exception;
 
   procedure Usage is
@@ -111,14 +111,14 @@ begin
   end if;
 
   -- Port if not both
-  Port := (Kind => Tcp_Util.Port_Num_Spec, Num => 0);
+  Port := (Kind => Socket_Util.Port_Num_Spec, Num => 0);
   if Mode /= Human.Both then
     begin
-      Port.Num := Tcp_Util.Port_Num'Value(Argument.Get_Parameter
+      Port.Num := Socket_Util.Port_Num'Value(Argument.Get_Parameter
                      (Param_Key => "p"));
     exception
       when Argument.Argument_Not_Found =>
-        Port := (Kind => Tcp_Util.Port_Name_Spec, Name => As.U.Asu_Null);
+        Port := (Kind => Socket_Util.Port_Name_Spec, Name => As.U.Asu_Null);
         begin
           Argument.Get_Parameter(Port.Name, Param_Key => "P");
         exception

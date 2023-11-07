@@ -1,6 +1,6 @@
 with Ada.Exceptions;
 with As.U.Utils, Basic_Proc, Argument, Str_Util.Regex, Hexa_Utils,
-     Socket, Socket_Util, Tcp_Util, Ip_Addr;
+     Socket, Socket_Util, Ip_Addr;
 -- Send "Wake On LAN" magic packet: a UDP message containing
 --  6 times 'FF' then 16 times the MAC address (6 bytes each).
 -- By default, broadcasts on local LAN, but if a host name or IP address
@@ -10,9 +10,9 @@ with As.U.Utils, Basic_Proc, Argument, Str_Util.Regex, Hexa_Utils,
 procedure Wake is
 
   -- Socket stuff
-  Host : Tcp_Util.Remote_Host;
+  Host : Socket_Util.Remote_Host;
   Lan_Id : Socket.Host_Id;
-  Port : Tcp_Util.Remote_Port;
+  Port : Socket_Util.Remote_Port;
   Soc : Socket.Socket_Dscr;
   Default_Port : constant Socket.Port_Num := 9;
 
@@ -61,7 +61,7 @@ procedure Wake is
 
   procedure My_Send is new Socket.Send (Message_Type);
 
-  use type Tcp_Util.Remote_Host_List, Tcp_Util.Remote_Port_List;
+  use type Socket_Util.Remote_Host_List, Socket_Util.Remote_Port_List;
 begin
   ---------------------
   -- PARSE ARGUMENTS --
@@ -110,7 +110,7 @@ begin
     end;
   end if;
   -- Use default Host : Port
-  if Host.Kind = Tcp_Util.Host_Name_Spec and then Host.Name.Is_Null then
+  if Host.Kind = Socket_Util.Host_Name_Spec and then Host.Name.Is_Null then
     -- Default host is broadcast on LAN
     begin
       Lan_Id := Socket.Bcast_Of (Socket.Local_Host_Id);
@@ -118,11 +118,11 @@ begin
       when Socket.Soc_Name_Not_Found =>
         Error ("Unknown local host, try specifying destination");
     end;
-    Host := (Tcp_Util.Host_Id_Spec, Lan_Id);
+    Host := (Socket_Util.Host_Id_Spec, Lan_Id);
   end if;
-  if Port.Kind = Tcp_Util.Port_Name_Spec and then Port.Name.Is_Null then
+  if Port.Kind = Socket_Util.Port_Name_Spec and then Port.Name.Is_Null then
     -- Default port
-    Port := (Tcp_Util.Port_Num_Spec, Default_Port);
+    Port := (Socket_Util.Port_Num_Spec, Default_Port);
   end if;
 
   -------------------------

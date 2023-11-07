@@ -1,4 +1,4 @@
-with As.U, Assertion, Str_Util, Normal, Environ;
+with As.U, Assertion, Str_Util, Normal, Environ, Tcp_Util;
 with Dictio_Lib;
 package body Fifos is
 
@@ -8,13 +8,13 @@ package body Fifos is
 
   -- These are the natural host name and id
   Local_Host_Name : constant String := Socket.Local_Host_Name;
-  Local_Host_Id : constant Tcp_Util.Host_Id := Socket.Local_Host_Id;
+  Local_Host_Id : constant Socket_Util.Host_Id := Socket.Local_Host_Id;
 
-  procedure Host_Name2Id (Host : in out Tcp_Util.Remote_Host) is
-    Id : Tcp_Util.Host_Id;
+  procedure Host_Name2Id (Host : in out Socket_Util.Remote_Host) is
+    Id : Socket_Util.Host_Id;
   begin
     Id := Socket.Host_Id_Of (Host.Name.Image);
-    Host := (Kind => Tcp_Util.Host_Id_Spec, Id => Id);
+    Host := (Kind => Socket_Util.Host_Id_Spec, Id => Id);
   exception
     when Socket.Soc_Name_Not_Found =>
       raise Name_Error;
@@ -42,12 +42,12 @@ package body Fifos is
       function Search_By_Name (Kind : Fifo_Kind_List;
                                Name : String) return Boolean;
       function Search_By_Port (Kind : Fifo_Kind_List;
-                               Port : Tcp_Util.Port_Num) return Boolean;
+                               Port : Socket_Util.Port_Num) return Boolean;
       function Search_By_Dscr (Dscr : Socket.Socket_Dscr) return Boolean;
 
       function Search_By_Addr (Kind : Fifo_Kind_List;
-                               Host : Tcp_Util.Host_Id;
-                               Port : Tcp_Util.Port_Num) return Boolean;
+                               Host : Socket_Util.Host_Id;
+                               Port : Socket_Util.Port_Num) return Boolean;
 
       -- Get access to current fifo
       function Access_Current return not null access Fifo_Rec;
@@ -114,7 +114,7 @@ package body Fifos is
 
       -- Search by port num
       function Same_Port (El1, El2 : Fifo_Rec) return Boolean is
-        use type Tcp_Util.Remote_Port;
+        use type Socket_Util.Remote_Port;
       begin
         return   El1.Kind = El2.Kind
         and then El1.Port = El2.Port;
@@ -122,11 +122,11 @@ package body Fifos is
       function Search_Port is new Fifo_List_Mng.Search (Same_Port);
 
       function Search_By_Port (Kind : Fifo_Kind_List;
-                               Port : Tcp_Util.Port_Num) return Boolean is
+                               Port : Socket_Util.Port_Num) return Boolean is
         Rec : Fifo_Rec;
       begin
         Rec.Kind := Kind;
-        Rec.Port := (Kind => Tcp_Util.Port_Num_Spec, Num => Port);
+        Rec.Port := (Kind => Socket_Util.Port_Num_Spec, Num => Port);
 
         return Search_Port (Fifo_List, Rec, From => Fifo_List_Mng.Absolute);
       end Search_By_Port;
@@ -148,7 +148,7 @@ package body Fifos is
 
       -- Search by saddr
       function Same_Addr (El1, El2 : Fifo_Rec) return Boolean is
-        use type Tcp_Util.Remote_Host, Tcp_Util.Remote_Port;
+        use type Socket_Util.Remote_Host, Socket_Util.Remote_Port;
       begin
         return   El1.Kind = El2.Kind
         and then El1.Port = El2.Port
@@ -157,13 +157,13 @@ package body Fifos is
       function Search_Addr is new Fifo_List_Mng.Search (Same_Addr);
 
       function Search_By_Addr (Kind : Fifo_Kind_List;
-                               Host : Tcp_Util.Host_Id;
-                               Port : Tcp_Util.Port_Num) return Boolean is
+                               Host : Socket_Util.Host_Id;
+                               Port : Socket_Util.Port_Num) return Boolean is
         Rec : Fifo_Rec;
       begin
         Rec.Kind := Kind;
-        Rec.Host := (Kind => Tcp_Util.Host_Id_Spec, Id => Host);
-        Rec.Port := (Kind => Tcp_Util.Port_Num_Spec, Num => Port);
+        Rec.Host := (Kind => Socket_Util.Host_Id_Spec, Id => Host);
+        Rec.Port := (Kind => Socket_Util.Port_Num_Spec, Num => Port);
 
         return Search_Addr (Fifo_List, Rec, From => Fifo_List_Mng.Absolute);
       end Search_By_Addr;
@@ -258,10 +258,10 @@ package body Fifos is
       end Reception_Cb;
 
 
-      procedure Acception_Cb (Local_Port_Num    : in Tcp_Util.Port_Num;
+      procedure Acception_Cb (Local_Port_Num    : in Socket_Util.Port_Num;
                               Unused_Local_Dscr : in Socket.Socket_Dscr;
-                              Remote_Host_Id    : in Tcp_Util.Host_Id;
-                              Remote_Port_Num   : in Tcp_Util.Port_Num;
+                              Remote_Host_Id    : in Socket_Util.Host_Id;
+                              Remote_Port_Num   : in Socket_Util.Port_Num;
                               New_Dscr          : in Socket.Socket_Dscr) is
         Tmp_Dscr : Socket.Socket_Dscr;
         Rec : Fifo_Rec;
@@ -284,8 +284,8 @@ package body Fifos is
         -- Insert new record
         Rec.Kind := Accepted;
         Rec.Dscr := New_Dscr;
-        Rec.Host := (Kind => Tcp_Util.Host_Id_Spec, Id => Remote_Host_Id);
-        Rec.Port := (Kind => Tcp_Util.Port_Num_Spec, Num => Remote_Port_Num);
+        Rec.Host := (Kind => Socket_Util.Host_Id_Spec, Id => Remote_Host_Id);
+        Rec.Port := (Kind => Socket_Util.Port_Num_Spec, Num => Remote_Port_Num);
         Rec.State := Connected;
         Acc := Fifo_Rec_Access(List.Insert (Rec));
 
@@ -305,8 +305,8 @@ package body Fifos is
 
       end Acception_Cb;
 
-      procedure Connection_Cb (Remote_Host_Id  : in Tcp_Util.Host_Id;
-                               Remote_Port_Num : in Tcp_Util.Port_Num;
+      procedure Connection_Cb (Remote_Host_Id  : in Socket_Util.Host_Id;
+                               Remote_Port_Num : in Socket_Util.Port_Num;
                                Connected       : in Boolean;
                                Dscr            : in Socket.Socket_Dscr) is
         Acc : Fifo_Rec_Access;
@@ -360,14 +360,14 @@ package body Fifos is
       procedure Connect (Fifo : not null access Fifo_Rec) is
         Dummy_Res : Boolean;
         Protocol : Socket.Protocol_List;
-        use type Socket.Host_Id, Tcp_Util.Remote_Host_List;
+        use type Socket.Host_Id, Socket_Util.Remote_Host_List;
       begin
         if Fifo.Kind /= Connect then
           Assertion.Assert (False, "connecting a fifo of kind "
                           & Fifo.Kind'Img);
           return;
         end if;
-        if Fifo.Host.Kind = Tcp_Util.Host_Id_Spec
+        if Fifo.Host.Kind = Socket_Util.Host_Id_Spec
         and then Fifo.Host.Id = Local_Host_Id then
           Protocol := Socket.Tcp_Header_Afux;
         else
@@ -421,18 +421,18 @@ package body Fifos is
       end Close;
 
       procedure Accepte (Fifo : not null access Fifo_Rec) is
-        Port_Num : Tcp_Util.Port_Num;
-        Port : Tcp_Util.Local_Port;
+        Port_Num : Socket_Util.Port_Num;
+        Port : Socket_Util.Local_Port;
       begin
         -- Check if Fifo_Name is a port name, link dynamic otherwise
         begin
           Port_Num := Socket.Port_Num_Of (Fifo.Name (1 .. Fifo.Len),
                                           Socket.Tcp_Header);
-          Port := (Kind => Tcp_Util.Port_Num_Spec,
+          Port := (Kind => Socket_Util.Port_Num_Spec,
                    Num  => Port_Num);
         exception
           when Socket.Soc_Name_Not_Found =>
-            Port := (Kind => Tcp_Util.Port_Dynamic_Spec);
+            Port := (Kind => Socket_Util.Port_Dynamic_Spec);
         end;
         -- Accept from Tcp Inet and afux
         Tcp_Util.Accept_From (Socket.Tcp_Header,
@@ -441,15 +441,15 @@ package body Fifos is
                               Fifo.Dscr,
                               Port_Num);
         -- Link Afux on same port
-        Port := (Kind => Tcp_Util.Port_Num_Spec,
+        Port := (Kind => Socket_Util.Port_Num_Spec,
                    Num  => Port_Num);
         Tcp_Util.Accept_From (Socket.Tcp_Header_Afux,
                               Port,
                               Acception_Cb'Unrestricted_Access,
                               Fifo.Afux_Dscr,
                               Port_Num);
-        Fifo.Host := (Kind => Tcp_Util.Host_Id_Spec, Id => Local_Host_Id);
-        Fifo.Port := (Kind => Tcp_Util.Port_Num_Spec, Num => Port_Num);
+        Fifo.Host := (Kind => Socket_Util.Host_Id_Spec, Id => Local_Host_Id);
+        Fifo.Port := (Kind => Socket_Util.Port_Num_Spec, Num => Port_Num);
         Fifo.State := Connected;
       exception
         when Socket.Soc_Name_Not_Found =>
@@ -468,11 +468,11 @@ package body Fifos is
     -------------------------------------------------------------------------
     package Dictio is
       procedure Set (Fifo_Name : in String; Host : in String;
-                                            Port : in Tcp_Util.Port_Num);
+                                            Port : in Socket_Util.Port_Num);
       procedure Get (Fifo_Name : in String;
                      Got  : out Boolean;
-                     Host : out Tcp_Util.Host_Name;
-                     Port : out Tcp_Util.Port_Num);
+                     Host : out Socket_Util.Host_Name;
+                     Port : out Socket_Util.Port_Num);
       Data_Error : exception;
       procedure Notify (Fifo_Name : in String; On : in Boolean);
     end Dictio;
@@ -499,8 +499,8 @@ package body Fifos is
       end Fifo_Name_Of;
 
 
-      procedure Split (Data : in String; Host : out Tcp_Util.Host_Name;
-                                         Port : out Tcp_Util.Port_Num) is
+      procedure Split (Data : in String; Host : out Socket_Util.Host_Name;
+                                         Port : out Socket_Util.Port_Num) is
         Txt : As.U.Asu_Us;
         Sep_Index : Natural;
       begin
@@ -512,7 +512,7 @@ package body Fifos is
 
         begin
           Host := Txt.Uslice (1, Sep_Index - 1);
-          Port := Tcp_Util.Port_Num'Value(
+          Port := Socket_Util.Port_Num'Value(
             Txt.Slice (Sep_Index + 1, Txt.Length) );
         exception
           when others =>
@@ -552,7 +552,7 @@ package body Fifos is
         Connection.Close (Acc);
 
         -- Try to re-connect on new data
-        Acc.Host := (Kind => Tcp_Util.Host_Name_Spec, Name => As.U.Asu_Null);
+        Acc.Host := (Kind => Socket_Util.Host_Name_Spec, Name => As.U.Asu_Null);
         Split (Data, Acc.Host.Name, Acc.Port.Num);
         begin
           Host_Name2Id (Acc.Host);
@@ -606,7 +606,7 @@ package body Fifos is
 
 
       procedure Set (Fifo_Name : in String; Host : in String;
-                                            Port : in Tcp_Util.Port_Num) is
+                                            Port : in Socket_Util.Port_Num) is
       begin
         Init;
         if Name_Prefix.Length + Fifo_Name'Length >
@@ -631,8 +631,8 @@ package body Fifos is
 
       procedure Get (Fifo_Name : in String;
                      Got  : out Boolean;
-                     Host : out Tcp_Util.Host_Name;
-                     Port : out Tcp_Util.Port_Num) is
+                     Host : out Socket_Util.Host_Name;
+                     Port : out Socket_Util.Port_Num) is
       begin
         Init;
         Got := False;
@@ -726,7 +726,7 @@ package body Fifos is
         -- Notify then try to get
         Dictio.Notify (Fifo_Name, True);
         Rec.Dscr := Socket.No_Socket;
-        Rec.Port := (Kind => Tcp_Util.Port_Num_Spec, Num => 0);
+        Rec.Port := (Kind => Socket_Util.Port_Num_Spec, Num => 0);
         Dictio.Get (Fifo_Name, Got, Rec.Host.Name, Rec.Port.Num);
         if not Got then
           -- No item: wait for notification

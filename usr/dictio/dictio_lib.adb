@@ -1,5 +1,6 @@
 with Ada.Exceptions;
-with As.U, Socket, Tcp_Util, Event_Mng, Sys_Calls, Environ, Virtual_Time;
+with As.U, Socket, Socket_Util, Tcp_Util, Event_Mng, Sys_Calls, Environ,
+     Virtual_Time;
 with Dictio_Debug, Parse, Client_Com, Versions, Status, Names;
 package body Dictio_Lib is
 
@@ -8,8 +9,8 @@ package body Dictio_Lib is
   Local_Host_Name :  constant String := "localhost";
   Default_Host :  constant String := Local_Host_Name;
   Default_Port :  constant String := "dictio";
-  Host : Tcp_Util.Remote_Host(Tcp_Util.Host_Name_Spec);
-  Port : Tcp_Util.Remote_Port(Tcp_Util.Port_Name_Spec);
+  Host : Socket_Util.Remote_Host(Socket_Util.Host_Name_Spec);
+  Port : Socket_Util.Remote_Port(Socket_Util.Port_Name_Spec);
   Protocol : Socket.Protocol_List := Socket.Tcp_Header;
 
   Dictio_Dscr : Socket.Socket_Dscr := Socket.No_Socket;
@@ -145,8 +146,8 @@ package body Dictio_Lib is
      end case;
   end Read_Cb;
 
-  procedure Connection_Cb (Unused_Remote_Host_Id  : in Tcp_Util.Host_Id;
-                           Unused_Remote_Port_Num : in Tcp_Util.Port_Num;
+  procedure Connection_Cb (Unused_Remote_Host_Id  : in Socket_Util.Host_Id;
+                           Unused_Remote_Port_Num : in Socket_Util.Port_Num;
                            Connected              : in Boolean;
                            Dscr                   : in Socket.Socket_Dscr) is
   begin
@@ -204,9 +205,10 @@ package body Dictio_Lib is
   Init_Done : Boolean := False;
 
   procedure Init is
-    Local_Host : Tcp_Util.Remote_Host(Tcp_Util.Host_Name_Spec);
+    Local_Host : Socket_Util.Remote_Host(Socket_Util.Host_Name_Spec);
     Expiration : Virtual_Time.Time;
-    use type Event_Mng.Out_Event_List, Virtual_Time.Time, Tcp_Util.Remote_Host;
+    use type Event_Mng.Out_Event_List, Virtual_Time.Time,
+             Socket_Util.Remote_Host;
   begin
     if Init_Done then
       return;

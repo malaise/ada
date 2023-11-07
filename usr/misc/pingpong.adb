@@ -6,7 +6,7 @@ with As.U,
      Argument, Argument_Parser,
      Basic_Proc, Trace.Loggers,
      Images, Str_Util, Mixed_Str,
-     Socket, Tcp_Util, Ip_Addr, Event_Mng, Timers,
+     Socket, Socket_Util, Ip_Addr, Event_Mng, Timers,
      Hashed_List.Unique;
 procedure Pingpong is
 
@@ -24,7 +24,7 @@ procedure Pingpong is
   Soc : Socket.Socket_Dscr;
   Fd  : Event_Mng.File_Desc := 0;
   Use_Iface : Boolean;
-  Iface : Tcp_Util.Remote_Host;
+  Iface : Socket_Util.Remote_Host;
   One_Shot : Boolean;
   Period : Timers.Period_Range;
   Send_Mode : Boolean;
@@ -209,7 +209,7 @@ procedure Pingpong is
     My_Send (Soc, Message);
   end Send_Ping;
 
-  use type Tcp_Util.Remote_Host_List;
+  use type Socket_Util.Remote_Host_List;
 
 begin
   Logger.Init;
@@ -238,7 +238,7 @@ begin
     Use_Iface := True;
   else
     -- Default interface
-    Iface := (Kind => Tcp_Util.Host_Id_Spec, Id => Socket.Any_Host);
+    Iface := (Kind => Socket_Util.Host_Id_Spec, Id => Socket.Any_Host);
     Use_Iface := False;
   end if;
 
@@ -306,11 +306,11 @@ begin
   end if;
 
   -- Set interface from host
-  if Iface.Kind = Tcp_Util.Host_Name_Spec then
+  if Iface.Kind = Socket_Util.Host_Name_Spec then
     -- Set host id
     begin
       Iface := (
-          Kind => Tcp_Util.Host_Id_Spec,
+          Kind => Socket_Util.Host_Id_Spec,
           Id => Socket.Host_Id_Of (Iface.Name.Image));
     exception
       when Socket.Soc_Name_Not_Found =>
@@ -330,15 +330,15 @@ begin
     Addr : constant String
          := Arg_Dscr.Get_Option (Argument_Parser.No_Key_Index);
     Index : constant Natural := Str_Util.Locate (Addr, ":");
-    Lan : constant Tcp_Util.Remote_Host
+    Lan : constant Socket_Util.Remote_Host
         := Ip_Addr.Parse (Addr(1 .. Index - 1));
-    Port : constant Tcp_Util.Remote_Port
+    Port : constant Socket_Util.Remote_Port
            := Ip_Addr.Parse (Addr(Index + 1 .. Addr'Last));
     Port_Num : Socket.Port_Num;
-    use type Tcp_Util.Remote_Port_List;
+    use type Socket_Util.Remote_Port_List;
   begin
     -- Compute port num
-    if Port.Kind /= Tcp_Util.Port_Num_Spec then
+    if Port.Kind /= Socket_Util.Port_Num_Spec then
       begin
         Port_Num := Socket.Port_Num_Of (Port.Name.Image, Socket.Udp);
       exception
@@ -367,7 +367,7 @@ begin
     end if;
 
     -- Set dest, necessary for multicast emission and reception
-    if Lan.Kind = Tcp_Util.Host_Name_Spec then
+    if Lan.Kind = Socket_Util.Host_Name_Spec then
       begin
         Soc.Set_Destination_Name_And_Port (True, Lan.Name.Image, Port_Num);
       exception

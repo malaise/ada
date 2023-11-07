@@ -2,8 +2,7 @@
 -- Several senders can connect to a reception Fifo
 -- Once connected, a Fifo is full duplex
 -- A Dictio must be up and running for Open to succeed
-private with Socket, Tcp_Util, Dynamic_List;
-pragma Elaborate_All (Tcp_Util);
+private with Socket, Socket_Util, Dynamic_List;
 package Fifos is
 
   -- Max length of a Fifo name
@@ -119,8 +118,8 @@ package Fifos is
       Afux_Dscr :  Socket.Socket_Dscr; -- Afux_Socket for Accepting.
       State : Fifo_State_List;
       Active : Boolean;
-      Host : Tcp_Util.Remote_Host;
-      Port : Tcp_Util.Remote_Port;
+      Host : Socket_Util.Remote_Host;
+      Port : Socket_Util.Remote_Port;
       Conn_Cb : Connection_Callback_Access;
       Rece_Cb : Reception_Callback_Access;
       Ovfl_Cb : End_Overflow_Callback_Access;

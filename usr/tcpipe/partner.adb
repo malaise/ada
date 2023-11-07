@@ -1,5 +1,5 @@
 with Ada.Exceptions;
-with Basic_Proc, Address_Ops, Ip_Addr, Socket, Tcp_Util;
+with Basic_Proc, Address_Ops, Ip_Addr, Socket, Socket_Util, Tcp_Util;
 with Debug, Clients;
 package body Partner is
 
@@ -23,25 +23,25 @@ package body Partner is
   -- when receiveg a data emssage relay it
   -- Invalid_Addr : exception;
   Client_Mode : Boolean;
-  Loc_Port: Tcp_Util.Local_Port (Tcp_Util.Port_Num_Spec);
+  Loc_Port: Socket_Util.Local_Port (Socket_Util.Port_Num_Spec);
   Rem_Dscr : Socket.Socket_Dscr;
-  Rem_Host : Tcp_Util.Remote_Host (Tcp_Util.Host_Id_Spec);
-  Rem_Port: Tcp_Util.Remote_Port (Tcp_Util.Port_Num_Spec);
+  Rem_Host : Socket_Util.Remote_Host (Socket_Util.Host_Id_Spec);
+  Rem_Port: Socket_Util.Remote_Port (Socket_Util.Port_Num_Spec);
 
   -- Connect and Accept Callbacks
-  procedure Connect_Cb (Remote_Host_Id  : in Tcp_Util.Host_Id;
-                        Remote_Port_Num : in Tcp_Util.Port_Num;
+  procedure Connect_Cb (Remote_Host_Id  : in Socket_Util.Host_Id;
+                        Remote_Port_Num : in Socket_Util.Port_Num;
                         Connected       : in Boolean;
                         Dscr            : in Socket.Socket_Dscr);
-  procedure Accept_Cb (Local_Port_Num    : in Tcp_Util.Port_Num;
+  procedure Accept_Cb (Local_Port_Num    : in Socket_Util.Port_Num;
                        Unused_Local_Dscr : in Socket.Socket_Dscr;
-                       Remote_Host_Id    : in Tcp_Util.Host_Id;
-                       Remote_Port_Num : in Tcp_Util.Port_Num;
+                       Remote_Host_Id    : in Socket_Util.Host_Id;
+                       Remote_Port_Num : in Socket_Util.Port_Num;
                        New_Dscr        : in Socket.Socket_Dscr);
   -- Connect/Accept
   procedure Connect_Accept is
     Dummy_Res : Boolean;
-    Port: Tcp_Util.Port_Num;
+    Port: Socket_Util.Port_Num;
     Dscr : Socket.Socket_Dscr;
   begin
     if Client_Mode then
@@ -59,17 +59,17 @@ package body Partner is
 
 
   procedure Init (Client : in Boolean; Addr : in String) is
-    Host_Rec : Tcp_Util.Remote_Host;
-    Port_Rec : Tcp_Util.Remote_Port;
-    Host: Tcp_Util.Host_Id;
-    Port: Tcp_Util.Port_Num;
-    use type Tcp_Util.Remote_Host_List, Tcp_Util.Remote_Port_List;
+    Host_Rec : Socket_Util.Remote_Host;
+    Port_Rec : Socket_Util.Remote_Port;
+    Host: Socket_Util.Host_Id;
+    Port: Socket_Util.Port_Num;
+    use type Socket_Util.Remote_Host_List, Socket_Util.Remote_Port_List;
   begin
     -- Parse Addr and resolve
     Client_Mode := Client;
     if Client then
       Ip_Addr.Parse (Addr, Host_Rec, Port_Rec);
-      if Host_Rec.Kind = Tcp_Util.Host_Name_Spec then
+      if Host_Rec.Kind = Socket_Util.Host_Name_Spec then
         begin
           Host := Socket.Host_Id_Of (Host_Rec.Name.Image);
         exception
@@ -85,7 +85,7 @@ package body Partner is
     else
       Port_Rec := Ip_Addr.Parse (Addr);
     end if;
-    if Port_Rec.Kind = Tcp_Util.Port_Name_Spec then
+    if Port_Rec.Kind = Socket_Util.Port_Name_Spec then
       begin
         Port := Socket.Port_Num_Of (Port_Rec.Name.Image, Socket.Tcp);
       exception
@@ -131,8 +131,8 @@ package body Partner is
   end Close;
 
   -- Connect Callback
-  procedure Connect_Cb (Remote_Host_Id  : in Tcp_Util.Host_Id;
-                        Remote_Port_Num : in Tcp_Util.Port_Num;
+  procedure Connect_Cb (Remote_Host_Id  : in Socket_Util.Host_Id;
+                        Remote_Port_Num : in Socket_Util.Port_Num;
                         Connected       : in Boolean;
                         Dscr            : in Socket.Socket_Dscr) is
   begin
@@ -152,10 +152,10 @@ package body Partner is
   end Connect_Cb;
 
   -- Accept Callback
-  procedure Accept_Cb (Local_Port_Num    : in Tcp_Util.Port_Num;
+  procedure Accept_Cb (Local_Port_Num    : in Socket_Util.Port_Num;
                        Unused_Local_Dscr : in Socket.Socket_Dscr;
-                       Remote_Host_Id    : in Tcp_Util.Host_Id;
-                       Remote_Port_Num   : in Tcp_Util.Port_Num;
+                       Remote_Host_Id    : in Socket_Util.Host_Id;
+                       Remote_Port_Num   : in Socket_Util.Port_Num;
                        New_Dscr          : in Socket.Socket_Dscr) is
   begin
     -- Stop accepting

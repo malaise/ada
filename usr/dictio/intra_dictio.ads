@@ -1,5 +1,5 @@
 with Ada.Characters.Latin_1;
-with Tcp_Util;
+with Socket_Util;
 with Args, Data_Base, Status;
 package Intra_Dictio is
 
@@ -19,7 +19,7 @@ package Intra_Dictio is
     Stat : in Status.Status_List;
     Sync : in Boolean;
     Prio : in Args.Prio_Str;
-    From : in Tcp_Util.Host_Name;
+    From : in Socket_Util.Host_Name;
     Kind : in Character;
     Item : in Data_Base.Item_Rec);
   procedure Set_Read_Cb (Read_Cb : Read_Cb_Access);

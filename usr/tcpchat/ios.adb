@@ -1,6 +1,6 @@
 with Ada.Calendar;
-with Aski, Event_Mng, Ip_Addr, Socket, Tcp_Util, Input_Buffer, Str_Util,
-     Unlimited_Pool, Timers, Async_Stdin;
+with Aski, Event_Mng, Ip_Addr, Socket, Socket_Util, Tcp_Util, Input_Buffer,
+     Str_Util, Unlimited_Pool, Timers, Async_Stdin;
 with Debug, Tree;
 package body Ios is
 
@@ -12,8 +12,8 @@ package body Ios is
   Stdio : Boolean;
 
   -- The port on which we accept
-  Port_Def : Tcp_Util.Local_Port;
-  Port_Num : Tcp_Util.Port_Num;
+  Port_Def : Socket_Util.Local_Port;
+  Port_Num : Socket_Util.Port_Num;
 
   -- The current connection
   Tcp_Soc : Socket.Socket_Dscr;
@@ -105,10 +105,10 @@ package body Ios is
   end Discon_Cb;
 
   -- Connection acception Cb
-  procedure Accept_Cb (Unused_Local_Port_Num  : in Tcp_Util.Port_Num;
+  procedure Accept_Cb (Unused_Local_Port_Num  : in Socket_Util.Port_Num;
                        Unused_Local_Dscr      : in Socket.Socket_Dscr;
-                       Unused_Remote_Host_Id  : in Tcp_Util.Host_Id;
-                       Unused_Remote_Port_Num : in Tcp_Util.Port_Num;
+                       Unused_Remote_Host_Id  : in Socket_Util.Host_Id;
+                       Unused_Remote_Port_Num : in Socket_Util.Port_Num;
                        New_Dscr               : in Socket.Socket_Dscr) is
   begin
     Tcp_Soc := New_Dscr;
@@ -246,19 +246,19 @@ package body Ios is
 
   -- Init the accepting of connections on port (name or num)
   procedure Init (Port : in As.U.Asu_Us) is
-    Remote_Port_Def : Tcp_Util.Remote_Port;
+    Remote_Port_Def : Socket_Util.Remote_Port;
 
-    use type Tcp_Util.Remote_Port_List;
+    use type Socket_Util.Remote_Port_List;
   begin
 
     Stdio := Port.Image = "-";
     if not Stdio then
       -- Parse port name or num
       Remote_Port_Def := Ip_Addr.Parse (Port.Image);
-      if Remote_Port_Def.Kind = Tcp_Util.Port_Name_Spec then
-        Port_Def := (Tcp_Util.Port_Name_Spec, Remote_Port_Def.Name);
+      if Remote_Port_Def.Kind = Socket_Util.Port_Name_Spec then
+        Port_Def := (Socket_Util.Port_Name_Spec, Remote_Port_Def.Name);
       else
-        Port_Def := (Tcp_Util.Port_Num_Spec, Remote_Port_Def.Num);
+        Port_Def := (Socket_Util.Port_Num_Spec, Remote_Port_Def.Num);
       end if;
     end if;
 

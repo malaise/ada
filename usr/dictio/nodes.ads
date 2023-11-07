@@ -1,11 +1,11 @@
-with Tcp_Util;
+with Socket_Util;
 with Status, Args;
 package Nodes is
 
   procedure Init_List;
 
   No_Prio : constant Args.Prio_Str := (others => '0');
-  procedure Set (Name : in Tcp_Util.Host_Name;
+  procedure Set (Name : in Socket_Util.Host_Name;
                  Stat : in Status.Status_List;
                  Sync : in Boolean;
                  Prio : in Args.Prio_Str);

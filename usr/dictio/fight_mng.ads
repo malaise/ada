@@ -1,4 +1,4 @@
-with Tcp_Util;
+with Socket_Util;
 with Args, Status, Nodes;
 package Fight_Mng is
 
@@ -10,7 +10,7 @@ package Fight_Mng is
 
   function In_Fight return Boolean;
 
-  procedure Event (From : in Tcp_Util.Host_Name;
+  procedure Event (From : in Socket_Util.Host_Name;
                    Stat : in Status.Status_List;
                    Sync : in Boolean;
                    Prio : in Args.Prio_Str;

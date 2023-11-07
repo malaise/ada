@@ -1,6 +1,6 @@
 with Ada.Calendar;
 with Aski, Trace.Loggers, Environ, Str_Util, Parser,
-     Event_Mng, Timers, Ip_Addr, Socket, Tcp_Util, Mutexes;
+     Event_Mng, Timers, Ip_Addr, Socket, Socket_Util, Tcp_Util, Mutexes;
 package body Http is
 
   -- The Mutex of exclusive execution
@@ -25,8 +25,8 @@ package body Http is
   Result : Result_Type;
 
   -- The request
-  Host : Tcp_Util.Remote_Host;
-  Port : Tcp_Util.Remote_Port;
+  Host : Socket_Util.Remote_Host;
+  Port : Socket_Util.Remote_Port;
   Request : As.U.Asu_Us;
 
   -- The socket
@@ -259,7 +259,7 @@ package body Http is
       Iter : Parser.Iterator;
       Addr : As.U.Asu_Us;
       Port_Start : Natural;
-      use type Tcp_Util.Remote_Host_List, Tcp_Util.Remote_Port_List;
+      use type Socket_Util.Remote_Host_List, Socket_Util.Remote_Port_List;
     begin
       -- Parse protocol: "http://<addr>"
       -- Where addr is <host>[:<port>]/<path>
@@ -287,13 +287,13 @@ package body Http is
         Port := Ip_Addr.Parse (Addr.Slice (Port_Start + 1, Addr.Length));
       end if;
       Iter.Del;
-      if Host.Kind = Tcp_Util.Host_Name_Spec then
+      if Host.Kind = Socket_Util.Host_Name_Spec then
         Addr := Host.Name;
       else
         Addr := As.U.Tus (Ip_Addr.Image (Host.Id));
       end if;
       Logger.Log_Debug ("Server address is " & Addr.Image);
-      if Port.Kind = Tcp_Util.Port_Name_Spec then
+      if Port.Kind = Socket_Util.Port_Name_Spec then
         Addr := Port.Name;
       else
         Addr := As.U.Tus (Ip_Addr.Image (Port.Num));

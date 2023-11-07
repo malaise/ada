@@ -1,5 +1,5 @@
 with Ada.Exceptions;
-with As.U, Socket, Event_Mng, Dynamic_List, Basic_Proc;
+with As.U, Socket, Event_Mng, Dynamic_List, Basic_Proc, Tcp_Util;
 with Debug;
 package body Connection is
 
@@ -8,9 +8,9 @@ package body Connection is
 
   Soc : Socket.Socket_Dscr;
   Fd  : Event_Mng.File_Desc;
-  Server_Host : Tcp_Util.Remote_Host;
-  Local_Port : Tcp_Util.Local_Port;
-  Remote_Port : Tcp_Util.Remote_Port;
+  Server_Host : Socket_Util.Remote_Host;
+  Local_Port : Socket_Util.Local_Port;
+  Remote_Port : Socket_Util.Remote_Port;
 
   type Message_Kind_List is (Init, Move, Error);
   type Error_List is (Busy, Color, Protocol);
@@ -90,8 +90,8 @@ package body Connection is
   end My_Send;
 
 
-  procedure Con_Call_Back (Unused_Remote_Host_Id  : in Tcp_Util.Host_Id;
-                           Unused_Remote_Port_Num : in Tcp_Util.Port_Num;
+  procedure Con_Call_Back (Unused_Remote_Host_Id  : in Socket_Util.Host_Id;
+                           Unused_Remote_Port_Num : in Socket_Util.Port_Num;
                            Unused_Connected       : in Boolean;
                            Dscr                   : in Socket.Socket_Dscr) is
   begin
@@ -122,10 +122,10 @@ package body Connection is
       raise;
   end Connect_Server;
 
-  procedure Acc_Call_Back (Local_Port_Num  : in Tcp_Util.Port_Num;
+  procedure Acc_Call_Back (Local_Port_Num  : in Socket_Util.Port_Num;
                            Unused_Local_Dscr      : in Socket.Socket_Dscr;
-                           Unused_Remote_Host_Id  : in Tcp_Util.Host_Id;
-                           Unused_Remote_Port_Num : in Tcp_Util.Port_Num;
+                           Unused_Remote_Host_Id  : in Socket_Util.Host_Id;
+                           Unused_Remote_Port_Num : in Socket_Util.Port_Num;
                            New_Dscr        : in Socket.Socket_Dscr) is
   begin
     if Debug.Get (Debug.Connection) then
@@ -139,7 +139,7 @@ package body Connection is
 
   procedure Accept_Client is
     Acc_Dscr : Socket.Socket_Dscr;
-    Port_Num : Tcp_Util.Port_Num;
+    Port_Num : Socket_Util.Port_Num;
   begin
     Close;
     Tcp_Util.Accept_From (Socket.Tcp_Header,
@@ -257,9 +257,9 @@ package body Connection is
   -- Initialise connection
   -- If server name is empty, we are server
   procedure Init (Server_Name : in String;
-                  Port : Tcp_Util.Remote_Port;
+                  Port : Socket_Util.Remote_Port;
                   Color : in Space.Color_List) is
-    use type Tcp_Util.Local_Port_List;
+    use type Socket_Util.Local_Port_List;
   begin
     -- Init parameters and socket
     Own_Color := Color;
@@ -269,10 +269,10 @@ package body Connection is
       Remote_Port := Port;
       Connect_Server;
     else
-      if Port.Kind = Tcp_Util.Port_Name_Spec then
-        Local_Port := (Tcp_Util.Port_Name_Spec, Port.Name);
+      if Port.Kind = Socket_Util.Port_Name_Spec then
+        Local_Port := (Socket_Util.Port_Name_Spec, Port.Name);
       else
-        Local_Port := (Tcp_Util.Port_Num_Spec, Port.Num);
+        Local_Port := (Socket_Util.Port_Num_Spec, Port.Num);
       end if;
       loop
         begin

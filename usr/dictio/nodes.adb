@@ -3,7 +3,7 @@ with Local_Host_Name, Dictio_Debug;
 package body Nodes is
 
   type Node_Rec is record
-    Name : Tcp_Util.Host_Name;
+    Name : Socket_Util.Host_Name;
     Stat : Status.Status_List;
     Sync : Boolean;
     Prio : Args.Prio_Str;
@@ -24,21 +24,21 @@ package body Nodes is
 
 
   procedure Init_List is
-    N : Tcp_Util.Host_Name;
+    N : Socket_Util.Host_Name;
   begin
     Node_List.Delete_List (Deallocate => True);
     N := As.U.Tus (Local_Host_Name.Get);
     Set (N, Status.Get, Status.Sync, Args.Get_Prio);
   end Init_List;
 
-  function Search_Name (Name : Tcp_Util.Host_Name) return Boolean is
+  function Search_Name (Name : Socket_Util.Host_Name) return Boolean is
     Rec : Node_Rec;
   begin
     Rec.Name := Name;
     return Search_Name (Node_List, Rec, From => Node_Mng.Absolute);
   end Search_Name;
 
-  procedure Set (Name : in Tcp_Util.Host_Name;
+  procedure Set (Name : in Socket_Util.Host_Name;
                  Stat : in Status.Status_List;
                  Sync : in Boolean;
                  Prio : in Args.Prio_Str) is
@@ -105,7 +105,7 @@ package body Nodes is
 
   function Check return Check_Result_List is
     Rec : Node_Rec;
-    Own_Name : Tcp_Util.Host_Name;
+    Own_Name : Socket_Util.Host_Name;
     Will_Be_Master : Boolean;
     Result : Check_Result_List;
     use type As.U.Asu_Us, Status.Status_List;

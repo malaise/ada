@@ -4,17 +4,17 @@
 -- Message is fixed (many spaces)
 with Ada.Exceptions;
 with Basic_Proc, Argument, Mixed_Str, Images,
-     Event_Mng, Ip_Addr, Socket, Tcp_Util, Trace.Loggers;
+     Event_Mng, Ip_Addr, Socket, Socket_Util, Tcp_Util, Trace.Loggers;
 procedure T_Tcp_Send is
   Arg_Error : exception;
 
   -- Socket
   Protocol : constant Socket.Protocol_List := Socket.Tcp_Header;
   Sock, Accept_Sock : Socket.Socket_Dscr;
-  Remote_Host : Tcp_Util.Remote_Host;
-  Remote_Port : Tcp_Util.Remote_Port;
-  Local_Port : Tcp_Util.Local_Port;
-  Port_Num : Tcp_Util.Port_Num;
+  Remote_Host : Socket_Util.Remote_Host;
+  Remote_Port : Socket_Util.Remote_Port;
+  Local_Port : Socket_Util.Local_Port;
+  Port_Num : Socket_Util.Port_Num;
 
   -- Options
   Next_Arg : Positive;
@@ -71,10 +71,10 @@ procedure T_Tcp_Send is
   end Read_Cb;
 
   -- Acception callback
-  procedure Accept_Cb (Unused_Local_Port_Num  : in Tcp_Util.Port_Num;
+  procedure Accept_Cb (Unused_Local_Port_Num  : in Socket_Util.Port_Num;
                        Unused_Local_Dscr      : in Socket.Socket_Dscr;
-                       Unused_Remote_Host_Id  : in Tcp_Util.Host_Id;
-                       Unused_Remote_Port_Num : in Tcp_Util.Port_Num;
+                       Unused_Remote_Host_Id  : in Socket_Util.Host_Id;
+                       Unused_Remote_Port_Num : in Socket_Util.Port_Num;
                        New_Dscr               : in Socket.Socket_Dscr) is
     use type Socket.Socket_Dscr;
     Tmp_Dscr : Socket.Socket_Dscr;
@@ -96,8 +96,8 @@ procedure T_Tcp_Send is
 
   -- Connection
   In_Overflow : Boolean := False;
-  procedure Connect_Cb (Unused_Remote_Host_Id  : in Tcp_Util.Host_Id;
-                        Unused_Remote_Port_Num : in Tcp_Util.Port_Num;
+  procedure Connect_Cb (Unused_Remote_Host_Id  : in Socket_Util.Host_Id;
+                        Unused_Remote_Port_Num : in Socket_Util.Port_Num;
                         Connected              : in Boolean;
                         Dscr                   : in Socket.Socket_Dscr) is
   begin

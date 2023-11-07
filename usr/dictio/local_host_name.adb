@@ -1,7 +1,7 @@
-with As.U, Tcp_Util;
+with As.U, Socket_Util;
 package body Local_Host_Name is
 
-  Lhn : Tcp_Util.Host_Name := As.U.Asu_Null;
+  Lhn : Socket_Util.Host_Name := As.U.Asu_Null;
 
   procedure Set (Name : in String) is
   begin

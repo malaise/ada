@@ -1,4 +1,4 @@
-with Tcp_Util;
+with Socket_Util;
 with Space;
 package Human is
 
@@ -16,7 +16,7 @@ package Human is
   procedure Play (Mode  : in Play_Mode;
                   Color : in Space.Color_List;
                   Name  : in String;
-                  Port  : in Tcp_Util.Remote_Port;
+                  Port  : in Socket_Util.Remote_Port;
                   Setup : in String;
                   Wait  : in Boolean);
   Load_Error : exception;

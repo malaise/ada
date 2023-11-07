@@ -3,7 +3,7 @@
 with Ada.Exceptions, Ada.Calendar;
 with Argument, Basic_Proc, Images, Normal,
      Upper_Str, Text_Line, Sys_Calls,
-     Socket, Event_Mng, Ip_Addr, Tcp_Util, Timers, Hexa_Utils;
+     Socket, Event_Mng, Ip_Addr, Socket_Util, Tcp_Util, Timers, Hexa_Utils;
 
 procedure Tcp_Spy is
 
@@ -13,8 +13,8 @@ procedure Tcp_Spy is
   Arg_Error : exception;
 
   -- Parsed Port
-  Port : Tcp_Util.Local_Port;
-  Port_Num : Tcp_Util.Port_Num;
+  Port : Socket_Util.Local_Port;
+  Port_Num : Socket_Util.Port_Num;
 
   -- Kind of dump
   type Dump_Kind_List is (Header, Short, Full, Binary);
@@ -118,7 +118,7 @@ procedure Tcp_Spy is
     end loop;
   end Dump_Data;
 
-  function Host_Image (Host_Id : Tcp_Util.Host_Id) return String is
+  function Host_Image (Host_Id : Socket_Util.Host_Id) return String is
   begin
     if Put_Host_Name then
       begin
@@ -132,10 +132,10 @@ procedure Tcp_Spy is
   end Host_Image;
 
   -- Acception, reception, and disconnection callbacks
-  procedure Acception_Cb (Unused_Local_Port_Num  : in Tcp_Util.Port_Num;
+  procedure Acception_Cb (Unused_Local_Port_Num  : in Socket_Util.Port_Num;
                           Unused_Local_Dscr      : in Socket.Socket_Dscr;
-                          Remote_Host_Id         : in Tcp_Util.Host_Id;
-                          Remote_Port_Num        : in Tcp_Util.Port_Num;
+                          Remote_Host_Id         : in Socket_Util.Host_Id;
+                          Remote_Port_Num        : in Socket_Util.Port_Num;
                           New_Dscr               : in Socket.Socket_Dscr);
   package Data_Reception is new Tcp_Util.Reception (Data_Type);
   function Reception_Cb (Unused_Dscr : Socket.Socket_Dscr;
@@ -144,10 +144,10 @@ procedure Tcp_Spy is
   procedure Disconnection_Cb (Of_Dscr : in Socket.Socket_Dscr);
 
   -- Callback on acception
-  procedure Acception_Cb (Unused_Local_Port_Num : in Tcp_Util.Port_Num;
+  procedure Acception_Cb (Unused_Local_Port_Num : in Socket_Util.Port_Num;
                           Unused_Local_Dscr     : in Socket.Socket_Dscr;
-                          Remote_Host_Id        : in Tcp_Util.Host_Id;
-                          Remote_Port_Num       : in Tcp_Util.Port_Num;
+                          Remote_Host_Id        : in Socket_Util.Host_Id;
+                          Remote_Port_Num       : in Socket_Util.Port_Num;
                           New_Dscr              : in Socket.Socket_Dscr) is
   begin
     -- Allow only one connection at a time

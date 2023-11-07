@@ -336,8 +336,9 @@ package body Autobus is
       begin
         -- Connection was requested with host and port Ids
         Tcp_Util.Abort_Connect (
-           Host => (Kind => Tcp_Util.Host_Id_Spec, Id => Partner_Acc.Host),
-           Port => (Kind => Tcp_Util.Port_Num_Spec, Num => Partner_Acc.Port));
+           Host => (Kind => Socket_Util.Host_Id_Spec, Id => Partner_Acc.Host),
+           Port => (Kind => Socket_Util.Port_Num_Spec,
+                    Num => Partner_Acc.Port));
       exception
         when Tcp_Util.No_Such =>
           Log_Error ("Remove_Current_Partner", "no such",
@@ -517,14 +518,14 @@ package body Autobus is
     -- Check validity of received address
     Addr := As.U.Tus (Msg(3 .. Length));
     declare
-      Rem_Host : Tcp_Util.Remote_Host;
-      Rem_Port : Tcp_Util.Remote_Port;
-      use type Tcp_Util.Remote_Host_List, Tcp_Util.Remote_Port_List;
+      Rem_Host : Socket_Util.Remote_Host;
+      Rem_Port : Socket_Util.Remote_Port;
+      use type Socket_Util.Remote_Host_List, Socket_Util.Remote_Port_List;
     begin
       Ip_Addr.Parse (Addr.Image, Rem_Host, Rem_Port);
       -- Must be Ids
-      if Rem_Host.Kind /= Tcp_Util.Host_Id_Spec
-      or else Rem_Port.Kind /= Tcp_Util.Port_Num_Spec then
+      if Rem_Host.Kind /= Socket_Util.Host_Id_Spec
+      or else Rem_Port.Kind /= Socket_Util.Port_Num_Spec then
         raise Ip_Addr.Parse_Error;
       end if;
       -- Ok, store it
@@ -578,8 +579,8 @@ package body Autobus is
 
   -- Pending connection Cb
   function Tcp_Send is new Tcp_Util.Send (Tcp_Message_Str);
-  procedure Tcp_Connection_Cb (Remote_Host_Id  : in Tcp_Util.Host_Id;
-                               Remote_Port_Num : in Tcp_Util.Port_Num;
+  procedure Tcp_Connection_Cb (Remote_Host_Id  : in Socket_Util.Host_Id;
+                               Remote_Port_Num : in Socket_Util.Port_Num;
                                Connected       : in Boolean;
                                Dscr            : in Socket.Socket_Dscr) is
     Partner : Partner_Rec;
@@ -661,10 +662,10 @@ package body Autobus is
   end Tcp_Connection_Cb;
 
   -- Accept connection Cb
-  procedure Tcp_Accept_Cb (Unused_Port_Num : in Tcp_Util.Port_Num;
+  procedure Tcp_Accept_Cb (Unused_Port_Num : in Socket_Util.Port_Num;
                            Local_Dscr      : in Socket.Socket_Dscr;
-                           Remote_Host_Id  : in Tcp_Util.Host_Id;
-                           Remote_Port_Num : in Tcp_Util.Port_Num;
+                           Remote_Host_Id  : in Socket_Util.Host_Id;
+                           Remote_Port_Num : in Socket_Util.Port_Num;
                            New_Dscr        : in Socket.Socket_Dscr) is
     Bus : Bus_Rec;
     Partner : Partner_Rec;
@@ -718,15 +719,15 @@ package body Autobus is
   function Ipm_Reception_Cb (Dscr    : Socket.Socket_Dscr;
                              Message : Message_Str;
                              Length  : Natural) return Boolean is
-    Rem_Host : Tcp_Util.Remote_Host;
-    Rem_Port : Tcp_Util.Remote_Port;
+    Rem_Host : Socket_Util.Remote_Host;
+    Rem_Port : Socket_Util.Remote_Port;
     Partner_Found : Boolean;
     Partner_Ipaddr : As.U.Asu_Us;
     Partner_Acc : Partner_Access;
     Unused_Connected : Boolean;
     -- Partner is filled progressively (excep its Sock and Timer)
     Partner : Partner_Rec;
-    use type Tcp_Util.Remote_Host_List, Tcp_Util.Remote_Port_List;
+    use type Socket_Util.Remote_Host_List, Socket_Util.Remote_Port_List;
     use type Socket.Host_Id, Socket.Port_Num;
   begin
     -- Find bus by admin socket
@@ -800,8 +801,8 @@ package body Autobus is
     begin
       -- Check address IP part
       Ip_Addr.Parse (Address, Rem_Host, Rem_Port);
-      if Rem_Host.Kind = Tcp_Util.Host_Name_Spec
-      or else Rem_Port.Kind = Tcp_Util.Port_Name_Spec then
+      if Rem_Host.Kind = Socket_Util.Host_Name_Spec
+      or else Rem_Port.Kind = Socket_Util.Port_Name_Spec then
         -- Not an IP address or not a port num
         -- Consider this as an error because the frame started all right
         Log_Error ("Ipm_Reception_Cb", "invalid IPM address", Address);
@@ -946,8 +947,8 @@ package body Autobus is
 
     -- Create socket, parse and check address, configure socket
     declare
-      Rem_Host : Tcp_Util.Remote_Host;
-      Rem_Port : Tcp_Util.Remote_Port;
+      Rem_Host : Socket_Util.Remote_Host;
+      Rem_Port : Socket_Util.Remote_Port;
       use type Socket.Host_Id;
     begin
       -- Name is "<ip_address>:<port_num>"
@@ -1025,7 +1026,7 @@ package body Autobus is
     else
       -- Create the TCP accepting socket, set accep callback
       Tcp_Util.Accept_From (Socket.Tcp_Header,
-                            (Kind => Tcp_Util.Port_Dynamic_Spec),
+                            (Kind => Socket_Util.Port_Dynamic_Spec),
                             Tcp_Accept_Cb'Access,
                             Rbus.Acc, Port_Num,
                             Rbus.Host_If);
@@ -1284,8 +1285,8 @@ package body Autobus is
   procedure Send_To (Bus : in out Bus_Type;
                      Host_Port_Mode : in String;
                      Message : in String) is
-    Host : Tcp_Util.Remote_Host;
-    Port : Tcp_Util.Remote_Port;
+    Host : Socket_Util.Remote_Host;
+    Port : Socket_Util.Remote_Port;
     Host_Id : Socket.Host_Id;
     Port_Num : Socket.Port_Num;
     Mode : Mode_List;

@@ -2,7 +2,8 @@
 -- Role (client or server) port and server host are set by arguments
 -- Message is fixed ("Ah que coucou!")
 with Ada.Exceptions;
-with Basic_Proc, As.U, Argument, Lower_Str, Event_Mng, Socket, Tcp_Util;
+with Basic_Proc, As.U, Argument, Lower_Str, Event_Mng, Socket, Socket_Util,
+     Tcp_Util;
 procedure T_Tcp_Util is
   Arg_Error : exception;
 
@@ -12,8 +13,8 @@ procedure T_Tcp_Util is
   Server_Name : As.U.Asu_Us;
   Server_Port_Name : As.U.Asu_Us;
   Server_Port_Num : Socket.Port_Num;
-  Local_Port : Tcp_Util.Local_Port;
-  Remote_Port : Tcp_Util.Remote_Port;
+  Local_Port : Socket_Util.Local_Port;
+  Remote_Port : Socket_Util.Remote_Port;
 
   Give_Up : Boolean;
   In_Ovf : Boolean := False;
@@ -124,8 +125,8 @@ procedure T_Tcp_Util is
     In_Ovf := False;
   end End_Ovf_Cb;
 
-  procedure Connect_Cb (Unused_Remote_Host_Id  : in Tcp_Util.Host_Id;
-                        Unused_Remote_Port_Num : in Tcp_Util.Port_Num;
+  procedure Connect_Cb (Unused_Remote_Host_Id  : in Socket_Util.Host_Id;
+                        Unused_Remote_Port_Num : in Socket_Util.Port_Num;
                         Connected              : in Boolean;
                         Dscr                   : in Socket.Socket_Dscr) is
     Dummy : Boolean;
@@ -153,7 +154,7 @@ procedure T_Tcp_Util is
   end Connect_Cb;
 
   procedure Connect is
-    Host : Tcp_Util.Remote_Host(Tcp_Util.Host_Name_Spec);
+    Host : Socket_Util.Remote_Host(Socket_Util.Host_Name_Spec);
     Dummy_Res : Boolean;
   begin
     Host.Name := Server_Name;
@@ -164,10 +165,10 @@ procedure T_Tcp_Util is
 
   end Connect;
 
-  procedure Accept_Cb (Unused_Local_Port_Num  : in Tcp_Util.Port_Num;
+  procedure Accept_Cb (Unused_Local_Port_Num  : in Socket_Util.Port_Num;
                        Unused_Local_Dscr      : in Socket.Socket_Dscr;
-                       Unused_Remote_Host_Id  : in Tcp_Util.Host_Id;
-                       Unused_Remote_Port_Num : in Tcp_Util.Port_Num;
+                       Unused_Remote_Host_Id  : in Socket_Util.Host_Id;
+                       Unused_Remote_Port_Num : in Socket_Util.Port_Num;
                        New_Dscr               : in Socket.Socket_Dscr) is
     use type Socket.Socket_Dscr;
     Tmp_Dscr : Socket.Socket_Dscr;
@@ -324,11 +325,15 @@ begin
 
   -- Set ports
   if not Server_Port_Name.Is_Null then
-    Local_Port := (Kind => Tcp_Util.Port_Name_Spec, Name => Server_Port_Name);
-    Remote_Port := (Kind => Tcp_Util.Port_Name_Spec, Name => Local_Port.Name);
+    Local_Port := (Kind => Socket_Util.Port_Name_Spec,
+                   Name => Server_Port_Name);
+    Remote_Port := (Kind => Socket_Util.Port_Name_Spec,
+                    Name => Local_Port.Name);
   else
-    Local_Port := (Kind => Tcp_Util.Port_Num_Spec, Num => Server_Port_Num);
-    Remote_Port := (Kind => Tcp_Util.Port_Num_Spec, Num => Server_Port_Num);
+    Local_Port := (Kind => Socket_Util.Port_Num_Spec,
+                   Num => Server_Port_Num);
+    Remote_Port := (Kind => Socket_Util.Port_Num_Spec,
+                    Num => Server_Port_Num);
   end if;
 
   -- Init

@@ -1,5 +1,5 @@
 with Ada.Calendar;
-with As.U, Socket, Tcp_Util, Event_Mng, Environ;
+with As.U, Socket, Socket_Util, Tcp_Util, Event_Mng, Environ;
 with Args, Parse, Notify, Client_Fd, Client_Com, Dictio_Debug, Intra_Dictio,
      Versions, Status, Alias;
 package body Client_Mng is
@@ -13,7 +13,7 @@ package body Client_Mng is
   Dictio_Status : Status.Stable_Status_List := Status.Dead;
   procedure Send_Status (Dscr : in Socket.Socket_Dscr);
 
-  Accept_Port : Tcp_Util.Port_Num;
+  Accept_Port : Socket_Util.Port_Num;
 
   -- Send notification
   procedure Send_Notify (Item : Data_Base.Item_Rec)  is
@@ -104,12 +104,12 @@ package body Client_Mng is
     return False;
   end Read_Cb;
 
-  procedure Accept_Cb (Local_Port_Num         : in Tcp_Util.Port_Num;
+  procedure Accept_Cb (Local_Port_Num         : in Socket_Util.Port_Num;
                        Unused_Local_Dscr      : in Socket.Socket_Dscr;
-                       Unused_Remote_Host_Id  : in Tcp_Util.Host_Id;
-                       Unused_Remote_Port_Num : in Tcp_Util.Port_Num;
+                       Unused_Remote_Host_Id  : in Socket_Util.Host_Id;
+                       Unused_Remote_Port_Num : in Socket_Util.Port_Num;
                        New_Dscr               : in Socket.Socket_Dscr) is
-    use type Tcp_Util.Port_Num;
+    use type Socket_Util.Port_Num;
   begin
     if Local_Port_Num /= Accept_Port then
       Dictio_Debug.Put_Error (Dictio_Debug.Client, "Unexpected accept");
@@ -171,7 +171,7 @@ package body Client_Mng is
 
 
   procedure Start is
-    Port : Tcp_Util.Local_Port;
+    Port : Socket_Util.Local_Port;
     Port_Name : constant String := Args.Get_Client_Port;
     Dscr : Socket.Socket_Dscr;
     Dscr_Afux : Socket.Socket_Dscr;

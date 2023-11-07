@@ -103,7 +103,7 @@ package body Sync_Mng is
                                        & Delay_Per_Kb'Img & " ms");
   end Init;
 
-  package Sync_Dyn_List_Mng is new Dynamic_List (Tcp_Util.Host_Name);
+  package Sync_Dyn_List_Mng is new Dynamic_List (Socket_Util.Host_Name);
   package Sync_List_Mng renames Sync_Dyn_List_Mng.Dyn_List;
   Sync_List : Sync_List_Mng.List_Type;
   function Sync_Search is new Sync_List_Mng.Search (As.U."=");
@@ -112,7 +112,7 @@ package body Sync_Mng is
   function Timer_Sen_Cb (Unused_Id : Timers.Timer_Id;
                          Unused_Data : Timers.Timer_Data) return Boolean;
 
-  procedure Send (To : Tcp_Util.Host_Name) is
+  procedure Send (To : Socket_Util.Host_Name) is
   begin
     if Sending_Status = Send then
       -- Reject new dest if already syncing

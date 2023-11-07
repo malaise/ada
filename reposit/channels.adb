@@ -1,16 +1,16 @@
 with System, Ada.Calendar;
-with As.U, Environ, Socket, Tcp_Util, Dynamic_List, Event_Mng, Assertion;
-pragma Elaborate_All (Tcp_Util);
+with As.U, Environ, Socket, Socket_Util, Tcp_Util, Dynamic_List, Event_Mng,
+     Assertion;
 package body Channels is
 
   Byte_Size : constant := System.Storage_Unit;
 
-  package Host_Dyn_List_Mng is new Dynamic_List (Tcp_Util.Remote_Host);
+  package Host_Dyn_List_Mng is new Dynamic_List (Socket_Util.Remote_Host);
   package Host_List_Mng renames Host_Dyn_List_Mng.Dyn_List;
 
   -- Destination
   type Dest_Rec is record
-    Host_Name : Tcp_Util.Remote_Host (Tcp_Util.Host_Name_Spec);
+    Host_Name : Socket_Util.Remote_Host (Socket_Util.Host_Name_Spec);
     Host_Id : Socket.Host_Id;
     Dscr : Socket.Socket_Dscr := Socket.No_Socket;
     Fd : Event_Mng.File_Desc;
@@ -40,7 +40,7 @@ package body Channels is
   function Dscr_Search is new Dest_List_Mng.Search (Dscr_Match);
 
   function Host_Name_Match (D1, D2 : Dest_Rec) return Boolean is
-    use type Tcp_Util.Remote_Host;
+    use type Socket_Util.Remote_Host;
   begin
     return D1.Host_Name = D2.Host_Name;
   end Host_Name_Match;
@@ -75,10 +75,10 @@ package body Channels is
   -- The channel
   type Channel_Rec is record
     Init : Boolean := False;
-    Name : Tcp_Util.Host_Name;
+    Name : Socket_Util.Host_Name;
     Period : Ada.Calendar.Day_Duration;
     Timeout : Ada.Calendar.Day_Duration;
-    Accept_Num : Tcp_Util.Port_Num := 0;
+    Accept_Num : Socket_Util.Port_Num := 0;
     Dests : Dest_List_Mng.List_Type;
     Sends : Send_List_Mng.List_Type;
     Replies : Reply_List_Mng.List_Type;
@@ -129,7 +129,7 @@ package body Channels is
 
     -- May raise End_Error
     End_Error : exception;
-    function Next_Host return Tcp_Util.Remote_Host;
+    function Next_Host return Socket_Util.Remote_Host;
 
   end File;
   package body File is separate;
@@ -194,8 +194,8 @@ package body Channels is
 
     -- Connection callback (used in read callback on destination
     --  disconnection
-    procedure Connect_Cb (Remote_Host_Id         : in Tcp_Util.Host_Id;
-                          Unused_Remote_Port_Num : in Tcp_Util.Port_Num;
+    procedure Connect_Cb (Remote_Host_Id         : in Socket_Util.Host_Id;
+                          Unused_Remote_Port_Num : in Socket_Util.Port_Num;
                           Unused_Connected       : in Boolean;
                           Dscr                   : in Socket.Socket_Dscr);
 
@@ -242,7 +242,7 @@ package body Channels is
           else
             declare
               Dummy_Res : Boolean;
-              Port : Tcp_Util.Remote_Port (Tcp_Util.Port_Name_Spec);
+              Port : Socket_Util.Remote_Port (Socket_Util.Port_Name_Spec);
             begin
               -- Update record
               D_Rec.Dscr := Socket.No_Socket;
@@ -286,10 +286,10 @@ package body Channels is
                           Unused_Read : in Boolean)
                      return Boolean is (Read_Cb (True, Fd));
 
-    procedure Accept_Cb (Unused_Local_Port_Num  : in Tcp_Util.Port_Num;
+    procedure Accept_Cb (Unused_Local_Port_Num  : in Socket_Util.Port_Num;
                          Unused_Local_Dscr      : in Socket.Socket_Dscr;
-                         Unused_Remote_Host_Id  : in Tcp_Util.Host_Id;
-                         Unused_Remote_Port_Num : in Tcp_Util.Port_Num;
+                         Unused_Remote_Host_Id  : in Socket_Util.Host_Id;
+                         Unused_Remote_Port_Num : in Socket_Util.Port_Num;
                          New_Dscr        : in Socket.Socket_Dscr) is
       use type Socket.Port_Num;
     begin
@@ -319,7 +319,7 @@ package body Channels is
     -- Subscription
     -- Allow connections to local channel
     procedure Subscribe is
-      Port : Tcp_Util.Local_Port (Tcp_Util.Port_Name_Spec);
+      Port : Socket_Util.Local_Port (Socket_Util.Port_Name_Spec);
       Accept_Dscr : Socket.Socket_Dscr;
       use type Socket.Port_Num;
     begin
@@ -378,8 +378,8 @@ package body Channels is
                           Unused_Read : in Boolean)
                      return Boolean is (Read_Cb (False, Fd));
 
-    procedure Connect_Cb (Remote_Host_Id         : in Tcp_Util.Host_Id;
-                          Unused_Remote_Port_Num : in Tcp_Util.Port_Num;
+    procedure Connect_Cb (Remote_Host_Id         : in Socket_Util.Host_Id;
+                          Unused_Remote_Port_Num : in Socket_Util.Port_Num;
                           Unused_Connected       : in Boolean;
                           Dscr                   : in Socket.Socket_Dscr) is
       Dest : Dest_Rec;
@@ -409,17 +409,18 @@ package body Channels is
 
 
     procedure Build_Host_Port (Host_Name : in String;
-                               Host : out Tcp_Util.Remote_Host;
-                               Port : out Tcp_Util.Remote_Port) is
+                               Host : out Socket_Util.Remote_Host;
+                               Port : out Socket_Util.Remote_Port) is
     begin
       -- Build host and port records
-      Host := (Kind => Tcp_Util.Host_Name_Spec, Name => As.U.Tus (Host_Name));
-      Port := (Kind => Tcp_Util.Port_Name_Spec, Name => Channel_Dscr.Name);
+      Host := (Kind => Socket_Util.Host_Name_Spec,
+               Name => As.U.Tus (Host_Name));
+      Port := (Kind => Socket_Util.Port_Name_Spec, Name => Channel_Dscr.Name);
     end Build_Host_Port;
 
     -- Add destinations from file
     procedure Add_Destinations (File_Name : in String) is
-      Host : Tcp_Util.Remote_Host;
+      Host : Socket_Util.Remote_Host;
       List : Host_List_Mng.List_Type;
     begin
       -- Store hosts (fully parse file)
@@ -471,8 +472,8 @@ package body Channels is
     -- Add a new recipient
     procedure Add_Destination (Host_Name : in String) is
       Dest : Dest_Rec;
-      Host : Tcp_Util.Remote_Host;
-      Port : Tcp_Util.Remote_Port;
+      Host : Socket_Util.Remote_Host;
+      Port : Socket_Util.Remote_Port;
     begin
       Init;
       -- Build host and port records
@@ -525,8 +526,8 @@ package body Channels is
     -- Close current connection in Dest list (may be pending)
     procedure Close_Current_Connection is
       Dest : Dest_Rec;
-      Host : Tcp_Util.Remote_Host;
-      Port : Tcp_Util.Remote_Port;
+      Host : Socket_Util.Remote_Host;
+      Port : Socket_Util.Remote_Port;
       use type Socket.Socket_Dscr;
     begin
       Channel_Dscr.Dests.Read (Dest, Dest_List_Mng.Current);
@@ -546,8 +547,8 @@ package body Channels is
     -- Delete a recipient
     procedure Del_Destination (Host_Name : in String) is
       Dest : Dest_Rec;
-      Host : Tcp_Util.Remote_Host;
-      Port : Tcp_Util.Remote_Port;
+      Host : Socket_Util.Remote_Host;
+      Port : Socket_Util.Remote_Port;
     begin
       Init;
       -- Build host and port records
@@ -797,8 +798,8 @@ package body Channels is
       Active : Boolean := False;
       Subscribed : Boolean := False;
       Joined : Boolean := False;
-      Bus_Name : Tcp_Util.Port_Name;
-      Dest_Name : Tcp_Util.Host_Name;
+      Bus_Name : Socket_Util.Port_Name;
+      Dest_Name : Socket_Util.Host_Name;
       Send_Dscr : Socket.Socket_Dscr;
       Rece_Dscr : Socket.Socket_Dscr;
       Bus_Id : Socket.Host_Id;

@@ -1,4 +1,4 @@
-with Basic_Proc, Socket, Tcp_Util, Ip_Addr, Hashed_List.Unique;
+with Basic_Proc, Socket, Socket_Util, Tcp_Util, Ip_Addr, Hashed_List.Unique;
 with Debug, Partner;
 package body Clients is
 
@@ -39,10 +39,10 @@ package body Clients is
                            Local : in Boolean);
 
   -- Accept callback: Canncel accept, set connected and set reception callbacks
-  procedure Accept_Cb (Local_Port_Num    : in Tcp_Util.Port_Num;
+  procedure Accept_Cb (Local_Port_Num    : in Socket_Util.Port_Num;
                        Unused_Local_Dscr : in Socket.Socket_Dscr;
-                       Remote_Host_Id    : in Tcp_Util.Host_Id;
-                       Remote_Port_Num   : in Tcp_Util.Port_Num;
+                       Remote_Host_Id    : in Socket_Util.Host_Id;
+                       Remote_Port_Num   : in Socket_Util.Port_Num;
                        New_Dscr          : in Socket.Socket_Dscr) is
     Msg : Partner.Message;
     Client : Client_Rec;
@@ -84,13 +84,13 @@ package body Clients is
   -- Invalid_Port : exception;
   procedure Accept_Client (Port : in String) is
     Dscr : Socket.Socket_Dscr;
-    Port_Num : Tcp_Util.Port_Num;
-    Loc_Port : Tcp_Util.Local_Port;
-    use type Tcp_Util.Local_Port_List;
+    Port_Num : Socket_Util.Port_Num;
+    Loc_Port : Socket_Util.Local_Port;
+    use type Socket_Util.Local_Port_List;
   begin
     -- Get port num
     Loc_Port := Ip_Addr.Parse (Port);
-    if Loc_Port.Kind = Tcp_Util.Port_Name_Spec then
+    if Loc_Port.Kind = Socket_Util.Port_Name_Spec then
       begin
         Port_Num := Socket.Port_Num_Of (Loc_Port.Name.Image, Socket.Tcp);
       exception
@@ -126,11 +126,11 @@ package body Clients is
   -- Invalid_Target : exception;
   Target_Id : Socket.Host_Id := Socket.Local_Host_Id;
   procedure Set_Target (Target : in String) is
-    Host_Rec : Tcp_Util.Remote_Host;
-    use type Tcp_Util.Remote_Host_List;
+    Host_Rec : Socket_Util.Remote_Host;
+    use type Socket_Util.Remote_Host_List;
   begin
     Host_Rec := Ip_Addr.Parse (Target);
-    if Host_Rec.Kind = Tcp_Util.Host_Name_Spec then
+    if Host_Rec.Kind = Socket_Util.Host_Name_Spec then
       begin
         Target_Id := Socket.Host_Id_Of (Host_Rec.Name.Image);
       exception
@@ -153,8 +153,8 @@ package body Clients is
   -- Else send a Disconnect to partner
   -- May raise Invalid_Target if Target is not set
   procedure Connect_Client (Port : in Common.Port_Num) is
-    Target_Host : Tcp_Util.Remote_Host (Tcp_Util.Host_Id_Spec);
-    Target_Port : Tcp_Util.Remote_Port (Tcp_Util.Port_Num_Spec);
+    Target_Host : Socket_Util.Remote_Host (Socket_Util.Host_Id_Spec);
+    Target_Port : Socket_Util.Remote_Port (Socket_Util.Port_Num_Spec);
     Client : Client_Rec;
     Msg : Partner.Message;
   begin
@@ -191,7 +191,7 @@ package body Clients is
   -- Disconnect from a client
   -- If local then start accepting again
   procedure Close_Accept (Port : in Common.Port_Num; Local : in Boolean) is
-    Loc_Port : Tcp_Util.Local_Port (Tcp_Util.Port_Num_Spec);
+    Loc_Port : Socket_Util.Local_Port (Socket_Util.Port_Num_Spec);
   begin
     -- See if this Port is accepted/connected
     if not Connecteds(Local, Port).Is_Open then

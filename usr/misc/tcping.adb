@@ -3,8 +3,7 @@
 with Ada.Calendar, Ada.Exceptions;
 
 with As.U, Argument, Basic_Proc, Ip_Addr,
-     Normal, My_Math, Timers, Socket, Tcp_Util, Event_Mng;
-
+     Normal, My_Math, Timers, Socket, Socket_Util, Tcp_Util, Event_Mng;
 procedure Tcping is
 
   -- Usage and error message, put on stderr
@@ -52,8 +51,8 @@ procedure Tcping is
 
   -- Argument parsed
   Txt : As.U.Asu_Us;
-  Host : Tcp_Util.Remote_Host;
-  Port : Tcp_Util.Remote_Port;
+  Host : Socket_Util.Remote_Host;
+  Port : Socket_Util.Remote_Port;
 
   Timeout     : Timers.Period_Range := 1.0;
   Delta_Tries : Timers.Period_Range := 0.0;
@@ -117,8 +116,8 @@ procedure Tcping is
                     Cancel_Cb'Unrestricted_Access);
   end Cancel;
 
-  procedure Connect_Cb (Remote_Host_Id  : in Tcp_Util.Host_Id;
-                        Remote_Port_Num : in Tcp_Util.Port_Num;
+  procedure Connect_Cb (Remote_Host_Id  : in Socket_Util.Host_Id;
+                        Remote_Port_Num : in Socket_Util.Port_Num;
                         Connected       : in Boolean;
                         Dscr            : in Socket.Socket_Dscr) is
     Loc_Dscr : Socket.Socket_Dscr := Dscr;

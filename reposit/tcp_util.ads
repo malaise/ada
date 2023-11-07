@@ -1,7 +1,7 @@
 -- Automatically connect, re-connect, accept, handle sending overflow and
 --  receive data on a TCP socket
 -- Also send and receive on a UDP/IPM socket
-with As.U, Socket;
+with Socket, Socket_Util;
 package Tcp_Util is
 
   -- GENERAL CONVENTIONS --
@@ -29,58 +29,6 @@ package Tcp_Util is
   -- Natural duration for sending
   subtype Natural_Duration is Duration range 0.0 .. Duration'Last;
 
-  -- PORT DEFINITION --
-  ---------------------
-  -- Kinds of port definition
-  type Local_Port_List is (Port_Name_Spec, Port_Num_Spec, Port_Dynamic_Spec);
-  -- No dynamic remote port
-  subtype Remote_Port_List is Local_Port_List
-                     range Port_Name_Spec .. Port_Num_Spec;
-
-  -- Port name and num
-  subtype Port_Name is As.U.Asu_Us;
-  subtype Port_Num is Socket.Port_Num;
-
-  -- Specification of a local port (name or num or dynamic) to bind to
-  type Local_Port (Kind : Local_Port_List := Port_Name_Spec) is record
-    case Kind is
-      when Port_Name_Spec =>
-        Name : Port_Name := As.U.Asu_Null;
-      when Port_Num_Spec =>
-        Num : Port_Num := 0;
-      when Port_Dynamic_Spec =>
-        null;
-    end case;
-  end record;
-
-  -- Specification of a remote port (name or num) to connect or send to
-  type Remote_Port (Kind : Remote_Port_List := Port_Name_Spec) is record
-    case Kind is
-      when Port_Name_Spec =>
-        Name : Port_Name := As.U.Asu_Null;
-      when Port_Num_Spec =>
-        Num : Port_Num := 0;
-    end case;
-  end record;
-
-  -- HOST DEFINITION --
-  ---------------------
-  -- Kinds of host definition
-  type Remote_Host_List is (Host_Name_Spec, Host_Id_Spec);
-  -- Host name and id
-  subtype Host_Name is As.U.Asu_Us;
-  subtype Host_Id is Socket.Host_Id;
-
-  -- Specification of a remote host to connect or send to
-  type Remote_Host (Kind : Remote_Host_List := Host_Name_Spec) is record
-    case Kind is
-      when Host_Name_Spec =>
-        Name : Host_Name := As.U.Asu_Null;
-      when Host_Id_Spec =>
-        Id : Host_Id := Socket.Any_Host;
-    end case;
-  end record;
-
   -- CONNECTION PROCEDURES --
   ---------------------------
   -- Connection / Disconnection callback
@@ -91,8 +39,8 @@ package Tcp_Util is
   --  then Dscr is Socket.No_Socket, Remote_Host_Id and Remote_Port_Num
   --  are set.
   type Connection_Callback_Access is
-    access procedure (Remote_Host_Id  : in Host_Id;
-                      Remote_Port_Num : in Port_Num;
+    access procedure (Remote_Host_Id  : in Socket_Util.Host_Id;
+                      Remote_Port_Num : in Socket_Util.Port_Num;
                       Connected       : in Boolean;
                       Dscr            : in Socket.Socket_Dscr);
 
@@ -105,8 +53,8 @@ package Tcp_Util is
   --  (and the connection callback has already been called).
   -- May raise Name_Error if Host.Name or Port.Name is unknown
   function Connect_To (Protocol      : in Tcp_Protocol_List;
-                       Host          : in Remote_Host;
-                       Port          : in Remote_Port;
+                       Host          : in Socket_Util.Remote_Host;
+                       Port          : in Socket_Util.Remote_Port;
                        Connection_Cb : in Connection_Callback_Access;
                        Delta_Retry   : in Positive_Duration := 1.0;
                        Nb_Tries      : in Natural := 1;
@@ -115,8 +63,8 @@ package Tcp_Util is
 
   -- Abort a pending connection attempt
   -- May raise No_Such
-  procedure Abort_Connect (Host : in Remote_Host;
-                           Port : in Remote_Port);
+  procedure Abort_Connect (Host : in Socket_Util.Remote_Host;
+                           Port : in Socket_Util.Remote_Port);
 
   -- Synchronously connect to a remote Host/Port
   -- The Ttl is used (if supported by the TCP stack) to establish the
@@ -126,8 +74,8 @@ package Tcp_Util is
   --  Socket.No_Socket
   -- May raise Name_Error if Host.Name or Port.Name is unknown
   function Connect_To (Protocol      : in Tcp_Protocol_List;
-                       Host          : in Remote_Host;
-                       Port          : in Remote_Port;
+                       Host          : in Socket_Util.Remote_Host;
+                       Port          : in Socket_Util.Remote_Port;
                        Timeout       : in Natural_Duration := 1.0;
                        Ttl           : in Socket.Ttl_Range := Default_Ttl)
            return Socket.Socket_Dscr;
@@ -139,10 +87,10 @@ package Tcp_Util is
   -- New_Dscr is the one of the new socket, in mode Blocking_Send,
   -- Remote_Host_Id and Remote_Port_Num are set.
   type Acception_Callback_Access is
-    access procedure (Local_Port_Num  : in Port_Num;
+    access procedure (Local_Port_Num  : in Socket_Util.Port_Num;
                       Local_Dscr      : in Socket.Socket_Dscr;
-                      Remote_Host_Id  : in Host_Id;
-                      Remote_Port_Num : in Port_Num;
+                      Remote_Host_Id  : in Socket_Util.Host_Id;
+                      Remote_Port_Num : in Socket_Util.Port_Num;
                       New_Dscr        : in Socket.Socket_Dscr);
 
   -- Accept connections to a local port, possibly on a specific interface
@@ -151,17 +99,18 @@ package Tcp_Util is
   -- Link_If can be set in order to accept on a specific network interface
   -- May raise Name_Error if Port.Name is unknown
   procedure Accept_From (Protocol     : in Tcp_Protocol_List;
-                         Port         : in Local_Port;
+                         Port         : in Socket_Util.Local_Port;
                          Acception_Cb : in Acception_Callback_Access;
                          Dscr         : out Socket.Socket_Dscr;
-                         Num          : out Port_Num;
+                         Num          : out Socket_Util.Port_Num;
                          Link_If      : in Socket.Host_Id := Socket.Any_Host);
 
   -- Abort further accepts on port (Protocol is necessary because Af_Inet and
   --  Af_Unix may be accepting in paralllel on the same port)
   --  and closes the Dscr
   -- May raise No_Such
-  procedure Abort_Accept (Protocol : in Tcp_Protocol_List; Num : in Port_Num);
+  procedure Abort_Accept (Protocol : in Tcp_Protocol_List;
+                          Num      : in Socket_Util.Port_Num);
 
 
   -- SEND PROCEDURES --

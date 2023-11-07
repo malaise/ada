@@ -1,9 +1,10 @@
 -- Interactive program to test Forker
-with Aski, Basic_Proc, Argument, Lower_Str, Socket, Forker, Ip_Addr, Tcp_Util;
+with Aski, Basic_Proc, Argument, Lower_Str, Socket, Forker, Ip_Addr,
+     Socket_Util;
 procedure T_Forker is
 
   Soc : Socket.Socket_Dscr;
-  Host : Tcp_Util.Remote_Host;
+  Host : Socket_Util.Remote_Host;
   Port : Socket.Port_Num;
 
   Buff : String (1 .. 500);
@@ -38,7 +39,7 @@ procedure T_Forker is
     raise Program_Error;
   end Cat_Str;
 
-  use type Socket.Port_Num, Tcp_Util.Remote_Host_List, Forker.Command_Number;
+  use type Socket.Port_Num, Socket_Util.Remote_Host_List, Forker.Command_Number;
 begin
 
   -- Basic_Proc.Put_Line_Output ("Req_size: " & Integer'Image(Forker.Request_Rec'Size));
@@ -62,14 +63,14 @@ begin
   end;
 
   if Port = 0 then
-    if Host.Kind = Tcp_Util.Host_Name_Spec then
+    if Host.Kind = Socket_Util.Host_Name_Spec then
       Soc.Set_Destination_Name_And_Service (False,
          Argument.Get_Parameter(1), Argument.Get_Parameter(2));
     else
       Soc.Set_Destination_Host_And_Service (Host.Id, Argument.Get_Parameter(2));
     end if;
   else
-    if Host.Kind = Tcp_Util.Host_Name_Spec then
+    if Host.Kind = Socket_Util.Host_Name_Spec then
       Soc.Set_Destination_Name_And_Port (False,
          Argument.Get_Parameter(1), Port);
     else
