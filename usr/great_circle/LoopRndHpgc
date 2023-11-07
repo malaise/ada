@@ -18,7 +18,7 @@ export ACCEPTABLE=600
 
 # Path to random, to mapcode and to high precision great circle
 export RAND="$HOME/ada/usr/misc/random"
-export MAPCODE="$HOME/ada/usr/mapcode/t_mapcode"
+export MAPCODE="$HOME/ada/usr/geo_codes/mapcode/t_mapcode"
 export HPGC="$HOME/ada/usr/great_circle/hp_gc"
 
 # Syntax error / help message

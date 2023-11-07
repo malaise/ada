@@ -1,6 +1,7 @@
 include $(if $(MAKFILES_DIR), $(MAKFILES_DIR), $(HOME)/Makefiles)/common.mk
 
-ADAVIEW := $(USR)/mapcode $(USR)/olc $(USR)/geohash36 $(USR)/geohash $(REPOSIT)
+GEO := $(USR)/geo_codes
+ADAVIEW := $(GEO)/mapcode $(GEO)/olc $(GEO)/geohash36 $(GEO)/geohash $(REPOSIT)
 ADACTL := true
 
 SUBUNITS := intercept.fpl

@@ -11,6 +11,7 @@ procedure T_Geohash36 is
       & " | <checksup> | <help>");
     Basic_Proc.Put_Line_Output ("  <encode>    ::= -c <coord> <precision>");
     Basic_Proc.Put_Line_Output ("  <coord>     ::= <lat> <lon>");
+    Basic_Proc.Put_Line_Output ("  <decode>    ::= -d <code>");
     Basic_Proc.Put_Line_Output ("  <precision> ::= -P <precision>");
     Basic_Proc.Put_Line_Output ("  <neighbors> ::= -N <code>");
     Basic_Proc.Put_Line_Output ("  <checksum>  ::= -C <code>");
