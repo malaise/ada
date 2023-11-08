@@ -514,7 +514,7 @@ package body Git_If is
   end Assert;
 
   -- Flow format of log is:
-  -- commit <hash>
+  -- commit <hash> [ (from <hash>) ]
   -- Author: ...
   -- Date:   YYYY-MM-DD HH:MM:SS ...
   --
@@ -546,12 +546,17 @@ package body Git_If is
     File : Commit_Entry_Rec;
   begin
     Logger.Log (Debug1, "  Block length: " & Integer'Image (Flow.List_Length));
-    -- commit <hash>
+    -- commit <hash> [ (from <hash>) ]
     Flow.Read (Line);
-    Assert (Line.Length = 47);
+    Assert (Line.Length = 47 or else Line.Length = 95);
     Assert (Line.Slice (1, 7) = "commit ");
     Logger.Log_Debug ("Block parsing " & Line.Image);
     Line.Delete_Nb (1, 7);
+    Ind := Line.Locate (" ");
+    if Ind /= 0 then
+      -- Remove " (from <hash>)" if present
+      Line.Delete (Ind, Line.Length);
+    end if;
     Hash := Line;
 
     -- Possible "Merge:... ..." then Author: ...
@@ -964,6 +969,7 @@ package body Git_If is
     Cmd.Cat ("--date=iso");
     Cmd.Cat ("-n");
     Cmd.Cat ("1");
+    Cmd.Cat ("-m");
     Cmd.Cat (Rev_Tag);
     Cmd.Cat ("--");
     Execute (Cmd, Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);

@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V42.07
+V42.08
 
 General purpose
 ---------------
@@ -2353,7 +2353,7 @@ version 1.7.0 or above:
 --pretty=format:"%H" -n -1 -- <pwd>',
 
 * A function gets general information on a commit by calling 'git log
---date=iso -n 1 <HSA1> \--',
+--date=iso -n 1 -m <HSA1> \--',
 
 * A function gets the details of a commit by calling
 'git log --name-status -M --date=iso -n 1 <HSA1> \--',
