@@ -6,8 +6,13 @@ if [ "$1" = "" ] ; then
 fi
 export SCENARIO=$1
 
-# Read field $2 of line $1
+# Default delimiter is '"'
 export DELIMITER="\""
+
+#Initially no option
+export opt=""
+
+# Read field $2 of line $1
 function readarg {
 res="`awk -vLINE=$1 -vFIELD=$2 -F $DELIMITER '
   BEGIN {
@@ -30,8 +35,6 @@ res="`awk -vLINE=$1 -vFIELD=$2 -F $DELIMITER '
 echo "$res"
 }
 
-#Initially no option
-export opt=""
 # For each line
 let L=1
 while true ; do

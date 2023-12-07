@@ -404,7 +404,7 @@ fi
 STEP="Tests of grep"
 echo "$STEP OK."
 # Check compilation error
-STEP="Test compilation error"
+STEP="Test invalid regex"
 res=`echo toto | asubst "t.(" "tt" 2>/dev/null`
 ret=$?
 if [ $ret -ne 2 ] ; then
