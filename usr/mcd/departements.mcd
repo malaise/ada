@@ -1,6 +1,7 @@
 # Select a random departement number
 # 1..19 2A 2B 21..95 971..974 976
-# Put it for some seconds then put its name, then wait for Enter, loop
+# Put it for some seconds then put its name and prefecture,
+#  then wait for Enter, loop
 
 # Input key will not echo
 isstdio ~ [ false inecho ] ifcall
@@ -18,11 +19,12 @@ isstdio ~ [ false inecho ] ifcall
 dup isinte ~ [ "ERROR: data file not read" putl pop retall ] ifcall
 # Number of entries must be evena and > 0
 dup 0 = [ "ERROR: empty data file" putl pop retall ] ifcall
-dup 2 % 0 = ~ [ "ERROR: invalid data file" putl ssize popn retall ] ifcall
-2 / N popr
+dup 3 % 0 = ~ [ "ERROR: invalid data file" putl ssize popn retall ] ifcall
+3 / N popr
 
 1
-# Store a department: number in n[Index] and name in N[Index]
+# Store a department: number in n[Index], name in N[Index]
+#  and prefecture in P[Index]
 # Stop after storing Index = N
 # Input stack is: Index "Num" "Name", output stack is Index + 1
 [
@@ -30,9 +32,12 @@ dup 2 % 0 = ~ [ "ERROR: invalid data file" putl ssize popn retall ] ifcall
 i copyr
 # Store num
 n swap popa
-# Store num
+# Store name
 i pushr
 N swap popa
+# Store prefecture
+i pushr
+P swap popa
 # Stop after inserting Nth pair
 i pushr copye N pushr = ifret
 # Increment index
@@ -41,10 +46,11 @@ i pushr 1 +
 S pushr retacal
 ] S copyr call
 
-# Dump: Index Number Name (used for debug)
+# Dump: Index Number Name Prefecture (used for debug)
 3 format
 [
-dup put " " put dup n swap pusha put " " put dup N swap pusha putl
+dup put " " put dup n swap pusha put " " put dup N swap pusha put " " put
+dup P swap pusha putl
 # Stop loop after putting index N
 dup N pushr = ifret
 # Increment index
@@ -59,8 +65,12 @@ D pushr retacal ] D popr
 rnd N pushr toreal * trunc 1 +
 # Put its Num during some seconds or any input
 dup n swap pusha put ": " put a pushr I pushr call
-# Put its Name and wait for some seconds or any input
-N swap pusha putl b pushr I pushr call
+# Put its Name and Prefecture
+dup N swap pusha put " -> " put
+P swap pusha putl
+# Wait for some seconds or any input
+b pushr I pushr call
+
 # Loop
 M pushr retacal ] M copyr call
 
