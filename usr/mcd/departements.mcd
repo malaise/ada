@@ -6,7 +6,7 @@
 # Input key will not echo
 isstdio ~ [ false inecho ] ifcall
 # Delay before putting the answer
-4.0 a popr
+6.0 a popr
 # Delay between two questions
 2.0 b popr
 
