@@ -1,6 +1,6 @@
 Asubst
 ======
-V19.6
+V19.7
 
 Asubst is a command line tool that substitutes text within an input flow of
 text. It finds occurences of text that match a pattern (regular expression),
@@ -340,13 +340,13 @@ In grep mode, asubst only looks for the find pattern and does not alter the
 files. +
 Grep mode is triggered by any of the following options:
 
-- With option -g (--grep), asubst displays the matching text, possibly with the input
-file name (option 'file') and possibly with the line number in the input file
-(options 'file' and 'line'). +
-An empty replace_string leads to display the matching text, but in 'grep' mode without
-'file' mode it is possible to provide a non empty replace_string, so that asubst
-displays the substitution. This is especially useful if the replace_string contains
-some "\RIJ" or "\rIJ".
+- With option -g (--grep), asubst displays the matching text, possibly with the
+input file name (option 'file') and possibly with the line number in the input
+file (options 'file' and 'line'). +
+An empty replace_string leads to display the matching text, but in 'grep' mode
+without 'file' mode it is possible to provide a non empty replace_string, so
+that asubst displays the substitution. This is especially useful if the
+replace_string contains some "\RIJ" or "\rIJ".
 
 - With option -L (--list), asubst displays once each file name where there is
 at least one matching.
@@ -358,10 +358,10 @@ applies after applying exclusion and match range.
 The options 'grep' and 'list' each impose 'quiet', 'test' and 'no backup'
 modes.
 
-The options 'file', 'list' and 'invermatch' each impose an empty
+The options 'file', 'list' and 'invertmatch' each impose an empty
 replace string.
 
-The option 'invermatch' imposes a single regex (i.e. with no delimiter).
+The option 'invertmatch' imposes a single regex (i.e. with no delimiter).
 
 Examples:
 --------------------------------------
@@ -544,13 +544,13 @@ Troubleshooting
 - Asubst is stuck. +
 -> Maybe an argument is missing or an option is not complete, and asubst is
 waiting on stdin. +
-Example: with "asubst -m 5 6 file" asubst considers "5" as the value for m, "6" as
-the find pattern and "file" as the replace string, so that no file name is
+Example: with "asubst -m 5 6 file" asubst considers "5" as the value for m, "6"
+as the find pattern and "file" as the replace string, so that no file name is
 provided.
 
 - I want to substitute "\f", why do I need to provide "\\\\f"? +
--> Because regex imposes to provide "\\f" for matching "\f", ("\f" matches "f") and the
-shell imposes a "\\" for each "\" transmitted to asubst.
+-> Because regex imposes to provide "\\f" for matching "\f", ("\f" matches "f")
+and the shell imposes a "\\" for each "\" transmitted to asubst.
 +
 Note that you can pass to the shell \'\\f' instead of "\\\\f".
 +
@@ -565,8 +565,8 @@ a UNIX directory.
 -> The whole replace string is not processed if the input text does not match
 the find pattern. +
 Example, with '"([A-Z][a-z])|([0-1])"' '"\i11Letter\i12Digit\eOther\f"' the
-input text "!" remains unchanged. Appending '"|."' to the search pattern makes it
-match and be substituted by 'Other'.
+input text "!" remains unchanged. Appending '"|."' to the search pattern makes
+it match and be substituted by 'Other'.
 
 - Exclusion does not work. +
 -> The exclusion pattern applies to, only to, and strictly to the whole text
