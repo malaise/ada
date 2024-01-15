@@ -5,7 +5,7 @@ trap 'echo "Test cleaning"; cd $ORIG; ./Test clean; \
       echo Test aborted; exit 0' SIGINT SIGTERM
 
 T0=`date "+%s"`
-for file in */Test ; do
+for file in `find .  -name "Test" | sort` ; do
   export dir=`dirname $file`
   if [ "$1" != "clean" ] ; then
     echo "`basename $dir`:"
