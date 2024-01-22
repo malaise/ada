@@ -174,7 +174,7 @@ procedure T_Mapcode is
 
 begin
   if Ada.Command_Line.Argument_Count = 0 then
-    Usage;
+    raise Argument_Error;
   end if;
   I := 1;
   while I <= Ada.Command_Line.Argument_Count loop
@@ -433,8 +433,10 @@ exception
     Ada.Text_Io.Put_Line (Ada.Text_Io.Standard_Error, "Raised Unknown_Language");
     Ada.Command_Line.Set_Exit_Status (1);
   when Argument_Error =>
-    Ada.Text_Io.Put_Line (Ada.Text_Io.Standard_Error, "Invalid Argument");
+    Ada.Text_Io.Put_Line (Ada.Text_Io.Standard_Error,
+                          "ERROR: Invalid Argument");
     Ada.Command_Line.Set_Exit_Status (2);
+    Usage;
   when others =>
     Ada.Command_Line.Set_Exit_Status (2);
     raise;

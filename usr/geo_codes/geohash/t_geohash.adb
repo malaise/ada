@@ -7,10 +7,10 @@ procedure T_Geohash is
     Basic_Proc.Put_Line_Output (
         "Usage: " & Argument.Get_Program_Name & " <command>");
     Basic_Proc.Put_Line_Output (
-        "  <commnd> ::= <encode> | <decode> | <precision> | <neighbors>"
-      & " | <checksup> | <help>");
+        "  <commnd> ::= <encode> | <decode> | <bounds> | <adjacents> | <help>");
     Basic_Proc.Put_Line_Output ("  <encode>    ::= -c <coord> <precision>");
     Basic_Proc.Put_Line_Output ("  <coord>     ::= <lat> <lon>");
+    Basic_Proc.Put_Line_Output ("  <precision> ::= 1..12");
     Basic_Proc.Put_Line_Output ("  <decode>    ::= -d <code>");
     Basic_Proc.Put_Line_Output ("  <bounds>    ::= -B <code>");
     Basic_Proc.Put_Line_Output ("  <adjacents> ::= -A <code>");
@@ -79,6 +79,5 @@ exception
     Basic_Proc.Put_Line_Output ("ERROR: Invalid argument");
     Help;
     Basic_Proc.Set_Error_Exit_Code;
-raise;
 end T_Geohash;
 

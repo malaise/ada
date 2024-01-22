@@ -7,15 +7,16 @@ procedure T_Geohash36 is
     Basic_Proc.Put_Line_Output (
         "Usage: " & Argument.Get_Program_Name & " <command>");
     Basic_Proc.Put_Line_Output (
-        "  <commnd> ::= <encode> | <decode> | <precision> | <neighbors>"
+        "  <commnd> ::= <encode> | <decode> | <precision_of> | <neighbors>"
       & " | <checksup> | <help>");
-    Basic_Proc.Put_Line_Output ("  <encode>    ::= -c <coord> <precision>");
-    Basic_Proc.Put_Line_Output ("  <coord>     ::= <lat> <lon>");
-    Basic_Proc.Put_Line_Output ("  <decode>    ::= -d <code>");
-    Basic_Proc.Put_Line_Output ("  <precision> ::= -P <precision>");
-    Basic_Proc.Put_Line_Output ("  <neighbors> ::= -N <code>");
-    Basic_Proc.Put_Line_Output ("  <checksum>  ::= -C <code>");
-    Basic_Proc.Put_Line_Output ("  <help>      ::= -h");
+    Basic_Proc.Put_Line_Output ("  <encode>       ::= -c <coord> <precision>");
+    Basic_Proc.Put_Line_Output ("  <coord>        ::= <lat> <lon>");
+    Basic_Proc.Put_Line_Output ("  <precision>    ::= 1..15");
+    Basic_Proc.Put_Line_Output ("  <decode>       ::= -d <code>");
+    Basic_Proc.Put_Line_Output ("  <precision_of> ::= -P <precision>");
+    Basic_Proc.Put_Line_Output ("  <neighbors>    ::= -N <code>");
+    Basic_Proc.Put_Line_Output ("  <checksum>     ::= -C <code>");
+    Basic_Proc.Put_Line_Output ("  <help>         ::= -h");
   end Help;
 
   procedure Encode (Coord : in Geohash36.Coordinate;
@@ -84,6 +85,5 @@ exception
     Basic_Proc.Put_Line_Output ("ERROR: Invalid argument");
     Help;
     Basic_Proc.Set_Error_Exit_Code;
-raise;
 end T_Geohash36;
 
