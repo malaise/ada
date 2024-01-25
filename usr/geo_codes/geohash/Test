@@ -1,4 +1,7 @@
 #!/bin/bash
+if [ "$1" = "clean" ] ; then
+  exit 0
+fi
 
 # Log an error and exit
 function error {

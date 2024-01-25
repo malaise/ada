@@ -1,4 +1,7 @@
 #!/bin/bash
+if [ "$1" = "clean" ] ; then
+  exit 0
+fi
 
 # Default values for local test
 export TDIR=test
