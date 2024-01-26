@@ -341,6 +341,6 @@ for interactive testing.
 Many projects in subdirectories of 'usr' also implement automatic tests that
 are launched by a local 'Test' script and fail on error.
 
-Finally a 'Test' script in 'usr' lauches all the tests, which takes around 5
+Finally a 'Tests' script in 'usr' lauches all the tests, which takes around 6
 minutes.
 
