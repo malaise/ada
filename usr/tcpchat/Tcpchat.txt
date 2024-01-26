@@ -1,6 +1,6 @@
 tcpchat
 =======
-V5.5
+V6.0
 
 Tcpchat accepts connections on a TCP port, expects specific sentences, and
 executes specified actions depending on what it receives and on a 'program'.
@@ -36,7 +36,7 @@ inputs and/or actions.
 
 A 'chat' has a unique name. It can define a global timeout for its execution
 (default is infinite) and a default timeout for all the statements where an
-input is expected: 'select', 'read' and 'skip' (default is infinite).
+input is expected: 'select' and 'read' (default is infinite).
 
 A 'chat' defines a criteria that will lead it to be selected (and the script
 to be executed) if the input string matches the pattern. Matching can rely on
@@ -53,7 +53,7 @@ Once the 'chat' is selected, tcpchat executes the statements of the script, one
 after the other. A statement can be:
 
 - 'select': allow selecting a subscript according to input conditions.
-It defines some 'expect' entries, each with a criteria and a
+It defines some 'expect' entries, each with a condition and a
 sub-script. It behaves like the 'chat' selection except that the 'expect'
 entries are anonymous and that two optinal specific entries are possible after
 the list of 'expect':
@@ -63,18 +63,16 @@ the list of 'expect':
  * a 'timeout' entry, which is selected if no input has been received when the
 input timeout expires.
 
-- 'cond': execute a sub-script depending on conditions. A
-[underline]#condition# checks wether a given expression (as opposed to an input)
+- 'cond': execute a sub-script depending on conditions. A condition checks
+wether a given expression (as opposed to an input)
 matches a criteria. The 'cond' statement takes the form:
 'if' <condition> sub-script 'elsif' <condition> sub-script..., 'else'
 sub-script).
-- 'while': loop executing a sub-script while a [underline]#condition# is true
-or until a 'exit' statement is reached.
+- 'while': loop executing a sub-script while a condition is true or until a
+'exit' statement is reached.
 - 'loop': loop executing a sub-script until a 'exit' statement is reached.
-- 'read': Read next input and check that it matches the [underline]#input
-condition# provided. Optionally fail on timeout if no input is received before a timeout
-expiration.
-- 'skip': Read next sentence, whatever it is, with an optional timeout.
+- 'read': Read next input and check that it matches the condition provided.
+Optionally fail on timeout if no input is received before a timeout expiration.
 - 'get': Read next sentence, whatever it is, and assign it to a variable.
 Optionally fail on timeout if no input is received before expiration.
 Optionally catch and handle error.
@@ -111,8 +109,8 @@ and current dir, and go back to 'chats'.
 - anchor:Failure[]a failure: one of the following situations, which leads to
 the closure (as on statement 'xref:Close[close]') of the current chat:
  * The expiration of the timeout global to the chat script.
- * The expiration of the timeout of a 'read', of a 'skip', or of a 'select'
-that has no 'timeout' entry.
+ * The expiration of the timeout of a 'read', or of a 'select' that has no
+'timeout' entry.
  * The reception of a non expected string by a 'read'.
  * The reception of a string not matching any 'expect' of a 'select' that
 has no 'default' entry.
@@ -124,6 +122,25 @@ has no 'default' entry.
  undefined variable...) in a statement
  * Error of 'chdir' when changing current directory if there is no 'error'
 bloc to handle the failure.
+
+anchor:Conditions[]
+
+Conditions
+~~~~~~~~~~
+Conditions (for 'chat', 'expect', 'while', 'read' and 'cond' alternativei)
+while, read ) compare an input or expression to a criteria (string).
+
+The comparison can be 'equal', 'not_equal', 'match', 'not_match', 'less',
+'greater', 'less_equal' or 'greater_equal'.
+
+The input or expression, and the criteria can be evaluated through either:
+
+ * "none": do no evaluate. Allows string comparison ('equal' or
+'not_equal'),
+ * "resolve": evaluate (expand variables). Allows string comparison or regexp
+matching towards criteria ('equal', 'not_equal', 'match' or 'not_match'),
+ * "compute": evaluate and compute. Allows integer comparison ('equal',
+'not_equal', 'less', 'greater', 'less_equal' or 'greater_equal').
 
 anchor:Variables[]
 
@@ -147,14 +164,8 @@ reference variables. Variables obey to the following rules:
 then converted back into a string.
   * 'set', 'assign' and 'eval' with the "OnlyIfNotSet" attribute, assign the
 variable only if is not defined so far,
-  * The expression and criteria of 'chats', 'select', 'cond', 'while', 'read',
-'eval', 'set', 'assign' and 'parse' can be evaluated or not:
-    ** "none": do no evaluate. Allows string comparison ("equal" or
-"not_equal"),
-    ** "resolve": evaluate. Allows string comparison or regexp matching
-("equal", "not_equal", "match" or "not_match"),
-    ** "compute": evaluate and compute. Allows integer comparison ("equal",
-"not_equal", "less", "greater", "less_equal" or "greater_equal"),
+  * The input, expression and criteria of ''get', 'eval', 'set', assign' and
+'parse' can be evaluated or not, as for xref:XConditions[conditions],
  * The expression of 'send', 'chdir' and 'log' is always evaluated.
 
 Any occurrence of "${" or "}" that doesn't denote a variable must be
@@ -174,7 +185,7 @@ statement this error can be caught and handled.
 
 NOTE: There are three ways to set variables from input: 'chat' or 'expect' with
 Assign, 'read' with Assign, and 'get'. Because Assign relies on variable
-resolution (e.g. $\{1}) it requires that Eval="resolve". As a
+resolution (e.g. $\{1}) it internally applies Eval="resolve". As a
 consequence, the only way to set a variable from input without resolving the
 content of this input is a 'get' with Eval="none".
 
@@ -191,7 +202,8 @@ in roder to provide sentences.
 Cr are removed if sentence ends with CrLf.
 +
 API is: init, wait, read, send, reset and close. Read takes a timeout
-and returns either a timeout event or a sentence. Wait takes a timeout.
+a
+d returns either a timeout event or a sentence. Wait takes a timeout.
 Timeouts can be infinite. Wait, read and send can raise/return Disconnection.
 
 - Tree in charge of storing the tree of chat scripts events and actions.
@@ -310,7 +322,7 @@ attributes.
 Then the tree is updated to set the Next of each node
 
 When parsing a "chat" XML node, a global variable is set to the default
-timeout that it defines or to infinite. When parsing a select, read or skip,
+timeout that it defines or to infinite. When parsing a select or  read,
 the local timeout is set to local value if defined, or to the default timeout
 inherited from our father.
 

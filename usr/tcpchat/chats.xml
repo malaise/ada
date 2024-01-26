@@ -163,7 +163,7 @@
     <set Var="Count" Expr="0"/>
     <set Var="Res" Expr="try"/>
     <while Expr="${Res}" Crit="try">
-      <!-- Get login and password, set RES=loggedin if OK -->
+      <!-- Get login and password, set Res=success if OK -->
       <send>login:</send>
       <read Crit=".*" Oper="match" Assign="User=${0}"/>
       <send>password:</send>

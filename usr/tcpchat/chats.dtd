@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- DTD of a chats file of tcpchat -->
 
-<!ENTITY Version "5.5">
+<!ENTITY Version "6.0">
 
 <!-- Common attributes -->
 <!-- A Boolean -->
-<!ENTITY % boolean "(true|false)">
+<!ENTITY % Boolean "(true|false)">
 <!-- A timeout definition -->
 <!ENTITY % TimeoutMs "TimeoutMs CDATA #IMPLIED">
 <!-- No timeout -->
@@ -36,9 +36,9 @@
 <!-- Assign a variable -->
 <!ENTITY % SetVar "Var CDATA #REQUIRED
                    Eval %Evaluate;
-                   OnlyIfNotSet %boolean; 'false'">
+                   OnlyIfNotSet %Boolean; 'false'">
 <!-- A subscript -->
-<!ENTITY % Script "((select|cond|while|loop|exit|read|skip|get|wait|send|call
+<!ENTITY % Script "((select|cond|while|loop|exit|read|get|wait|send|call
                     |set|assign|parse|eval|chdir|log)*,close?)">
 
 
@@ -81,10 +81,6 @@
 <!ELEMENT read EMPTY>
 <!ATTLIST read %TimeoutMs; %Condition; %Assign;>
 
-<!-- The skip statement (skip an input) -->
-<!ELEMENT skip EMPTY>
-<!ATTLIST skip %TimeoutMs; %SetVar;>
-
 <!-- The get statement (take any input and set a variable) -->
 <!ELEMENT get (error?)>
 <!ATTLIST get %TimeoutMs; %SetVar;>
@@ -96,7 +92,7 @@
 
 <!-- The send statement (write on output) -->
 <!ELEMENT send (#PCDATA)>
-<!ATTLIST send NewLine %boolean; "true">
+<!ATTLIST send NewLine %Boolean; "true">
 
 <!-- The call statement (call shell) -->
 <!ELEMENT call (command,error?)>

@@ -8,7 +8,7 @@ package Tree is
 
   -- Kind of node
   type Node_Kind is (Selectn, Expect, Default, Timeout, Cond, Condif, Condelse,
-                     Repeat, Loopn, Exitn, Read, Skip, Get, Wait, Send, Log,
+                     Repeat, Loopn, Exitn, Read, Get, Wait, Send, Log,
                      Call, Eval, Set, Parse, Chdir, Close);
 
   -- Infinite timeout

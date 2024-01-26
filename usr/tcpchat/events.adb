@@ -312,30 +312,6 @@ package body Events is
               end;
           end case;
 
-        when Tree.Skip =>
-          Event := Ios.Read (Node.Timeout);
-          case Event.Kind is
-            when Ios.Exit_Requested =>
-              Put_Line ("Exit requested");
-              return True;
-            when Ios.Input_Error =>
-              Put_Line ("Input error");
-              return True;
-            when Ios.Disconnection =>
-              Put_Line ("Disconnection");
-              Reset;
-            when Ios.Global_Timeout =>
-              Put_Line ("Timeout on chat script");
-              Reset;
-            when Ios.Local_Timeout =>
-              Put_Line ("Timeout on Read");
-              Reset;
-            when Ios.Got_Sentence =>
-              -- Skip
-              Debug.Logger.Log_Debug ("Skip got: " & Event.Sentence.Image);
-              Find_Next;
-          end case;
-
         when Tree.Wait =>
           Event := Ios.Wait (Node.Timeout);
           case Event.Kind is

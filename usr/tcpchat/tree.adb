@@ -224,7 +224,7 @@ package body Tree is
         null;
     end case;
     case Node.Kind is
-      when Selectn | Read | Skip | Wait =>
+      when Selectn | Read | Wait =>
         Text.Append ("Timeout=" & Node.Timeout'Img & " ");
       when others =>
         null;
@@ -266,7 +266,7 @@ package body Tree is
   -----------------------
   -- The instructions that have no child (except text)
   Has_Child : constant array (Node_Kind) of Boolean :=
-    (Read | Skip | Wait | Send | Log | Parse => False, others => True);
+    (Read | Wait | Send | Log | Parse => False, others => True);
   -- The instructions that have a (optional) "error" block of instructions
   Has_Error : constant array (Node_Kind) of Boolean :=
     (Call | Eval | Get | Set | Chdir => True, others => False);
@@ -337,8 +337,6 @@ package body Tree is
 
     elsif Name = "read" then
       Node.Kind := Read;
-    elsif Name = "skip" then
-      Node.Kind := Skip;
     elsif Name = "get" then
       Node.Kind := Get;
     elsif Name = "wait" then
