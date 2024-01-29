@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- DTD of a chats file of tcpchat -->
 
-<!ENTITY Version "6.0">
+<!ENTITY Version "6.1">
 
 <!-- Common attributes -->
 <!-- A Boolean -->

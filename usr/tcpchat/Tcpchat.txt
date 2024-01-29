@@ -1,6 +1,6 @@
 tcpchat
 =======
-V6.0
+V6.1
 
 Tcpchat accepts connections on a TCP port, expects specific sentences, and
 executes specified actions depending on what it receives and on a 'program'.
@@ -133,12 +133,14 @@ while, read ) compare an input or expression to a criteria (string).
 The comparison can be 'equal', 'not_equal', 'match', 'not_match', 'less',
 'greater', 'less_equal' or 'greater_equal'.
 
-The input or expression, and the criteria can be evaluated through either:
+The input or expression in one side, and the criteria on the other side, can be
+both evaluated through either:
 
  * "none": do no evaluate. Allows string comparison ('equal' or
 'not_equal'),
- * "resolve": evaluate (expand variables). Allows string comparison or regexp
-matching towards criteria ('equal', 'not_equal', 'match' or 'not_match'),
+ * "resolve": evaluate (expand variables). Allows string comparison of the
+result of expansions ('equal', 'not_equal') or regexp matching towards criteria
+('match' or 'not_match'),
  * "compute": evaluate and compute. Allows integer comparison ('equal',
 'not_equal', 'less', 'greater', 'less_equal' or 'greater_equal').
 
@@ -166,7 +168,8 @@ then converted back into a string.
 variable only if is not defined so far,
   * The input, expression and criteria of ''get', 'eval', 'set', assign' and
 'parse' can be evaluated or not, as for xref:XConditions[conditions],
- * The expression of 'send', 'chdir' and 'log' is always evaluated.
+ * The expression of 'send', 'chdir' and 'log' is always evaluated (with
+resolve).
 
 Any occurrence of "${" or "}" that doesn't denote a variable must be
 backslashed.
@@ -226,7 +229,7 @@ Design of the tree
 .Nodes of the tree
 Each node of the tree contains:
 
-- Kind (Enum): Selectn, Expect, Default, Timeout, Cond, Condif, Condelse,
+- Kind (Enum): Select, Expect, Default, Timeout, Cond, Condif, Condelse,
 Repeat, Loopn, Exitn, Read, Skip, Get, Wait, Send, Log, Call, Eval, Set, Parse,
 Chdir, Close. +
 The 'chats' statement is mapped as a Selec node. It is the only Selec node

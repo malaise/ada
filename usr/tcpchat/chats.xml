@@ -328,5 +328,46 @@
    <close/>
   </chat>
 
+  <!-- Various evaluations of both parts -->
+  <chat Name="evals" Crit="evals">
+    <!-- Get the arg, set the var -->
+    <get Var="Arg" Eval="none"/>
+    <set Var="Var" Eval="none" Expr="7"/>
+    <send>Evals1</send>
+    <set Var="Res" Eval="none" Expr="21"/>
+    <cond>
+      <if Expr="${Arg}" Crit="${Res}" Eval="none">
+        <send>None matches</send>
+      </if>
+    </cond>
+    <cond>
+      <if Expr="${Arg}" Crit="${Res}" Eval="resolve">
+        <send>Resolve matches</send>
+      </if>
+    </cond>
+    <cond>
+      <if Expr="${Arg}" Crit="${Res}" Eval="compute">
+        <send>Compute matches</send>
+      </if>
+    </cond>
+    <send>Evals2</send>
+    <set Var="Res" Eval="none" Expr="3*7"/>
+    <cond>
+      <if Expr="${Arg}" Crit="${Res}" Eval="none">
+        <send>None matches</send>
+      </if>
+    </cond>
+    <cond>
+      <if Expr="${Arg}" Crit="${Res}" Eval="resolve">
+        <send>Resolve matches</send>
+      </if>
+    </cond>
+    <cond>
+      <if Expr="${Arg}" Crit="${Res}" Eval="compute">
+        <send>Compute matches</send>
+      </if>
+    </cond>
+  </chat>
+
 </chats>
 
