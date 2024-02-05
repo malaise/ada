@@ -1,6 +1,17 @@
 #!/bin/bash
 
+# Encodes / decodes text with a random key and based on a date (default today)
+# Enoding:
+# - Generate a random key
+# - Encode it through the date (def_enigma)
+# - Encode the text through the key
+# Decoding:
+# - decode through the date the key
+
+
 # Usage
+# Example: cat <file> | enigmacode -c > encoded
+#          cat encoded | enigmacode -d <dates> > decoded
 function usage {
   echo "Usage: `basename $0` -c | -d  [ <date> ]" 1>&2
   echo "   <date>  ::=  jj/mm/YYyy" 1>&2
@@ -10,9 +21,15 @@ function usage {
 # The max length of text key
 # 26 for switches
 #  2 for the seperator twice
-# 31 for the rotors, 4 * 7 (longest number is SEVEN=5, + '@' offset each) + 3 '#'
+# 28 for the rotors, 4 * 7 (longest number is SEVEN=5, setting, init)
 #  8 for the reflector (number=5, offset, offset, 'Z')
-export TEXT_KEY_MAX_LEN=67
+export TEXT_KEY_MAX_LEN=64
+
+# The min length of a text key
+# 0 for switches
+#  2 for the seperator twice
+#  6 for the reflector (shortest number=3, offset, offset, 'Z')
+export TEXT_KEY_MIN_LEN=8
 
 # Parse mode
 if [ "$1" = "-c" ] ; then
@@ -66,7 +83,7 @@ else
   numkey=`def_enigma "$txtkey"`
   export start=$?
   export numkey
-  if [ $start -lt 6 ] ; then
+  if [ $start -lt $TEXT_KEY_MIN_LEN ] ; then
     echo "Invalid key $txtkey" 1>&2
     rm -f $tmpfile
     exit 2

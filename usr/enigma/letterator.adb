@@ -1,4 +1,5 @@
--- Encode each Ascii char in two uppercase letters
+-- Encode each Ascii char of input flow in two uppercase letters
+-- and reverse
 with Argument;
 with Types, Io_Manager;
 

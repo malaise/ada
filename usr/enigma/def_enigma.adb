@@ -1,3 +1,7 @@
+--Def_Enigma generates from a date the settings for enigma or its equivallent
+-- in plain text. Or it converts a setting to or from a text.
+-- When input is a text, exit code is the length + 1 of the valid key definition
+
 -- Enigma expects <reflector_def> -r<rotor_def> -i<rotor_init> -s<switches>
 -- <reflector_def> is a <reflector_name>@<letter_offset>
 -- <rotor_def> is a list of <rotor_name>@<letter_ring_offset>#...
@@ -5,8 +9,8 @@
 -- <switches> is pairs of letters, each letter appears at most once
 -- See Def_Enigma.txt for more information
 
--- Def_Enigma expects that reflectors named "A", "B" and "C" exists
---  and that rotors "I" to "X" exist and have (at least) a carry
+-- Def_Enigma expects that reflectors named "A", "B" and "C" will exist in enigma configuraiton,
+--  and that rotors "I" to "X" will exist and will have (at least) one carry
 
 with Ada.Calendar;
 with As.B, Perpet, Argument, Day_Mng, Normal, Upper_Str, Rnd, Arbitrary,

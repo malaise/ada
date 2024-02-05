@@ -1,6 +1,7 @@
 with Argument, Basic_Proc;
 with Types, Scrambler_Gen;
--- Generate a scrambler for enigma config file
+-- Generate a random scrambler definition for enigma config file
+-- Optionnaly, the scambler can be symetrical, for reflector
 procedure Scrambler_Generator is
 
   -- Error/Usage

@@ -1,2 +1,4 @@
+#!/bin/bash
+# Encode and decode a text through enigma
 enigma $* | enigma $*
 
