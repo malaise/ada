@@ -12,6 +12,7 @@ echo "Testing hungar"
 for file in $FILES; do
   echo -n $file
   if [ $file = test60.dat ] ; then
+    # Leads to average of 33% success
     export MAX_LOOPS="--max=3601"
     echo -n "..."
   else

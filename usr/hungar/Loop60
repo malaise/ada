@@ -1,0 +1,65 @@
+#!/bin/bash
+
+if [ \( "$1" = "-h" \) -o \( "$1" = "--help" \) ] ; then
+  echo "Usage: `basename $0` [ default | infinite | <max> ]"
+  echo "  default:  Default of hungar"
+  echo "  infinite: Infinite"
+  echo "  <max>:    Positive max"
+  echo "  defaults to the default of Test"
+  exit 1
+fi
+
+# Optional max Nb of iterations
+if [ -z "$1" ] ; then
+  # The default of Test: 3601 => 33% success
+  MAX="--max=3601"
+elif [ "$1" = "default" ] ; then
+  # The default of hungar (Dim * Dim + 1) * 10 => Nearly 100% success
+  MAX="--max"
+elif [ "$1" = "infinite" ] ; then
+  # Infinite => 100% success
+  MAX=""
+else
+  #  3601 => 33% success
+  #  7202 => 60% success
+  # 10803 => 70% success
+  MAX="--max=$1"
+fi
+export MAX
+echo Max is: $MAX
+
+let tot=0+1
+let nok=0+0
+while true ; do
+  # Start
+  echo $tot | awk '{printf "Iteration %3d ", $1}'
+  t0=`date "+%s"`
+  hungar $MAX test60.dat >/dev/null 2>&1
+  res=$?
+
+  # Report
+  if [ $res -eq 2 ] ; then
+    let nok=$nok+1
+    echo -n "KO "
+  else
+    echo -n "ok "
+  fi
+    
+  # Compute execution time
+  t1=`date "+%s"`
+  delta=`echo $t0 $t1 | awk '
+    {D=$2-$1
+     printf "%dmn%02ds", D/60, D%60
+    }
+  '`
+  echo -n "in $delta => "
+
+  # Stat
+  echo | awk -v TOT=$tot -v NOK=$nok '
+  {
+    printf "%3d%\n", (TOT - NOK) / TOT * 100
+  }
+  '
+  let tot=$tot+1
+done
+
