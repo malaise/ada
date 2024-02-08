@@ -30,7 +30,6 @@ package body Rnd is
   -- Initialisation of sequence
   procedure Randomize (Agen : in out Generator; Init : in Float := 1.0) is
     -- The result of mutex allocation is always true, because infinite waiting
-    Dummy_Ok : Boolean;
     F : Float;
 
     -- Gives a "random" number
@@ -48,7 +47,7 @@ package body Rnd is
     -- 0 <= init < 1 : Ok, otherwise random
     F := (if 0.0 <= Init and then Init < 1.0 then Init else Init_Rnd);
 
-    Dummy_Ok := Agen.Lock.Get (-1.0);
+    Agen.Lock.Get;
     case Agen.Kind is
       when Simple =>
         Agen.Sgen.Start (New_W =>
@@ -62,17 +61,24 @@ package body Rnd is
     end case;
     Agen.Randomized := True;
     Agen.Lock.Release;
+  exception
+    when others =>
+      Agen.Lock.Release;
+      raise;
   end Randomize;
 
   -- A Generator is initially not randomized
   function Is_Randomized (Agen : in out Generator) return Boolean is
-    Dummy_Ok : Boolean;
   begin
-    Dummy_Ok := Agen.Lock.Get (-1.0);
+    Agen.Lock.Get;
     return Result : Boolean do
       Result := Gen.Randomized;
       Agen.Lock.Release;
     end return;
+  exception
+    when others =>
+      Agen.Lock.Release;
+      raise;
   end Is_Randomized;
 
   -- Next element in sequence
@@ -81,9 +87,8 @@ package body Rnd is
                   return Float is
 
     Val : Float;
-    Dummy_Ok : Boolean;
   begin
-    Dummy_Ok := Agen.Lock.Get (-1.0);
+    Agen.Lock.Get;
     case Agen.Kind is
       when Simple =>
         Agen.Sgen.Next (Val);
@@ -95,6 +100,10 @@ package body Rnd is
     Agen.Lock.Release;
     -- Here 0 <= Val < 1
     return (if Mini >= Maxi then Val else Mini + Val * (Maxi - Mini));
+  exception
+    when others =>
+      Agen.Lock.Release;
+      raise;
   end Random;
 
   function Discr_Random (Agen : in out Generator;
