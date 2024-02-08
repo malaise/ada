@@ -21,11 +21,13 @@ elif [ "$1" = "infinite" ] ; then
   MAX=""
 else
   # Approximative rate of success and max time
-  #   100 =>  20% 1s
-  #   250 =>  40% 2s
-  #   500 =>  60% 3s
-  #  1000 =>  90% 6s
-  #  3601 => 100% 7s
+  # MaxLoop  Success MaxTime
+  #     100  =>  20%      1s
+  #     250  =>  40%      2s
+  #     500  =>  70%      4s
+  #    1000  =>  90%      7s
+  #    2000  =>  99%     13s
+  #    3000  => 100%     15s
   MAX="--max=$1"
 fi
 export MAX
@@ -33,6 +35,7 @@ echo Max is: $MAX
 
 let tot=0+1
 let nok=0+0
+max="0mn00s"
 while true ; do
   # Start
   echo $tot | awk '{printf "Iteration %3d ", $1}'
@@ -60,9 +63,14 @@ while true ; do
   # Stat
   echo | awk -v TOT=$tot -v NOK=$nok '
   {
-    printf "%3d%\n", (TOT - NOK) / TOT * 100
+    printf "%3d%", (TOT - NOK) / TOT * 100
   }
   '
   let tot=$tot+1
+  max=`echo $delta $max | awk '
+    ($1 > $2) {print $1; exit}
+    {print $2; exit} 
+  '`
+  echo " max=$max"
 done
 
