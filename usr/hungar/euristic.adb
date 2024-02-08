@@ -145,7 +145,9 @@ package body Euristic is
     end Init_Zeros;
 
     -- Init random serial list
-    Rnd.Gen.Randomize;
+    if not Rnd.Gen.Is_Randomized then
+      Rnd.Gen.Randomize;
+    end if;
 
     Euristic_Loop:
     loop
