@@ -64,7 +64,7 @@ package body Rnd is
     Agen.Lock.Release;
   end Randomize;
 
-  -- A Generator is initially not radomized
+  -- A Generator is initially not randomized
   function Is_Randomized (Agen : in out Generator) return Boolean is
     Dummy_Ok : Boolean;
   begin

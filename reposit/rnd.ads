@@ -22,7 +22,7 @@ package Rnd is
   --   randomly otherwise
   procedure Randomize (Agen : in out Generator; Init : in Float := 1.0);
 
-  -- A Generator is initially not radomized
+  -- A Generator is initially not randomized
   function Is_Randomized (Agen : in out Generator) return Boolean;
 
   -- Don't exceed Long_Long'First .. Long_Long'Last
