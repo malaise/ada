@@ -20,9 +20,12 @@ elif [ "$1" = "infinite" ] ; then
   # Infinite => 100% success
   MAX=""
 else
-  #  3601 => 33% success
-  #  7202 => 60% success
-  # 10803 => 70% success
+  # Approximative rate of success and max time
+  #   100 =>  20% 1s
+  #   250 =>  40% 2s
+  #   500 =>  60% 3s
+  #  1000 =>  90% 6s
+  #  3601 => 100% 7s
   MAX="--max=$1"
 fi
 export MAX
