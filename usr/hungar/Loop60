@@ -9,25 +9,29 @@ if [ \( "$1" = "-h" \) -o \( "$1" = "--help" \) ] ; then
   exit 1
 fi
 
+# Approximative rate of success and max time (on a 2GHz CPU), for some max loops
+#    MaxLoop  Success MaxTime
+#      100  =>  20%      1s
+#      250  =>  40%      2s
+#      500  =>  70%      4s
+#     1000  =>  90%      7s
+#     2000  =>  99%     13s
+#     3000  =>  99%     19s
+#     3601  =>  99%     22s
+# Infinite  => 100%     32
+
 # Optional max Nb of iterations
 if [ -z "$1" ] ; then
-  # The default of Test: 3601 => 33% success
+  # The default of Test on test60.dat: 3601
   MAX="--max=3601"
 elif [ "$1" = "default" ] ; then
-  # The default of hungar (Dim * Dim + 1) * 10 => Nearly 100% success
+  # The default max of hungar: (Dim * Dim + 1) * 10 = 36010
   MAX="--max"
 elif [ "$1" = "infinite" ] ; then
-  # Infinite => 100% success
+  # The default of hungar: infinite
   MAX=""
 else
-  # Approximative rate of success and max time
-  # MaxLoop  Success MaxTime
-  #     100  =>  20%      1s
-  #     250  =>  40%      2s
-  #     500  =>  70%      4s
-  #    1000  =>  90%      7s
-  #    2000  =>  99%     13s
-  #    3000  => 100%     15s
+  # The provided value
   MAX="--max=$1"
 fi
 export MAX
