@@ -622,10 +622,12 @@ package Con_Io is
                                   Motion_Enabled : in Boolean);
 
   -- Set mouse pointer shape or hide mouse pointer
-  --  Arrow by default
+  --  Arrow is the default
   type Pointer_Shape_List is (None, Arrow, Cross, Hand, Target);
   procedure Set_Pointer_Shape (Con           : in Console;
                                Pointer_Shape : in Pointer_Shape_List);
+  -- Try to restore pointer shape to Arrow, catching any exception
+  procedure Reset_Pointer_Shape (Con : in Console);
 
   -- (Un)grab the mouse pointer
   procedure Grab_Pointer (Con  : in Console;

@@ -2075,6 +2075,14 @@ package body Con_Io is
     X_Mng.X_Set_Pointer(Con.Get_Access.Id, X_Shape);
   end Set_Pointer_Shape;
 
+  -- Try to restore pointer shape to Arrow, catching any exception
+  procedure Reset_Pointer_Shape (Con : in Console) is
+  begin
+    Set_Pointer_Shape (Con, Arrow);
+  exception
+    when others => null;
+  end Reset_Pointer_Shape;
+
   -- Grab pointer
   procedure Grab_Pointer (Con  : in Console;
                           Grab : in Boolean) is

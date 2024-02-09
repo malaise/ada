@@ -329,6 +329,7 @@ begin
     Logger.Log_Debug ("Status is now " & Status'Img);
 
   end loop;
+  Table.Console.Reset_Pointer_Shape;
 
 exception
   when Invalid_Argument =>
@@ -343,6 +344,7 @@ exception
         delay Duration'Value (Val);
       end if;
     end;
+    Table.Console.Reset_Pointer_Shape;
     raise;
 end Freecell;
 

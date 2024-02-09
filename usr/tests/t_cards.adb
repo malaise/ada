@@ -248,4 +248,9 @@ procedure T_Cards is
     end if;
   end loop;
 
+  Console.Reset_Pointer_Shape;
+exception
+  when others =>
+    Console.Reset_Pointer_Shape;
+    raise;
 end T_Cards;

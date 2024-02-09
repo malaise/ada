@@ -1154,10 +1154,11 @@ package body Curve is
 
   procedure Destroy is
   begin
+    Cur_Con_Io.Reset_Pointer_Shape;
     Cur_Con_Io.Close;
   exception
     when others =>
-      null;
+      Cur_Con_Io.Reset_Pointer_Shape;
   end Destroy;
 end Curve;
 

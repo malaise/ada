@@ -354,11 +354,15 @@ begin
     Logger.Log_Debug ("Status is now " & Status'Img);
 
   end loop;
+  Table.Console.Reset_Pointer_Shape;
 
 exception
   when Invalid_Argument =>
     Basic_Proc.Put_Line_Error ("ERROR: Invalid argument.");
     Basic_Proc.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
         & " [ --alternate ] [ <game_number> ]     // 0 .. 999999");
+  when others =>
+    Table.Console.Reset_Pointer_Shape;
+    raise;
 end Lapeau;
 

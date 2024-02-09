@@ -237,6 +237,10 @@ package body Game is
       end case;
     end loop;
 
+  exception
+    when others =>
+      Screen.Close;
+      raise;
   end Play_One;
 
   -- Pause the game until resumed

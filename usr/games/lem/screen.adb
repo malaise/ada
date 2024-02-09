@@ -87,6 +87,7 @@ package body Screen is
   -- Close (definitively)
   procedure Close is
   begin
+    Console.Reset_Pointer_Shape;
     Console.Close;
   end Close;
 
