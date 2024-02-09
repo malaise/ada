@@ -895,7 +895,8 @@ extern int x_set_pointer (void *line_id, int shape) {
         break;
         case POINTER_ARROW:
             win_id->cursor = XCreateFontCursor(local_server.x_server, XC_arrow);
-            XUndefineCursor(local_server.x_server, win_id->x_window);
+            XDefineCursor(local_server.x_server, win_id->x_window,
+                win_id->cursor);
         break;
         case POINTER_CROSS:
             win_id->cursor = XCreateFontCursor(local_server.x_server,
