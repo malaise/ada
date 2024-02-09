@@ -144,11 +144,6 @@ package body Euristic is
       end loop;
     end Init_Zeros;
 
-    -- Init random serial list
-    if not Rnd.Gen.Is_Randomized then
-      Rnd.Gen.Randomize;
-    end if;
-
     Euristic_Loop:
     loop
 
@@ -491,9 +486,12 @@ package body Euristic is
     Transfer : Zero_Transfer_Tab (1 .. Mattrix.Dim, 1 .. Mattrix.Dim);
     Nb_Loop  : Positive := 1;
   begin
-    -- Init for search : one zero/row and / col
     Logger.Init;
+    -- Init for search : one zero/row and / col
     Init_Search (Mattrix);
+    -- Init random serial list
+    Rnd.Gen.Randomize;
+
     loop
        if not Logger.Debug_On and then Progress then
          -- Progress bar
