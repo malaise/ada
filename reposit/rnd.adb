@@ -28,7 +28,9 @@ package body Rnd is
   end To_Long_Long;
 
   -- Initialisation of sequence
-  procedure Randomize (Agen : in out Generator; Init : in Float := 1.0) is
+  procedure Randomize (Agen : in out Generator;
+                       Init : in Float := Randomly;
+                       Only_First_Time : in Boolean := True) is
     -- The result of mutex allocation is always true, because infinite waiting
     F : Float;
 
@@ -45,7 +47,14 @@ package body Rnd is
 
   begin
     -- 0 <= init < 1 : Ok, otherwise random
-    F := (if 0.0 <= Init and then Init < 1.0 then Init else Init_Rnd);
+    if 0.0 <= Init and then Init < Randomly then
+      F := Init;
+    elsif not (Agen.Randomized and then Only_First_Time) then
+      -- By default, only the first time
+      F := Init_Rnd;
+    else
+      return;
+    end if;
 
     Agen.Lock.Get;
     case Agen.Kind is
