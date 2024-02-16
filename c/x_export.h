@@ -30,6 +30,7 @@
 #define POINTER_CROSS  2
 #define POINTER_HAND   3
 #define POINTER_TARGET 4
+#define NB_POINTERS   5
 
 /* Basics */
 

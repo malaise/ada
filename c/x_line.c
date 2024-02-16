@@ -53,6 +53,7 @@ Window x_window;
     char *imvalret;
     int i;
 
+    /* Init locale */
     if (setlocale (LC_ALL, "") == NULL) {
         fprintf (stderr, "X_LINE warning : X cannot set locale.\n");
     }
@@ -61,7 +62,6 @@ Window x_window;
                 setlocale (LC_ALL, NULL));
         return (False);
     }
-
 
     /* Open X display */
     local_server.x_server = XOpenDisplay (server_name);
@@ -167,6 +167,11 @@ Window x_window;
     local_server.select_code = XInternAtom (local_server.x_server,
                                             "X_MNG_SELECTION", False);
 
+    /* Init cursors to "unset" */
+    for (int i = 0; i < NB_CURSORS; i++) {
+        local_server.cursors[i] = None;
+    }
+
     /* Ok */
     return (True);
 }
@@ -252,7 +257,6 @@ Status res;
     p_window->selection = NULL;
     p_window->nbre_drop_clear = 0;
     p_window->select_index = SELEC_NONE;
-    p_window->cursor = XCreateFontCursor(p_window->server->x_server, XC_arrow);
 
     /* Init subwindows */
     p_window->last_subwindow.window = None;
@@ -373,7 +377,6 @@ Status res;
         XEvent event;
         XMaskEvent(p_window->server->x_server, ExposureMask, &event);
     }
-
 
     return (p_window);
 }

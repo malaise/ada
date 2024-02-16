@@ -15,6 +15,9 @@
 /* Number of supported types of XA_PRIMARY clipborad exchanges */
 #define NB_SELECTION_TYPES 3
 
+/* Number of cursor shapes (same as pointers in x_esport.h */
+#define NB_CURSORS 5
+
 /* Max number of sub-windows of a line */
 #define MAX_SUBWINDOWS 99
 
@@ -30,6 +33,7 @@ typedef struct {
     Atom delete_code;
     Atom selection_types[NB_SELECTION_TYPES];
     Atom select_code;
+    Cursor cursors[NB_CURSORS];
 }t_server;
 
 typedef struct {
@@ -53,6 +57,7 @@ typedef struct {
     void *ref;
 } t_window_ref;
 
+
 typedef struct {
     /* Links */
     t_server *server;
@@ -71,7 +76,6 @@ typedef struct {
     boolean xor_mode;
     GC x_graphic_context;
     XIC xic;
-    Cursor cursor;
     /* X subwindows */
     int nbre_subwindows;
     t_window_ref subwindows[MAX_SUBWINDOWS];

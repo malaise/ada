@@ -17,6 +17,11 @@
 /* before looking for any further expose (and filter) */
 #define DELAY_EXPOSE_MS 25
 
+/* Ensure that local NB_CURSORS matches exported NB_POINTERS */
+#if (NB_CURSORS != NB_POINTERS)
+  #error "NB_CURSORS and NB_POINTERS mismatch"
+#endif
+
 /*
  * static void print_date (void) {
  *   timeout_t cur_time;
@@ -247,7 +252,8 @@ extern int x_set_icon (void *line_id, const char **pixmap) {
         return (WAIT_ERR);
     }
 
-    result = XpmCreatePixmapFromData (local_server.x_server, win_id->x_window,
+    result = XpmCreatePixmapFromData (win_id->server->x_server,
+                                      win_id->x_window,
                                       icon_def, &icon_pixmap, NULL, NULL);
     if (result < 0) {
 #ifdef DEBUG
@@ -258,7 +264,7 @@ extern int x_set_icon (void *line_id, const char **pixmap) {
     win_hints = XAllocWMHints();
     win_hints->flags = IconPixmapHint;
     win_hints->icon_pixmap = icon_pixmap;
-    XSetWMHints(local_server.x_server, win_id->x_window, win_hints);
+    XSetWMHints(win_id->server->x_server, win_id->x_window, win_hints);
     XFree(win_hints);
     return (WAIT_OK);
 }
@@ -282,11 +288,12 @@ extern int x_flush (void) {
 
 /* Clears a line */
 extern int x_clear_line (void *line_id) {
+    t_window *win_id = (t_window*) line_id;
     int result;
 
 
-    result = (lin_clear( (t_window*) line_id) ? WAIT_OK : WAIT_ERR);
-    local_server.modified = TRUE;
+    win_id->server->modified = TRUE;
+    result = (lin_clear(win_id) ? WAIT_OK : WAIT_ERR);
 
     return(result);
 }
@@ -319,7 +326,7 @@ extern int x_set_attributes (void *line_id, int paper, int ink,
       lin_get_font(win_id), win_id->screen->color_id,
       paper, ink, reverse);
 
-    local_server.modified = TRUE;
+    win_id->server->modified = TRUE;
     return (WAIT_OK);
 
 }
@@ -341,7 +348,7 @@ extern int x_set_xor_mode (void *line_id, boolean xor_mode) {
                      win_id->x_graphic_context, GXcopy);
     }
     win_id->xor_mode = xor_mode;
-    local_server.modified = TRUE;
+    win_id->server->modified = TRUE;
     return (WAIT_OK);
 }
 
@@ -378,7 +385,7 @@ extern int x_put_char (void *line_id, int car, int row, int column) {
           win_id->x_graphic_context, win_id->x_window, x, y);
     }
 
-    local_server.modified = TRUE;
+    win_id->server->modified = TRUE;
     return (WAIT_OK);
 }
 
@@ -410,7 +417,7 @@ extern int x_overwrite_char (void *line_id, int car, int row, int column) {
       win_id->server->x_font_set[lin_get_font(win_id)],
       x, y, (char)car);
 
-    local_server.modified = TRUE;
+    win_id->server->modified = TRUE;
     return (WAIT_OK);
 }
 
@@ -449,7 +456,7 @@ extern int x_put_string (void *line_id, const char *p_char, int number,
           win_id->x_graphic_context, win_id->x_window, x, y, number);
     }
 
-    local_server.modified = TRUE;
+    win_id->server->modified = TRUE;
     return (WAIT_OK);
 }
 
@@ -495,7 +502,7 @@ extern int x_draw_area (void *line_id, int width, int height,
       win_id->x_graphic_context,
       win_id->x_window, x_from, y_from, pix_width, pix_height);
 
-    local_server.modified = TRUE;
+    win_id->server->modified = TRUE;
     return (WAIT_OK);
 }
 
@@ -596,7 +603,7 @@ extern int x_put_char_pixels (void *line_id, int car, int x, int y) {
       win_id->x_window, x, y);
     }
 
-    local_server.modified = TRUE;
+    win_id->server->modified = TRUE;
     return (WAIT_OK);
 }
 
@@ -628,7 +635,7 @@ extern int x_put_string_pixels (void *line_id, const char *p_char, int number,
           win_id->x_graphic_context, win_id->x_window, x, y, number);
     }
 
-    local_server.modified = TRUE;
+    win_id->server->modified = TRUE;
     return (WAIT_OK);
 
 }
@@ -645,7 +652,7 @@ extern int x_draw_point (void *line_id, int x, int y) {
     XDrawPoint (win_id->server->x_server, win_id->x_window,
                 win_id->x_graphic_context, x, y);
 
-    local_server.modified = TRUE;
+    win_id->server->modified = TRUE;
     return (WAIT_OK);
 }
 
@@ -663,7 +670,7 @@ extern int x_draw_line (void *line_id, int x1, int y1, int x2, int y2) {
       win_id->x_window,
       win_id->x_graphic_context, x1, y1, x2, y2);
 
-    local_server.modified = TRUE;
+    win_id->server->modified = TRUE;
     return (WAIT_OK);
 
 }
@@ -715,7 +722,7 @@ extern int x_draw_rectangle (void *line_id, int x1, int y1, int x2, int y2) {
       win_id->x_window,
       win_id->x_graphic_context, x, y, width, height);
 
-    local_server.modified = TRUE;
+    win_id->server->modified = TRUE;
     return (WAIT_OK);
 
 }
@@ -740,7 +747,7 @@ extern int x_fill_rectangle (void *line_id, int x1, int y1, int x2, int y2) {
       win_id->x_window,
       win_id->x_graphic_context, x, y, width, height);
 
-    local_server.modified = TRUE;
+    win_id->server->modified = TRUE;
     return (WAIT_OK);
 
 }
@@ -768,7 +775,7 @@ extern int x_draw_arc (void *line_id, int x1, int y1, int x2, int y2,
       x, y, width, height,
       angle_of (a1), angle_of (a2));
 
-    local_server.modified = TRUE;
+    win_id->server->modified = TRUE;
     return (WAIT_OK);
 }
 
@@ -795,7 +802,7 @@ extern int x_fill_arc (void *line_id, int x1, int y1, int x2, int y2,
       x, y, width, height,
       angle_of (a1), angle_of (a2));
 
-    local_server.modified = TRUE;
+    win_id->server->modified = TRUE;
     return (WAIT_OK);
 }
 
@@ -824,7 +831,8 @@ extern int x_draw_points (void *line_id, int x1, int y1, int width, int height,
         p++;
       }
     }
-    local_server.modified = TRUE;
+
+    win_id->server->modified = TRUE;
     return (WAIT_OK);
 }
 
@@ -862,7 +870,7 @@ extern int x_fill_area (void *line_id, int xys[], int nb_points) {
                   win_id->x_graphic_context, p_points, nb_points,
                   Complex, CoordModeOrigin);
     free (p_points);
-    local_server.modified = TRUE;
+    win_id->server->modified = TRUE;
     return (WAIT_OK);
 }
 
@@ -870,16 +878,32 @@ extern int x_set_pointer (void *line_id, int shape) {
     t_window *win_id = (t_window*) line_id;
     Pixmap blank;
     XColor dummy;
+    Cursor cursor;
     char data[1] = {0};
 
     /* Check that window is open */
     if (! lin_check(win_id)) {
         return (WAIT_ERR);
     }
+
+    /* Check shape number */
+    if (shape >= NB_POINTERS) {
+        return (WAIT_ERR);
+    }
+
+    /* If cursor is already defined then just set it */
+    if (win_id->server->cursors[shape] != None) {
+        XDefineCursor(win_id->server->x_server, win_id->x_window,
+          win_id->server->cursors[shape]);
+        win_id->server->modified = TRUE;
+        return (WAIT_OK);
+    }
+
+    /* Define new cursor */
     switch (shape) {
         case POINTER_NONE:
-            /* Make a blank cursor from blank pixmap*/
-            blank = XCreateBitmapFromData (local_server.x_server,
+            /* Make a blank cursor from blank pixmap */
+            blank = XCreateBitmapFromData (win_id->server->x_server,
                         win_id->x_window, data, 1, 1);
             if (blank == None) {
 #ifdef DEBUG
@@ -887,36 +911,29 @@ extern int x_set_pointer (void *line_id, int shape) {
 #endif
                 return (WAIT_ERR);
             }
-            win_id->cursor = XCreatePixmapCursor(local_server.x_server,
+            cursor = XCreatePixmapCursor(win_id->server->x_server,
                                  blank, blank, &dummy, &dummy, 0, 0);
-            XFreePixmap (local_server.x_server, blank);
-            XDefineCursor(local_server.x_server, win_id->x_window,
-                win_id->cursor);
+            XFreePixmap (win_id->server->x_server, blank);
         break;
         case POINTER_ARROW:
-            win_id->cursor = XCreateFontCursor(local_server.x_server, XC_arrow);
-            XDefineCursor(local_server.x_server, win_id->x_window,
-                win_id->cursor);
+            cursor = XCreateFontCursor(win_id->server->x_server, XC_arrow);
         break;
         case POINTER_CROSS:
-            win_id->cursor = XCreateFontCursor(local_server.x_server,
-                                 XC_tcross);
-            XDefineCursor(local_server.x_server, win_id->x_window,
-                win_id->cursor);
+            cursor = XCreateFontCursor(win_id->server->x_server, XC_tcross);
         break;
         case POINTER_HAND:
-            win_id->cursor = XCreateFontCursor(local_server.x_server, XC_hand1);
-            XDefineCursor(local_server.x_server, win_id->x_window,
-                win_id->cursor);
+            cursor = XCreateFontCursor(win_id->server->x_server, XC_hand1);
         break;
         case POINTER_TARGET:
-            win_id->cursor = XCreateFontCursor(local_server.x_server,
+            cursor = XCreateFontCursor(win_id->server->x_server,
                 XC_based_arrow_down);
-            XDefineCursor(local_server.x_server, win_id->x_window,
-                win_id->cursor);
         break;
     }
-    local_server.modified = TRUE;
+
+    /* Store and set it */
+    win_id->server->cursors[shape] = cursor;
+    win_id->server->modified = TRUE;
+    XDefineCursor(win_id->server->x_server, win_id->x_window, cursor);
     return (WAIT_OK);
 }
 
@@ -928,11 +945,11 @@ extern int x_grab_pointer (void *line_id, boolean grab) {
         return (WAIT_ERR);
     }
     if (grab) {
-        XGrabPointer(local_server.x_server, win_id->x_window, TRUE, 0,
-            GrabModeAsync, GrabModeAsync, win_id->x_window, win_id->cursor,
+        XGrabPointer(win_id->server->x_server, win_id->x_window, TRUE, 0,
+            GrabModeAsync, GrabModeAsync, win_id->x_window, None,
             CurrentTime);
     } else {
-        XUngrabPointer (local_server.x_server, CurrentTime);
+        XUngrabPointer (win_id->server->x_server, CurrentTime);
     }
     local_server.modified = TRUE;
     return (WAIT_OK);
@@ -959,7 +976,7 @@ static void  update_tid (t_window *win_id, int x, int y) {
 
   if (win_id->last_subwindow.ref != NULL) {
     /* Event is relative to subwindow */
-    if (XTranslateCoordinates (local_server.x_server,
+    if (XTranslateCoordinates (win_id->server->x_server,
         win_id->last_subwindow.window, win_id->x_window, x, y,
         &win_id->tid_x, &win_id->tid_y, &child)) {
       win_id->sub_tid_x = x;
@@ -1479,7 +1496,7 @@ extern int x_enable_motion_events (void *line_id, boolean enable_motion) {
        PointerMotionMask | ButtonReleaseMask | ButtonPressMask,
        None, CurrentTime);
     XFlush(win_id->server->x_server);
-    local_server.modified = FALSE;
+    win_id->server->modified = TRUE;
     win_id->motion_enabled = enable_motion;
     return (WAIT_OK);
 }
