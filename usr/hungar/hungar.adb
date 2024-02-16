@@ -1,6 +1,6 @@
 with Ada.Calendar, Ada.Exceptions;
 with Argument, Argument_Parser, Basic_Proc, Day_Mng, As.U,
-     Normal, Normalization;
+     Normal, Normalization, Int_Img;
 with Types, File, Euristic;
 procedure Hungar is
   Sigma : Float;
@@ -21,6 +21,7 @@ procedure Hungar is
   -- Max iterations, default is 0 => infinite
   -- Limited with no value is -1 => (Dim^2+1)*10
   Max_Iter : Integer;
+  Infinite_Iter : constant Integer := 0;
   Default_Iter : constant Integer := -1;
 
   procedure Help is
@@ -44,12 +45,13 @@ begin
 
   -- Parse arguments
   Progress := False;
-  Max_Iter := 0;
+  Max_Iter := Infinite_Iter;
   Arg_Dscr := Argument_Parser.Parse (Keys);
   if not Arg_Dscr.Is_Ok then
     Syntax_Error (Arg_Dscr.Get_Error & ".");
   end if;
 
+  -- Help
   if Arg_Dscr.Is_Set (01) then
     if Argument.Get_Nbre_Arg /= 1 then
       Syntax_Error ("Invalid arguments");
@@ -58,10 +60,12 @@ begin
     return;
   end if;
 
+  -- Progress
   if Arg_Dscr.Is_Set (02) then
     Progress := True;
   end if;
 
+  -- Max iter
   if Arg_Dscr.Is_Set (03) then
     declare
       Iter_Str : constant String := Arg_Dscr.Get_Option (03);
@@ -82,7 +86,6 @@ begin
     Syntax_Error ("Invalid arguments");
   end if;
   File_Name := As.U.Tus (Arg_Dscr.Get_Option (Argument_Parser.No_Key_Index, 1));
-
   -- Start solving
   Solve:
   declare
@@ -95,6 +98,10 @@ begin
     if Max_Iter = Default_Iter then
       Max_Iter := (Dim * Dim + 1) * 10;
     end if;
+    Basic_Proc.Put_Line_Output ("Max iterations: " &
+      (if Max_Iter = Infinite_Iter then "infinite" else Int_Img (Max_Iter)));
+
+
 
     Euristic.Search (Mattrix.all, Max_Iter, Progress, Nb_Iterations, Done);
 

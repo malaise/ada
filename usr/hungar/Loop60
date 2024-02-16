@@ -10,15 +10,16 @@ if [ \( "$1" = "-h" \) -o \( "$1" = "--help" \) ] ; then
 fi
 
 # Approximative rate of success and max time (on a 2GHz CPU), for some max loops
-#    MaxLoop  Success MaxTime
+#    MaxLoop  Success MaxTime   Comment
 #      100  =>  20%      1s
 #      250  =>  40%      2s
 #      500  =>  70%      4s
 #     1000  =>  90%      7s
 #     2000  =>  99%     13s
 #     3000  =>  99%     19s
-#     3601  =>  99%     22s
-# Infinite  => 100%     32
+#     3601  =>  99%     23s      Default of Test   :  3601
+# default   => 100%     28s      Default of hungar : 36010
+# infinite  => 100%     32s
 
 # Optional max Nb of iterations
 if [ -z "$1" ] ; then
