@@ -18,8 +18,8 @@ fi
 #     2000  =>  99%     13s
 #     3000  =>  99%     19s
 #     3601  =>  99%     23s      Default of Test   :  3601
-# default   => 100%     28s      Default of hungar : 36010
-# infinite  => 100%     32s
+# default   => 100%     36s      Default of hungar : 36010
+# infinite  => 100%     36s
 
 # Optional max Nb of iterations
 if [ -z "$1" ] ; then
@@ -52,6 +52,9 @@ while true ; do
   if [ $res -eq 2 ] ; then
     let nok=$nok+1
     echo -n "KO "
+  elif [ $res -eq 1 ] ; then
+    echo "Failed" 1>&2
+    exit 1
   else
     echo -n "ok "
   fi
