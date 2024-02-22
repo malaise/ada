@@ -1,6 +1,6 @@
 # Select a random departement number
 # 1..19 2A 2B 21..95 971..974 976
-# Put it for some seconds then put its name and prefecture,
+# Put it for some seconds then put its name, its prefecture and its region,
 #  then wait for Enter, loop
 
 # Input key will not echo
@@ -17,16 +17,17 @@ isstdio ~ [ false inecho ] ifcall
 # Load the file with numbers and names
 "departements.dat" readlins
 dup isinte ~ [ "ERROR: data file not read" putl pop retall ] ifcall
-# Number of entries must be evena and > 0
+# Number of entries must be multiple of 4 and > 0
+4 f popr
 dup 0 = [ "ERROR: empty data file" putl pop retall ] ifcall
-dup 3 % 0 = ~ [ "ERROR: invalid data file" putl ssize popn retall ] ifcall
-3 / N popr
+dup f pushr % 0 = ~ [ "ERROR: invalid data file" putl ssize popn retall ] ifcall
+f pushr / N popr
 
-1
 # Store a department: number in n[Index], name in N[Index]
-#  and prefecture in P[Index]
+#  prefecture in P[Index] and region in R[Index]
 # Stop after storing Index = N
 # Input stack is: Index "Num" "Name", output stack is Index + 1
+1
 [
 # Save index
 i copyr
@@ -38,6 +39,9 @@ N swap popa
 # Store prefecture
 i pushr
 P swap popa
+# Store region
+i pushr
+R swap popa
 # Stop after inserting Nth pair
 i pushr copye N pushr = ifret
 # Increment index
@@ -46,11 +50,11 @@ i pushr 1 +
 S pushr retacal
 ] S copyr call
 
-# Dump: Index Number Name Prefecture (used for debug)
+# Dump: Index Number Name Prefecture Region (used for debug)
 3 format
 [
 dup put " " put dup n swap pusha put " " put dup N swap pusha put " " put
-dup P swap pusha putl
+dup P swap pusha put " " put dup R swap pusha putl
 # Stop loop after putting index N
 dup N pushr = ifret
 # Increment index
@@ -65,9 +69,9 @@ D pushr retacal ] D popr
 rnd N pushr toreal * trunc 1 +
 # Put its Num during some seconds or any input
 dup n swap pusha put ": " put a pushr I pushr call
-# Put its Name and Prefecture
+# Put its Name, Prefecture and Region
 dup N swap pusha put " -> " put
-P swap pusha putl
+dup P swap pusha put " -> " put dup R swap pusha putl
 # Wait for some seconds or any input
 b pushr I pushr call
 
