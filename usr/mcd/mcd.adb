@@ -25,8 +25,8 @@ procedure Mcd is
 
   Termin_Error : exception;
   procedure Error (Message : in String;
-                   Raise_Error : in Boolean := True;
-                   Close_Io : in Boolean := False) is
+                   Close_Io : in Boolean := True;
+                   Raise_Error : in Boolean := True) is
   begin
     Basic_Proc.Put_Line_Error (Mixed_Str(Argument.Get_Program_Name) & " error: "
                             & Message & ".");
@@ -124,8 +124,9 @@ exception
     null;
   when Except:others =>
     Error ("Exception "
-              & Mixed_Str(Ada.Exceptions.Exception_Name (Except))
-              & " raised", Raise_Error => False, Close_Io => True);
+              & Mixed_Str(Ada.Exceptions.Exception_Name (Except)) & " raised",
+           Close_Io => True, Raise_Error => False);
     Close (True);
+    raise;
 end Mcd;
 
