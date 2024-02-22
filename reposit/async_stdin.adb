@@ -1,7 +1,7 @@
 with Ada.Calendar;
 with Event_Mng, Console, Dynamic_List, Environ,
      Unicode, Aski.Unicode, Utf_8, Language, As.U,
-     Trace, Hexa_Utils;
+     Trace, Hexa_Utils, Sys_Calls;
 package body Async_Stdin is
 
   -- The user callback
@@ -282,7 +282,7 @@ package body Async_Stdin is
       if Echo then
         Console.Set_Col (First_Col);
         Console.Erase_End_Line;
-        Sys_Calls.Put_Output (Language.Unicode_To_String (Txt.To_Array));
+        Basic_Proc.Put_Output_Again (Language.Unicode_To_String (Txt.To_Array));
       end if;
       Ind := Txt.Length + 1;
     end Update;
@@ -325,7 +325,7 @@ package body Async_Stdin is
       -- Move 1 right and redisplay
       Ind := Ind + 1;
       if Echo then
-        Sys_Calls.Put_Output (Language.Unicode_To_String (
+        Basic_Proc.Put_Output_Again (Language.Unicode_To_String (
                                Txt.Slice (Ind - 1, Txt.Length)));
         -- Move cursor at proper position
         for I in 1 .. Txt.Length - Ind + 1 loop
@@ -373,7 +373,7 @@ package body Async_Stdin is
           end if;
           if Ind = 1 then
             if Echo then
-              Sys_Calls.Put_Output (Bell);
+              Basic_Proc.Put_Output_Again (Bell);
             end if;
           else
             -- Move one left, shift tail
@@ -402,7 +402,7 @@ package body Async_Stdin is
             Update;
             At_Last := False;
           elsif Echo then
-            Sys_Calls.Put_Output (Bell);
+            Basic_Proc.Put_Output_Again (Bell);
           end if;
           Searching := True;
         when Aski.Esc =>
@@ -428,7 +428,7 @@ package body Async_Stdin is
             if Str = Arrow_Left_Seq then
               -- Left if not at first
               if Ind = 1 and then Echo then
-                Sys_Calls.Put_Output (Bell);
+                Basic_Proc.Put_Output_Again (Bell);
               else
                 Ind := Ind - 1;
                 if Echo then
@@ -439,7 +439,7 @@ package body Async_Stdin is
             elsif Str = Arrow_Right_Seq then
               -- Right if not at Last
               if Ind = Txt.Length + 1 and then Echo then
-                Sys_Calls.Put_Output (Bell);
+                Basic_Proc.Put_Output_Again (Bell);
               else
                 Ind := Ind + 1;
                 if Echo then
@@ -705,7 +705,7 @@ package body Async_Stdin is
     and then Echo
     and then (C = Aski.Cr
       or else C = Aski.Lf) then
-      Sys_Calls.New_Line_Output;
+      Basic_Proc.New_Line_Output_Again;
     end if;
 
     declare
@@ -883,19 +883,19 @@ package body Async_Stdin is
     Dummy_Result : Boolean;
   begin
     if Cb = null then
-      Sys_Calls.Put_Output (Str);
+      Basic_Proc.Put_Output_Again (Str);
     else
       Dummy_Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, True);
       declare
         Buf : constant Unicode_Sequence := Line.Read_Buffer;
       begin
         if Stdio_Is_A_Tty and then Buf'Length /= 0 and then Echo then
-          Sys_Calls.New_Line_Output;
+          Basic_Proc.New_Line_Output_Again;
         end if;
-        Sys_Calls.Put_Output (Str);
+        Basic_Proc.Put_Output_Again (Str);
         if Stdio_Is_A_Tty and then Buf'Length /= 0 and then Echo then
           -- Put buffer, move cursor
-          Sys_Calls.Put_Output (Language.Unicode_To_String (Buf));
+          Basic_Proc.Put_Output_Again (Language.Unicode_To_String (Buf));
           Console.Set_Col (Line.Read_Col);
         end if;
       end;
@@ -917,10 +917,10 @@ package body Async_Stdin is
     Dummy_Result : Boolean;
   begin
     if Cb = null then
-      Sys_Calls.Flush_Output;
+      Basic_Proc.Flush_Output_Again;
     else
       Dummy_Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, True);
-      Sys_Calls.Flush_Output;
+      Basic_Proc.Flush_Output;
       Dummy_Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, False);
     end if;
   end Flush_Out;
@@ -930,10 +930,10 @@ package body Async_Stdin is
     Dummy_Result : Boolean;
   begin
     if Cb = null then
-      Sys_Calls.Put_Error (Str);
+      Basic_Proc.Put_Error (Str);
     else
       Dummy_Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, True);
-      Sys_Calls.Put_Error (Str);
+      Basic_Proc.Put_Error (Str);
       Dummy_Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, False);
     end if;
   end Put_Err;
@@ -942,10 +942,10 @@ package body Async_Stdin is
     Dummy_Result : Boolean;
   begin
     if Cb = null then
-      Sys_Calls.Put_Line_Error (Str);
+      Basic_Proc.Put_Line_Error (Str);
     else
       Dummy_Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, True);
-      Sys_Calls.Put_Line_Error (Str);
+      Basic_Proc.Put_Line_Error (Str);
       Dummy_Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, False);
     end if;
   end Put_Line_Err;
@@ -954,10 +954,10 @@ package body Async_Stdin is
     Dummy_Result : Boolean;
   begin
     if Cb = null then
-      Sys_Calls.New_Line_Error;
+      Basic_Proc.New_Line_Error;
     else
       Dummy_Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, True);
-      Sys_Calls.New_Line_Error;
+      Basic_Proc.New_Line_Error;
       Dummy_Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, False);
     end if;
   end New_Line_Err;
@@ -966,10 +966,10 @@ package body Async_Stdin is
     Dummy_Result : Boolean;
   begin
     if Cb = null then
-      Sys_Calls.Flush_Error;
+      Basic_Proc.Flush_Error;
     else
       Dummy_Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, True);
-      Sys_Calls.Flush_Error;
+      Basic_Proc.Flush_Error;
       Dummy_Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, False);
     end if;
   end Flush_Err;

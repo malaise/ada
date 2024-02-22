@@ -11,7 +11,7 @@ package Basic_Proc is
   procedure New_Line_Output_Again;
   procedure Flush_Output_Again;
 
-  -- Put line on stdout, loop as long as EAGAIN
+  -- Put line on stdout, raise Io_Error on EAGAIN
   procedure Put_Output (Str : in String);
   procedure Put_Output (Char : in Character);
   procedure Put_Line_Output (Str : in String);

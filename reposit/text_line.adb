@@ -252,6 +252,26 @@ package body Text_Line is
     or else Text (Text'Last - Line_Feed'Length + 1 .. Text'Last) /= Line_Feed;
   end End_Reached;
 
+  -- Write some text on a Fd, loop on EAGAIN
+  procedure Write (Fd : in Sys_Calls.File_Desc;
+                   Str : in String;
+                   Len : in Natural) is
+    Start, Remain : Natural;
+    Result : Integer;
+  begin
+    Start := Str'First;
+    Remain := Len;
+    loop
+      Result := Sys_Calls.Write (Fd, Str(Start)'Address, Remain);
+      if Result < 0 then
+        raise Io_Error;
+      end if;
+      exit when Result = Remain;
+      Start := Start + Result;
+      Remain := Remain - Result;
+    end loop;
+  end Write;
+
   -- Put some text in file
   -- This text will either be flushed explicitely
   --  or on close (or each N characters)
@@ -283,12 +303,7 @@ package body Text_Line is
     end if;
 
     -- The text is longer than the buffer, flush it
-    Tmp := Sys_Calls.Write (File.Fd,
-                            Text'Address,
-                            Text'Length);
-    if Tmp /= Text'Length then
-      raise Io_Error;
-    end if;
+    Write (File.Fd, Text, Text'Length);
   end Put;
 
   -- Put_Line some text
@@ -317,7 +332,6 @@ package body Text_Line is
   -- Does nothing on a In_File file
   -- May raise Io_Error if IO error
   procedure Flush (File : in out File_Type) is
-    Result : Natural;
   begin
     -- File must be open, Out_File or inout_File, and buffer not empty
     if not Is_Open (File) then
@@ -327,12 +341,7 @@ package body Text_Line is
       return;
     end if;
     -- Write and reset size
-    Result := Sys_Calls.Write (File.Fd,
-                               File.Buffer'Address,
-                               File.Buffer_Len);
-    if Result /= File.Buffer_Len then
-      raise Io_Error;
-    end if;
+    Write (File.Fd, File.Buffer, File.Buffer_Len);
     File.Buffer_Len := 0;
   exception
     when Sys_Calls.System_Error =>

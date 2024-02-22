@@ -118,27 +118,33 @@ package body Basic_Proc is
     I : Interfaces.C_Streams.Int;
     Str4C : constant String := Str & Aski.Nul;
   begin
-    I := Interfaces.C_Streams.Fputs (Str4C'Address,
+    loop
+      I := Interfaces.C_Streams.Fputs (Str4C'Address,
                  Interfaces.C_Streams.Stderr);
-    Check (I);
+      exit when Check (I, False);
+    end loop;
   end Put_Error;
 
   procedure Put_Error (Char : in Character) is
     I : Interfaces.C_Streams.Int;
     Str4C : constant String := Char & Aski.Nul;
   begin
+    loop
       I := Interfaces.C_Streams.Fputs (Str4C'Address,
                  Interfaces.C_Streams.Stderr);
-      Check (I);
+      exit when Check (I, False);
+    end loop;
   end Put_Error;
 
   procedure New_Line_Error is
     I : Interfaces.C_Streams.Int;
     Str4C : constant String := Aski.Lf & Aski.Nul;
   begin
-    I := Interfaces.C_Streams.Fputs (Str4C'Address,
+    loop
+      I := Interfaces.C_Streams.Fputs (Str4C'Address,
                  Interfaces.C_Streams.Stderr);
-    Check (I);
+      exit when Check (I, False);
+    end loop;
   end New_Line_Error;
 
   procedure Put_Line_Error (Str : in String) is
@@ -150,8 +156,10 @@ package body Basic_Proc is
   procedure Flush_Error is
     I : Interfaces.C_Streams.Int;
   begin
-    I := Interfaces.C_Streams.Fflush (Interfaces.C_Streams.Stderr);
-    Check (I);
+    loop
+      I := Interfaces.C_Streams.Fflush (Interfaces.C_Streams.Stderr);
+      exit when Check (I, False);
+    end loop;
   end Flush_Error;
 
   -- Get line from stdin

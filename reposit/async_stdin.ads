@@ -1,5 +1,5 @@
 -- Handle user inputs asynchronously (call a callback with the input text)
-with Sys_Calls;
+with Basic_Proc;
 package Async_Stdin is
 
   -- Maximum amount of characters stored, 0 for infinite
@@ -81,7 +81,7 @@ package Async_Stdin is
   Error : exception;
 
   -- Error when putting or getting
-  Io_Error : exception renames Sys_Calls.Io_Error;
+  Io_Error : exception renames Basic_Proc.Io_Error;
 
 end Async_Stdin;
 
