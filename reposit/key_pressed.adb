@@ -4,7 +4,7 @@ package body Key_Pressed is
   Stdin_Is_A_Tty : Boolean := False;
 
   -- Prepare stdin for silent input
-  procedure Open (Blocking : in Boolean) is
+  procedure Open is
     Res : Boolean;
     use type Sys_Calls.File_Desc_Kind_List;
   begin
@@ -13,8 +13,7 @@ package body Key_Pressed is
     if not Stdin_Is_A_Tty then
       return;
     end if;
-    Res := Sys_Calls.Set_Tty_Attr (Sys_Calls.Stdin,
-        (if Blocking then Sys_Calls.Char_No_Echo else Sys_Calls.Transparent));
+    Res := Sys_Calls.Set_Tty_Attr (Sys_Calls.Stdin, Sys_Calls.Char_No_Echo);
     if not Res then
       raise Error;
     end if;
@@ -38,7 +37,7 @@ package body Key_Pressed is
   -- No_Key     : Character renames Aski.Nul;
   -- Error_Key  : Character renames Aski.Eot;
 
-  function Get_Key return Character is
+  function Get_Key (Blocking : Boolean := False) return Character is
     Status : Sys_Calls.Get_Status_List;
     Result : Character;
     use type Sys_Calls.Get_Status_List;
@@ -46,7 +45,17 @@ package body Key_Pressed is
     if not Stdin_Is_A_Tty then
       return No_Key;
     end if;
+    if not Blocking then
+      if not Sys_Calls.Set_Blocking (Sys_Calls.Stdin, False) then
+        return Error_Key;
+      end if;
+    end if;
     Sys_Calls.Get_Immediate (Sys_Calls.Stdin, Status, Result);
+    if not Blocking then
+      if not Sys_Calls.Set_Blocking (Sys_Calls.Stdin, True) then
+        return Error_Key;
+      end if;
+    end if;
     if Status = Sys_Calls.None then
       Result := No_Key;
     elsif Status = Sys_Calls.Closed or else Status = Sys_Calls.Error then
@@ -58,10 +67,10 @@ package body Key_Pressed is
   -- Check if a key has been pressed,
   --  raise exception on error
   -- Error : exception;
-  function Key_Pressed return Boolean is
+  function Key_Pressed (Blocking : Boolean := False) return Boolean is
     C : Character;
   begin
-    C := Get_Key;
+    C := Get_Key (Blocking);
     if C = Error_Key then
       raise Error;
     else

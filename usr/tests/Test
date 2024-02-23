@@ -1354,7 +1354,7 @@ fi
 # t_mut
 if `match $arg t_mut` ; then
   title t_mut...
-  echo -e "b\nw\ni\nw\nw\nw\nt\nt\n" | try t_mut s
+  echo -e "bwiwwwtt" | try t_mut s
   cat << EOF >exp
     Start of critical section for   1
     Mutex not free for   2
@@ -1592,7 +1592,7 @@ fi
 
 # t_pattern
 if `match $arg t_pattern` ; then
-  title t_pattern
+  title t_pattern...
   echo -e auto | t_pattern >out 2>err
   cat << EOF >exp
 Called Cb ( 3, 20, 1, tail: >foo<).

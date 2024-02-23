@@ -52,7 +52,7 @@ procedure G is
   function Get_Char return Character is
     Char : Character;
   begin
-    Char := Key_Pressed.Get_Key;
+    Char := Key_Pressed.Get_Key (True);
     if Char = Key_Pressed.Error_Key then
       raise Get_Error;
     else
@@ -95,7 +95,7 @@ procedure G is
 
 begin
   Rnd.Gen.Randomize;
-  Key_Pressed.Open (True);
+  Key_Pressed.Open;
 
   Game:
   loop

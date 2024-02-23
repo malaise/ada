@@ -20,7 +20,7 @@ begin
   end if;
 
   Rnd.Gen.Randomize;
-  Key_Pressed.Open (False);
+  Key_Pressed.Open;
   Id_Loop := 0;
 
   -- Loop of random durations

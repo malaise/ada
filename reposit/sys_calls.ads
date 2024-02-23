@@ -172,19 +172,18 @@ package Sys_Calls is
 
   -- TTYs
   -------
-  -- Modes for a tty. Return True if success
+  -- Modes for a tty (always blocking). Return True if success
   type Tty_Mode_List is (
-    Canonical,   -- Wait for Cr, Echo, Blocking
-    No_Echo,     -- Wait for Cr, No echo, Blocking
-    Char,        -- No wait, Echo, Blocking
-    Char_No_Echo,-- No wait, No echo, Blocking
-    Asynchronous,-- No wait, Echo, Not Blocking
-    Transparent  -- No wait, No echo, Not Blocking
+    Canonical,   -- Wait for Cr, Echo
+    No_Echo,     -- Wait for Cr, No echo
+    Char,        -- No wait, Echo
+    Char_No_Echo -- No wait, No echo
   );
   function Set_Tty_Attr (Fd : File_Desc;
                          Tty_Mode : Tty_Mode_List) return Boolean;
 
-  -- Blocking mode for a non tty. Return True if success
+  -- Blocking mode. Return True if success
+  -- Avoid global setting on stdin/out/err because is may affect the three
   function Set_Blocking (Fd : File_Desc; Blocking : Boolean) return Boolean;
 
   -- Is blocking (for tty or not)

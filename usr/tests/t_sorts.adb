@@ -34,7 +34,7 @@ begin
         return;
     end;
   else
-    Key_Pressed.Open (False);
+    Key_Pressed.Open;
   end if;
 
   Id_Loop := 0;

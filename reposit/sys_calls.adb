@@ -494,9 +494,7 @@ package body Sys_Calls is
       Canonical    => 0,
       No_Echo      => 1,
       Char         => 2,
-      Char_No_Echo => 3,
-      Asynchronous => 4,
-      Transparent  => 5);
+      Char_No_Echo => 3);
     function C_Set_Tty_Attr (Fd : C_Types.Int; Mode : C_Types.Int)
                             return C_Types.Int
       with Import => True, Convention => C, External_Name => "set_tty_attr";

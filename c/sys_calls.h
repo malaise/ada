@@ -60,8 +60,6 @@ extern int get_gid_of_group_name (char *name, int *gid);
 #define NOECHO 1
 #define CHAR   2
 #define CHARNO 3
-#define ASYNC  4
-#define TRANSP 5
 extern int set_tty_attr (int fd, int mode);
 
 /* Set/get blocking mode */

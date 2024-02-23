@@ -206,7 +206,7 @@ begin
         return;
     end;
   end if;
-  Key_Pressed.Open (False);
+  Key_Pressed.Open;
 
   -- Setting from different types
   A.Set(Integer'(21));

@@ -1,30 +1,19 @@
 -- Test  a mutex of Mutexes (kind and and number of clients are provided as
 --   arguments)
-with Basic_Proc, Mutexes, Schedule, Argument, Upper_Char, Sys_Calls, Normal;
+with Basic_Proc, Mutexes, Schedule, Argument, Upper_Char, Normal,
+     Sys_Calls,  Key_Pressed;
 procedure T_Mut is
   pragma Priority(10);
 
   Critical_Section_Duration : constant := 10.0;
   Stdin_Is_A_Tty : Boolean;
-
-  procedure Get_Immediate (C : out Character; Ok : out Boolean) is
-    Status : Sys_Calls.Get_Status_List;
-  begin
-    Sys_Calls.Get_Immediate (Sys_Calls.Stdin, Status, C);
-    case Status is
-      when Sys_Calls.Got =>
-        Ok := True;
-      when others =>
-        Ok := False;
-    end case;
-  end Get_Immediate;
+  Input_Error : exception;
 
   procedure Exec (Mut_Kind : Mutexes.Mutex_Kind;
                   Max_Task : in Positive) is
     Crit_Lock : Mutexes.Mutex (Mut_Kind, False);
 
     subtype Range_Task is Positive range 1 .. Max_Task;
-
 
     task type T is
      pragma Priority(10);
@@ -46,6 +35,19 @@ procedure T_Mut is
 
       Tab : constant String (1..4) := (others => ' ');
 
+      procedure New_Line_On_Tty is
+      begin
+        if Stdin_Is_A_Tty then
+          Basic_Proc.New_Line_Output;
+        end if;
+      end New_Line_On_Tty;
+      procedure Put_Char_On_Tty (C : in Character) is
+      begin
+        if Stdin_Is_A_Tty then
+          Basic_Proc.Put_Output (C);
+        end if;
+      end Put_Char_On_Tty;
+
       procedure Prompt (I : in Range_Task; Set : in Boolean) is
         use type Mutexes.Mutex_Kind;
       begin
@@ -56,6 +58,10 @@ procedure T_Mut is
         end if;
 
         if Stdin_Is_A_Tty then
+          if In_Get then
+            Basic_Proc.New_Line_Output;
+            In_Get := False;
+          end if;
           Basic_Proc.Put_Output ("Task: ");
           Basic_Proc.Put_Output (Normal (Current_I, 3));
           if Mut_Kind /= Mutexes.Simple then
@@ -69,60 +75,98 @@ procedure T_Mut is
         Prompt_Lock.Release;
       end Prompt;
 
-      function Get_Str (K, A : out Character)  return Boolean is
-        S : String (1 .. 256);
-        L : Natural;
+      function Get_Char return Character is
+        C : Character;
+        S : Sys_Calls.Get_Status_List;
+        use type Sys_Calls.Get_Status_List;
+      begin
+        if Stdin_Is_A_Tty then
+          C := Key_Pressed.Get_Key (True);
+        else
+          Sys_Calls.Get_Immediate (Sys_Calls.Stdin, S, C);
+          if S = Sys_Calls.None then
+            C := Key_Pressed.No_Key;
+          elsif S = Sys_Calls.Closed or else S = Sys_Calls.Error then
+            C := Key_Pressed.Error_Key;
+          end if;
+        end if;
+        return C;
+      end Get_Char;
+
+      procedure Get_Str (K, A : out Character) is
         use type Mutexes.Mutex_Kind;
       begin
-        Basic_Proc.Get_Line (S, L);
-        if Mut_Kind /= Mutexes.Simple then
-          if L = 1 then
-            K := Upper_Char (S(1));
-            if K = 'T' then
-              A := K;
-              K := 'W';
-              return True;
-            end if;
-          elsif L = 2 then
-            K := Upper_Char (S(1));
-            A := Upper_Char (S(2));
-            return True;
-          end if;
-        elsif L = 1 then
-          -- Simple mutex
+        if Mut_Kind = Mutexes.Simple then
+          -- Simple mutex, one key Action
           K := 'W';
-          A := Upper_Char (S(1));
-          return True;
+          A := Upper_Char (Get_Char);
+          if A = Key_Pressed.Error_Key then
+             raise Input_Error;
+          end if;
+        else
+          -- RW or RW mutex, 'T' or 'R'/'W' then one key Action
+          A := Upper_Char (Get_Char);
+          if A = 'T' then
+            -- Terminate
+            K := 'W';
+          else
+            -- Read or Write
+            K := A;
+            -- Action
+            A := Upper_Char (Key_Pressed.Get_Key (True));
+            if A = Key_Pressed.Error_Key then
+               raise Input_Error;
+            end if;
+          end if;
         end if;
-        return False;
+
+        -- Check Kind is R or W
+        if K = 'R' or else K = 'W' then
+          if Mut_Kind /= Mutexes.Simple then
+            -- Put kind if mutex is not simple
+            Put_Char_On_Tty (K);
+          end if;
+        else
+          -- Discard
+          A := 'D';
+          New_Line_On_Tty;
+          return;
+        end if;
+        -- Check Action is T, B, I or W
+        if A = 'T' or else A = 'B' or else A = 'I' or else A = 'W' then
+          Put_Char_On_Tty (A);
+        else
+          -- Discard
+          A := 'D';
+        end if;
+        New_Line_On_Tty;
       end Get_Str;
 
       procedure Get (I : in Range_Task; K, A : out Character)  is
-        B : Boolean;
         C : Character;
-        Dummy : Boolean;
       begin
         Get_Lock.Get;
         if Stdin_Is_A_Tty then
           -- Skip any pending character on tty
-          Dummy := Sys_Calls.Set_Tty_Attr (Sys_Calls.Stdin,
-                                           Sys_Calls.Transparent);
           loop
-            Get_Immediate (C, B);
-            exit when not B;
+            C := Key_Pressed.Get_Key;
+            if C = Key_Pressed.Error_Key then
+               raise Input_Error;
+            end if;
+            exit when C = Key_Pressed.No_Key;
           end loop;
-          Dummy := Sys_Calls.Set_Tty_Attr (Sys_Calls.Stdin,
-                                           Sys_Calls.Canonical);
         end if;
 
         -- Start get
+        Prompt (I, True);
         In_Get := True;
-        loop
-          Prompt (I, True);
-          exit when Get_Str (K, A);
-        end loop;
+        Get_Str (K, A);
         In_Get := False;
         Get_Lock.Release;
+      exception
+        when Input_Error =>
+          Get_Lock.Release;
+          raise;
       end Get;
 
       procedure Put (S : in String; I : in  Range_Task) is
@@ -130,6 +174,7 @@ procedure T_Mut is
         Put_Lock.Get;
         if In_Get then
           Basic_Proc.New_Line_Output;
+          In_Get := False;
         end if;
         Basic_Proc.Put_Output (Tab & S & ' ');
         Basic_Proc.Put_Output (Normal (I, 3));
@@ -153,15 +198,17 @@ procedure T_Mut is
       -- Get kind, action
       Input.Get (Num, K, A);
 
-      if Upper_Char (K) = 'R' then
+      if K = 'R' then
         Action := Mutexes.Read;
-      elsif Upper_Char (K) = 'W' then
+      elsif K = 'W' then
         Action := Mutexes.Write;
       else
+        -- Discard
         return True;
       end if;
 
       if Upper_Char (A) = 'T' then
+        -- Terminate
         return False;
       elsif Upper_Char (A) = 'B' then
         Waiting := -1.0;
@@ -170,6 +217,7 @@ procedure T_Mut is
       elsif Upper_Char (A) = 'W' then
         Waiting := 3.0;
       else
+        -- Discard
         return True;
       end if;
 
@@ -204,7 +252,6 @@ procedure T_Mut is
       Input.Put ("Termination of", Index);
       accept Done;
     end T;
-
 
   begin -- Exec
     -- Give to each actor it's name
@@ -255,6 +302,9 @@ begin -- T_Mut
   end if;
 
   Stdin_Is_A_Tty := Sys_Calls.File_Desc_Kind (Sys_Calls.Stdin) = Sys_Calls.Tty;
+  if Stdin_Is_A_Tty then
+    Key_Pressed.Open;
+  end if;
 
   if N_Args = 1 then
     -- Default Nb of tasks
@@ -271,6 +321,10 @@ begin -- T_Mut
   else
     Error ("Too few or too many arguments");
     return;
+  end if;
+
+  if Stdin_Is_A_Tty then
+    Key_Pressed.Close;
   end if;
 
 exception

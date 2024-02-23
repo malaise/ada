@@ -45,7 +45,7 @@ begin
   Basic_Proc.New_Line_Output;
 
   Rnd.Gen.Randomize;
-  Key_Pressed.Open (False);
+  Key_Pressed.Open;
   Id_Loop := 0;
   loop
     begin

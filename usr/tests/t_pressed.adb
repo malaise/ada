@@ -4,10 +4,10 @@ procedure T_Pressed is
   Char : Character;
 begin
 
-  Key_Pressed.Open (True);
+  Key_Pressed.Open;
 
   loop
-    Char := Key_Pressed.Get_Key;
+    Char := Key_Pressed.Get_Key (True);
     Basic_Proc.Put_Line_Output (
           Hexa_Utils.Image (Integer'(Character'Pos (Char)))
         & " ->" & Char & "<");

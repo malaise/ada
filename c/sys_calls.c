@@ -204,7 +204,6 @@ extern int get_gid_of_group_name (char *name, int *gid) {
 extern int set_tty_attr (int fd, int mode) {
 
   struct termios termattr;
-  int set_blk;
 
   for (;;) {
     if (tcgetattr(fd, &termattr) == 0) {
@@ -218,40 +217,22 @@ extern int set_tty_attr (int fd, int mode) {
     case NORMAL:
       termattr.c_lflag |= ICANON;
       termattr.c_lflag |= ECHO;
-      set_blk = TRUE;
     break;
     case NOECHO:
       termattr.c_lflag |= ICANON;
       termattr.c_lflag &= ~ECHO;
-      set_blk = TRUE;
     break;
     case CHAR:
       termattr.c_lflag &= ~ICANON;
       termattr.c_lflag |= ECHO;
       termattr.c_cc[VMIN] = 1;
       termattr.c_cc[VTIME]= 0;
-      set_blk = TRUE;
     break;
     case CHARNO:
       termattr.c_lflag &= ~ICANON;
       termattr.c_lflag &= ~ECHO;
       termattr.c_cc[VMIN] = 1;
       termattr.c_cc[VTIME]= 0;
-      set_blk = TRUE;
-    break;
-    case ASYNC:
-      termattr.c_lflag &= ~ICANON;
-      termattr.c_lflag |= ECHO;
-      termattr.c_cc[VMIN] = 1;
-      termattr.c_cc[VTIME]= 0;
-      set_blk = FALSE;
-    break;
-    case TRANSP:
-      termattr.c_lflag &= ~ICANON;
-      termattr.c_lflag &= ~ECHO;
-      termattr.c_cc[VMIN] = 1;
-      termattr.c_cc[VTIME]= 0;
-      set_blk = FALSE;
     break;
     default:
       errno = EINVAL;
@@ -266,7 +247,7 @@ extern int set_tty_attr (int fd, int mode) {
     }
   }
 
-  return set_blocking (fd, set_blk);
+  return OK;
 }
 
 /* Set/get blocking mode */

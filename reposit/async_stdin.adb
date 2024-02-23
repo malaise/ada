@@ -1,7 +1,7 @@
 with Ada.Calendar;
 with Event_Mng, Console, Dynamic_List, Environ,
      Unicode, Aski.Unicode, Utf_8, Language, As.U,
-     Trace, Hexa_Utils, Sys_Calls;
+     Trace, Hexa_Utils, Sys_Calls, Key_Pressed;
 package body Async_Stdin is
 
   -- The user callback
@@ -669,9 +669,31 @@ package body Async_Stdin is
   begin
     Len := 0;
     loop
-      Sys_Calls.Get_Immediate (Fd, Status, C);
-      case Status is
-        when Sys_Calls.Got =>
+      if Stdio_Is_A_Tty then
+        C := Key_Pressed.Get_Key;
+      else
+        Sys_Calls.Get_Immediate (Fd, Status, C);
+        case Status is
+          when Sys_Calls.Closed | Sys_Calls.Error =>
+            C := Key_Pressed.Error_Key;
+          when Sys_Calls.None =>
+            C := Key_Pressed.No_Key;
+          when Sys_Calls.Got =>
+            null;
+        end case;
+      end if;
+
+      case C is
+        when Key_Pressed.No_Key =>
+          -- No more char
+          exit when Line.Flush;
+          return False;
+        when Key_Pressed.Error_Key =>
+          -- Call Cb with empty txt
+          Line.Clear;
+          exit;
+        when others =>
+          -- Valid char
           if Len = 0 then
             -- First char: compute length
             Len := Language.Nb_Chars (C);
@@ -689,14 +711,6 @@ package body Async_Stdin is
             Len := 0;
             exit when Line.Add (U);
           end if;
-        when Sys_Calls.None =>
-          -- No more char
-          exit when Line.Flush;
-          return False;
-        when Sys_Calls.Closed | Sys_Calls.Error =>
-          -- Call Cb with empty txt
-          Line.Clear;
-          exit;
       end case;
     end loop;
 
@@ -739,27 +753,30 @@ package body Async_Stdin is
     -- Check if restore
     if User_Callback = null then
       if Cb = null then
+        -- No change, remain sync
         return;
       end if;
+      -- Switch to sync
       Cb := null;
-      Result :=
-            (if Stdio_Is_A_Tty then
-               Sys_Calls.Set_Tty_Attr (Sys_Calls.Stdin,
-                                       Sys_Calls.Canonical)
-             else
-               Sys_Calls.Set_Blocking (Sys_Calls.Stdin, True));
+      if Stdio_Is_A_Tty then
+        Key_Pressed.Close;
+      else
+        Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, True);
+      end if;
       if Active then
         Event_Mng.Del_Fd_Callback (Sys_Calls.Stdin, True);
       end if;
     else
       if Cb = null then
-        Result :=
-            (if Stdio_Is_A_Tty then
-               Sys_Calls.Set_Tty_Attr (Sys_Calls.Stdin,
-                                       Sys_Calls.Transparent)
-             else
-               Sys_Calls.Set_Blocking (Sys_Calls.Stdin, False));
+        -- Switch to async
+        if Stdio_Is_A_Tty then
+          Key_Pressed.Open;
+          Result := True;
+        else
+          Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, False);
+        end if;
       else
+        -- No change, remain async
         Result := True;
       end if;
       if Result then
