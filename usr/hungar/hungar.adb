@@ -101,8 +101,6 @@ begin
     Basic_Proc.Put_Line_Output ("Max iterations: " &
       (if Max_Iter = Infinite_Iter then "infinite" else Int_Img (Max_Iter)));
 
-
-
     Euristic.Search (Mattrix.all, Max_Iter, Progress, Nb_Iterations, Done);
 
     if Done then
