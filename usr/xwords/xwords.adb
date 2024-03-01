@@ -41,7 +41,6 @@ procedure Xwords is
   Ananouns_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Ananouns;
   Ananame_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Ananame;
   Search_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Search;
-  In_Anagram_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.In_Anagram;
   Research_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Re_Search;
   Add_Word_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Add_Word;
   Add_Noun_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Add_Noun;
@@ -248,6 +247,8 @@ procedure Xwords is
       Afpx.Encode_Field (Ananame_Fld, (0, 0), Prev_Word.Image);
       Afpx.Clear_Field (Anagrams_Fld);
       Afpx.Utils.Center_Field ("Reset", Anagrams_Fld, 0);
+      -- Color of the Reset (Anagrams) button when in Anagrams
+      Afpx.Set_Field_Colors (Anagrams_Fld, Con_Io.Color_Of ("Blue"));
       In_Anagrams := True;
     else
       Afpx.Clear_Field (Anamode_Fld);
@@ -701,11 +702,10 @@ begin
     end case;
 
     -- Words command when in anagrams
-    Afpx.Set_Field_Activation (In_Anagram_Fld, List_Content = Anagrams);
-    Afpx.Set_Field_Activation (Add_Word_Fld, List_Content /= Anagrams);
-    Afpx.Set_Field_Activation (Add_Noun_Fld, List_Content /= Anagrams);
-    Afpx.Set_Field_Activation (Del_Word_Fld, List_Content /= Anagrams);
-    Afpx.Set_Field_Activation (Del_Noun_Fld, List_Content /= Anagrams);
+    Afpx.Set_Field_Activation (Add_Word_Fld, not In_Anagrams);
+    Afpx.Set_Field_Activation (Add_Noun_Fld, not In_Anagrams);
+    Afpx.Set_Field_Activation (Del_Word_Fld, not In_Anagrams);
+    Afpx.Set_Field_Activation (Del_Noun_Fld, not In_Anagrams);
 
     -- Set cursor at last significant char of the Get field
     Get_Handle.Cursor_Col := Afpx.Last_Index (Afpx.Decode_Field (Get_Fld, 0),

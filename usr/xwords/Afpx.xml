@@ -35,9 +35,8 @@
       <Init Row="0" Col="1">Recall</Init>
     </Field>
     <Field Num="5" Kind="Put" Name="Anamode">
-      <Geometry Up="${Field_4.Up}" Left="${List.Right}-7" Width="8"
-                Height="1"/>
-      <Colors Foreground="Black" Background="Light_Grey"/>
+      <Geometry Up="${Field_4.Up}" Left="${List.Right}-7" Width="8" Height="1"/>
+      <Colors Foreground="Blue" Background="Light_Grey"/>
       <Init Row="0" Col="0">Anagrams</Init>
     </Field>
     <Field Num="6" Kind="Get" Name="Get">
@@ -59,7 +58,7 @@
     <Field Num="9" Kind="Put" Name="Ananame">
       <Geometry Up="${Field_8.Low}+1" Left="${Field_6.Left}" Height="1"
                 Right="${Field_6.Right}"/>
-      <Colors Foreground="Black" Background="Light_Grey"/>
+      <Colors Foreground="Blue" Background="Light_Grey"/>
     </Field>
 
     <!-- Scroll bar, summary -->
@@ -131,61 +130,56 @@
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="1">SEARCH</Init>
     </Field>
-    <Field Num="22" Kind="Put" Name="In_Anagram">
-      <Geometry Up="${Field_21.Low}+1" Left="${BtnLeft}" Height="1" Width="11"/>
-      <Colors Foreground="Black" Background="Light_Grey"/>
-      <Init Row="0" Col="0">In Anagrams</Init>
-    </Field>
-    <Field Num="23" Kind="Button" Name="Re_Search">
-      <Geometry Up="${Field_22.Low}+1" Left="${BtnLeft}+1" Height="1"
+    <Field Num="22" Kind="Button" Name="Re_Search">
+      <Geometry Up="${Field_21.Low}+2" Left="${BtnLeft}+1" Height="1"
                 Width="10"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="1">ReSearch</Init>
     </Field>
 
-    <Field Num="24" Kind="Put">
-      <Geometry Up="${Field_23.Low}+1" Left="${BtnLeft}+1" Height="1"
+    <Field Num="23" Kind="Put">
+      <Geometry Up="${Field_22.Low}+1" Left="${BtnLeft}+1" Height="1"
                 Width="10"/>
       <Colors Foreground="Black" Background="light_Grey"/>
       <Init Row="0" Col="0">----------</Init>
     </Field>
 
-    <Field Num="25" Kind="Put">
-      <Geometry Up="${Field_24.Low}+1" Left="${BtnLeft}" Height="1" Width="5"/>
+    <Field Num="24" Kind="Put">
+      <Geometry Up="${Field_23.Low}+1" Left="${BtnLeft}" Height="1" Width="5"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">Words</Init>
     </Field>
 
-    <Field Num="26" Kind="Put">
-      <Geometry Up="${Field_25.Low}" Left="${BtnLeft}+${BtnOff}" Height="1"
+    <Field Num="25" Kind="Put">
+      <Geometry Up="${Field_24.Low}" Left="${BtnLeft}+${BtnOff}" Height="1"
                 Width="5"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">Nouns</Init>
     </Field>
-    <Field Num="27" Kind="Button" Name="Add_Word">
-      <Geometry Up="${Field_25.Low}+2" Left="${BtnLeft}" Width="5" Height="1"/>
+    <Field Num="26" Kind="Button" Name="Add_Word">
+      <Geometry Up="${Field_24.Low}+2" Left="${BtnLeft}" Width="5" Height="1"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="1">Add</Init>
     </Field>
-    <Field Num="28" Kind="Button" Name="Add_Noun">
-      <Geometry Up="${Field_27.Up}" Left="${BtnLeft}+${BtnOff}" Width="5"
+    <Field Num="27" Kind="Button" Name="Add_Noun">
+      <Geometry Up="${Field_26.Up}" Left="${BtnLeft}+${BtnOff}" Width="5"
                 Height="1"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="1">Add</Init>
     </Field>
-    <Field Num="29" Kind="Button" Name="Del_Word">
-      <Geometry Up="${Field_27.Up}+2" Left="${BtnLeft}" Width="5" Height="1"/>
+    <Field Num="28" Kind="Button" Name="Del_Word">
+      <Geometry Up="${Field_26.Up}+2" Left="${BtnLeft}" Width="5" Height="1"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="1">Del</Init>
     </Field>
-    <Field Num="30" Kind="Button" Name="Del_Noun">
-      <Geometry Up="${Field_29.Up}" Left="${BtnLeft}+${BtnOff}" Width="5"
+    <Field Num="29" Kind="Button" Name="Del_Noun">
+      <Geometry Up="${Field_28.Up}" Left="${BtnLeft}+${BtnOff}" Width="5"
                 Height="1"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="1">Del</Init>
     </Field>
-    <Field Num="31" Kind="Put">
-      <Geometry Up="${Field_30.Low}+1" Left="${BtnLeft}+1" Height="1"
+    <Field Num="30" Kind="Put">
+      <Geometry Up="${Field_29.Low}+1" Left="${BtnLeft}+1" Height="1"
                 Width="10"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">----------</Init>
@@ -193,27 +187,27 @@
 
     <Var Name="Btnwidth" Value="10"/>
 
-    <Field Num="32" Kind="Button" Name="History">
-      <Geometry Up="${Field_31.Low}+1" Left="${BtnLeft}+1" Width="${Btnwidth}"
+    <Field Num="31" Kind="Button" Name="History">
+      <Geometry Up="${Field_30.Low}+1" Left="${BtnLeft}+1" Width="${Btnwidth}"
                 Height="1"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="1" Half_Col_Offset="True">History</Init>
     </Field>
 
-    <Field Num="33" Kind="Button" Name="Clear_List">
-      <Geometry Up="${Field_32.Low}+2" Left="${BtnLeft}+1" Width="${Btnwidth}"
+    <Field Num="32" Kind="Button" Name="Clear_List">
+      <Geometry Up="${Field_31.Low}+2" Left="${BtnLeft}+1" Width="${Btnwidth}"
                 Height="1"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="2" Half_Col_Offset="True">Clear</Init>
     </Field>
-    <Field Num="34" Kind="Button" Name="Nouns">
-      <Geometry Up="${Field_33.Low}+2" Left="${BtnLeft}+1" Width="${Btnwidth}"
+    <Field Num="33" Kind="Button" Name="Nouns">
+      <Geometry Up="${Field_32.Low}+2" Left="${BtnLeft}+1" Width="${Btnwidth}"
                 Height="1"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="2">Nouns</Init>
     </Field>
-    <Field Num="35" Kind="Put">
-      <Geometry Up="${Field_34.Low}+1" Left="${BtnLeft}+1" Height="1"
+    <Field Num="34" Kind="Put">
+      <Geometry Up="${Field_33.Low}+1" Left="${BtnLeft}+1" Height="1"
                 Width="${Btnwidth}"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">----------</Init>
@@ -221,61 +215,61 @@
 
     <!-- List management -->
     <Var Name="LmLeft" Value="${BtnLeft}+2"/>
-    <Var Name="LmUp" Value="${Field_35.Low}+1"/>
+    <Var Name="LmUp" Value="${Field_34.Low}+1"/>
     <Var Name="LmWidth" Value="8"/>
     <Var Name="LmSta" Value="1"/>
 
-    <Field Num="36" Kind="Button" Name="List_Mng">
+    <Field Num="35" Kind="Button" Name="List_Mng">
       <Geometry Up="${LmUp}" Left="${LmLeft}" Height="1" Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="${LmSta}+1" Half_Col_Offset="True">Top</Init>
+    </Field>
+    <Field Num="36" Kind="Button">
+      <Geometry Up="${Field_35.Low}+2" Left="${LmLeft}" Height="1"
+                Width="${LmWidth}"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="0" Col="${LmSta}+1">PgUp </Init>
     </Field>
     <Field Num="37" Kind="Button">
       <Geometry Up="${Field_36.Low}+2" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="0" Col="${LmSta}+1">PgUp </Init>
+      <Init Row="0" Col="${LmSta}+2">Up </Init>
     </Field>
     <Field Num="38" Kind="Button">
       <Geometry Up="${Field_37.Low}+2" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="0" Col="${LmSta}+2">Up </Init>
+      <Init Row="0" Col="${LmSta}">Center</Init>
     </Field>
     <Field Num="39" Kind="Button">
       <Geometry Up="${Field_38.Low}+2" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="0" Col="${LmSta}">Center</Init>
+      <Init Row="0" Col="${LmSta}+1">Down</Init>
     </Field>
     <Field Num="40" Kind="Button">
       <Geometry Up="${Field_39.Low}+2" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="0" Col="${LmSta}+1">Down</Init>
+      <Init Row="0" Col="${LmSta}">PgDown</Init>
     </Field>
     <Field Num="41" Kind="Button">
       <Geometry Up="${Field_40.Low}+2" Left="${LmLeft}" Height="1"
-                Width="${LmWidth}"/>
-      <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="0" Col="${LmSta}">PgDown</Init>
-    </Field>
-    <Field Num="42" Kind="Button">
-      <Geometry Up="${Field_41.Low}+2" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="${LmSta}">Bottom</Init>
     </Field>
 
     <!-- Exit -->
-    <Field Num="43" Kind="Put">
-      <Geometry Up="${Field_42.Low}+1" Left="${BtnLeft}+1" Height="1"
+    <Field Num="42" Kind="Put">
+      <Geometry Up="${Field_41.Low}+1" Left="${BtnLeft}+1" Height="1"
                 Width="${Btnwidth}"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">---------</Init>
     </Field>
-    <Field Num="44" Kind="Button" Name="Quit">
-      <Geometry Up="${Field_43.Low}+1" Left="${BtnLeft}+1" Height="3"
+    <Field Num="43" Kind="Button" Name="Quit">
+      <Geometry Up="${Field_42.Low}+1" Left="${BtnLeft}+1" Height="3"
                 Width="${Btnwidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="1" Half_Col_Offset="True">E X I T</Init>
