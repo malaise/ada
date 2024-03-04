@@ -6,7 +6,7 @@
 
   <Descriptor Num="1" Background="Light_Grey" Name="Main">
 
-    <!-- Title and list -->
+    <!-- List Title and version -->
     <Var Name="WWidth" Value="40"/>
     <List>
       <Geometry Up="8" Left="1" Low="${Screen.Low}-1" Width="${WWidth}"/>
@@ -17,13 +17,13 @@
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">W O R D S</Init>
     </Field>
+    <Field Num="2" Kind="Put" Name="Version">
+      <Geometry Up="0" Right="${Screen.Right}" Height="1" Width="6"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
+      <Init Row="0" Col="0">V1.0</Init>
+    </Field>
 
     <!-- Input area -->
-    <Field Num="2" Kind="Put">
-      <Geometry Up="2" Left="1" Height="1" Width="5"/>
-      <Colors Foreground="Black" Background="Light_Grey"/>
-      <Init Row="0" Col="0">Word:</Init>
-    </Field>
     <Field Num="3" Kind="Button" Name="Clear">
       <Geometry Up="2" Left="8" Width="7" Height="1"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
@@ -108,7 +108,7 @@
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="1">Anagrams</Init>
     </Field>
-    <Field Num="18" Kind="Put">
+    <Field Num="18" Kind="Put" Name="Ananouns_Title">
       <Geometry Up="${Field_17.Low}+2" Left="${BtnLeft}" Height="1" Width="8"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="2">Nouns</Init>

@@ -1,0 +1,69 @@
+Xwords
+======
+V1.0
+
+Xwords is a graphical interface to the 'words' script, which searches in a
+databse for words that match a pattern. Xwords also allows searching and listing
+anagrams of a word.
+
+General behavior
+----------------
+Xwords doesn't take any command line arguments, but requires several environment
+variables to be set:
+
+* WORDS_PATH: set to the directory where to find the script 'words' and
+its files
+* DICTIO_WORDS_FILE: set to the the path and name of the french common words
+dabase
+* DICTIO_NOUNS_FILE: set to the path and name of the french nounds database
+* AFPX_DATA_DIR: (optional) set to the the directory of Afpx files for Xwords
+
+The script 'xw' sets these variables before launching xwords.
+
+Words modes
+-----------
+Words supports two modes: Search and Anagrams.
+
+Search mode
+~~~~~~~~~~~
+In this mode, you can enter a pattern in the 'get' field (the field with white
+background) and search with the button 'Search' the words that match this
+pattern. In this mode, the pattern can contain '*' for any characters (none,
+one or several), and '?' for any character once.
+
+Alternataively, you can enter a regular expression pattern and search with the
+button 'ReSearch'.
+
+The list then shows the matching words. Common words are first listed in lower
+case, then the nouns are listed in upper case.
+
+The button 'Nouns' scrolls the list to the the first noun (if any).
+
+.List management
+The button 'history' lists the previous patterns on which a search has been
+done. A double clic in one of them copies it in the 'get' field.
+
+The button 'Clear' on the right clears the list (or error message).
+
+.Actions on the get field
+The button 'Recall' restores the pattern previously used for search.
+
+The button 'Clear' on the top clears the 'get' field.
+
+.Words database management
+The buttons 'Add' and 'Del' allow adding or removing a common word or a noun.
+
+Anagrams mode
+~~~~~~~~~~~~~
+In this mode, you can enter letters (not pattern) in the 'get' field, then
+click on the 'Anagrams' button.
+
+By default, the common words are listed, but you can tick the 'Nouns' button
+before 'Anagrams', in order to search for anagrams in the nouns database. 
+
+The list shows the various words (sorted by decreasing length) that are
+anagrams of the letters that you entered in the 'get' field.
+
+You can then enter a pattern and search (or ReSearch) for words within these
+anagrams.
+

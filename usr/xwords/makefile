@@ -6,12 +6,14 @@ ADACTL := true
 AFPX := true
 AFPX_XREF := afpx_xref
 
-EXES := xwords xwords.stat words_check t_analist
+EXES := xwords words_check t_analist
 
 CLIBS_xwords := $(PCRE_SLIBS) $(X11_SLIBS)
 CLIBS := $(UTILS_SLIBS)
 
-LARGS_xwords.stat = $(PCRE_ALIBS) $(X11_ALIBS)
+TXT := Xwords
+DOCOPTS_Asubst := -a toc
+
 
 include $(TEMPLATES)/ada.mk
 

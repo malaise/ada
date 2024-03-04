@@ -38,6 +38,8 @@ procedure Xwords is
   Percent_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Percent;
   Anamode_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Anamode;
   Anagrams_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Anagrams;
+  Ananouns_Title_Fld : constant Afpx.Field_Range
+                     := Afpx_Xref.Main.Ananouns_Title;
   Ananouns_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Ananouns;
   Ananame_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Ananame;
   Search_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Search;
@@ -249,14 +251,17 @@ procedure Xwords is
       Afpx.Utils.Center_Field ("Reset", Anagrams_Fld, 0);
       -- Color of the Reset (Anagrams) button when in Anagrams
       Afpx.Set_Field_Colors (Anagrams_Fld, Con_Io.Color_Of ("Blue"));
+      Afpx.Set_Field_Activation  (Ananouns_Title_Fld, Ananouns_Set);
       In_Anagrams := True;
     else
       Afpx.Clear_Field (Anamode_Fld);
       Afpx.Clear_Field (Get_Fld);
       Afpx.Clear_Field (Ananame_Fld);
       Afpx.Reset_Field (Anagrams_Fld);
+      Afpx.Set_Field_Activation  (Ananouns_Title_Fld, True);
       In_Anagrams := False;
     end if;
+    Afpx.Set_Field_Activation  (Ananouns_Fld, not In_Anagrams);
   end Switch_To_Anagrams;
 
   -- List anagrams of word
