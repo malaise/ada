@@ -240,29 +240,7 @@ procedure Xwords is
   -- In Anagrams mode
   In_Anagrams : Boolean;
 
-  -- Switch to Anagrams mode
-  procedure Switch_To_Anagrams (To_Anagrams : in Boolean) is
-  begin
-    if To_Anagrams then
-      Afpx.Reset_Field (Anamode_Fld);
-      Afpx.Clear_Field (Get_Fld);
-      Afpx.Encode_Field (Ananame_Fld, (0, 0), Prev_Word.Image);
-      Afpx.Clear_Field (Anagrams_Fld);
-      Afpx.Utils.Center_Field ("Reset", Anagrams_Fld, 0);
-      -- Color of the Reset (Anagrams) button when in Anagrams
-      Afpx.Set_Field_Colors (Anagrams_Fld, Con_Io.Color_Of ("Blue"));
-      Afpx.Set_Field_Activation  (Ananouns_Title_Fld, Ananouns_Set);
-      In_Anagrams := True;
-    else
-      Afpx.Clear_Field (Anamode_Fld);
-      Afpx.Clear_Field (Get_Fld);
-      Afpx.Clear_Field (Ananame_Fld);
-      Afpx.Reset_Field (Anagrams_Fld);
-      Afpx.Set_Field_Activation  (Ananouns_Title_Fld, True);
-      In_Anagrams := False;
-    end if;
-    Afpx.Set_Field_Activation  (Ananouns_Fld, not In_Anagrams);
-  end Switch_To_Anagrams;
+  procedure Switch_To_Anagrams (To_Anagrams : in Boolean);
 
   -- List anagrams of word
   procedure Do_Anagrams is
@@ -550,9 +528,15 @@ procedure Xwords is
   -- Anagram loading status: Ok, Failed or Pending
   package Protected_Trilean is new Protected_Var (Trilean.Trilean);
   Anagram_Loaded : Protected_Trilean.Protected_T(Mutexes.Simple);
+  function Anagrams_Ok return Boolean is
+    use type Trilean.Trilean;
+  begin
+    return Anagram_Loaded.Get = Trilean.True;
+  end Anagrams_Ok;
+
+  -- Task loading the anagrams
   task body Load_Anagrams is
     Words_Name, Nouns_Name : As.U.Asu_Us;
-    Load : Boolean;
     Ok : Boolean;
   begin
 
@@ -563,17 +547,7 @@ procedure Xwords is
         Words_Name := Words_File_Name;
         Nouns_Name := Nouns_File_Name;
       end Start;
-      Load := True;
-    or
-      -- Do not load
-      accept Stop;
-      Load := False;
-    or
-      -- If main returns without calling
-      terminate;
-    end select;
 
-    if Load then
       -- Load dictionary
       begin
         Analist.Init (Words_Name.Image, Nouns_Name.Image);
@@ -590,10 +564,42 @@ procedure Xwords is
       -- Wake up main task
       Event_Mng.Send_Dummy_Signal;
       Cmd.Logger.Log_Debug ("Signaled");
+    or
+      -- Do not load
+      accept Stop;
+      Anagram_Loaded.Set (Trilean.False);
+    or
+      -- If main returns without calling
+      terminate;
+    end select;
 
-   end if;
    -- Done
   end Load_Anagrams;
+
+  -- Switch to Anagrams mode
+  procedure Switch_To_Anagrams (To_Anagrams : in Boolean) is
+  begin
+    if To_Anagrams then
+      Afpx.Reset_Field (Anamode_Fld);
+      Afpx.Clear_Field (Get_Fld);
+      Afpx.Encode_Field (Ananame_Fld, (0, 0), Prev_Word.Image);
+      Afpx.Clear_Field (Anagrams_Fld);
+      Afpx.Utils.Center_Field ("Reset", Anagrams_Fld, 0);
+      -- Color of the Reset (Anagrams) button when in Anagrams
+      Afpx.Set_Field_Colors (Anagrams_Fld, Con_Io.Color_Of ("Blue"));
+      Afpx.Set_Field_Activation (Ananouns_Title_Fld, Ananouns_Set);
+      Afpx.Set_Field_Activation (Ananouns_Fld, False);
+      In_Anagrams := True;
+    else
+      Afpx.Clear_Field (Anamode_Fld);
+      Afpx.Clear_Field (Get_Fld);
+      Afpx.Clear_Field (Ananame_Fld);
+      Afpx.Reset_Field (Anagrams_Fld, Reset_Activation => False);
+      Afpx.Set_Field_Activation (Ananouns_Title_Fld, Anagrams_Ok);
+      In_Anagrams := False;
+      Afpx.Set_Field_Activation (Ananouns_Fld, Anagrams_Ok);
+    end if;
+  end Switch_To_Anagrams;
 
   -- Allow button Nouns or not
   procedure Allow_Nouns (Allow : in Boolean) is
@@ -636,6 +642,8 @@ begin
   begin
     -- Button is inactive until dictio is loaded OK
     Afpx.Set_Field_Activation (Anagrams_Fld, False);
+    Afpx.Set_Field_Activation (Ananouns_Fld, False);
+    Afpx.Set_Field_Activation (Ananouns_Title_Fld, False);
     Words_File_Name := As.U.Tus (Environ.Getenv_If_Set (Words_Env_Name));
     Nouns_File_Name := As.U.Tus (Environ.Getenv_If_Set (Nouns_Env_Name));
     Load_Anagrams.Start (Words_File_Name, Nouns_File_Name);
@@ -661,6 +669,8 @@ begin
           -- Dictio loaded OK, enable
           Cmd.Logger.Log_Debug ("Activated");
           Afpx.Set_Field_Activation (Anagrams_Fld, True);
+          Afpx.Set_Field_Activation (Ananouns_Fld, True);
+          Afpx.Set_Field_Activation (Ananouns_Title_Fld, True);
           Loading_Anagrams := False;
         when Trilean.False =>
           -- Dictio loading failed

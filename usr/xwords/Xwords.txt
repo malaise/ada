@@ -1,6 +1,6 @@
 Xwords
 ======
-V1.0
+V1.1
 
 Xwords is a graphical interface to the 'words' script, which searches in a
 databse for words that match a pattern. Xwords also allows searching and listing
