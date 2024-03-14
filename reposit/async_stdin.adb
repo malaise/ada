@@ -827,17 +827,24 @@ package body Async_Stdin is
   -- Clear internal buffer of pending characters
   procedure Clear_Pending is
     Status : Sys_Calls.Get_Status_List;
+    Result, Dummy : Boolean;
     C : Character;
     use type Sys_Calls.Get_Status_List;
   begin
     Line.Clear;
     if Cb /= null then
       -- Remove pending characters from stdin
+      Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, False);
+      if not Result then
+        -- Cannot set non blocking => give up
+        return;
+      end if;
       loop
         Sys_Calls.Get_Immediate (Sys_Calls.Stdin, Status, C);
         exit when Status /= Sys_Calls.Got;
       end loop;
     end if;
+    Dummy := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, True);
   end Clear_Pending;
 
   -- Clear the history
