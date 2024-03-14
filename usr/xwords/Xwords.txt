@@ -59,7 +59,7 @@ In this mode, you can enter letters (not pattern) in the 'get' field, then
 click on the 'Anagrams' button.
 
 By default, the common words are listed, but you can tick the 'Nouns' button
-before 'Anagrams', in order to search for anagrams in the nouns database. 
+before 'Anagrams', in order to search for anagrams in the nouns database.
 
 The list shows the various words (sorted by decreasing length) that are
 anagrams of the letters that you entered in the 'get' field.
