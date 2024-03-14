@@ -315,7 +315,7 @@ begin
 
     -- Pow
     begin
-     Ic := Ia ** Ib;
+      Ic := Ia ** Ib;
       Ok := True;
     exception
       when Constraint_Error =>
