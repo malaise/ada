@@ -834,16 +834,34 @@ package body Arbitrary is
 
   function "**" (A, B : Number) return Number is
     Pb : constant Boolean := Basic.Check_Is_Nat (B);
-    R : Number := One;
-    I : Number := B;
+    R : Number;
+    I : Number;
+    T : Number;
   begin
     Syntax.Check (A);
     if not Pb then
       raise Constraint_Error;
     end if;
-    while I /= Number_Zero loop
+    -- Specific "X ** 0 -> 1"
+    if B = Number_Zero then
+      return Number_One;
+    end if;
+
+    -- Init result
+    R := A;
+    I := Number_One;
+    -- Powers of 2
+    loop
+      T := I * Number_Two;
+      exit when T > B;
+      R := R * R;
+      I := T;
+    end loop;
+
+    --  Single increments
+    while I < B loop
       R := R * A;
-      I := I - Number_One;
+      I := I + Number_One;
     end loop;
     return R;
   end "**";
