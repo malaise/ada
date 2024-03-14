@@ -33,9 +33,6 @@ procedure Mcd is
     if Io_Flow.Is_Interactive then
       -- Continue on error
       Io_Flow.Clear_Interactive;
-      if Close_Io then
-        Close (True);
-      end if;
     else
       -- Terminate on error
       Mcd_Parser.Dump_Stack;
