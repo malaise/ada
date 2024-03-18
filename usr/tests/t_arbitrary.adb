@@ -319,7 +319,7 @@ begin
       Ok := True;
     exception
       when Constraint_Error =>
-        -- Integer too big
+        -- Integer result (Ic) is too big, or power (Ib) is negative
         Ok := False;
     end;
     if Ok then
