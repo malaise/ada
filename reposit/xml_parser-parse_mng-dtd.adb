@@ -8,7 +8,7 @@ package body Dtd is
 
   -- Image of line_no without leading space
   function Line_Image (I : Line_Range) return String
-           renames Images.Llunat_Image;
+           renames Long_Longs.Image;
 
   -- Image of an int
   function Int_Image (I : Integer) return String renames Images.Integer_Image;

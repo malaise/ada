@@ -1,6 +1,6 @@
 -- Compress or uncompress stdin to stdout
 with Basic_Proc, Sys_Calls, Argument, Argument_Parser,
-     As.U, Images, Trace.Loggers, Lz4L, Long_Longs;
+     As.U, Trace.Loggers, Lz4L, Long_Longs;
 procedure Alz4L is
 
   subtype Ll_Integer is Long_Longs.Ll_Integer;
@@ -9,7 +9,7 @@ procedure Alz4L is
 
   -- Max buffer size in Mega Bytes
   Buffer_Unit : constant := 1024 * 1024;
-  Max_Buffer_Size : constant := Ll_Integer'Last / Buffer_Unit;
+  Max_Buffer_Size : constant Ll_Positive := Ll_Integer'Last / Buffer_Unit;
 
   -- Default buffer size in Mega Bytes
   Buffer_Size : Ll_Positive := 5 * 1024;
@@ -23,8 +23,8 @@ procedure Alz4L is
     Basic_Proc.Put_Line_Error (" -c | --compress              : Compress stdin to stdout");
     Basic_Proc.Put_Line_Error (" -d | --decompress            : Uncompress stdin to stdout");
     Basic_Proc.Put_Line_Error (" -s <MB> | --buffer_size=<MB> : Buffer size in MB " &
-      "(max=" & Images.Llint_Image (Max_Buffer_Size) & ", default=" &
-      Images.Llint_Image (Buffer_Size) & ")");
+      "(max=" & Long_Longs.Image (Max_Buffer_Size) & ", default=" &
+      Long_Longs.Image (Buffer_Size) & ")");
     Basic_Proc.Put_Line_Error (" -h | --help                  : Display this help");
   end Help;
   procedure Error (Msg : in String) is
@@ -55,7 +55,7 @@ procedure Alz4L is
     Buffer_Size := Ll_Positive'Value (Str);
     if Buffer_Size > Max_Buffer_Size then
       Error ("Buffer size too large (Max "
-           & Images.Long_Image (Max_Buffer_Size) & ")");
+           & Long_Longs.Image (Max_Buffer_Size) & ")");
       return False;
     end if;
     return True;

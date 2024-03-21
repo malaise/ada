@@ -1,6 +1,6 @@
 with Ada.Exceptions;
 with Environ, Basic_Proc, Many_Strings, Command, Directory, Dir_Mng, Str_Util,
-     Aski, Images, Reg_Exp, Afpx, Trace.Loggers;
+     Aski, Images, Long_Longs, Reg_Exp, Afpx, Trace.Loggers;
 with Utils;
 package body Git_If is
 
@@ -743,7 +743,7 @@ package body Git_If is
     Cmd.Cat ("--full-history");
     if Max /= 0 then
       Cmd.Cat ("-n");
-      Cmd.Cat (Images.Llunat_Image (Max + 1));
+      Cmd.Cat (Long_Longs.Image (Max + 1));
     end if;
     if Sparse then
       Cmd.Cat ("--sparse");
@@ -817,7 +817,7 @@ package body Git_If is
     Cmd.Cat ("--full-history");
     if Max /= 0 then
       Cmd.Cat ("-n");
-      Cmd.Cat (Images.Llunat_Image (Max + 1));
+      Cmd.Cat (Long_Longs.Image (Max + 1));
     end if;
     Cmd.Cat ("--date-order");
     Cmd.Cat ("--no-abbrev-commit");

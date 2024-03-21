@@ -1,6 +1,5 @@
 -- Various convertions from numbers to string
 with Ada.Calendar;
-with Long_Longs, Arbitrary;
 package Images is
 
   -- Image of a discrete type (Mixed_String)
@@ -19,12 +18,8 @@ package Images is
   -- Image of an Integer
   function Integer_Image (I : Integer) return String;
 
-  -- Image of a Long_Integer and Long_Longs.Ll_Integer
+  -- Image of a Long_Integer
   function Long_Image (L : Long_Integer) return String;
-  function Llint_Image (L : Long_Longs.Ll_Integer) return String;
-
-  -- Image of an Arbitrary integer
-  function Arbitrary_Image (A : Arbitrary.Number) return String;
 
   -- Image of an integer in base 16 (without leading space)
   -- "16#XYZ#"
@@ -47,8 +42,6 @@ package Images is
   generic
     type Modul is mod <>;
   function Mod_Image (M : Modul) return String;
-  -- Image of a Long_Longs.Llu_Natural
-  function Llunat_Image (U : Long_Longs.Llu_Natural) return String;
 
 
   -- Image of a Duration (without leading space)

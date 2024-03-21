@@ -1,4 +1,4 @@
-with Computer, Environ, Reg_Exp, Images, Arbitrary;
+with Computer, Environ, Reg_Exp, Arbitrary;
 with Error, Debug;
 package body Variables is
 
@@ -143,7 +143,7 @@ package body Variables is
   begin
     Memory.Set_External_Resolver (Getenv'Access);
     I := Memory.Compute (Text.Image);
-    return As.U.Tus (Images.Arbitrary_Image (I));
+    return As.U.Tus (Arbitrary.Basic_Image (I));
   exception
     when others =>
       Error ("Cannot compute " & Text.Image);

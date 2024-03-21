@@ -1,5 +1,5 @@
 -- Test Num with num and criteria arguments, for integer and arbitrary
-with Basic_Proc, Argument, Arbitrary, Match, Images;
+with Basic_Proc, Argument, Arbitrary, Match;
 procedure T_Num_Match is
 
   package My_Num_Match is new Match.Num_Match (Integer);
@@ -51,7 +51,7 @@ begin
            := Match.Arbi_Match.Expand (Str(1 .. Len), Arbi);
   begin
     for I in Ranges'Range loop
-      Basic_Proc.Put_Output (Images.Arbitrary_Image (Ranges(I)));
+      Basic_Proc.Put_Output (Arbitrary.Basic_Image (Ranges(I)));
       if I /= Ranges'Last then
         Basic_Proc.Put_Output (", ");
       else

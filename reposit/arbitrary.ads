@@ -24,6 +24,8 @@ package Arbitrary is
   -- Image: +xxx or -xxx
   function Image (V : Number) return String;
   function Length (V : Number) return Natural;
+  -- Basic image: xxx or -xxx
+  function Basic_Image (V : Number) return String;
 
   -- Is a Number equal to 0
   function Is_Null (V : Number) return Boolean;

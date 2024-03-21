@@ -1,5 +1,5 @@
 -- Test File_Hash  by searching some lines within a file (provided as arguments)
-with Argument, Basic_Proc, File_Hash, Images;
+with Argument, Basic_Proc, File_Hash, Long_Longs;
 procedure T_File_Hash is
   -- Allocate list on Heap i.o. stack
   type List_Access is not null access File_Hash.List_Mng.List_Type;
@@ -26,7 +26,7 @@ begin
      loop
         List.Read_Current (Line);
         Basic_Proc.Put_Line_Output ("FOUND at line "
-                                  & Images.Llint_Image (Line.No)
+                                  & Long_Longs.Image (Line.No)
                                   & " >" & Line.Txt.Image & "<");
         List.Search_Next (Line, Found);
         exit when not Found;

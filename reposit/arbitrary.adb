@@ -543,6 +543,13 @@ package body Arbitrary is
   overriding function Length (V : Number) return Natural is
     (As.U.Asu_Us(V).Length);
 
+  -- Basic image: xxx or -xxx
+  function Basic_Image (V : Number) return String is
+     Str : constant String := V.Image;
+  begin
+   return (if Str(1) = '+' then Str(2 .. Str'Last) else Str);
+  end Basic_Image;
+
   -- Is a Number 0, natural, positive
   overriding function Is_Null  (V : Number) return Boolean is
     (Basic.Check_Is_Null (V));

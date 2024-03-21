@@ -1,6 +1,6 @@
 with Ada.Exceptions;
 with As.U.Utils, Environ, Argument, Argument_Parser, Basic_Proc, Language,
-     Images, Mixed_Str, Text_Line, Reg_Exp, Arbitrary;
+     Mixed_Str, Text_Line, Reg_Exp, Arbitrary;
 with Search_Pattern, Replace_Pattern, Substit, File_Mng, Log;
 procedure Asubst is
 
@@ -299,7 +299,7 @@ procedure Asubst is
     elsif Verbosity >= Put_Subst_Nb then
       -- Put file name and nb of substitutions
       Basic_Proc.Put_Line_Output (File.Image
-                                & Images.Arbitrary_Image (Nb_Subst));
+                                & Arbitrary.Basic_Image (Nb_Subst));
     end if;
   exception
     when Substit.Substit_Error =>

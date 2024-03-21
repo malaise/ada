@@ -141,7 +141,7 @@ begin
           Val(I) := Anany.Real;
         else
           Error ("Invalid content " & Any_Def.Image (Anany) & ", at line "
-              & Images.Llunat_Image (Pool.Length + 1));
+              & Long_Longs.Image (Pool.Length + 1));
           return;
         end if;
         Totals(I) := Totals(I) + Val(I);
@@ -167,7 +167,7 @@ begin
     end loop;
 
     -- Display results
-    Basic_Proc.Put_Line_Output ("Nb lines: " & Images.Llunat_Image (Nbu));
+    Basic_Proc.Put_Line_Output ("Nb lines: " & Long_Longs.Image (Nbu));
     for I in 1 .. Nb_Columns loop
        Deviations(I) := Deviations(I) / Nbr;
        Basic_Proc.Put_Line_Output ( "Col " & Images.Integer_Image (I)

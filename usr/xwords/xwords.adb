@@ -2,7 +2,7 @@
 -- Or search anagrams
 with As.U.Utils, Argument, Con_Io, Afpx.Utils, Basic_Proc, Language,
      Many_Strings, Str_Util, Lower_Str, Environ, Images, Event_Mng, Afpx_Xref,
-     Mutexes, Protected_Var, Trilean, Rounds, Normal, Reg_Exp;
+     Mutexes, Protected_Var, Trilean, Rounds, Normal, Reg_Exp, Long_Longs;
 with Cmd, Analist, Icon;
 procedure Xwords is
 
@@ -142,7 +142,7 @@ procedure Xwords is
         Afpx.Clear_Field (Topnum_Fld);
         if not Afpx.Line_List.Is_Empty then
           Afpx.Encode_Field (Topnum_Fld, (0, 0),
-                             Images.Llunat_Image (Afpx_Status.Id_Top));
+                             Long_Longs.Image (Afpx_Status.Id_Top));
         end if;
         -- Scroll bar index
         Afpx.Clear_Field (Scroll_Fld);
@@ -693,7 +693,7 @@ begin
     and then not Afpx.Line_List.Is_Empty then
       -- Get position of top and encode field
       Afpx.Encode_Field (Topof_Fld, (0, 0),
-                         Images.Llunat_Image (Afpx.Line_List.List_Length));
+                         Long_Longs.Image (Afpx.Line_List.List_Length));
       Allow_Nouns (List_Content = Words);
     else
       Afpx.Clear_Field (Scroll_Fld);

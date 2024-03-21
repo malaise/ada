@@ -2,7 +2,7 @@
 -- Output results as XML or optionnaly in shell format (export <Name>=<Value>)
 -- Usage: Comp_Vars [ -s | --shell ] [ { <file> } ]
 with As.U, Argument, Text_Line, Sys_Calls, Xml_Parser, Computer, Environ,
-     Images;
+     Long_Longs, Arbitrary;
 procedure Comp_Vars is
 
   -- Computer memory
@@ -57,7 +57,7 @@ procedure Comp_Vars is
       end if;
       if Xml_Parser.Is_Valid (Node) then
         Sys_Calls.Put_Error (" at line "
-           & Images.Llunat_Image (Ctx.Get_Line_No (Node)));
+           & Long_Longs.Image (Ctx.Get_Line_No (Node)));
         if Node.Kind = Xml_Parser.Element then
           Sys_Calls.Put_Error (" on node " & Ctx.Get_Name (Node));
         end if;
@@ -189,7 +189,7 @@ procedure Comp_Vars is
         Expr : constant String := Text.Image;
       begin
         if Var_Is_Int then
-          Result := As.U.Tus (Images.Arbitrary_Image (Memory.Compute (Expr)));
+          Result := As.U.Tus (Arbitrary.Basic_Image (Memory.Compute (Expr)));
         else
           Result := As.U.Tus (Memory.Eval (Expr));
         end if;

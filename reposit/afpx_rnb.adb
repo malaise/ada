@@ -345,7 +345,7 @@ procedure Afpx_Rnb is
         if New_Num = 0 and then Action = Delete then
           -- Reference to a deleted field
           Basic_Proc.Put_Line_Output ("Warning: Text """ & Input.Image
-            & """ at line " & Images.Llunat_Image (Line)
+            & """ at line " & Long_Longs.Image (Line)
             & " " & (if Force then "had" else "has")
             & " a reference to field " & Text.Slice (I, J)
             & ".");

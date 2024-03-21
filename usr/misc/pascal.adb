@@ -1,11 +1,11 @@
 -- Pascal Triangle
-with Basic_Proc, Images;
+with Basic_Proc, Images, Long_Longs;
 use Basic_Proc;
 -- Compute elements of the 33 first lines lignes of the Pascal's triangle
 procedure Pascal is
 
   -- Item computed and printed
-  Element      : Long_Long_Integer;
+  Element      : Long_Longs.Ll_Integer;
   -- Table of results
   No_Line_Max : constant Integer := 33;
   Index_Max   : constant Integer := No_Line_Max + 1;
@@ -44,7 +44,7 @@ begin
                       Table(Typ_No_Line'Pred(No_Line), Index);
       end if;
       Table(No_Line, Index) := Element;
-      Put_Output (Images.Llint_Image (Element));
+      Put_Output (Long_Longs.Image (Element));
       if Index /= Typ_Index'Succ(No_Line) then
         Put_Output ('/');
       end if;

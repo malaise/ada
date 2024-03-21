@@ -1,6 +1,6 @@
 with Ada.Exceptions;
 with As.U, Directory, Afpx.Utils, Str_Util, Basic_Proc,
-     Aski, Images, Trilean, Con_Io;
+     Aski, Long_Longs, Trilean, Con_Io;
 with Utils.X, Config, Push_Pull, Afpx_Xref, Confirm, Error, Stash, Reset;
 package body Commit is
 
@@ -679,7 +679,7 @@ package body Commit is
         Init_List (Untracked);
         Decode_Comment;
         if Confirm ("Staging all",
-                    "Stage " & Images.Llunat_Image (Untracked.List_Length)
+                    "Stage " & Long_Longs.Image (Untracked.List_Length)
                              & " untracked file"
                              & (if Untracked.List_Length = 1 then "" else "s")
                              & "?",

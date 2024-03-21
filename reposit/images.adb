@@ -34,18 +34,6 @@ package body Images is
   function Long_Image (L : Long_Integer) return String
            renames Loc_Long_Image;
 
-  -- Image of Long_Longs.Ll_Int
-  function Loc_Llint_Image is new Int_Image (Long_Longs.Ll_Integer);
-  function Llint_Image (L : Long_Longs.Ll_Integer) return String
-           renames Loc_Llint_Image;
-
-  -- Image of an arbitrary integer
-  function Arbitrary_Image (A : Arbitrary.Number) return String is
-    Str : constant String := A.Image;
-  begin
-   return (if Str(1) = '+' then Str(2 .. Str'Last) else Str);
-  end Arbitrary_Image;
-
 
   -- Image of Integer in base 16 (without leading space)
   -- 16#xxx#
@@ -82,11 +70,6 @@ package body Images is
   begin
     return Str(2 .. Str'Last);
   end Mod_Image;
-
-  -- Image of Long_Longs.Llu_Natural
-  function Loc_Lunat_Image is new Mod_Image (Long_Longs.Llu_Natural);
-  function Llunat_Image (U : Long_Longs.Llu_Natural) return String
-           renames Loc_Lunat_Image;
 
 
   -- Image of a duration (without leading space)

@@ -1,6 +1,6 @@
 with As.U.Utils;
 with Argument, Sys_Calls.File_Access, Text_Line, Temp_File, Reg_Exp,
-     Directory, Copy_File, Mixed_Str, Images, Basic_Proc;
+     Directory, Copy_File, Mixed_Str, Basic_Proc;
 with Search_Pattern, Replace_Pattern, Log;
 package body Substit is
 
@@ -34,7 +34,7 @@ package body Substit is
   -- Current line number
   Line_No : Arbitrary.Number;
   function Line_Image (A : Arbitrary.Number)
-           return String renames Images.Arbitrary_Image;
+           return String renames Arbitrary.Basic_Image;
 
   -- Display error. If Give_Up then also cleanup and raise Substit_Error
   procedure Error (Msg : in String; Give_Up : in Boolean := True);

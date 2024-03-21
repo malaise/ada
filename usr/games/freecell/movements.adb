@@ -1,4 +1,4 @@
-with Queues, Trace.Loggers, Images, As.U;
+with Queues, Trace.Loggers, Images, Long_Longs, As.U;
 with Table, Memory;
 package body Movements is
 
@@ -466,7 +466,7 @@ package body Movements is
       Play_Lifo.Push (Target);
     end loop Spread;
     Logger.Log_Debug (" Finished spreading into "
-                    & Images.Llint_Image (Play_Lifo.Length) & " stacks");
+                    & Long_Longs.Image (Play_Lifo.Length) & " stacks");
 
     -- Move the card to target
     Logger.Log_Debug ("  Moving " & Mov.Card.Image & "  to target");

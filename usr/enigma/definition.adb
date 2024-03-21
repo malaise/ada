@@ -1,6 +1,6 @@
 -- Parses command line and returns enigma definition
 with Ada.Exceptions;
-with Argument, Xml_Parser, Environ, Str_Util, Parser, Images;
+with Argument, Xml_Parser, Environ, Str_Util, Parser, Images, Long_Longs;
 with Io_Manager;
 package body Definition is
 
@@ -110,7 +110,7 @@ package body Definition is
         -- Check the Carries has no dup
         if not Check_Dup (Get_Carries (Children(I))) then
           Ple ("ERROR: Invalid Carries definition at line"
-              & Images.Llunat_Image (Ctx.Get_Line_No (Children(I))));
+              & Long_Longs.Image (Ctx.Get_Line_No (Children(I))));
            raise Invalid_Configuration;
         end if;
       end if;
@@ -145,7 +145,7 @@ package body Definition is
         when others =>
           Ple ("ERROR: Invalid " & Ctx.Get_Name (Children(I))
                 & " definition at line"
-                & Images.Llunat_Image (Ctx.Get_Line_No (Children(I))));
+                & Long_Longs.Image (Ctx.Get_Line_No (Children(I))));
              raise Invalid_Configuration;
       end;
     end loop;

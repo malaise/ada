@@ -140,7 +140,7 @@ procedure Afpx_Bld is
   procedure File_Error (Node : in Xp.Node_Type; Msg : in String) is
   begin
     Basic_Proc.Put_Line_Error ("Error in file " & List_File_Name.Image
-       & " at line " & Images.Llunat_Image (Ctx.Get_Line_No (Node))
+       & " at line " & Long_Longs.Image (Ctx.Get_Line_No (Node))
        & ": " & Msg & ".");
     raise File_Syntax_Error;
   end File_Error;
@@ -752,7 +752,7 @@ procedure Afpx_Bld is
         when Xref.Identifier_Redefined =>
           File_Error (Node,
             "A field with this name already exists in the descriptor at line "
-          & Images.Llunat_Image (Xref.Prev_Name_Line));
+          & Long_Longs.Image (Xref.Prev_Name_Line));
       end;
     end if;
 
@@ -1004,7 +1004,7 @@ procedure Afpx_Bld is
       when Xref.Identifier_Redefined =>
         File_Error (Node,
             "A descriptor with this name already exists at line "
-          & Images.Llunat_Image (Xref.Prev_Name_Line));
+          & Long_Longs.Image (Xref.Prev_Name_Line));
     end;
 
     -- Init dscr and fields array. No list at init
