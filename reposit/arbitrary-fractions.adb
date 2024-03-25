@@ -95,6 +95,7 @@ package body Arbitrary.Fractions is
 
   -- Basic comparisons
   overriding function "=" (A, B : Fraction) return Boolean is
+    -- Fractions are always reduced
     (A.Numerator = B.Numerator
      and then A.Denominator = B.Denominator);
 

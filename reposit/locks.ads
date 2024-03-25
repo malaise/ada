@@ -9,6 +9,8 @@ package Locks is
   procedure Close (A_Lock : in Lock);
 
   -- If Key is Pass, then simply pass through the lock (return True)
+  -- Otherwise wait until the lock is open (return True)
+  --  or timeout (retrun False)
   -- By default a Key is Fake
   type Key_Type is private;
   Fake, Pass : constant Key_Type;
@@ -43,5 +45,4 @@ private
   end record;
 
 end Locks;
-
 
