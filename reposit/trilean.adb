@@ -13,6 +13,19 @@ package body Trilean is
     end case;
   end Tri2Boo;
 
+  function Tri2Boo (Val : Trilean; Other_As : Boolean) return Boolean is
+  begin
+    case Val is
+      when False =>
+        return Boolean'(False);
+      when True =>
+        return Boolean'(True);
+      when Other =>
+        return Other_As;
+    end case;
+  end Tri2Boo;
+
+
   function Boo2Tri (Val : Boolean) return Trilean is
   begin
     return (case Val is

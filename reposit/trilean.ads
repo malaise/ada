@@ -14,6 +14,9 @@ package Trilean is
   -- Raises Constraint_Error if Val is Other
   function Tri2Boo (Val : Trilean) return Boolean;
 
+  -- False -> False, True -> True and Other -> Other_As
+  function Tri2Boo (Val : Trilean; Other_As : Boolean) return Boolean;
+
   -- False -> False and True -> True
   function Boo2Tri (Val : Boolean) return Trilean;
 
