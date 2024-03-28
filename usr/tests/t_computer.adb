@@ -1,6 +1,6 @@
 -- Set some variables in Computer and then evaluate and compute an expression
 -- Variables and expression are defined as arguments
-with Basic_Proc, Argument, Computer, Str_Util, Arbitrary;
+with Basic_Proc, Argument, Computer.Computation, Str_Util, Arbitrary;
 procedure T_Computer is
   procedure Usage is
   begin
@@ -10,7 +10,7 @@ procedure T_Computer is
 
   Loc : Natural;
   N : Arbitrary.Number;
-  Mem : Computer.Memory_Type;
+  Mem : Computer.Computation.Memory_Type;
 begin
   if Argument.Get_Nbre_Arg = 0 then
     Usage;

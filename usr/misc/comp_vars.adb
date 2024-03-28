@@ -1,12 +1,12 @@
 -- Compute variables from definitions in Xml files or stdin
 -- Output results as XML or optionnaly in shell format (export <Name>=<Value>)
 -- Usage: Comp_Vars [ -s | --shell ] [ { <file> } ]
-with As.U, Argument, Text_Line, Sys_Calls, Xml_Parser, Computer, Environ,
-     Long_Longs, Arbitrary;
+with As.U, Argument, Text_Line, Sys_Calls, Xml_Parser, Computer.Computation,
+     Environ, Long_Longs, Arbitrary;
 procedure Comp_Vars is
 
   -- Computer memory
-  Memory : Computer.Memory_Type;
+  Memory : Computer.Computation.Memory_Type;
 
   -- Getenv raising exception if not set
   function My_Getenv (Name : String) return String is

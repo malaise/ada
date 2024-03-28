@@ -2,7 +2,8 @@ with Ada.Exceptions, Ada.Direct_Io;
 with As.U, Aski,
      Con_Io, Normal, Argument,
      Mixed_Str, Basic_Proc, Xml_Parser,
-     Ada_Words, Parser, Str_Util, Arbitrary, Computer, Images, Long_Longs,
+     Ada_Words, Parser, Str_Util, Arbitrary, Computer.Computation,
+     Images, Long_Longs,
      Language;
 with Afpx_Typ;
 -- Read Afpx.xml, check it
@@ -18,7 +19,7 @@ procedure Afpx_Bld is
   Ctx : Xp.Ctx_Type;
 
   -- Computer memory
-  Memory : Computer.Memory_Type;
+  Memory : Computer.Computation.Memory_Type;
 
   -- Unbounded strings
   subtype Asu_Us is As.U.Asu_Us;

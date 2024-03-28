@@ -1,8 +1,8 @@
-with Computer, Environ, Reg_Exp, Arbitrary;
+with Computer.Computation, Environ, Reg_Exp, Arbitrary;
 with Error, Debug;
 package body Variables is
 
-  Memory : Computer.Memory_Type;
+  Memory : Computer.Computation.Memory_Type;
 
   Ext_Ref : constant Character := '$';
 

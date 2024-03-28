@@ -6,7 +6,6 @@
 --  Supports parentheses
 -- Both support an optional external variable resolver
 private with As.U, Hashed_List.Unique, Environ;
-with Arbitrary;
 package Computer is
 
   -- A memory set
@@ -72,14 +71,6 @@ package Computer is
   function Eval (Memory : in out Memory_Type;
                  Expression : in String) return String;
 
-  -- Computation of expression
-  -- First, all the variables are resolved and must lead to a valid
-  --  operator, operand or a parenthesis
-  -- Then the operations are computed in the proper order
-  -- May raise Invalid_Expression (space, parentheses, operations, values...)
-  function Compute (Memory : in out Memory_Type;
-                    Expression : in String) return Arbitrary.Number;
-
   -- On Set, Get or Is_Set if empty or incorrect name
   Invalid_Variable : exception;
   -- On Set if a constant (not modifiable variable) with this name already
@@ -125,5 +116,13 @@ private
 
   -- Resolver based on Getenv
   Env_Resolver : constant Resolver_Access := Environ.Getenv_If_Set'Access;
+
+  -- Trace in logger
+  procedure Log (Msg : in String);
+
+  -- Evaluate an expression
+  function Internal_Eval (Memory : in out Memory_Type;
+                          Expression : in String;
+                          Check : in Boolean) return String;
 end Computer;
 
