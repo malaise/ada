@@ -31,6 +31,9 @@ package body Conditions is
     function Owns return Boolean is
       (not Free and then Ada.Task_Identification.Current_Task = Owner);
 
+    -- Get lock
+    function Lock return Locks.Lock is (A_Lock);
+
     -- The entry to register to wait (release mutex)
     entry Wait when True is
     begin
@@ -121,6 +124,14 @@ package body Conditions is
   function Is_Owner (A_Condition : Condition) return Boolean is
     (A_Condition.Condition_Pointer.Owns);
 
+  -- Get a key that is valid for a condition
+  function Get_Key (A_Condition : Condition) return Key_Type is
+    (A_Condition.Condition_Pointer.Lock.Get_Key);
+
+  -- Is Is a key valid for a condition
+  function Is_Valid (A_Condition : Condition; Key : Key_Type) return Boolean is
+    (A_Condition.Condition_Pointer.Lock.Is_Valid (Key));
+
   -- The calling task must own the condition's mutex
   -- Atomically release the mutex and block the calling task on the condition
   -- Upon successful return, the mutex is already allocated to the calling
@@ -129,9 +140,8 @@ package body Conditions is
                  Waiting_Time : Duration;
                  Key : Key_Type := Fake) return Boolean is
     Result : Boolean;
-    use type Key_Type;
   begin
-    if Key = Pass then
+    if A_Condition.Condition_Pointer.Lock.Is_Valid (Key) then
       if not Is_Owner (A_Condition) then
         raise No_Access;
       else
@@ -158,9 +168,8 @@ package body Conditions is
   end Wait;
 
   procedure Wait (A_Condition  : in Condition; Key : in Key_Type := Fake) is
-    use type Key_Type;
   begin
-    if Key = Pass then
+    if A_Condition.Condition_Pointer.Lock.Is_Valid (Key) then
       if not Is_Owner (A_Condition) then
         raise No_Access;
       else

@@ -4,6 +4,7 @@ procedure T_Door is
   pragma Priority(10);
 
   Door : Doors.Door;
+  Key : Doors.Key_Type;
 
   Nb_Clients : constant := 4;
   Nb_Loops : constant := 3;
@@ -83,6 +84,7 @@ begin -- T_Cond
   Door.Get;
   Door.Set_Nb_Waiters (Nb_Waiters);
   Door.Release;
+  Key := Door.Get_Key;
 
   -- Init the clients
   Protected_Put.Put_Line_Output ("Main initializing clients");
@@ -112,10 +114,17 @@ begin -- T_Cond
   Door.Release;
   delay 1.0;
 
-  -- Check that we can bypass
+  -- Check that we can bypass (with Pass)
   Protected_Put.Put_Line_Output ("Main bypassing door");
   Door.Get;
   Door.Wait (Doors.Pass);
+  Door.Release;
+  delay 1.0;
+
+  -- Check that we can pass with a valid key
+  Protected_Put.Put_Line_Output ("Main passing door");
+  Door.Get;
+  Door.Wait (Key);
   Door.Release;
   delay 1.0;
 

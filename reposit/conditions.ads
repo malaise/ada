@@ -31,11 +31,17 @@ package Conditions is
   -- Does current task have the access to the condition
   function Is_Owner (A_Condition : Condition) return Boolean;
 
-  -- If Key is Pass, then simply pass through the condition (return True)
-  -- By default a Key is Fake
   subtype Key_Type is Locks.Key_Type;
   Fake : Key_Type renames Locks.Fake;
   Pass : Key_Type renames Locks.Pass;
+
+  -- Get a key that is valid for a condition
+  function Get_Key (A_Condition : Condition) return Key_Type;
+  -- Is Is a key valid for a condition
+  function Is_Valid (A_Condition : Condition; Key : Key_Type) return Boolean;
+
+  -- If Key is valid, then simply pass through the condition (return True)
+  -- By default a Key is Fake
   -- Otherwise atomically release the access and block the calling task on the
   -- condition
   -- Upon successful return, the access to the condition is already granted
@@ -66,6 +72,7 @@ private
     entry Get;
     procedure Release;
     function Owns return Boolean;
+    function Lock return Locks.Lock;
     -- Wait for signal or broadcast
     entry Wait;
     -- Signal one waiter or broadcast all
@@ -74,10 +81,12 @@ private
   private
     -- The intermal queue of waiting tasks
     entry Wakeup_Queue;
-    -- The mutex embeeded with the condition
+    -- The mutex embedded with the condition
     Free : Boolean := True;
     -- Owner of the mutex
     Owner : Ada.Task_Identification.Task_Id;
+    -- The lock for the condition
+    A_Lock : Locks.Lock := Locks.Create_Closed_Lock;
     -- The condition state
     State : Condition_State_List := Blocked;
   end Condition_Protect;

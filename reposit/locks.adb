@@ -29,6 +29,25 @@ package body Locks is
     A_Lock.Lock_Pointer.Close;
   end Close;
 
+  -- Create a closed lock
+  function Create_Closed_Lock return Lock is
+  begin
+    return A_Lock : Lock do
+      Close (A_Lock);
+    end return;
+  end Create_Closed_Lock;
+
+  -- Get a key that is valid for a lock
+  function Get_Key (A_Lock : Lock) return Key_Type is
+    ( (Is_Pass => False, Magic => A_Lock.Magic) );
+
+  -- Is a key valid for a lock
+  function Is_Valid (A_Lock : Lock; Key : Key_Type) return Boolean is
+    use type Magic_Numbers.Extended_Magic_Long;
+  begin
+     return Key.Is_Pass or else Key.Magic = A_Lock.Magic;
+  end Is_Valid;
+
   -- Wait until the lock is open or timeout
   -- Return True if not timeout
   function Wait (A_Lock : Lock;
@@ -36,7 +55,7 @@ package body Locks is
                  Key : Key_Type := Fake) return Boolean is
     Result : Boolean;
   begin
-     if Key = Pass then
+     if Is_Valid (A_Lock, Key) then
       -- If Key is Pass, then simply return True
       return True;
     end if;

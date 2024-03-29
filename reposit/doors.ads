@@ -26,6 +26,17 @@ package Doors is
   No_Access : exception renames Conditions.No_Access;
   procedure Release (A_Door : in Door);
 
+  -- Does current task have the access to the door
+  function Is_Owner (A_Door : Door) return Boolean;
+
+  subtype Key_Type is Conditions.Key_Type;
+  Fake : Key_Type renames Conditions.Fake;
+  Pass : Key_Type renames Conditions.Pass;
+
+  -- Get a key that is valid for a door
+  function Get_Key (A_Door : Door) return Key_Type;
+  -- Is Is a key valid for a door
+  function Is_Valid (A_Door : Door; Key : Key_Type) return Boolean;
 
   -- All the following operations require the caller to own the access
   -- to the door, otherwise they raise No_Access
@@ -51,11 +62,8 @@ package Doors is
                                Val : in Integer);
 
 
-  -- If Key is Pass, then simply pass through the door (return True)
+  -- If Key is valid, then simply pass through the door (return True)
   -- By default a Key is Fake
-  subtype Key_Type is Conditions.Key_Type;
-  Fake : Key_Type renames Conditions.Fake;
-  Pass : Key_Type renames Conditions.Pass;
   -- Otherwise *atomically* release access and block the calling task, until
   --   the required number of waiters is reached (new waiters arriving or
   --   someone reducing the Nb_Waiters)

@@ -3,7 +3,8 @@ with Protected_Put, Locks;
 procedure T_Lock is
   pragma Priority(10);
 
-  Lock : Locks.Lock;
+  Lock, Other_Lock : Locks.Lock;
+  Key : Locks.Key_Type;
 
   Nb_Clients : constant := 4;
 
@@ -13,7 +14,7 @@ procedure T_Lock is
 
   task body Client is
     Me : Positive;
-    First : Boolean;
+    Count : Positive := 1;
     Res : Boolean;
   begin
     accept Init (No : in Positive) do
@@ -21,18 +22,25 @@ procedure T_Lock is
       Protected_Put.Put_Line_Output ("Client " & Me'Img & " initialised");
     end Init;
 
-    First := True;
     loop
       if Me = 1 then
-        -- First task make conditional waiting
-        Protected_Put.Put_Line_Output ("Client " & Me'Img
-                                     & " trying to wait on lock");
-        if First then
-          -- This one will fail
+        -- First task makes conditional waiting (2 failures on timeout then OK)
+        if Count = 1 then
+          -- This one will fail (Fake key)
+          Protected_Put.Put_Line_Output ("Client " & Me'Img
+                                     & " trying to wait on lock with fake");
           Res := Lock.Wait (0.1);
-          First := False;
+          Count := 2;
+        elsif Count = 2 then
+          -- This one will fail (Invalid key)
+          Protected_Put.Put_Line_Output ("Client " & Me'Img
+                              & " trying to wait on lock with invalid key");
+          Res := Lock.Wait (0.1, Key);
+          Count := 3;
         else
           -- These ones will succeed
+          Protected_Put.Put_Line_Output ("Client " & Me'Img
+                                     & " trying to wait on lock with pass");
           Res := Lock.Wait (10.0);
         end if;
       else
@@ -57,6 +65,9 @@ begin -- T_Lock
 
   -- Close the lock
   Lock.Close;
+
+  -- Get a key not valid for the lock
+  Key := Other_Lock.Get_Key;
 
   -- Init the clients
   Protected_Put.Put_Line_Output ("Main initializing clients");

@@ -18,6 +18,19 @@ package body Doors is
     A_Door.Door_Pointer.Cond.Release;
   end Release;
 
+  -- Does current task have the access to the door
+  function Is_Owner (A_Door : Door) return Boolean is
+    (A_Door.Door_Pointer.Cond.Is_Owner);
+
+
+  -- Get a key that is valid for a door
+  function Get_Key (A_Door : Door) return Key_Type is
+    (A_Door.Door_Pointer.Cond.Get_Key);
+
+  -- Is Is a key valid for a door
+  function Is_Valid (A_Door : Door; Key : Key_Type) return Boolean is
+    (A_Door.Door_Pointer.Cond.Is_Valid (Key));
+
 
   -- Utilities --
   -- Open the door if number of waiters is reached
@@ -95,10 +108,9 @@ package body Doors is
                  Waiting_Time : Duration;
                  Key : Key_Type := Fake) return Boolean is
     Result : Boolean;
-    use type Key_Type;
   begin
     Check_Access (A_Door);
-    if Key = Pass then
+    if A_Door.Door_Pointer.Cond.Is_Valid (Key) then
       -- If Key is Pass, then simply return True (access remains granted)
       return True;
     end if;
