@@ -60,7 +60,7 @@ package body Rnd is
     case Agen.Kind is
       when Simple =>
         Agen.Sgen.Start (New_W =>
-          K_Rand.Natural_Val (F * Float(K_Rand.Natural_Val'Last - 1) + 1.0));
+          S_Rand.Natural_Val (F * Float(S_Rand.Natural_Val'Last - 1) + 1.0));
       when Universal =>
         Agen.Ugen.Start (New_I =>
           U_Rand.Seed_Range_1 (F * Float(U_Rand.Seed_Range_1'Last - 1) + 1.0));
