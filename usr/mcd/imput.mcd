@@ -1,45 +1,40 @@
-# Entry is m=TotalMonth [ e=TotalExtra ]
+# Entry is m=TotalMonth [ Extras ]
 [ "Error. Expecting <total_month> [ { <extra> } ]" putl
 1 setexit ssize popn retall ] E popr
 ssize 0 = [ E pushr call ] ifcall
 
-# Loop to sum and store extras
+# Put a number: split it in several part less than 100
+[
+2 format
+dup 99 > [ "99+" put 99 - ] ifcall put
+] P popr
+
+# Loop to sum and store extras in e
 0 e popr
 [
   ssize 1 = ifret
   dup isinte ~ [ E pushr call ] ifcall
   copye
   e pushr + e popr
-  E pushr retacal
-] E copyr call
+  S pushr retacal
+] S copyr call
 
 # Total month
-m popr
-m pushr isinte ~ [ E pushr call ] ifcall
+m copyr isinte ~ [ E pushr call ] ifcall
 
 # Round 6% of m for r=CSE, substract to the sum
 m pushr toreal 6.0 * 100.0 / round r popr
 
-# Store the sum to dispatch (without extras)
-m pushr e pushr - r pushr - s copyr
-
-# Trunc 56% of s for c=Coflight
-toreal 56.0 * 100.0 / trunc c copyr
-# Do not exceed 60% of month
-m pushr toreal 60.0 * 100.0 / round a copyr > [ a pushr c popr ] ifcall
-
-# Remaining for f=4Flight
-s pushr c pushr - f popr
+# The remaining without extras is f=4Flight
+m pushr e pushr - r pushr - f popr
 
 # Sanity check
-r pushr e pushr + c pushr + f pushr + t copyr
+r pushr e pushr + f pushr + t copyr
 m pushr - isntnull [ "Error: Sum is " put t pushr putl ] ifcall
 
 # Put results
-3 format
-"CSE: " put r pushr putl
-"Coflight: " put c pushr putl
-"4Flight: " put f pushr putl
+"CSE: " put r pushr 2 format putl
+"4Flight: " put f pushr 3 format dup put " = " put P pushr call newl
 
 # Put sum and detail of extras
 e pushr 0 /=
@@ -47,10 +42,10 @@ e pushr 0 /=
   " = " put 0 format
   [
     esize isnull ifret
-    pushle put
-    esize isntnull [ " + " put ] ifcall
-    P pushr retacal
-  ] P copyr call
+    pushle P pushr call
+    esize isntnull [ " & " put ] ifcall
+    S pushr retacal
+  ] S copyr call
   newl
 ] ifcall
 
