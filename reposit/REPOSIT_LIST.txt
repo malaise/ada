@@ -539,7 +539,7 @@ reg_exp (2)::
      Check a string versus a regular expression.
 
 rnd (1)::
-     Random number generator.
+     Random number generator (using K_Rand, S_Rand or U_Rand).
 
 romanic (1)::
      Decimal to romanic conversion (11 <--> XI).
