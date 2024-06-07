@@ -12,44 +12,26 @@ export DELIMITER="\""
 #Initially no option
 export opt=""
 
-# Read field $2 of line $1
-function readarg {
-res="`awk -vLINE=$1 -vFIELD=$2 -F $DELIMITER '
-  BEGIN {
-    NL=0
-    FIELD=2*FIELD
-  }
-  (NF == 0 || $1 ~ /^#/) {
-    # Skip empty lines and comment
-    next
-  }
-  {
-    # Count significant lines
-    NL=NL+1
-    if (NL == LINE) {
-      printf "%s",$(FIELD)
-      exit 0
-    }
-  } 
-' $SCENARIO`"
-echo "$res"
-}
-
 # For each line
-let L=1
-while true ; do
-  # Read line until end of file
-  export input=`readarg $L 1`
+while IFS="$DELIMITER" read -r f a1 d a2 d a3 d a4 d ; do
+  if [[ $f =~ ^# ]] ; then
+     continue
+  fi
+  if [[ $f$a1 =~ ^$ ]] ; then
+     continue
+  fi
+  export input="$a1"
   if [ "$input" = "Delimiter" ] ; then
-    DELIMITER=`readarg $L 2`
+    DELIMITER="$a2"
+    echo "Delimiter $DELIMITER"
   elif [ "$input" = "Options" ] ; then
-    export opt1=`readarg $L 2`
-    export opt2=`readarg $L 3`
-    export opt3=`readarg $L 4`
+    export opt1="$a2"
+    export opt2="$a3"
+    export opt3="$a4"
   else
-    export search=`readarg $L 2`
-    export replace=`readarg $L 3`
-    export expected=`readarg $L 4`
+    export search="$a2"
+    export replace="$a3"
+    export expected="$a4"
     if [ \( -z "$input" \) -a \( -z "$search" \) ] ; then
       break
     fi
@@ -76,8 +58,8 @@ while true ; do
       exit 1
     fi
   fi
-  let L=$L+1
-done
+done <$SCENARIO
+
 echo Done.
 exit 0
 
