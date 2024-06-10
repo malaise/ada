@@ -215,6 +215,12 @@ Fl (1)::
 Freecell (2d)::
      The famous patience game.
 
+Geohash (1)::
+     Geohash 32 encoding and decoding.
+
+Geohash36 (1)::
+     Geohash 36 encoding and decoding.
+
 Great_Circle (1)::
      Computation of heading and distance between two points on earth (GPS).
 
