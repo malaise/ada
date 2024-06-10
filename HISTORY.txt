@@ -4,7 +4,9 @@ Main changes
 
 [horizontal]
 
-*2022/10*:: Add Open Location Code library
+*2022/11*:: Add Geohash and Geohash36 libraries
+
+*2022/10*:: Add Open Location Code library (olc)
 
 *2022/08*:: Add Agite tree and reflog
 
