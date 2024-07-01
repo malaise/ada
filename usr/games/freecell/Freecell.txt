@@ -1,14 +1,14 @@
 Freecell
 ========
-V4.2
+V4.3
 
 Freecell is a famous solitaire card game.
 
 Goal of the game
 ----------------
 
-Initially, 52 cards are randomly put on the table in 8 rows, 4 rows of 7 cards
-and 4 rows of 6 cards.
+Initially, 52 cards are randomly put on the table in 8 columns, 4 columns of 7
+cards and 4 columbs of 6 cards.
 
 image:FreecellInit.png["Init",title="Init",align="left",width="75%"]
 
@@ -23,7 +23,7 @@ Playing stacks
 The main playing area is made of the 8 Playing stacks, initially containing
 the 52 cards each.
 
-In this area the cards are stacked in decrescent order (King, Queen, Jack,
+In this area, the cards can be stacked in decrescent order (King, Queen, Jack,
 10 .. 2, Ace) and in alternate colors (red / black).
 
 Tempo stacks
@@ -51,7 +51,7 @@ This button stops the current game and starts a new one.
 Start::
 This button stops the current game and starts from scratch the game which number
 has been entered in the field beside the button, or restarts the current game if
-this number is invalid.
+this number is invalid (e.g. empty field).
 
 .On the right side are the functions that interact with the current game:
 
