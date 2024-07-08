@@ -186,7 +186,7 @@ fi
 echo Languages
 if [ $TEST -eq 1 ] ; then
   # Some lines in test mode, here are the Numbers of effective lines
-  #  plus all the lines after the last
+  #  plus all the lines after the last (3%)
   export TESTS=(1 174 298 478 561 4788)
   let I=0
 else
@@ -212,7 +212,7 @@ while IFS=' ' read -r Lang Input Output Back ; do
     let L=$L+1
     continue
   fi
-  # End of file
+  # Comment or end of file
   if [[ $Lang =~ ^#|^$ ]] ; then
     continue
   fi
