@@ -10,6 +10,7 @@ procedure T_Regexp is
     (False, 'm', As.U.Tus ("multiline"), False),
     (False, 'd', As.U.Tus ("dot_all"), False),
     (False, 's', As.U.Tus ("strict"), False),
+    (False, 'v', As.U.Tus ("version"), False),
     (False, 'h', As.U.Tus ("help"), False));
   Dscr : Argument_Parser.Parsed_Dscr;
   Helps : constant array (Keys'Range) of As.U.Asu_Us := (
@@ -18,12 +19,13 @@ procedure T_Regexp is
     As.U.Tus ("for multiline"),
     As.U.Tus ("for dot matches all"),
     As.U.Tus ("for strict matching (not only contains)"),
+    As.U.Tus ("for pcre version"),
     As.U.Tus ("for help"));
 
-  procedure Error is
+  procedure Help is
   begin
     Basic_Proc.Put_Line_Output ("Usage: " & Argument.Get_Program_Name
-                        & " <automatic> | <manual> | -h | --help");
+                        & " <automatic> | <manual> | -h | --help | -v | --version");
     Basic_Proc.Put_Line_Output (" <automatic> ::= -c  |  -f  |  -p [ { <pattern> } ]");
     Basic_Proc.Put_Line_Output ("     -c for successive compilations");
     Basic_Proc.Put_Line_Output ("     -f for successive compilations and frees");
@@ -33,7 +35,7 @@ procedure T_Regexp is
       Basic_Proc.Put_Line_Output ("     " & Argument_Parser.Image (Keys(I))
                                 & ", " & Helps(I).Image);
     end loop;
-  end Error;
+  end Help;
 
   Silent : Boolean := False;
   Case_Insensitive : Boolean := False;
@@ -73,17 +75,18 @@ procedure T_Regexp is
   N_Matched : Match_Result;
 begin
   if Argument.Get_Nbre_Arg < 1 then
-    Error;
-    return;
+    raise Arg_Error;
   end if;
 
   if Argument.Get_Nbre_Arg = 1 and then Argument.Get_Parameter = "-c" then
+    -- Inifiniyr loop of compile (overwrite pattern)
     Basic_Proc.Put_Line_Output (
       "Infinite loop of silent Compile to check memory... Ctrl C to end");
     loop
       Compile_Pattern ("toto", False);
     end loop;
   elsif Argument.Get_Nbre_Arg = 1 and then Argument.Get_Parameter = "-f" then
+    -- Inifiniyr loop of compile + free
     Basic_Proc.Put_Line_Output (
       "Infinite loop of silent Compile/Free to check memory... Ctrl C to end");
     loop
@@ -91,7 +94,7 @@ begin
       Pattern.Free;
     end loop;
   elsif Argument.Get_Parameter = "-p" then
-    -- Compile all args as pattern, keep 1st arg as THE pattern
+    -- Compile all args as pattern
     Basic_Proc.Put_Line_Output (
       "Compiling all arguments as patterns.");
     for I in 2 .. Argument.Get_Nbre_Arg loop
@@ -100,6 +103,8 @@ begin
     return;
   end if;
 
+  -- Manual modes
+
   -- Parse arguments
   Dscr :=  Argument_Parser.Parse (Keys);
   if not Dscr.Is_Ok then
@@ -107,9 +112,15 @@ begin
     raise Arg_Error;
   end if;
 
-  if Dscr.Is_Set (6) then
+  if Dscr.Is_Set (7) then
     -- Help
-    raise Arg_Error;
+    Help;
+    return;
+  end if;
+  if Dscr.Is_Set (6) then
+    --Version
+    Basic_Proc.Put_Line_Output ("PCRE: " & Reg_Exp.Get_Pcre_Version);
+    return;
   end if;
 
   -- At least one non key, not embedded
@@ -186,7 +197,7 @@ exception
   when Compile_Error =>
     Basic_Proc.Set_Exit_Code (2);
   when Arg_Error | Argument.Argument_Not_Found =>
-    Error;
+    Help;
     Basic_Proc.Set_Exit_Code (3);
 end T_Regexp;
 
