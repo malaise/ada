@@ -44,6 +44,7 @@ trap 'echo ""; clean; exit 1' SIGINT SIGTERM
 
 
 # One test of compression / uncompression
+# cmpr_one <algo> <file>
 function cmpr_one {
   export OPT=""
   if [ "$1" = "--lzf" ] ; then
@@ -93,39 +94,20 @@ function cmpr_one {
   fi
 }
 
-# Specific option to do one azf test
-if [ "$1"  = "--lzf" ] ; then
+# Specific option to do one compression test
+if [ \( "$1"  = "--lzf" \) -o \( "$1"  = "--lz4" \) \
+  -o \( "$1"  = "--snappy" \) -o \( "$1"  = "--lz4l" \) ] ; then
+  algo=$1
   shift
   for file in $* ; do
-    cmpr_one --lzf $file
-  done
-  clean
-  exit
-elif [ "$1"  = "--lz4" ] ; then
-  shift
-  for file in $* ; do
-    cmpr_one --lz4 $file
-  done
-  clean
-  exit
-elif [ "$1"  = "--snappy" ] ; then
-  shift
-  for file in $* ; do
-    cmpr_one --snappy $file
-  done
-  clean
-  exit
-elif [ "$1"  = "--lz4l" ] ; then
-  shift
-  for file in $* ; do
-    cmpr_one --lz4l $file
+    cmpr_one $algo $file
   done
   clean
   exit
 fi
 
 if [ \( -z "$1" \) -o \( "$1" = "compress" \) ] ; then
-  # Azf on lzf, lz4 and snappy
+  # Azf on lzf, lz4 and snappy, and then lz4l
   for file in `ls *.ads *.adb lib/*` ; do
     cmpr_one --lzf $file
     cmpr_one --lz4 $file
