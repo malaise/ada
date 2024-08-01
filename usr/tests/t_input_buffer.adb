@@ -5,7 +5,7 @@ procedure T_Input_Buffer is
   -- Last chat shall be line feed
   procedure Notifier (Str : in String) is
   begin
-    Basic_Proc.Put_Line_Output (Str(Str'First .. Str'Last - 1));
+    Basic_Proc.Put_Output (Str);
   end Notifier;
 
   -- Report an error
@@ -27,6 +27,7 @@ procedure T_Input_Buffer is
 
   -- Input buffer
   Buffer : Input_Buffer.Buffer;
+  Buffer_Size : constant := 2 * Buf_Size;
 
 begin
 
@@ -46,7 +47,7 @@ begin
   end if;
 
   -- Init buffer, delimiter is line feed
-  Buffer.Set (Notifier'Unrestricted_Access);
+  Buffer.Set (Notifier'Unrestricted_Access, Size => Buffer_Size);
 
   -- "Infinite" Loop
   Buf_Len := 0;
