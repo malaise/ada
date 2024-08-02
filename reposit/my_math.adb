@@ -152,7 +152,28 @@ package body My_Math is
 
   -- Rounded result of division
   function Roundiv (A, B : Inte) return Inte is
-    (My_Math.Round (My_Math.Real(A) / My_Math.Real(B)));
+    Q, R : Inte;
+    Abs_R : Inte;
+  begin
+    Div (A, B, Q, R);
+    Abs_R := abs R;
+    if abs B - Abs_R > Abs_R then
+      -- R < B/2 => trunc, Q is correct
+      return Q;
+    end if;
+    -- R >= B/2 => round, adjust Q++ or Q--
+    if Q = 0 then
+      if (A >= 0) = (B >= 0) then
+        return Q + 1;
+      else
+        return Q - 1;
+      end if;
+    elsif Q >= 0 then
+      return Q + 1;
+    else
+      return Q - 1;
+    end if;
+  end Roundiv;
 
   -- Round R at N digits.
   -- If N is positive then it applies to the int part

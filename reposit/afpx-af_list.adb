@@ -1,4 +1,3 @@
-with My_Math;
 separate (Afpx)
 package body Af_List is
 
@@ -460,15 +459,21 @@ package body Af_List is
   -- Round Line_List_Mng.Ll_Natural
   function Roundiv (A, B : Line_List_Mng.Ll_Natural)
                    return Line_List_Mng.Ll_Natural is
-    use type Line_List_Mng.Ll_Natural;
-    function Round (X : Line_List_Mng.Ll_Natural) return My_Math.Inte is
-      (if X <= Line_List_Mng.Ll_Natural (My_Math.Inte'Last) then
-         My_Math.Inte (X)
-       else
-         My_Math.Inte'Last);
-
+    subtype Nat is Line_List_Mng.Ll_Natural;
+    use type Nat;
+    Q, R : Nat;
   begin
-    return Line_List_Mng.Ll_Natural (My_Math.Roundiv (Round (A), Round (B)));
+    -- Div
+    Q := A / B;
+    R := A - Q * B;
+    -- Round
+    if B - R > R then
+      -- R < B/2 => trunc, Q is correct
+      return Q;
+    else
+      -- R >= B/2 => round, adjust Q++
+      return Q + 1;
+    end if;
   end Roundiv;
 
   -- Percent of position of list in list field
