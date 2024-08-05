@@ -256,7 +256,7 @@ package body Trace is
     end;
   end Get_Mask;
 
-  -- Private: Glogal output
+  -- Private: Global output
   procedure Global_Log (Message : in String;
                         Flush : in Boolean;
                         Log_On_Error : in Boolean) is
