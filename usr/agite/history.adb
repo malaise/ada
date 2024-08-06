@@ -481,11 +481,11 @@ package body History is
       Found : Boolean;
       use type As.U.Asu_Us;
     begin
-      Log.Hash := Remote_Head (Branch);
+      Log.Hash := Remote_Head ( (if Branch /= "" then Branch
+                                 else Git_If.Current_Branch) );
       if Log.Hash /= Git_If.No_Hash then
         Found := List_Hash_Search (Logs, Log, From => Git_If.Log_Mng.Absolute);
         if Found then
-          Move_At (Log.Hash);
           return True;
         end if;
       end if;
@@ -881,6 +881,7 @@ package body History is
               if Do_Remote_Head then
                 Init_Indicator := 'R';
                 Remote_Head_Index := Logs.Get_Position;
+                Move_At (Hash_Of);
               else
                 Init_Indicator := '?';
               end if;
@@ -912,7 +913,8 @@ package body History is
                   Hash : in Git_If.Git_Hash := Git_If.No_Hash) is
     Dummy_Result : Boolean;
   begin
-    Dummy_Result := List (Root, Branch, Path, Name, Is_File,
+    Dummy_Result := List (Root, Branch,
+                          Path, Name, Is_File,
                           Allow_Modif, Allow_Tag, Hash);
   end List;
 end History;
