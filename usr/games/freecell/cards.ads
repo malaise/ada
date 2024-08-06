@@ -50,11 +50,11 @@ package Cards is
   --  null if not found in cards or stacks
   function X_To_Card (Ref : X_Mng.External_Reference) return Card_Access;
 
-  -- Is a stack a Play or a Tmp stack
-  function Is_Play_Stack (Card : Card_Access) return Boolean;
-
   -- Is a stack a Done stack
   function Is_Done_Stack (Card : Card_Access) return Boolean;
+  -- Otherwise, is it a Play stack (or a Tmp stack)
+  function Is_Play_Stack (Card : Card_Access) return Boolean;
+
 
   -- Image of a card access
   function Image (Card : Card_Access) return String;
