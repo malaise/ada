@@ -881,7 +881,7 @@ package body History is
               if Do_Remote_Head then
                 Init_Indicator := 'R';
                 Remote_Head_Index := Logs.Get_Position;
-                Move_At (Hash_Of);
+                Move_At (Hash_Of (Remote_Head_Index));
               else
                 Init_Indicator := '?';
               end if;
