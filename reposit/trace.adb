@@ -220,7 +220,7 @@ package body Trace is
           -- File (open or create)
           begin
             Global_Flow.Open_All (Text_Line.Out_File, New_Flow_Name,
-                                  Text_Line.Start);
+                                  Text_Line.Trunc);
           exception
             when Text_Line.Name_Error =>
               Global_Flow.Create_All (New_Flow_Name);
