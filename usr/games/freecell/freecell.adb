@@ -213,7 +213,7 @@ begin
             Logger.Log_Debug ("  targetable card becomes targeted");
           when Targeted =>
             -- Impossible, we must leave or release first
-           Logger.Log_Debug ("  drop cause status");
+            Logger.Log_Debug ("  drop cause status");
         end case;
       when Table.Left_Released =>
         case Status is
