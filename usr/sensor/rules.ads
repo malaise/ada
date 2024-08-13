@@ -15,6 +15,7 @@ package Rules is
   type Natural_Access is access Natural;
   type Asu_Access is access As.U.Asu_Us;
   type Rule_Rec is record
+    Name : As.U.Asu_Us;
     File : As.U.Asu_Us;
     Period : Timers.Period_Range;
     Tail : Tail_Length;

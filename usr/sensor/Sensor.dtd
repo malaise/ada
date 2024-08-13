@@ -11,6 +11,7 @@
 <!ELEMENT Rules (Rule*)>
 <!-- scanning and execution characteristics -->
 <!ELEMENT Rule (Scan,Execute)>
+<!ATTLIST Rule Name ID #IMPLIED>
 
 <!-- Scanning characteristics: -->
 <!-- - the file to scan -->

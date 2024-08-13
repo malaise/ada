@@ -70,6 +70,8 @@ sleep $TIMEOUT
 # Two triggers that will be extracted together
 output "Adding two triggers"
 echo -e "Teta\nTete\n${TRIGGER} 3\nTeti\n" >> $INPUT
+sleep $PERIOD
+sleep $PERIOD
 echo -e "Tita\nTite\n${TRIGGER} 4\nTiti\n" >> $INPUT
 sleep $TIMEOUT
 # This one will be filtered out by the latency
@@ -86,41 +88,63 @@ kill $SENSOR_PID
 
 # Check
 cat >$EXPECTED <<EOF
-Got ${TRIGGER} 1
-Got ${TRIGGER} 2
-Got ${TRIGGER} 3
+Got >${TRIGGER} 1
+<
+Got >${TRIGGER} 2
+<
+Got >${TRIGGER} 3
 ${TRIGGER} 4
+<
 Repeated LogTrigger
-Got ${TRIGGER} 5
+Got >${TRIGGER} 5
+<
 EOF
 cmp $OUTPUT $EXPECTED 2>/dev/null
-
-cat >${DETAILS} <<EOF
-Got ${TRIGGER} 1
-Got ${TRIGGER} 2
-Got ${TRIGGER} 3
-${TRIGGER} 4
-Got ${TRIGGER} 5
-Got ${TRIGGER} 1
-Got ${TRIGGER} 2
-Got ${TRIGGER} 3
-${TRIGGER} 4
-Got ${TRIGGER} 5
-Got ${TRIGGER} 1
-Got ${TRIGGER} 2
-Got ${TRIGGER} 3
-${TRIGGER} 4
-Got ${TRIGGER} 5
-EOF
-res=$? 
+res=$?
 if [ $res -ne 0 ] ; then
   echo "File $OUTPUT differs from expected $EXPECTED." 1>&2
   exit 1
-else
-  # Cleanup
-  echo Test OK.
-  if [ $DEBUG -eq 0 ] ; then
-    cleanup
-  fi
+fi
+
+cat >${DETAILS} <<EOF
+Got >${TRIGGER} 1
+<
+Got >${TRIGGER} 2
+<
+Got >${TRIGGER} 3
+${TRIGGER} 4
+<
+Got >${TRIGGER} 5
+<
+Got >${TRIGGER} 1
+<
+Got >${TRIGGER} 2
+<
+Got >${TRIGGER} 3
+${TRIGGER} 4
+<
+Got >${TRIGGER} 5
+<
+Got >${TRIGGER} 1
+<
+Got >${TRIGGER} 2
+<
+Got >${TRIGGER} 3
+${TRIGGER} 4
+<
+Got >${TRIGGER} 5
+<
+EOF
+cmp $OUTPUT $EXPECTED 2>/dev/null
+res=$?
+if [ $res -ne 0 ] ; then
+  echo "File $OUTPUT differs from expected $EXPECTED." 1>&2
+  exit 1
+fi
+
+# Cleanup
+echo Test OK.
+if [ $DEBUG -eq 0 ] ; then
+  cleanup
 fi
 

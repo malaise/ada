@@ -4,7 +4,7 @@ with Argument, Basic_Proc, Directory, As.U.Utils, Timers, Event_Mng,
 with Debug, Actions, Rules, Executor;
 procedure Sensor is
 
-  Version : constant String := "V12.0";
+  Version : constant String := "V12.1";
 
   procedure Help is
   begin
@@ -134,6 +134,12 @@ begin
   Rules_Root := Ctx.Get_Child (Root, Ctx.Get_Nb_Children (Root) - 1);
   for I in 1 .. Ctx.Get_Nb_Children (Rules_Root) loop
     Node := Ctx.Get_Child (Rules_Root, I);
+    -- Store optinal Name
+    if Ctx.Get_Nb_Attributes (Node) /= 0 then
+      Rule.Name := Ctx.get_Attribute (Node, "Name");
+    else
+       Rule.Name.Set_Null; 
+    end if;
 
     -- Scan
     Child := Ctx.Get_Child (Node, 1);
@@ -336,7 +342,7 @@ begin
   Debug.Log ("Stopping");
   Executor.Close;
   Basic_Proc.Set_Ok_Exit_Code;
-  Debug.Log ("Done");
+  Debug.Log ("Stopped");
 
 exception
   when Xml_Parser.File_Error =>

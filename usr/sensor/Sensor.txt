@@ -1,6 +1,6 @@
 Sensor
 ======
-Version: 12.0
+Version: 12.1
 
 Sensor scans some files and triggers actions when finding specific events. +
 It is usefull to raise alerts when some log messages are matching criteria.
@@ -25,6 +25,8 @@ or in the configuration or in the environment), otherwise this is an error.
 
 .Rules
 The configuration file then defines rules. Each rule consists in:
+
+- an optional name (used in debugging logs)
 
 - scanning criteria
 
@@ -64,9 +66,10 @@ action:
 - $\{Action}: The repeated action, when executing an action as the consequence
 of a repeated action
 
-NOTE: During a scan, several lines may match the criteria and get through the
-various history and latency filters. In this case, $\{Match} will be
-expanded with *all* these lines separated by Line_Feed.
+NOTE: During a scan, or during several scans within latency, several lines may
+match the criteria and get through the various history and latency filters.
+In this case, $\{Match} will be expanded with *all* these lines separated by
+line-feeds.
 
 Example:
 
@@ -78,11 +81,11 @@ Example:
 <Sensor>
   <Var Name="OUTPUT" Value="/root/log/Sensor.log"/>
   <Rules>
-    <Rule>
+    <Rule Name="ScanInput">
       <Scan File="${INPUT}" Period="60" Criteria="${TRIGGER}" Tail="10">
         <Time Format="%b %d %H:%M:%S" Past="3600"/>
       </Scan>
-      <Execute Action="LogTrigger" History="5" Latency="1.5"/>
+      <Execute Actions="LogTrigger" History="5" Latency="1.5"/>
     </Rule>
   </Rules>
   <Actions>
@@ -105,7 +108,7 @@ Processing
  * Check the expansion of each rule (variables) and store the actions in a
 unique list (by name)
  * Store the rules in a dynamic list (history is a circular queue), check
-time format, regular expression, and that the referenced action exists
+time format, regular expression, and that the referenced actions exist
  * Arm a periodical time for each rule (user data being the position in list)
 
 .When a timer expires:
@@ -113,10 +116,16 @@ time format, regular expression, and that the referenced action exists
  * Extract the tail of the file then filter the past seconds of the file,
 and then search the lines matching the regex
  * For each matching line, if found in the history then drop it,
-otherwise store it in the history
- * If within latency since previous match of this rule then drop it,
-otherwise expand and execute the action (on all these lines together)
- * Store these occurences of the action (one for each matching line),
-purge old occurences, check if this action is repeated too often and trigger
-associated "repeat" action (potentially several times).
+otherwise store it in the history and save it in the to-do list
+ * If within latency since previous match of this rule then give up for this
+time
+ * Otherwise, for each action defined for the rule:
+
+- Expand and execute the action (once on all the lines of the to-do list
+concatenated together)
+- Store this occurence of the action, purge old occurences, check if this
+action has been repeated too often, and trigger associated "repeat" action
+(potentially several times)
+
+* Clean the to-do-list.
 

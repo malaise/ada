@@ -3,7 +3,7 @@
 
 <Sensor>
   <Rules>
-    <Rule>
+    <Rule Name="ScanInput">
       <Scan File="${INPUT}" Criteria="${TRIGGER}" Period="${PERIOD}" Tail="10">
         <Time Format="" Past="0"/>
       </Scan>
@@ -12,14 +12,14 @@
   </Rules>
   <Actions>
     <Action Name="LogTrigger"
-            Command='/bin/echo -en "Got ${Match}" >>${OUTPUT}'>
+            Command='/bin/echo -en "Got >${Match}&lt;\n" >>${OUTPUT}'>
       <Repeat Number="3" During="2.0" Action="Repeat"/>
     </Action>
     <Action Name="Repeat"
             Command='/bin/echo "Repeated ${Action}" >>${OUTPUT}'>
     </Action>
     <Action Name="LogDetails"
-            Command='/bin/echo -en "Got ${Match}" >>${DETAILS}'>
+            Command='/bin/echo -en "Got >${Match}&lt;\n" >>${DETAILS}'>
     </Action>
   </Actions>
 </Sensor>

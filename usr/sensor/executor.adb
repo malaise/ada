@@ -101,7 +101,8 @@ package body Executor is
   begin
     -- Retrieve the filter index from data and read it
     Rule := Rules.Get_Rule (Rule_Num);
-    Debug.Log ("Expiration of rule on " & Rule.File.Image);
+    Debug.Log ("Expiration of rule " & Rule.Name.Image
+             & " on " & Rule.File.Image);
     -- Search the pattern in the tail of the file
     Check (Rule);
     -- Nothing to do if no match
@@ -118,12 +119,14 @@ package body Executor is
       return False;
     end if;
     -- Expand the command and execute it if not empty
+    Debug.Log ("  Executing actions on " & Rule.Matches.Image);
     for I in 1 .. Rule.Actions.Length loop
       Launch (Rule.Actions.Element(I).Image, Rule.Matches.Image);
       -- Execute actions triggered by repetitions of action
       Actions.Set_Action (Rule.Actions.Element(I).Image);
       for Repeat of Actions.Occurs (Rule.Actions.Element(I).Image,
                                     Rule.Nb_Match.all) loop
+        Debug.Log ("  Repeated action on " & Rule.Matches.Image);
         Launch (Repeat.Image, Rule.Matches.Image);
       end loop;
       Actions.Unset_Action;
