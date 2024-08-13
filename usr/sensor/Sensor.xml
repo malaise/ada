@@ -9,14 +9,14 @@
       <Scan File="${Syslog}" Criteria="BANNING">
         <Time Format="%b %d %H:%M:%S" Past="3600"/>
       </Scan>
-      <Execute Action="Antibot"/>
+      <Execute Actions="Antibot"/>
     </Rule>
     <Rule>
       <Scan File="${Auth}"
             Criteria="pam_unix\((su|sshd):session\): session opened for user root by">
         <Time Format="%b %d %H:%M:%S" Past="3600"/>
       </Scan>
-      <Execute Action="RootLogin"/>
+      <Execute Actions="RootLogin"/>
     </Rule>
   </Rules>
   <Actions>

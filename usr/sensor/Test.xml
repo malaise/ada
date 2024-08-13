@@ -7,7 +7,7 @@
       <Scan File="${INPUT}" Criteria="${TRIGGER}" Period="${PERIOD}" Tail="10">
         <Time Format="" Past="0"/>
       </Scan>
-      <Execute Action="LogTrigger" History="5" Latency="1.5"/>
+      <Execute Actions="LogTrigger LogDetails" History="5" Latency="1.5"/>
     </Rule>
   </Rules>
   <Actions>
@@ -17,6 +17,9 @@
     </Action>
     <Action Name="Repeat"
             Command='/bin/echo "Repeated ${Action}" >>${OUTPUT}'>
+    </Action>
+    <Action Name="LogDetails"
+            Command='/bin/echo -en "Got ${Match}" >>${DETAILS}'>
     </Action>
   </Actions>
 </Sensor>

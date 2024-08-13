@@ -1,6 +1,4 @@
 #!/bin/bash
-
-export SENSOR_DEBUG="${SENSOR_DEBUG^^}"
 if [ \( "$SENSOR_DEBUG" = "Y" \) -o \( "$SENSOR_DEBUG" = "YES" \) ] ; then
   export DEBUG=1
 else
@@ -16,13 +14,14 @@ fi
 export INPUT=input.txt
 export OUTPUT=output.txt
 export EXPECTED=expected.txt
+export DETAILS=details.txt
 export TIMEOUT=1
 export PERIOD="0.2"
 export TRIGGER="Trigger"
 
 # Clean files
 function cleanup {
-  rm -f $INPUT $OUTPUT $EXPECTED
+  rm -f $INPUT $OUTPUT $EXPECTED $DETAILS
 }
 trap 'echo "Aborted"; cleanup; exit 1' SIGINT SIGTERM
 
@@ -68,6 +67,7 @@ sleep $TIMEOUT
 output "Adding a trigger"
 echo -e "Tata\nTate\n${TRIGGER} 2\nTati\n" >> $INPUT
 sleep $TIMEOUT
+# Two triggers that will be extracted together
 output "Adding two triggers"
 echo -e "Teta\nTete\n${TRIGGER} 3\nTeti\n" >> $INPUT
 echo -e "Tita\nTite\n${TRIGGER} 4\nTiti\n" >> $INPUT
@@ -94,6 +94,24 @@ Repeated LogTrigger
 Got ${TRIGGER} 5
 EOF
 cmp $OUTPUT $EXPECTED 2>/dev/null
+
+cat >${DETAILS} <<EOF
+Got ${TRIGGER} 1
+Got ${TRIGGER} 2
+Got ${TRIGGER} 3
+${TRIGGER} 4
+Got ${TRIGGER} 5
+Got ${TRIGGER} 1
+Got ${TRIGGER} 2
+Got ${TRIGGER} 3
+${TRIGGER} 4
+Got ${TRIGGER} 5
+Got ${TRIGGER} 1
+Got ${TRIGGER} 2
+Got ${TRIGGER} 3
+${TRIGGER} 4
+Got ${TRIGGER} 5
+EOF
 res=$? 
 if [ $res -ne 0 ] ; then
   echo "File $OUTPUT differs from expected $EXPECTED." 1>&2

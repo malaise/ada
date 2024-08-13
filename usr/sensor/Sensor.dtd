@@ -29,11 +29,11 @@
 <!ELEMENT Time EMPTY>
 
 <!-- Execution characteristics: -->
-<!-- - the action to execute when a line of file matches and is not known -->
+<!-- - the actions to execute when a line of file matches and is not known -->
 <!--   in the history -->
 <!-- - the maximum number of known alerts to store in the history -->
 <!-- - the latency between two successive executions of the action -->
-<!ATTLIST Execute Action IDREF #REQUIRED
+<!ATTLIST Execute Actions IDREFS #REQUIRED
                   History CDATA "100"
                   Latency CDATA "0">
 <!ELEMENT Execute EMPTY>

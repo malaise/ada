@@ -1,10 +1,10 @@
 with Ada.Exceptions, Ada.Calendar;
-with Argument, Basic_Proc, Directory, As.U, Timers, Event_Mng,
+with Argument, Basic_Proc, Directory, As.U.Utils, Timers, Event_Mng,
      Xml_Parser, Reg_Exp, Date_Text, Queues;
 with Debug, Actions, Rules, Executor;
 procedure Sensor is
 
-  Version : constant String := "V11.2";
+  Version : constant String := "V12.0";
 
   procedure Help is
   begin
@@ -20,7 +20,7 @@ procedure Sensor is
   Ctx : Xml_Parser.Ctx_Type;
   Ok, Check_Ok : Boolean;
   Root, Var, Actions_Root, Rules_Root, Node, Child : Xml_Parser.Element_Type;
-  Name, Value, Text, Tmp : As.U.Asu_Us;
+  Name, Value, Text, Tmp, Actions_List : As.U.Asu_Us;
   Rule : Rules.Rule_Rec;
   Hist_Size : Queues.Len_Range;
 
@@ -244,16 +244,22 @@ begin
 
     -- Execute
     Child := Ctx.Get_Child (Node, 2);
-    -- Action must be known
-    Rule.Action := Expand (Ctx.Get_Attribute (Child, "Action"));
-    if Actions.Exists (Rule.Action.Image) then
-      Debug.Log ("  Got action " & Rule.Action.Image);
-    else
-      Basic_Proc.Put_Line_Error ("Rule at line "
-          & Ctx.Get_Line_No (Child)'Img
-          & " refers to an unknown action " & Rule.Action.Image & ".");
-      Check_Ok := False;
-    end if;
+    -- Get list of actions
+    Actions_List := Expand (Ctx.Get_Attribute (Child, "Actions"));
+    Rule.Actions := As.U.Utils.Asu_Ua.To_Unb_Array
+      (Xml_Parser.Extract_Words (Actions_List.Image));
+    -- Actions must be known
+    for I in 1 .. Rule.Actions.Length loop
+      if Actions.Exists (Rule.Actions.Element(I).Image) then
+        Debug.Log ("  Got action " & Rule.Actions.Element(I).Image);
+      else
+        Basic_Proc.Put_Line_Error ("Rule at line "
+            & Ctx.Get_Line_No (Child)'Img
+            & " refers to an unknown action " & Rule.Actions.Element(I).Image
+            & ".");
+        Check_Ok := False;
+      end if;
+    end loop;
     -- No history if 0
     begin
       Hist_Size := Queues.Len_Range'Value (
@@ -299,8 +305,8 @@ begin
     Rule.Matches := new As.U.Asu_Us;
 
     -- Ok, store (which checks that the file exists)
-    Debug.Log ("Storing rule for " & Rule.Action.Image
-             & " on " & Rule.File.Image);
+    Debug.Log ("Storing rule for """ & Actions_List.Image
+             & """ on " & Rule.File.Image);
     Rules.Store (Rule);
   end loop;
 

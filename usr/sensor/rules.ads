@@ -1,5 +1,5 @@
 with Ada.Calendar;
-with As.U, Long_Longs, Timers, Queues, Reg_Exp;
+with As.U.Utils, Long_Longs, Timers, Queues, Reg_Exp;
 package Rules is
 
   -- Circular list to store history
@@ -19,7 +19,7 @@ package Rules is
     Period : Timers.Period_Range;
     Tail : Tail_Length;
     History : History_Access;
-    Action : As.U.Asu_Us;
+    Actions : As.U.Utils.Asu_Ua.Unb_Array;
     Aging : Duration;
     Time_Format : As.U.Asu_Us;
     Pattern : Pattern_Access;

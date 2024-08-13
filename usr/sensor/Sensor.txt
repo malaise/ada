@@ -1,6 +1,6 @@
 Sensor
 ======
-Version: 11.2
+Version: 12.0
 
 Sensor scans some files and triggers actions when finding specific events. +
 It is usefull to raise alerts when some log messages are matching criteria.
@@ -38,7 +38,7 @@ file), allowing to discard "old" entries (e.g. the ones before we started)
 
 - execution definition
 
-* the name of the action to execute
+* the names of the actions to execute (separated by spaces)
 * a history of alerts to store (default 100) in order to avoid repeating an
 action for the same reason
 * the latency between two successive executions of the action
