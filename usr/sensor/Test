@@ -17,6 +17,8 @@ export EXPECTED=expected.txt
 export DETAILS=details.txt
 export TIMEOUT=1
 export PERIOD="0.2"
+export HISTORY="5"
+export LATENCY="1.5"
 export TRIGGER="Trigger"
 
 # Clean files
@@ -67,7 +69,8 @@ sleep $TIMEOUT
 output "Adding a trigger"
 echo -e "Tata\nTate\n${TRIGGER} 2\nTati\n" >> $INPUT
 sleep $TIMEOUT
-# Two triggers that will be extracted together
+# Two triggers that will be extracted one after the other
+#  but within the latency
 output "Adding two triggers"
 echo -e "Teta\nTete\n${TRIGGER} 3\nTeti\n" >> $INPUT
 sleep $PERIOD
