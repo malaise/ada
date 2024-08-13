@@ -1808,6 +1808,7 @@ package body Dtd is
         elsif Att_Set then
           -- Comformance checks on ID, IDREF(s) and NMTOKEN(s)
           -- Store ID and IDREFs and Sanity checks on I
+          Util.Expand_Spaces (Xml_Val);
           if (Td(1) = 'I' or else Td(1) = 'R' or else Td(1) = 'Y')
           and then not Util.Name_Ok (Xml_Val) then
             Util.Error (Ctx.Flow, "Invalid name for ID, IDREF or ENTITY "

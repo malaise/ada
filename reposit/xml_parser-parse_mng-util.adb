@@ -224,6 +224,7 @@ package body Util is
                      Allow_Token : Boolean := False) return Boolean is
     S : constant String(1 .. Str.Length) := Str.Image;
     I1, I2 : Natural;
+    Isep : Integer;
     function Is_Sep (C : Character) return Boolean is
       (for some Sep of Seps => C = Sep);
   begin
@@ -239,6 +240,7 @@ package body Util is
     end if;
     -- Identify words
     I1 := S'First;
+    Isep := I1 - 1;
     Word:loop
       -- Look for start of word
       loop
@@ -246,6 +248,10 @@ package body Util is
         exit when not Is_Sep (S(I1));
         I1 := I1 + 1;
       end loop;
+      if Strict and then I1 /= Isep + 1 then
+        -- More than one sep
+        return False;
+      end if;
       -- Look for end of word
       I2 := I1;
       loop
@@ -260,6 +266,7 @@ package body Util is
       exit Word when I2 > S'Last;
       -- Ready for next word
       I1 := I2;
+      Isep := I1;
     end loop Word;
     -- All names were OK
     return True;
@@ -1053,6 +1060,12 @@ package body Util is
     end if;
     Text := Res;
   end Normalize_Spaces;
+
+  -- Replace any "#x20" by " "
+  procedure Expand_Spaces (Text : in out As.U.Asu_Us) is
+  begin
+    Text.Set (Str_Util.Substit (Text.Image, "#x20", " "));
+  end Expand_Spaces;
 
   -- Remove separators from text
   procedure Remove_Separators (Text : in out As.U.Asu_Us; Seps : in String) is

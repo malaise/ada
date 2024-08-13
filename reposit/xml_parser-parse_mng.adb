@@ -206,6 +206,8 @@ package body Parse_Mng  is
     -- Replace any sequence of spaces by a space
     -- Remove Leading and trailing spaces
     procedure Normalize_Spaces (Text : in out As.U.Asu_Us);
+    -- Replace any "#x20" by " "
+    procedure Expand_Spaces (Text : in out As.U.Asu_Us);
     -- Remove from Text the separators around Seps
     procedure Remove_Separators (Text : in out As.U.Asu_Us;
                                  Seps : in String);
