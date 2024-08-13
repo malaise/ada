@@ -416,6 +416,10 @@ package Xml_Parser is
                           Element : Element_Type;
                           Name    : String) return As.U.Asu_Us;
 
+  -- Parse the words (separated by spaces) of an attribute value
+  -- Useful for IDREFS and NMTOKENS
+  function Extract_Words (Attribute : String) return As.U.Asu_Array;
+
   --------------------------
   -- PI, TEXT and COMMENT --
   --------------------------

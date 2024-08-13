@@ -1,4 +1,4 @@
-with Lower_Str, Upper_Str, Mixed_Str, As.U.Utils;
+with Lower_Str, Upper_Str, Mixed_Str;
 separate (Xml_Parser)
 
 package body Parse_Mng  is
@@ -74,7 +74,7 @@ package body Parse_Mng  is
     function Name_Ok (Name : As.U.Asu_Us;
                       Allow_Token : Boolean := False) return Boolean;
     -- Check that Str defines valid names separated by Seps
-    -- I Strict, check that no Seps at begin or end
+    -- If Strict, check that no Seps at begin or end, and not 2 consecutive Seps
     function Names_Ok (Str : As.U.Asu_Us;
                        Seps : String;
                        Strict : Boolean;

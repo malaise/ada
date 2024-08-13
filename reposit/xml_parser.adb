@@ -1,10 +1,9 @@
 with Ada.Exceptions, Ada.Unchecked_Deallocation;
-with Trace.Loggers, Exception_Messenger, Directory, Str_Util,
-     Reg_Exp;
+with Trace.Loggers, Exception_Messenger, Directory, Str_Util, Reg_Exp, As.U.Utils;
 package body Xml_Parser is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "1";
+  Minor_Version : constant String := "2";
   function Version return String is
     ("V" & Major_Version & "." & Minor_Version);
 
@@ -1033,6 +1032,40 @@ package body Xml_Parser is
                           Element : Element_Type;
                           Name    : String) return String is
     (Get_Attribute (Ctx, Element, Name).Image);
+
+  -- Parse the words (separated by spaces) of an attribute value
+  -- Useful for IDREFS and NMTOKENS
+  function Extract_Words (Attribute : String) return As.U.Asu_Array is
+    -- Replace all occurences of "#x20" by spaces
+    S : constant String := Str_Util.Substit (Attribute, "#x20", " ");
+    I1, I2 : Natural;
+    Res : As.U.Utils.Asu_Ua.Unb_Array;
+  begin
+    -- Identify words
+    I1 := S'First;
+    Word:loop
+      -- Look for start of word
+      loop
+        exit Word when I1 > S'Last;
+        exit when S(I1) /= ' ';
+        I1 := I1 + 1;
+      end loop;
+      -- Look for end of word
+      I2 := I1;
+      loop
+        I2 := I2 + 1;
+        exit when I2 > S'Last or else S(I2) = ' ';
+      end loop;
+      -- Got word
+      Res.Append (As.U.Tus (S(I1 .. I2 - 1)));
+      -- Done
+      exit Word when I2 > S'Last;
+      -- Ready for next word
+      I1 := I2;
+    end loop Word;
+    return Res.To_Array;
+  end Extract_Words;
+
 
   --------------------------
   -- PI, TEXT and COMMENT --
