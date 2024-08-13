@@ -231,6 +231,9 @@ Hungar (2)::
      Euristic search (hungarian method) of best affection (e.g. of people to
      jobs). Tough algo.
 
+Klondike (2d)::
+     The famous patience game.
+
 Lapeau (2d)::
      A patience game with 13 rows of 4 cards each.
 

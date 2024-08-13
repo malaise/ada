@@ -4,6 +4,8 @@ Main changes
 
 [horizontal]
 
+*2024/08*:: Add klondike game
+
 *2022/11*:: Add Geohash and Geohash36 libraries
 
 *2022/10*:: Add Open Location Code library (olc)

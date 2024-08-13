@@ -1,0 +1,164 @@
+Klondike
+========
+V1.0
+
+Klondike is a famous solitaire card game.
+
+Goal of the game
+----------------
+
+Initially, 28 cards are randomly put on the table in 7 columns, 1 card in the
+first (left) column, 2 cards in the second column... up to 7 cards in in the
+seventh column. Only the first card of each column is face up.
+
+The 24 other cards are stacked face down in a dock (top left), from which they
+can be pulled one by one.
+
+image:KlondikeInit.png["Init",title="Init",align="left",width="75%"]
+
+The goal is to re-organise the cards and move them in crescent order into 4
+sorted stacks (top right).
+
+Playing areas
+-------------
+
+Playing stacks
+~~~~~~~~~~~~~~
+The main playing area is made of the 7 playing stacks.
+
+In this area, only the the cards that are face up can be moved, and they are
+stacked in decrescent order (King, Queen, Jack, 10 .. 2, Ace) and in alternate
+colors (red / black). Several cards of a stack can be moved together in one
+move. Only a King can be put in an empty stack.
+
+When a card face down becomes the top of a stack (when the card(s) on top of it
+have moved), then this card turns face up.
+
+Done stacks
+~~~~~~~~~~~
+This area contains 4 stacks, one for each suit, where the cards are stacked
+in crescent order (Ace, 2 .. 10, Jack, Queen, King). Cards can be moved from
+the paying area to these stacks. They can be moved back to the paying area,
+providing that the stacking rules are respected.
+
+Dock stacks
+~~~~~~~~~~~
+The Dock consists of two stacks, the Reserve stack, where the cards are face
+down, and the Pull stack, where the cards a face up. Cards are moved one by one
+from the Reserve stack to the Pull stack. The card at the top of the Pull
+stack can be moved to a Play stack or a Done stack.
+
+When the Reserve stack is empty, it is filled back with the content of the Pull
+stack. This can be done only twice.
+
+Menu
+~~~~
+.On the left side, the menu provides functions that abort the current game:
+
+Exit::
+This button stops and quits the game (the same way as the \'X' cross on the top-right
+corner of the window depending on the window manager).
+
+New::
+This button stops the current game and starts a new one.
+
+Start::
+This button stops the current game and starts from scratch the game which number
+has been entered in the field beside the button, or restarts the current game if
+this number is invalid.
+
+.On the right side are the functions that interact with the current game:
+
+Purge::
+This button moves in the Done stacks as many cards as possible. A purge can
+also be treggered by a right click or a double left click on a Done stack.
+
+Undo::
+This button un-does one by one the previous card movements (potentially up
+to the beginning of the current game).
+
+Redo::
+This button re-does one by one the un-done movements (potentially up to the
+first un-done one).
+
+NOTE: The movements, the Undo and Redo are completely reversible, except that
+any explicit movement, while in a Undo/Redo sequence, completely resets the
+history of the movements that can be un-done.
+
+Detailed rules
+--------------
+
+How to play
+~~~~~~~~~~~
+A card is selected by a left-click then a release on it. Selectable cards are
+identified by the mouse cursor becomming a hand when above them. Any card face
+up, on top of a stack or somewhere within a valid sequence can be selected. A
+card on top of a Done stack or on top of the the Pull stack can also be
+selected.
+
+Once a card is selected, its color becomes reversed, the cursor remains a hand,
+denoting that it is time to select the destination (or to cancel the selection
+by clicking again on the same card).
+
+The destination can be:
+
+* a Done stack, if the card is at the top of a Play stack, and if the target
+card has the same color ans is immediately below the selected card.
+
+* the top of another Play stack, if this makes a decrescent sequence with
+alternate colors.
+
+* an empty Play stack, if the selected card is a king.
+
+Valid destinations are identified by becomming reversed when the cursor is
+above them, and the mouse cursor becomes a down arrow. The destination is
+validated by clicking then releasing on it.
+
+The Dock stacks
+~~~~~~~~~~~~~~~
+As long as there are cards (face down) in the Reserve stack, then a left click
+on the stack moves the top card, face up, to the Pull stack. When the 
+Reserve stack is empty, then a left click on the stack moves all the reamining
+cards of the pull stack again face down in the Reserve stack.
+
+The top card of the Pull stack can be selected and moved in the Play or the
+Done area.
+
+Moving to Done stacks
+~~~~~~~~~~~~~~~~~~~~~
+.Right click
+A right click on a selectable card directly moves it to its Done stack if this
+is valid.
+
+.Double left click
+A double left click on a selectable card acts as a right click (see above).
+
+.Automatic purge
+A card of a suit can be used as relay for a card of another color.
+In this case the card is not purged.
+
+For example, a 4 of Club can be used as relay for a 3 of Heart or Diamond. But
+this 3 will not need a relay if it can be Done (if its corresponding 2 is
+already Done). As a consequence, the 4 of Club is purged if both the 2 of Heart
+and the 2 of Diamond are already Done.
+
+Multiple moves
+~~~~~~~~~~~~~~
+Within the play area it is possible to move several cards, providing that they
+are face up, so they form a valid sequence of decrescent values and alternate
+colors.
+
+On the other hand, cards are moved one by one to and from the Done stacks, and
+from the Pull stack.
+
+Game number
+-----------
+Each game is identified by a number between 0 and 999999. The current game
+number is displayed in the title of the main window.
+
+Each 'New' game is a random one, and by default the first game is also random.
+still, it is possible to specify as program argument the number of the first
+game to start with. +
+Also, it is possible to start a given game by entering the game number and then
+clicking on the 'Start' button.
+
