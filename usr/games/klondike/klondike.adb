@@ -251,8 +251,14 @@ begin
             if Stack = Cards.The_Dock(Cards.Dock_Reserve)'Access then
               if Selected_Source = Stack then
                 -- The Reserve stack (empty)
-                Logger.Log_Debug ("  refilling");
-                Movements.Refill (True, True);
+                if Stack.Next = null then
+                  Logger.Log_Debug ("  refilling");
+                  Movements.Refill (True, True);
+                else
+                  -- Could select the stck while it is not empty
+                  --  (click on the border pixel)
+                  Logger.Log_Debug ("  Reserve is not empty");
+                end if;
               else
                 -- The top of the reserve stack
                 Logger.Log_Debug ("  moving to Pull " & Selected_Source.Image);
