@@ -29,7 +29,7 @@ package body Table is
   -- Play stacks and cards positions
   Nb_Y_Top : constant := 7;
   Y_Gap_Top : constant Con_Io.Y_Range := 31;
-  Y_Gap_Bot : constant Con_Io.Y_Range := 25;
+  Y_Gap_Bot : constant Con_Io.Y_Range := 23;
   Play_Y : Con_Io.Y_Range;
 
   -- Window for the menu
