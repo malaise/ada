@@ -414,6 +414,11 @@ package body Movements is
       Source := Cards.The_Dock(Cards.Dock_Reserve)'Access;
       Target := Cards.The_Dock(Cards.Dock_Pull)'Access;
     end if;
+    if Source.Next = null then
+      -- Pull is empty => no refill
+      return;
+    end if;
+
     while Source.Prev /= null loop
       Card := Source.Prev;
       -- Unlink card from Pull
