@@ -118,10 +118,10 @@ begin
             -- Undo a refill
             Movements.Refill (False, False);
           elsif Mov.To.Stack = Cards.The_Dock (Cards.Dock_Pull)'Access then
-            -- Undo a move from reserve to pull
+            -- Undo a move from Reserve to Pull
             Movements.Move_To_Pull (False, False);
           else
-            -- Not a refill
+            -- Undo a move from Pull to Play, of from Play to Play or Done
             Movements.Move ( Mov => (Card => Mov.Card,
                                      From => Mov.To,
                                      To   => Mov.From,
@@ -132,7 +132,9 @@ begin
       when Table.Redo =>
         if Memory.Can_Redo then
           Reset;
-          Mov := Memory.Undo;
+          Mov := Memory.Redo;
+          -- Do not apply From_On_Facedown on redo
+          Mov.From_On_Facedown := False;
           if Mov.To.Stack = Cards.The_Dock (Cards.Dock_Reserve)'Access then
             -- Redo a refill
             Movements.Refill (True, False);
@@ -140,6 +142,7 @@ begin
             -- Redo a move from reserve to pull
             Movements.Move_To_Pull (True, False);
           else
+            -- Redo a move from Pull to Play, of from Play to Play or Done
             Movements.Move (Mov, Add => False);
           end if;
         end if;

@@ -161,6 +161,7 @@ package body Movements is
     else
       if Mov.From_On_Facedown then
         -- Undo moves back on a card that was face down
+        Logger.Log_Debug ("    >> Undo From_On_Facedown " & Mov.Card.Image);
         Stack.Prev.Xcard.Turn_Over (False);
         Stack.Prev.Xcard.Show (True);
         Stack.Prev.Xcard.Do_Raise;
