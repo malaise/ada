@@ -280,9 +280,24 @@ package body Movements is
   -- Move all possible cards into Done stacks
   procedure Purge is
     One_Moved : Boolean;
-    Acc, Target : Cards.Card_Access;
-    Mov : Movement;
+
+    procedure Purge_One (Acc : Cards.Card_Access) is
+      Target : Cards.Card_Access;
+      Mov : Movement;
+    begin
+      Target := Cards.The_Done(Acc.Suit)'Access;
+      if Target.Nb_Children /= 0 then
+        Target := Target.Prev;
+      end if;
+      Mov := (Card => Acc, From => Acc.Stack, To => Target.Stack,
+              others => <>);
+      Move_One (Mov, True, True);
+      One_Moved := True;
+    end Purge_One;
+
+    Acc : Cards.Card_Access;
     use type Cards.Card_Access;
+
   begin
     -- Loop until no move
     Iter:
@@ -296,20 +311,18 @@ package body Movements is
         Depth:
         while Acc /= null and then Acc /= Cards.The_Play(Stack)'Access loop
           if Can_Be_Purged (Acc) then
-            Target := Cards.The_Done(Acc.Suit)'Access;
-            if Target.Nb_Children /= 0 then
-              Target := Target.Prev;
-            end if;
-            Mov := (Card => Acc, From => Acc.Stack, To => Target.Stack,
-                    others => <>);
-            Move_One (Mov, True, True);
-            One_Moved := True;
+            Purge_One (Acc);
           else
             exit Depth;
           end if;
           Acc := Acc.Prev;
         end loop Depth;
       end loop Play_Stacks;
+      -- Try Pull stack
+      Acc := Cards.The_Dock(Cards.Dock_Pull).Prev;
+      if Acc /= null and then Can_Be_Purged (Acc) then
+        Purge_One (Acc);
+      end if;
       exit Iter when not One_Moved;
     end loop Iter;
   end Purge;
