@@ -117,7 +117,7 @@ validated by clicking then releasing on it.
 The Dock stacks
 ~~~~~~~~~~~~~~~
 As long as there are cards (face down) in the Reserve stack, then a left click
-on the stack moves the top card, face up, to the Pull stack. When the 
+on the stack moves the top card, face up, to the Pull stack. When the
 Reserve stack is empty, then a left click on the stack moves all the reamining
 cards of the pull stack again face down in the Reserve stack.
 

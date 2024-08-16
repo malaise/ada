@@ -136,9 +136,9 @@ begin
     Node := Ctx.Get_Child (Rules_Root, I);
     -- Store optinal Name
     if Ctx.Get_Nb_Attributes (Node) /= 0 then
-      Rule.Name := Ctx.get_Attribute (Node, "Name");
+      Rule.Name := Ctx.Get_Attribute (Node, "Name");
     else
-       Rule.Name.Set_Null; 
+       Rule.Name.Set_Null;
     end if;
 
     -- Scan
