@@ -11,16 +11,16 @@ package body Actions is
   type Action is record
     Name, Command : As.U.Asu_Us;
   end record;
-  procedure Set (To : out Action; Val : in Action) is
-  begin
-    To := Val;
-  end Set;
   overriding function "=" (Current : Action; Criteria : Action)
                       return Boolean is
     use type As.U.Asu_Us;
   begin
    return Current.Name = Criteria.Name;
   end "=";
+  procedure Set (To : out Action; Val : in Action) is
+  begin
+    To := Val;
+  end Set;
   function Key_Image (Element : Action) return String is (Element.Name.Image);
   package Actions_List_Mng is new Hashed_List (Action, Set, "=", Key_Image);
   package Unique_Actions_Mng is new Actions_List_Mng.Unique;

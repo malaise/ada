@@ -14,18 +14,18 @@ procedure T_Ul is
     Val : Val_Txt;
   end record;
 
-  procedure Set (To : out Var_Rec; Val : in Var_Rec) is
-  begin
-    To.Name.Set (Val.Name);
-    To.Val.Set (Val.Val);
-  end Set;
-  function Image (Element : Var_Rec) return String is (Element.Name.Image);
   overriding function "=" (Current : Var_Rec;
                            Criteria : Var_Rec) return Boolean is
     use type As.B.Asb_Bs;
   begin
     return Current.Name = Criteria.Name;
   end "=";
+  procedure Set (To : out Var_Rec; Val : in Var_Rec) is
+  begin
+    To.Name.Set (Val.Name);
+    To.Val.Set (Val.Val);
+  end Set;
+  function Image (Element : Var_Rec) return String is (Element.Name.Image);
 
   package H_Ul is new Hashed_List (Var_Rec, Set, "=", Image);
   package My_Ul is new H_Ul.Unique;

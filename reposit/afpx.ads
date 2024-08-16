@@ -296,7 +296,7 @@ package Afpx is
   -- List of items to put in list field in Put_Then_Get
   subtype Line_Len_Range is Natural range 0 .. Con_Io.Col_Range'Last + 1;
   type Line_Rec is record
-    Str : Unicode_Sequence (1 .. Line_Len_Range'Last);
+    Str : Unicode_Sequence (1 .. Line_Len_Range'Last) := (others => 0);
     Len : Line_Len_Range := 0;
   end record;
   procedure Set (To : out Line_Rec; Val : in Line_Rec);

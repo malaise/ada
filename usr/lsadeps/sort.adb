@@ -16,15 +16,15 @@ package body Sort is
     Path : As.U.Asu_Us;
     Prio : Positive;
   end record;
-  procedure Set (To : out Prio_Rec; Val : in Prio_Rec) is
-  begin
-    To := Val;
-  end Set;
   overriding function "=" (L, R : Prio_Rec) return Boolean is
    use type As.U.Asu_Us;
   begin
     return L.Path = R.Path;
   end "=";
+  procedure Set (To : out Prio_Rec; Val : in Prio_Rec) is
+  begin
+    To := Val;
+  end Set;
   function Image (Elt : Prio_Rec) return String is (Elt.Path.Image);
   package H_Prio_List_Mng is new Hashed_List (Prio_Rec, Set, "=" , Image);
   package Prio_Ulist_Mng is new H_Prio_List_Mng.Unique;

@@ -61,6 +61,14 @@ package body Search_Pattern is
     --  then indexes of sub-matching strings
     Substrs : Substr_Array := (others => (0, 0, 0));
   end record;
+  -- Unicity of pattern num
+  function "=" (Current : Line_Pat_Rec; Criteria : Line_Pat_Rec)
+               return Boolean is
+    use type Ll_Natural;
+  begin
+    -- Unicity of Num
+    return Current.Num = Criteria.Num;
+  end "=";
   type Line_Pat_Acc is access all Line_Pat_Rec;
 
   procedure Set (To : out Line_Pat_Rec; Val : in Line_Pat_Rec) is
@@ -83,15 +91,7 @@ package body Search_Pattern is
     To.Nb_Substr := Val.Nb_Substr;
     To.Substrs := Val.Substrs;
   end Set;
-  -- Unicity of pattern num
   function Image (Line_Pat : Line_Pat_Rec) return String is (Line_Pat.Num'Img);
-  function "=" (Current : Line_Pat_Rec; Criteria : Line_Pat_Rec)
-               return Boolean is
-    use type Ll_Natural;
-  begin
-    -- Unicity of Num
-    return Current.Num = Criteria.Num;
-  end "=";
   package H_List_Pattern  is new Hashed_List (Line_Pat_Rec, Set, "=", Image);
   package Unique_Pattern  is new H_List_Pattern.Unique;
 

@@ -162,16 +162,16 @@ package body Registers is
     Key : Key_Type;
     Data : Item_Rec;
   end record;
-  procedure Set (To : out Storage_Rec; Val : in Storage_Rec) is
-  begin
-    To := Val;
-  end Set;
-  function Key_Image (Element : Storage_Rec) return String is (Element.Key);
   overriding function "=" (Current : Storage_Rec;
                            Criteria : Storage_Rec) return Boolean is
   begin
     return Current.Key = Criteria.Key;
   end "=";
+  procedure Set (To : out Storage_Rec; Val : in Storage_Rec) is
+  begin
+    To := Val;
+  end Set;
+  function Key_Image (Element : Storage_Rec) return String is (Element.Key);
   package H_List_Mng is new Hashed_List (Storage_Rec, Set, "=", Key_Image);
   package List_Mng is new H_List_Mng.Unique;
   Array_List : List_Mng.Unique_List_Type;

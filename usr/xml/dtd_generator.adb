@@ -179,10 +179,6 @@ procedure Dtd_Generator is
   end record;
 
   -- Hashed list of elements
-  procedure Set (To : out Element_Type; Val : in Element_Type) is
-  begin
-    To := Val;
-  end Set;
   overriding function "=" (Current : Element_Type;
                            Criteria : Element_Type) return Boolean is
     use type As.U.Asu_Us;
@@ -190,6 +186,10 @@ procedure Dtd_Generator is
     -- Same Name
     return Current.Name = Criteria.Name;
   end "=";
+  procedure Set (To : out Element_Type; Val : in Element_Type) is
+  begin
+    To := Val;
+  end Set;
   function Image (Element : Element_Type) return String is (Element.Name.Image);
   package Elem_Hash is new Hashed_List (Element_Type, Set, "=", Image);
   package Elem_Unique is new Elem_Hash.Unique;

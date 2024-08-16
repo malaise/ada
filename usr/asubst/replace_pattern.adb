@@ -40,6 +40,11 @@ package body Replace_Pattern is
     Action : Subtit_Action_List;
     Info : Byte;
   end record;
+  overriding function "=" (Current : Substit_Action_Rec;
+                           Criteria : Substit_Action_Rec) return Boolean is
+  begin
+    return Current.Index = Criteria.Index;
+  end "=";
   procedure Set (To : out Substit_Action_Rec; Val : in Substit_Action_Rec) is
   begin
     To := Val;
@@ -47,11 +52,6 @@ package body Replace_Pattern is
   -- Access by index in The_Pattern
   function Image (Element : Substit_Action_Rec) return String is
     (Element.Index'Img);
-  overriding function "=" (Current : Substit_Action_Rec;
-                           Criteria : Substit_Action_Rec) return Boolean is
-  begin
-    return Current.Index = Criteria.Index;
-  end "=";
   package H_Substites_List is new Hashed_List (Substit_Action_Rec,
                     Set, "=", Image);
   package Substites_List is new H_Substites_List.Unique;

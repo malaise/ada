@@ -81,7 +81,7 @@ void *line, *line_event;
 char name[50];
 char stra[81], stre[81], strs[81];
 char selection[81];
-char digits[5];
+char digits[12];
 int i, j, k, l, m, n, o;
 int kk[4];
 boolean control, shift, code;

@@ -14,15 +14,15 @@ package body Clients is
   end record;
 
   -- List of clients (accepting/accepted/connected), hashed on Dscr
-  procedure Set (To : out Client_Rec; Val : in Client_Rec) is
-  begin
-    To := Val;
-  end Set;
   overriding function "=" (Current : Client_Rec;
                            Criteria : Client_Rec) return Boolean is
   begin
     return Current.Dscr.Image = Criteria.Dscr.Image;
   end "=";
+  procedure Set (To : out Client_Rec; Val : in Client_Rec) is
+  begin
+    To := Val;
+  end Set;
   function Image (Element : Client_Rec) return String is (Element.Dscr.Image);
 
   package Client_List_Mng is new Hashed_List (Client_Rec, Set, "=", Image);

@@ -57,14 +57,10 @@ if [ "$COMMAND" = "ada" ] ; then
   export COMMAND="gcc -c"
   export GNATFLAGS="-gnat2012"
   mkflags -I
-elif [ "$COMMAND" = "gnatstub" ] ; then
-  # PATH and args for gnatstub
-  export PATH=$GNATPATH:$PATH
-  export ADAOPT="-gnaty2"
-  export ADAFLAGS=""
-  export GNATFLAGS="-gnat2012"
-  mkflags -I
-elif [ "$COMMAND" = "gnatls" ] ; then
+  exec $COMMAND $GNATFLAGS $ADAOPT $ADAFLAGS $* $POSTARGS
+  exit 0
+fi
+if [ "$COMMAND" = "gnatls" ] ; then
   if [ "$1" = "-noview" ] ; then
     export ADAVIEW=""
     export GNATFLAGS=""
@@ -75,14 +71,7 @@ elif [ "$COMMAND" = "gnatls" ] ; then
   if [ -d $LIB ] ; then
     export GNATFLAGS="-I$LIB $GNATFLAGS" 
   fi
-elif [ "$COMMAND" = "gnatmetric" ] ; then
-  GNATFLAGS=""
-  ADAOPT="-q -sfn"
-  export POSTARGS=""
-  if [ -n "$ADAVIEW" ] ; then
-    POSTARGS="-cargs -I $ADAVIEW"
-  fi
 fi
 
-exec $GNATPATH/$COMMAND $GNATFLAGS $ADAOPT $ADAFLAGS $* $POSTARGS
+exec $GNATPATH/$COMMAND$GNAT_SUFFIX $GNATFLAGS $ADAOPT $ADAFLAGS $* $POSTARGS
 

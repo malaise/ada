@@ -30,17 +30,17 @@ procedure T_Str_Error is
     Code : Natural;
     Alias_Of : As.U.Asu_Us;
   end record;
-  Def, Alias : Def_Rec;
-  procedure Set (To : out Def_Rec; Val : in Def_Rec) is
-  begin
-    To := Val;
-  end Set;
   overriding function "=" (Current : Def_Rec;
                            Criteria : Def_Rec) return Boolean is
     use type As.U.Asu_Us;
   begin
     return Current.Name = Criteria.Name;
   end "=";
+  Def, Alias : Def_Rec;
+  procedure Set (To : out Def_Rec; Val : in Def_Rec) is
+  begin
+    To := Val;
+  end Set;
   function Key_Image (Element : Def_Rec) return String is (Element.Name.Image);
   package Hash_Def_Mng is new Hashed_List (Def_Rec, Set, "=", Key_Image);
   package Unique_Def_Mng is new Hash_Def_Mng.Unique;

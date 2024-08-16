@@ -36,15 +36,15 @@ package body Tree_Mng is
     Name : As.U.Asu_Us;
     Level : Positive;
   end record;
-  procedure Set (To : out Cell; Val : in Cell) is
-  begin
-    To := Val;
-  end Set;
   overriding function "=" (Current : Cell; Criteria : Cell) return Boolean is
     use type As.U.Asu_Us;
   begin
     return Current.Name = Criteria.Name;
   end "=";
+  procedure Set (To : out Cell; Val : in Cell) is
+  begin
+    To := Val;
+  end Set;
   function Key_Image (A_Cell : Cell) return String is (A_Cell.Name.Image);
   package Cell_Hashed_List_Mng is new Hashed_List (Cell, Set, "=", Key_Image);
   package Cell_Unique_List_Mng is new Cell_Hashed_List_Mng.Unique;
