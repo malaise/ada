@@ -9,7 +9,7 @@ Goal of the game
 
 Initially, 28 cards are randomly put on the table in 7 columns, 1 card in the
 first (left) column, 2 cards in the second column... up to 7 cards in in the
-seventh column. Only the first card of each column is face up.
+seventh column. Only the last (top) card of each column is face up.
 
 The 24 other cards are stacked face down in a dock (top left), from which they
 can be pulled one by one.
@@ -32,20 +32,20 @@ colors (red / black). Several cards of a stack can be moved together in one
 move. Only a King can be put in an empty stack.
 
 When a card face down becomes the top of a stack (when the card(s) on top of it
-have moved), then this card turns face up.
+have moved), then this card turns face up automatically.
 
 Done stacks
 ~~~~~~~~~~~
 This area contains 4 stacks, one for each suit, where the cards are stacked
 in crescent order (Ace, 2 .. 10, Jack, Queen, King). Cards can be moved from
-the paying area to these stacks. They can be moved back to the paying area,
-providing that the stacking rules are respected.
+the paying area or from the dock, to these stacks. They can be moved back to
+the paying area, providing that the stacking rules are respected.
 
 Dock stacks
 ~~~~~~~~~~~
 The Dock consists of two stacks, the Reserve stack, where the cards are face
-down, and the Pull stack, where the cards a face up. Cards are moved one by one
-from the Reserve stack to the Pull stack. The card at the top of the Pull
+down, and the Pull stack, where the cards are face up. Cards are moved one by
+one from the Reserve stack to the Pull stack. The card at the top of the Pull
 stack can be moved to a Play stack or a Done stack.
 
 When the Reserve stack is empty, it is filled back with the content of the Pull
@@ -71,7 +71,7 @@ this number is invalid.
 
 Purge::
 This button moves in the Done stacks as many cards as possible. A purge can
-also be treggered by a right click or a double left click on a Done stack.
+also be triggered by a right click or a double left click on a Done stack.
 
 Undo::
 This button un-does one by one the previous card movements (potentially up
@@ -134,9 +134,11 @@ is valid.
 A double left click on a selectable card acts as a right click (see above).
 
 .Automatic purge
-A card of a suit can be used as relay for a card of another color.
-In this case the card is not purged.
+A double-left click or a right click on aDone stack tiggers an automatic purge
+(as a click on the "Purge" button).
 
+NOTE: A card of a suit can be used as relay for a card of another color.
+In this case, the card is not purged. +
 For example, a 4 of Club can be used as relay for a 3 of Heart or Diamond. But
 this 3 will not need a relay if it can be Done (if its corresponding 2 is
 already Done). As a consequence, the 4 of Club is purged if both the 2 of Heart
