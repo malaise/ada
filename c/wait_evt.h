@@ -1,6 +1,7 @@
 #ifndef _WAIT_EVT_H
 #define _WAIT_EVT_H
 
+#include "boolean.h"
 #include "timeval.h"
 
 /* The result of each call except get_signal is 0 if success, -1 if error */
