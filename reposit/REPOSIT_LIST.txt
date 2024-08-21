@@ -82,11 +82,14 @@ are many, are optional, support options...
 
 * 'Environ' allows retrieving and checking environmental variables.
 
-* 'Basic_Proc' allows setting the exit code of the process and basic
+* 'Basic_Proc' allows setting the exit code of the process and provides basic
 input/output.
 
-* 'Trace' allows logging trace in the code. The output is filtered according
-to envirnment variables.
+* 'Basic_Proc', 'Protected_Put', 'Async_Stdin', 'Key_Pressed' (and 'Sys_Calls')
+provide input from stdin and output to stdout and stderr.
+
+* 'Trace' allows logging traces in the code. The output is filtered according
+to environment variables.
 
 Strings
 ~~~~~~~
@@ -115,8 +118,8 @@ given separator.
 
 Character encoding
 ~~~~~~~~~~~~~~~~~~
-* 'Language' allows the selection of encoding between C and Utf-8 and provides
-associated string operations.
+* 'Language' allows the selection of character encoding, between C and Utf-8,
+and provides associated string operations.
 
 * 'Utf_8' and 'Utf_16' provide basic encoding functions.
 
@@ -130,7 +133,7 @@ Numbers
 * 'My_Math' provides logarithm and trigonometry on real numbers and conversion
 to integers.
 
-* 'C_Nbres' implements complex numbers.
+* 'Complexes' implements complex numbers.
 
 * 'Gets' allows getting a number (integer, float...) from a string.
 
@@ -148,8 +151,8 @@ Data containers
 * 'Long_Long_Limited_List', 'Limited_List' and anchor:XDynamic_List[]
 'Dynamic_List' are linked lists of data, limited or simply private.
 
-* 'Long_Long_Limited_Pool', 'Limited_Pool' and 'Unlimited_Pool' are simple dynamic lists
-with push/pop operations.
+* 'Long_Long_Limited_Pool', 'Limited_Pool' and 'Unlimited_Pool' are simple
+dynamic lists with push/pop operations.
 
 * 'Hashing' provides basic hashing table, while 'Hashed_List' provides a hashed
 storage of data, possibly with unicity of each data.
@@ -220,17 +223,18 @@ Files
 * 'Text_Char' allows reading a file character by character and "un-getting"
 characters.
 
+* Output_Flows provides homogeneous access to Stdout, Stderr (synchronous or
+not) or Text_Line files
+
 * 'Bloc_Io' allows reading and writing in a file block by block (a block is
 an array of bytes).
 
-* 'Directory' provides all the basic functions for changing to and scanning
+* 'Directory' provides all the basic functions for changing to, and scanning
 directories, and tools for building and splitting directory path.
 
 * 'Dir_Mng' fills a xref:XDynamic_List[dynamic list] with the content of a
 directory.
 
-* 'Basic_Proc', 'Protected_Put', 'Async_Stdin', 'Key_Pressed' (and 'Sys_Calls')
-provide input from stdin and output to stdout and stderr.
 
 List of packages
 ----------------
@@ -248,7 +252,7 @@ ada_words ada_words.keywords (2)::
 address_ops (1)::
      Add, sub and returns image of a System.Address.
 
-afpx_typ afpx afpx.utils (3d)::
+afpx afpx.utils (3d)::
      Graphic (text oriented) manager of input screens that are off-line
      defined.
 
@@ -500,7 +504,7 @@ num_letters (2)::
      Converts a number into english text and reverse.
 
 output_flows (2)::
-     Pool of shared ans standardized output flows
+     Pool of shared and standardized output flows
 
 parser parser.all_in_one parser.keywords (2)::
      Parse a string, separate words and separators.
@@ -560,7 +564,7 @@ select_file (2)::
      Afpx-based file selection in a dir.
 
 smart_alias (2)::
-     Smart aliases to global objects.
+     Smart aliases to global objects (notifier of releases).
 
 smart_reference (2)::
      Smart reference (automatic free).

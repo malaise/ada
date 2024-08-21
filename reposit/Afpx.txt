@@ -8,7 +8,7 @@ fields that can be of kind 'Put', 'Get' or 'Button'. +
 See the file *Afpx.dtd* for a detailed description of the XML syntax. +
 
 xref:XAfpx_bld[afpx_bld] is a compiler that reads a Afpx XML configuration file
-and generates binary files that are read by the Afpx package at start-up.
+and generates binary files that will be read by the Afpx package at start-up.
 
 xref:XAfpx_rnb[afpx_rnb] is a tool that helps inserting and deleting fields in
 a Afpx XML file.

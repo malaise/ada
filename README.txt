@@ -4,13 +4,13 @@ Ada notes
 This README file describes briefly the main directories of the Ada contrib.
 
 The software compiles with Ada 2012 (Gnat "GPL 2016", "Community 2020" and
-"Debian GNAT 10") for Linux 64 bits.
+"Debian GNAT 10 & 13") for Linux 64 bits.
 
 Some programs depend on anchor:XPCRE[] PCRE (Perl Compatible Regular Expressions) and work
-with version 7.8 or above (8.35 is OK), or PCRE2, version 10.00 or above
-(10.31 is OK), and require the corresponding PCRE developpement package.
+with version 7.8 or above (8.45 is OK), or PCRE2, version 10.00 or above
+(10.44 is OK), and require the corresponding PCRE developpement package.
 
-Some programs depend on libssl for EVP digest.
+Some programs depend on libssl (dev) for EVP digest.
 
 The 'asciidoc' suite is used for the generation of the documentation.
 
@@ -29,9 +29,6 @@ You may also need to add '/usr/local/lib' in '/etc/ld.so.conf' (and do a
 
 NOTE: Some programs require the stack size to be larger than the default
 maximum. Use for example 'ulimit -s 1048576' to allow a larger stack.
-
-Programs are rated from 1 (simple) to 3 (very complex), on subjective
-criteria.
 
 Gnatmake (optional)
 -------------------
@@ -93,12 +90,12 @@ current directory.
 
 C directory (MANDATORY)
 -----------------------
-Four libraries are generated here:
+Five libraries are generated here:
 
 .C utilities ('cutil')
 This lib gathers several low level utility libraries:
 
-- 'timeval', used by other C libraries, for struct timeval operations,
+- 'timeval', used by other C libraries, for operations on struct timeval,
 
 - 'socket', interfaced by the Ada 'Socket' package, interfaces socket calls
 (tcp, udp, ipm, message on tcp, afinet or afux),
@@ -109,18 +106,19 @@ for several calls to the operating system,
 - 'wait_evt', interfaced by the Ada 'Even_Mng' package, waits (with "select") on
 several fds, catches signals...
 
+.Digital EnVeloPe ('evp')
+interfaced by the Ada 'Evp_Digest' package, wraps to openssl "evp digest"
+functions.
+
 .X11 management ('x_mng')
-- 'x_export', interfaced by the Ada 'X_Mng' package, defines all the calls
-needed for X11 (except cards),
+'x_export', interfaced by the Ada 'X_Mng' package, defines all the calls needed
+for X11 (except cards).
 
-- 'x_cards', interfaced by the Ada 'X_Mng.Cards' package, is an extension
-for the management in X11 of playing cards.
+.Cards ('x_cards')
+interfaced by the Ada 'X_Mng.Cards' package, is an extension for the management
+in X11 of playing cards.
 
-.Ndbm ('cnbdbm')
-This lib interfaces with ndbm C library. The corresponding Ada 'Ndbm' package is
-not used at present (except in test).
-
-.Posix to PCRE ('posic2pcre')
+.Posix to PCRE ('posix2pcre')
 Own binding of xref:XPCRE[PCRE] to POSIX API, with extension, interfaced by
 the Ada 'Regular_Expressions' package.
 
@@ -343,14 +341,14 @@ Mine detector uses Gtk-Ada GPL_2016 (GTK3).
 Testing
 -------
 The directory 'tests' contains many tests of the packages of the 'repository'.
-It contains a 'Test' scripts that runs automatic tests and stops on error if
-a test fails. With option '-ix' the 'Test' script launches the tests of the
+It contains a 'Test' scripts that runs automatic the tests, and stops on error
+if a test fails. With option '-ix' the 'Test' script launches the tests of the
 packages that are based on X11 ('X_Mng', 'Con_Io', 'Afpx', 'Curve'...)
 for interactive testing.
 
 Many projects in subdirectories of 'usr' also implement automatic tests that
-are launched by a local 'Test' script and fail on error.
+are launched by a local 'Test' script, and fail on error.
 
-Finally a 'Tests' script in 'usr' lauches all the tests, which takes around 6
-minutes.
+Finally, a 'Tests' target in a parent directory lauches all the tests in its
+chldren directories. The test of the whole 'usr' subtree takes around 6 minutes.
 
