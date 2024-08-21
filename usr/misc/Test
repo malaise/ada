@@ -5,6 +5,7 @@
 # Cleanup
 function clean {
   rm -f cmp res out err expout experr
+  rm -rf tmp
 }
 trap 'echo ""; clean; exit 1' SIGINT SIGTERM
 
@@ -44,9 +45,18 @@ trap 'echo ""; clean; exit 1' SIGINT SIGTERM
 
 
 # One test of compression / uncompression
-# cmpr_one <algo> <file>
+# cmpr_one [ -v ] <algo> <file>
 function cmpr_one {
   export OPT=""
+
+  # Verbose option
+  export VERBOSE=0
+  if [ "$1" = "-v" ] ; then
+    export VERBOSE=1
+    shift
+  fi
+
+  # Compression algo
   if [ "$1" = "--lzf" ] ; then
     CMPR="azf -s 900"
     shift
@@ -62,22 +72,30 @@ function cmpr_one {
   fi
   local file=$1
 
-  echo -n $CMPR $file 
+  # Compress file
+  if [ $VERBOSE -eq 1 ] ; then
+    echo -n $CMPR $file 
+  fi
   cat $file | $CMPR -c > cmp
   if [ $? -ne 0 ] ; then
     echo
     echo "$CMPR -c $file has failed." 2>&1
     exit 1
   fi
+
+  # Compression rate
   let ISIZE=0+`ls -l $file | cut -d ' ' -f 5` 
   let CSIZE=0+`ls -l cmp   | cut -d ' ' -f 5` 
-  if [ $ISIZE -eq 0 ] ; then
-    echo " 0"
-  else
-    let PER=\($ISIZE-$CSIZE\)*100/$ISIZE
-    echo " "$PER"%"
+  if [ $VERBOSE -eq 1 ] ; then
+    if [ $ISIZE -eq 0 ] ; then
+      echo " 0"
+    else
+      let PER=\($ISIZE-$CSIZE\)*100/$ISIZE
+      echo " "$PER"%"
+    fi
   fi
 
+  # Uncompress
   cat cmp | $CMPR -d > res
   if [ $? -ne 0 ] ; then
     echo
@@ -85,6 +103,7 @@ function cmpr_one {
     exit 1
   fi
 
+  # Compare
   cmp $file res 2>/dev/null
   res=$?
   if [ $res -ne 0 ] ; then
@@ -94,29 +113,46 @@ function cmpr_one {
   fi
 }
 
-# Specific option to do one compression test
+# Specific option to do one compression on several files
 if [ \( "$1"  = "--lzf" \) -o \( "$1"  = "--lz4" \) \
   -o \( "$1"  = "--snappy" \) -o \( "$1"  = "--lz4l" \) ] ; then
   algo=$1
   shift
   for file in $* ; do
-    cmpr_one $algo $file
+    cmpr_one -v $algo $file
   done
   clean
   exit
 fi
 
+# Specific option to do all compressions on several files
+if [ "$1"  = "--all" ] ; then
+  shift
+  for file in $* ; do
+    for algo in lzf lz4 snappy lz4l ; do
+      cmpr_one -v --$algo $file
+    done
+    echo ""
+  done
+  clean
+  exit
+fi
+
+# All compressions
 if [ \( -z "$1" \) -o \( "$1" = "compress" \) ] ; then
   # Azf on lzf, lz4 and snappy, and then lz4l
   for file in `ls *.ads *.adb lib/*` ; do
-    cmpr_one --lzf $file
-    cmpr_one --lz4 $file
-    cmpr_one --snappy $file
-    cmpr_one --lz4l $file
+    echo -n "$file "
+    for algo in lzf lz4 snappy lz4l ; do
+      cmpr_one --$algo $file
+    done
   done
+  echo ""
+  echo "OK"
   echo ""
 fi
 
+# comp_vars
 if [ \( -z "$1" \) -o \( "$1" = "comp_vars" \) ] ; then
   # Comp_vars with SET_ME set
   echo "comp_vars with SET_ME"
@@ -148,8 +184,31 @@ Error processing input flow at line 15 on node Var:
 Unknown variable while evaluating variable.
 EOF
   comp err experr
+  echo "OK"
   echo ""
 fi
 
+# copy_files
+if [ \( -z "$1" \) -o \( "$1" = "copy_files" \) ] ; then
+  echo "copy_files"
+  # Move files from lib to tmp
+  mkdir tmp 2>err
+  ls lib/* >expout 2>>err
+  cat expout | copy_files -m - tmp >/dev/null 2>>err
+  rmdir lib 2>>err
+  # Copy them back to lib
+  mkdir lib 2>>err
+  ls tmp/* | copy_files - lib >/dev/null 2>>err
+  ls lib/* >out 2>>err
+  # Compare content of lib
+  comp out expout
+  # No error
+  echo -n "" >experr
+  cmp err experr
+  echo "OK"
+  echo ""
+fi
+
+echo clean
 clean
 
