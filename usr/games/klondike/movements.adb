@@ -381,6 +381,8 @@ package body Movements is
     Source.Nb_Children := Source.Nb_Children - 1;
     Target.Nb_Children := Target.Nb_Children + 1;
     if Add then
+      -- Click for move to Pull cannot be the first click of a double click
+      Table.Console.Cancel_Double_Click;
       Memory.Add ((Card => Card,
                    From => Source,
                    To => Target,
