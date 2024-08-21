@@ -7,7 +7,7 @@ AFPX := true
 AFPX_XREF := afpx_xref
 
 EXES := adand add_nums alook arbipas astat azf beep bernouilli \
- comp_vars day_of_week ddir e2f fact full_path g hanoi \
+ comp_vars copy_files day_of_week ddir e2f fact full_path g hanoi \
  impot_04 lenv alz4l mlbx_overflow one_of_arg pascal pingpong prime \
  random relay renamer \
  second statfile stats status strcase tcping trail_spaces udp_spy \

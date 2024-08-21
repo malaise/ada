@@ -259,6 +259,7 @@ Misc::
 - Alook (1) properly formats the words of a (valid) Ada2012 source file.
 - Astat (1) counts the number of instruction of (valid) Ada source files.
 - Azf (1) (un)compress a flow of bytes with Lzf.
+- Copy_Files (1) copy or move several files, read names from stdin
 - Day_of_week (1) tells everything on today (or on another day).
 - G (1) a game where to find the remaining of division by 3.
 - Lenv (1) lists environment variables whose name match a criteria.
