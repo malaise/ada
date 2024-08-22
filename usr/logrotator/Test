@@ -24,6 +24,7 @@ function comp {
   echo $orig
   local result=res_tmp
   shift
+  local first=$1
   echo -n "" > $result
   while [ -n "$1" ] ; do
     cat $1 >>$result
@@ -33,21 +34,23 @@ function comp {
   cmp $orig $result 2> /dev/null
   res=$?
   if [ $res -ne 0 ] ; then
-    error "File $result differs from expected $orig."
+    error "File $result from $first differs from expected $orig."
   fi
 }
+
+export logrotator_TRACE_Logrotator=Warning
 
 # Send flow through logrotator, one file per second
 # logrotator makes at least one file per second, or several smaller than 7kB
 echo "Piping..."
 cater -i 1 cater Logrotator.txt makefile logrotator.adb Logrotator.html 2>/dev/null \
-| logrotator -p 1s -s 7k res
+| logrotator -p 0.5s -c 21 -s 7k res
 
 comp cater           res_000.000
-comp Logrotator.txt  res_001.000
-comp makefile        res_002.000
-comp logrotator.adb  res_003.000 res_003.001
-comp Logrotator.html res_004.000 res_004.001
+comp Logrotator.txt  res_002.000
+comp makefile        res_004.000
+comp logrotator.adb  res_006.000 res_006.001
+comp Logrotator.html res_008.000 res_008.001
 
 clean
 echo Done
