@@ -1,9 +1,9 @@
 with Ada.Calendar;
 with Long_Longs, Aski, Basic_Proc, Argument, Argument_Parser, As.U, Normal,
-     Trace.Loggers, Text_Line, Chronos.Passive_Timers, Sys_Calls;
+     Trace.Loggers, Text_Line, Chronos.Passive_Timers, Sys_Calls, Gets, My_Math;
 procedure Logrotator is
   -- Current version
-  Version : constant String := "2.2";
+  Version : constant String := "2.3";
 
   -- Trace logger
   Logger : Trace.Loggers.Logger;
@@ -67,7 +67,6 @@ procedure Logrotator is
 
     -- Temporary string, value and multiplicator
     Arg : As.U.Asu_Us;
-    Val : Natural;
     Mult : Character;
   begin
     Arg_Dscr := Argument_Parser.Parse (Keys);
@@ -100,6 +99,8 @@ procedure Logrotator is
 
     -- Period then s, h or d
     if Arg_Dscr.Is_Set (03) then
+      declare
+        Dur : Duration;
       begin
         Arg := As.U.Tus (Arg_Dscr.Get_Option (03));
         if Arg.Length < 2 then
@@ -107,11 +108,11 @@ procedure Logrotator is
         end if;
         Mult := Arg.Element (Arg.Length);
         Arg.Trail (1);
-        Val := Positive'Value (Arg.Image);
+        Dur := Duration'Value (Arg.Image);
         case Mult is
-          when 's' => Period := Duration (Val);
-          when 'h' => Period := Duration (Val) * 3600.0;
-          when 'd' => Period := Ada.Calendar.Day_Duration'Last * Duration (Val);
+          when 's' => Period := Dur;
+          when 'h' => Period := Dur * 3600.0;
+          when 'd' => Period := Ada.Calendar.Day_Duration'Last * Dur;
           when others => raise Constraint_Error;
         end case;
       exception
@@ -133,8 +134,11 @@ procedure Logrotator is
       end;
     end if;
 
-    -- Size then optional k or M
+    -- Size then optional k or M or G
     if Arg_Dscr.Is_Set (05) then
+      declare
+        Got_Size : Float;
+        use type My_Math.Real;
       begin
         Arg := As.U.Tus (Arg_Dscr.Get_Option (05));
         if Arg.Length < 2 then
@@ -147,14 +151,16 @@ procedure Logrotator is
             Arg.Trail (1);
           end if;
         end if;
-        Max_Size := Long_Longs.Ll_Positive'Value (Arg.Image);
+        Got_Size := Gets.Get_Int_Float (Arg.Image);
         case Mult is
-          when Aski.Nul => null;
-          when 'k' => Max_Size := 1024 * Max_Size;
-          when 'M' => Max_Size := 1024 * 2014 * Max_Size;
-          when 'G' => Max_Size := 1024 * 1024 * 2014 * Max_Size;
+          when Aski.Nul => Max_Size := 0;
+          when 'k' => Max_Size := 1024;
+          when 'M' => Max_Size := 1024 * 2014;
+          when 'G' => Max_Size := 1024 * 1024 * 2014;
           when others => raise Constraint_Error;
         end case;
+        Max_Size := My_Math.Trunc (My_Math.Real (Max_Size)
+                                 * My_Math.Real (Got_Size) );
       exception
         when others =>
           Error ("Invalid size " & Arg.Image);

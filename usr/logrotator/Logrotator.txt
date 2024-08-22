@@ -1,6 +1,6 @@
 Logrotator
 =========
-V2.2
+V2.3
 
 Logrotator reads an input flow of text lines (e.g. logs) and splits it into
 several files according to various rules. +
@@ -12,9 +12,9 @@ Usage
 
 Logrotator takes as argument a root file name and, as option:
 
-* a period (min 1s, no max, default 1 day)
+* a period (min 1s, no max, default 1 day, can have decimal)
 * a maximum number of periods (min 1, max 999, default 7)
-* a maximum file size (min 1, no max, default none)
+* a maximum file size (min 1, no max, default none, can have decimal)
 * a maximum number of files per period (min 1, max 999, default 999)
 .........................................
 Usage: logrotator [ <period> ] [ <cycle> ] [ <file_size> ] [ <files> ] <file_name>
