@@ -1,5 +1,4 @@
 with Ada.Unchecked_Deallocation;
-with Timers;
 -- Child package of Queues
 package body Queues.Timed is
 
@@ -60,7 +59,8 @@ package body Queues.Timed is
     Timer : Timer_Access;
   begin
     Add_Item (Queue, X, Timer);
-    Timer.Start ( (Timers.Delay_Sec, Queue.Clock, Timers.No_Period, Lifetime) );
+    Timer.Start ( (Chronos.Passive_Timers.Delay_Sec, Queue.Clock,
+                   Chronos.Passive_Timers.No_Period, Lifetime) );
   end Push;
 
   -- Remove obsolete items an add this one that will expire after
@@ -71,7 +71,8 @@ package body Queues.Timed is
     Timer : Timer_Access;
   begin
     Add_Item (Queue, X, Timer);
-    Timer.Start ( (Timers.Delay_Del, Queue.Clock, Timers.No_Period, Lifetime) );
+    Timer.Start ( (Chronos.Passive_Timers.Delay_Del, Queue.Clock,
+                   Chronos.Passive_Timers.No_Period, Lifetime) );
   end Push;
 
   -- Remove obsolete items

@@ -11,8 +11,9 @@ package Timers is
   subtype Period_Range is Duration range 0.0 .. Duration'Last;
   -- Timer with No_Period will expire only once and is called single-shot
   --  otherwise it is periodic
-  No_Period : Period_Range := 0.0;
+  No_Period : constant Period_Range := 0.0;
   Default_Timeout : constant Duration := 0.0;
+  subtype Delta_Rec is Perpet.Delta_Rec;
   Default_Delta : constant Perpet.Delta_Rec := (0, 0.0);
 
   type Delay_Rec (Delay_Kind : Delay_List := Delay_Sec) is record
@@ -26,7 +27,7 @@ package Timers is
         Delay_Seconds : Duration := Default_Timeout;
       when Delay_Del =>
         -- After some days and seconds
-        Delay_Delta : Perpet.Delta_Rec := Default_Delta;
+        Delay_Delta : Delta_Rec := Default_Delta;
       when Delay_Exp =>
         -- At a some time
         Expiration_Time : Virtual_Time.Time;

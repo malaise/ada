@@ -33,7 +33,7 @@ package body Chronos.Passive_Timers is
           (if Delay_Spec.Expiration_Time > Start_Time then
              Delay_Spec.Expiration_Time - Start_Time
            else
-             Timers.Default_Delta));
+             Default_Delta));
     Timer.Period := Delay_Spec.Period;
     Timer.Expired := False;
     Timer.Running := True;

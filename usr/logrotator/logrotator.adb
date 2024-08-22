@@ -1,6 +1,6 @@
 with Ada.Calendar;
 with Long_Longs, Aski, Basic_Proc, Argument, Argument_Parser, As.U, Normal,
-     Trace.Loggers, Text_Line, Timers, Chronos.Passive_Timers, Sys_Calls;
+     Trace.Loggers, Text_Line, Chronos.Passive_Timers, Sys_Calls;
 procedure Logrotator is
   -- Current version
   Version : constant String := "2.1";
@@ -24,7 +24,7 @@ procedure Logrotator is
   -- Target files root name
   File_Name : As.U.Asu_Us;
   -- Period in seconds, 1d
-  Period : Timers.Period_Range := 24.0 * 3600.0;
+  Period : Chronos.Passive_Timers.Period_Range := 24.0 * 3600.0;
   -- Cycle : Max number of periods
   Max_Cycles_Max : constant := 999;
   Max_Cycles : Positive := 7;
@@ -274,7 +274,7 @@ begin
   Debug ("Stdin open");
 
   -- First period
-  Timer.Start ( (Delay_Kind => Timers.Delay_Sec,
+  Timer.Start ( (Delay_Kind => Chronos.Passive_Timers.Delay_Sec,
                  Clock => null,
                  Period => Period,
                  Delay_Seconds => Period));
