@@ -1,0 +1,54 @@
+#!/bin/bash
+
+# Cleanup
+function clean {
+  rm -f res_* 
+}
+trap 'echo ""; clean; exit 1' SIGINT SIGTERM
+
+if [ "$1" = "clean" ]  ; then
+  clean
+  exit 0
+fi
+
+# Error message
+function error {
+  echo
+  echo $* 2>&1
+  exit 1
+}
+
+# Compare 2 files
+function comp {
+  local orig=$1
+  echo $orig
+  local result=res_tmp
+  shift
+  echo -n "" > $result
+  while [ -n "$1" ] ; do
+    cat $1 >>$result
+    shift
+  done
+
+  cmp $orig $result 2> /dev/null
+  res=$?
+  if [ $res -ne 0 ] ; then
+    error "File $result differs from expected $orig."
+  fi
+}
+
+# Send flow through logrotator, one file per second
+# logrotator makes at least one file per second, or several smaller than 7kB
+echo "Piping..."
+cater -i 1 cater Logrotator.txt makefile logrotator.adb Logrotator.html 2>/dev/null \
+| logrotator -p 1s -s 7k res
+
+comp cater           res_000.000
+comp Logrotator.txt  res_001.000
+comp makefile        res_002.000
+comp logrotator.adb  res_003.000 res_003.001
+comp Logrotator.html res_004.000 res_004.001
+
+clean
+echo Done
+

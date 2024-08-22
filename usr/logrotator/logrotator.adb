@@ -3,7 +3,7 @@ with Long_Longs, Aski, Basic_Proc, Argument, Argument_Parser, As.U, Normal,
      Trace.Loggers, Text_Line, Chronos.Passive_Timers, Sys_Calls;
 procedure Logrotator is
   -- Current version
-  Version : constant String := "2.1";
+  Version : constant String := "2.2";
 
   -- Trace logger
   Logger : Trace.Loggers.Logger;
@@ -32,7 +32,7 @@ procedure Logrotator is
   Max_Size : Long_Longs.Ll_Natural := 0;
   -- Max number of files
   Max_Files_Max : constant := 999;
-  Max_Files : Positive := Max_Files_Max + 1;
+  Max_Files : Positive := Max_Files_Max;
 
   -- Help
   procedure Usage is
