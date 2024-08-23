@@ -1,6 +1,6 @@
 Logrotator
 =========
-V2.3
+V2.4
 
 Logrotator reads an input flow of text lines (e.g. logs) and splits it into
 several files according to various rules. +
@@ -12,9 +12,9 @@ Usage
 
 Logrotator takes as argument a root file name and, as option:
 
-* a period (min 1s, no max, default 1 day, can have decimal)
+* a period (min 1s, no max, default 1 day)
 * a maximum number of periods (min 1, max 999, default 7)
-* a maximum file size (min 1, no max, default none, can have decimal)
+* a maximum file size (min 1, no max, default none)
 * a maximum number of files per period (min 1, max 999, default 999)
 .........................................
 Usage: logrotator [ <period> ] [ <cycle> ] [ <file_size> ] [ <files> ] <file_name>
@@ -26,6 +26,12 @@ Usage: logrotator [ <period> ] [ <cycle> ] [ <file_size> ] [ <files> ] <file_nam
 <files>     ::= -f <number> | --files=<number>       // Max files per period
 .........................................
 
+Example:
+.........................................
+logrotator -p 1d -c 10 -s 2.5M -f 21 logfile < pipe
+.........................................
+
+
 Behaviour
 ---------
 
@@ -33,12 +39,14 @@ Logrotator reads its standard input and creates successively, in its current
 directory, several output files named <file_name>_xxx.yyy. +
 xxx is from 000 up to the cycle (the max number of periods) excluded and is
 incremented each time the period is reached. When the cycle is reached
-then the count restarts from 000.
+then a warning is emitted and xxx restarts from 000, overwritting previous
+files.
 
 yyy is from 000 to 999 and restarts from 000 each time xxx is incremented.
 Within a period, if the maximum file size is reached (if set), then logrotator
 increments yyy and switches to a new file. If the max number of files is
-reached, then a warning is emitted and the xxx.000 file is overwritten. +
+reached, then a warning is emitted and yyy restarts from 000, overwritting
+previous files. +
 Each time a new period xxx is started, the files of the previous
 occurence of this period (xxx.\***) are cleared.
 

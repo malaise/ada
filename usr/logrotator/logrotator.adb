@@ -3,7 +3,7 @@ with Long_Longs, Aski, Basic_Proc, Argument, Argument_Parser, As.U, Normal,
      Trace.Loggers, Text_Line, Chronos.Passive_Timers, Sys_Calls, Gets, My_Math;
 procedure Logrotator is
   -- Current version
-  Version : constant String := "2.3";
+  Version : constant String := "2.4";
 
   -- Trace logger
   Logger : Trace.Loggers.Logger;
@@ -263,7 +263,7 @@ procedure Logrotator is
     Cycle_Size := Cycle_Size + 1;
     if Cycle_Size = Max_Files then
       Logger.Log_Warning ("Maximum number of sized files reached for period "
-        & Normal (Cycle_Period, 3, Gap => '0') & ".");
+        & Normal (Cycle_Period, 3, Gap => '0'));
       Cycle_Size := Cycle_Size_Range'First;
     end if;
     Open_File (False);

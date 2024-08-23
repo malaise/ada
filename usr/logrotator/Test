@@ -1,8 +1,11 @@
 #!/bin/bash
 
+# We check emission of warnings
+export logrotator_TRACE_Logrotator=Warning
+
 # Cleanup
 function clean {
-  rm -f res_* 
+  rm -f res_* res err nul
 }
 trap 'echo ""; clean; exit 1' SIGINT SIGTERM
 
@@ -21,7 +24,6 @@ function error {
 # Compare 2 files
 function comp {
   local orig=$1
-  echo $orig
   local result=res_tmp
   shift
   local first=$1
@@ -38,20 +40,52 @@ function comp {
   fi
 }
 
-export logrotator_TRACE_Logrotator=Warning
+# Function to check for warnings(s) in a file
+# $1 is the file
+# $2 is the minimum number of warninbgs expected
+# $3 is the regex that they must match
+function check_warnings {
+  nb=`cat $1 | wc -l`
+  if [ $nb -lt $2 ] ; then
+    error "Stderr is too short."
+  fi
+  res=`cut -d ' ' -f 2- $1 | awk -v reg="$3" '
+    ( $0 !~ reg ) {
+      print
+      exit
+    } '`
+  if [ -n "$res" ] ; then
+    error "Unexpected content of stderr: $res."
+  fi
+}
 
-# Send flow through logrotator, one file per second
-# logrotator makes at least one file per second, or several smaller than 7kB
-echo "Piping..."
+# Send a large file to saturate the Nb of files per cycle
+# Shall lead to at least 2 warnings on max nb of files per period
+echo "Checking file number"
+cat logrotator  | logrotator -s 200k -f 4 res 2>err
+check_warnings err 2 "logrotator Logrotator Warning -> Maximum number of sized files reached for period 000\$"
+
+# Send several files, more than the number of cycles
+# Shall lead to at least 1 warning on max nb of cycles
+echo "Checking cycle number..."
+cater -i 1 Logrotator.txt Logrotator.txt Logrotator.txt Logrotator.txt 2>/dev/null \
+| logrotator -p 0.5s -c 5 res 2>err
+check_warnings err 1 "logrotator Logrotator Warning -> Maximum number of cycles reached\$"
+
+
+# Send several files through logrotator, one per second
+# logrotator makes at least 1 file per second, 2 (<7kB) for larger files
+echo "Checking period and file size..."
 cater -i 1 cater Logrotator.txt makefile logrotator.adb Logrotator.html 2>/dev/null \
-| logrotator -p 0.5s -c 21 -s 7k res
+| logrotator -p 0.5s -c 21 -s 7k res 2>err
 
 comp cater           res_000.000
 comp Logrotator.txt  res_002.000
 comp makefile        res_004.000
 comp logrotator.adb  res_006.000 res_006.001
 comp Logrotator.html res_008.000 res_008.001
-
+echo -n "" >nul
+cmp err nul
 clean
 echo Done
 
