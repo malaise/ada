@@ -3,7 +3,7 @@ with Long_Longs, Aski, Basic_Proc, Argument, Argument_Parser, As.U, Normal,
      Trace.Loggers, Text_Line, Chronos.Passive_Timers, Sys_Calls, Gets, My_Math;
 procedure Logrotator is
   -- Current version
-  Version : constant String := "2.4";
+  Version : constant String := "2.5";
 
   -- Trace logger
   Logger : Trace.Loggers.Logger;
@@ -26,12 +26,12 @@ procedure Logrotator is
   -- Period in seconds, 1d
   Period : Chronos.Passive_Timers.Period_Range := 24.0 * 3600.0;
   -- Cycle : Max number of periods
-  Max_Cycles_Max : constant := 999;
+  Max_Cycles_Max : constant := 1000;
   Max_Cycles : Positive := 7;
   -- Max size of files
   Max_Size : Long_Longs.Ll_Natural := 0;
   -- Max number of files
-  Max_Files_Max : constant := 999;
+  Max_Files_Max : constant := 1000;
   Max_Files : Positive := Max_Files_Max;
 
   -- Help
@@ -66,7 +66,7 @@ procedure Logrotator is
                   := Argument_Parser.No_Key_Index;
 
     -- Temporary string, value and multiplicator
-    Arg : As.U.Asu_Us;
+    Arg, Txt : As.U.Asu_Us;
     Mult : Character;
   begin
     Arg_Dscr := Argument_Parser.Parse (Keys);
@@ -103,18 +103,22 @@ procedure Logrotator is
         Dur : Duration;
       begin
         Arg := As.U.Tus (Arg_Dscr.Get_Option (03));
-        if Arg.Length < 2 then
+        Txt := Arg;
+        if Txt.Length < 2 then
           raise Constraint_Error;
         end if;
-        Mult := Arg.Element (Arg.Length);
-        Arg.Trail (1);
-        Dur := Duration'Value (Arg.Image);
+        Mult := Txt.Element (Txt.Length);
+        Txt.Trail (1);
+        Dur := Duration'Value (Txt.Image);
         case Mult is
           when 's' => Period := Dur;
           when 'h' => Period := Dur * 3600.0;
           when 'd' => Period := Ada.Calendar.Day_Duration'Last * Dur;
           when others => raise Constraint_Error;
         end case;
+        if Dur < 0.1 then
+          raise Constraint_Error;
+        end if;
       exception
         when others =>
           Error ("Invalid period " & Arg.Image);
@@ -125,7 +129,7 @@ procedure Logrotator is
     if Arg_Dscr.Is_Set (04) then
       begin
         Max_Cycles := Positive'Value (Arg_Dscr.Get_Option (04));
-        if Max_Cycles > Max_Cycles_Max + 1 then
+        if Max_Cycles > Max_Cycles_Max then
           raise Constraint_Error;
         end if;
       exception
@@ -141,19 +145,20 @@ procedure Logrotator is
         use type My_Math.Real;
       begin
         Arg := As.U.Tus (Arg_Dscr.Get_Option (05));
-        if Arg.Length < 2 then
+        Txt := Arg;
+        if Txt.Length < 2 then
           Mult := Aski.Nul;
         else
-          Mult := Arg.Element (Arg.Length);
+          Mult := Txt.Element (Txt.Length);
           if Mult >= '0' and then Mult <= '9' then
             Mult := Aski.Nul;
           else
-            Arg.Trail (1);
+            Txt.Trail (1);
           end if;
         end if;
-        Got_Size := Gets.Get_Int_Float (Arg.Image);
+        Got_Size := Gets.Get_Int_Float (Txt.Image);
         case Mult is
-          when Aski.Nul => Max_Size := 0;
+          when Aski.Nul => Max_Size := 1;
           when 'k' => Max_Size := 1024;
           when 'M' => Max_Size := 1024 * 2014;
           when 'G' => Max_Size := 1024 * 1024 * 2014;
@@ -167,14 +172,14 @@ procedure Logrotator is
       end;
     end if;
 
-    -- Cycle
+    -- Max files
     if Arg_Dscr.Is_Set (06) then
       if Max_Size = 0 then
         Error ("Argument <files> requires a <size> to be set");
       end if;
       begin
         Max_Files := Positive'Value (Arg_Dscr.Get_Option (06));
-        if Max_Files > Max_Files_Max + 1 then
+        if Max_Files > Max_Files_Max then
           raise Constraint_Error;
         end if;
       exception

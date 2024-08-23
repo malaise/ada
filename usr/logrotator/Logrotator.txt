@@ -1,6 +1,6 @@
 Logrotator
 =========
-V2.4
+V2.5
 
 Logrotator reads an input flow of text lines (e.g. logs) and splits it into
 several files according to various rules. +
@@ -13,9 +13,9 @@ Usage
 Logrotator takes as argument a root file name and, as option:
 
 * a period (min 1s, no max, default 1 day)
-* a maximum number of periods (min 1, max 999, default 7)
-* a maximum file size (min 1, no max, default none)
-* a maximum number of files per period (min 1, max 999, default 999)
+* a maximum number of periods (min 1, max 1000, default 7)
+* a maximum file size (min 1, no max, default 0=none)
+* a maximum number of files per period (min 1, max 1000, default 1000)
 .........................................
 Usage: logrotator [ <period> ] [ <cycle> ] [ <file_size> ] [ <files> ] <file_name>
 <period>    ::= -p <duration> | --period=<duration>  // Period of cycle
@@ -36,11 +36,11 @@ Behaviour
 ---------
 
 Logrotator reads its standard input and creates successively, in its current
-directory, several output files named <file_name>_xxx.yyy. +
-xxx is from 000 up to the cycle (the max number of periods) excluded and is
-incremented each time the period is reached. When the cycle is reached
-then a warning is emitted and xxx restarts from 000, overwritting previous
-files.
+directory, several output files named <file_name>_xxx.yyy.
+
+xxx is from 000 to 999  and is incremented each time the period is reached.
+When the cycle (the max number of periods)is reached, then a warning is emitted
+and xxx restarts from 000, overwritting previous files.
 
 yyy is from 000 to 999 and restarts from 000 each time xxx is incremented.
 Within a period, if the maximum file size is reached (if set), then logrotator
@@ -52,4 +52,7 @@ occurence of this period (xxx.\***) are cleared.
 
 NOTE: Logrotator does not split the lines of input text, so each line longer
 than <file_size> will lead to a file containing this line.
+
+NOTE: Logrotator processing is based on lines of text. Input data is not
+processed until it contains a line-feed (or until the input flow is closed).
 

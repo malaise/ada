@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# We check emission of warnings
-export logrotator_TRACE_Logrotator=Warning
-
 # Cleanup
 function clean {
   rm -f res_* res err nul
@@ -22,6 +19,7 @@ function error {
 }
 
 # Compare 2 files
+echo -n "" >nul
 function comp {
   local orig=$1
   local result=res_tmp
@@ -59,6 +57,16 @@ function check_warnings {
   fi
 }
 
+# Test min and max values
+echo "Checking min and max values"
+cat makefile | logrotator -p 0.1s -c 1 -s 1 -f 1 res 2>err
+comp err nul
+cat makefile | logrotator -p 36525d -c 1000 -s 1048576G -f 1000 res 2>err
+comp err nul
+
+# From now we check emission of warnings
+export logrotator_TRACE_Logrotator=Warning
+
 # Send a large file to saturate the Nb of files per cycle
 # Shall lead to at least 2 warnings on max nb of files per period
 echo "Checking file number"
@@ -78,14 +86,13 @@ check_warnings err 1 "logrotator Logrotator Warning -> Maximum number of cycles 
 echo "Checking period and file size..."
 cater -i 1 cater Logrotator.txt makefile logrotator.adb Logrotator.html 2>/dev/null \
 | logrotator -p 0.5s -c 21 -s 7k res 2>err
-
 comp cater           res_000.000
 comp Logrotator.txt  res_002.000
 comp makefile        res_004.000
 comp logrotator.adb  res_006.000 res_006.001
 comp Logrotator.html res_008.000 res_008.001
-echo -n "" >nul
 cmp err nul
+
 clean
 echo Done
 
