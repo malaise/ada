@@ -35,6 +35,9 @@
 #define SOC_FD_IN_USE  -11
 /* Lan/host address or port string format error */
 # define SOC_FMT_ERR   -12
+/* Socket is bound, invalif port */
+# define SOC_BIND_ERR  -13
+
 
 /* Failures */
 /* Connection refused */
@@ -161,6 +164,17 @@ extern int soc_get_ttl (soc_token token, byte *ttl);
 /* Beware that setting the sending interface is not always supported */
 /*  and may require to be root (Set_Destination will return SOC_SYS_ERR). */
 extern int soc_set_send_ipm_interface (soc_token token, const soc_host *host);
+
+/* Bind the socket to a local port, before connecting - specify service */
+/* For a tcp inet socket, before setting dest */
+extern int soc_bind_service (soc_token token, const char *service);
+
+/* Bind the socket to a local port, before connecting - specify port */
+/* For a tcp inet socket, before setting dest */
+extern int soc_bind_port (soc_token token, soc_port port);
+
+/* Gets the port to which a socket is bound */
+extern int soc_get_bound_port (soc_token token, soc_port *p_port);
 
 /* Set the destination host/lan name and port - specify service */
 /* Broadcast if lan */

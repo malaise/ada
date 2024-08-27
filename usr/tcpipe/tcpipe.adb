@@ -6,7 +6,7 @@ procedure Tcpipe is
   -- The keys and descriptor of parsed keys
   Keys : constant Argument_Parser.The_Keys_Type := (
     1 => (False, 'h', As.U.Tus ("help"),   False),
-    2 => (True,  'c', As.U.Tus ("client"), False, True, As.U.Tus ("host>:<port")),
+    2 => (True,  'c', As.U.Tus ("client"), False, True, As.U.Asu_Null),
     3 => (True,  's', As.U.Tus ("server"), False, True, As.U.Tus ("port")),
     4 => (True,  'p', As.U.Tus ("ports"),  True,  True, As.U.Tus ("port_list")),
     5 => (True,  't', As.U.Tus ("target"), False, True, As.U.Tus ("host")));
@@ -27,8 +27,13 @@ procedure Tcpipe is
     Basic_Proc.Put_Line_Error (
      "  <mode>     ::= <client> | <server>");
     for I in Keys'Range loop
-      Basic_Proc.Put_Line_Error (
-       "  " & Names(I) & " ::= " & Argument_Parser.Image (Keys(I)));
+      if I = 2 then
+        Basic_Proc.Put_Line_Error (
+         "  " & Names(I) & " ::= [<port>:]<host>:<port>");
+      else
+        Basic_Proc.Put_Line_Error (
+         "  " & Names(I) & " ::= " & Argument_Parser.Image (Keys(I)));
+      end if;
     end loop;
     Basic_Proc.Put_Line_Error (
      "  <portlist> ::= <port>[{,<port>}]");

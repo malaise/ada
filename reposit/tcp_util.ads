@@ -58,10 +58,13 @@ package Tcp_Util is
                        Connection_Cb : in Connection_Callback_Access;
                        Delta_Retry   : in Positive_Duration := 1.0;
                        Nb_Tries      : in Natural := 1;
-                       Ttl           : in Socket.Ttl_Range := Default_Ttl)
+                       Ttl           : in Socket.Ttl_Range := Default_Ttl;
+                       Local_Port    : in Socket_Util.Local_Port
+                                          := Socket_Util.No_Local_Port)
            return Boolean;
 
   -- Abort a pending connection attempt
+  -- Close the socket
   -- May raise No_Such
   procedure Abort_Connect (Host : in Socket_Util.Remote_Host;
                            Port : in Socket_Util.Remote_Port);
@@ -77,7 +80,9 @@ package Tcp_Util is
                        Host          : in Socket_Util.Remote_Host;
                        Port          : in Socket_Util.Remote_Port;
                        Timeout       : in Natural_Duration := 1.0;
-                       Ttl           : in Socket.Ttl_Range := Default_Ttl)
+                       Ttl           : in Socket.Ttl_Range := Default_Ttl;
+                       Local_Port    : in Socket_Util.Local_Port
+                                          := Socket_Util.No_Local_Port)
            return Socket.Socket_Dscr;
 
   -- ACCEPTION PROCEDURE --

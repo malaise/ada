@@ -46,9 +46,12 @@ package body Partner is
   begin
     if Client_Mode then
       Debug.Logger.Log_Debug ("Connecting to remote host: "
-          & Ip_Addr.Image (Rem_Host.Id, Rem_Port.Num));
+          & Ip_Addr.Image (Rem_Host.Id, Rem_Port.Num)
+          & " from port " & Ip_Addr.Image (Loc_Port.Num) );
       Dummy_Res := Tcp_Util.Connect_To (Socket.Tcp_Header, Rem_Host, Rem_Port,
-                                     Connect_Cb'Access, Nb_Tries => 0);
+                                     Connect_Cb'Access,
+                                     Nb_Tries => 0,
+                                     Local_Port => Loc_Port);
     else
       Debug.Logger.Log_Debug ("Accepting on port: "
           & Ip_Addr.Image (Loc_Port.Num));
@@ -61,17 +64,18 @@ package body Partner is
   procedure Init (Client : in Boolean; Addr : in String) is
     Host_Rec : Socket_Util.Remote_Host;
     Port_Rec : Socket_Util.Remote_Port;
-    Host: Socket_Util.Host_Id;
-    Port: Socket_Util.Port_Num;
+    Loc_Port_Rec : Socket_Util.Local_Port;
+    Port_Num : Socket.Port_Num;
     use type Socket_Util.Remote_Host_List, Socket_Util.Remote_Port_List;
   begin
     -- Parse Addr and resolve
     Client_Mode := Client;
     if Client then
-      Ip_Addr.Parse (Addr, Host_Rec, Port_Rec);
+      -- Client
+      Ip_Addr.Parse (Addr, Loc_Port_Rec, Host_Rec, Port_Rec);
       if Host_Rec.Kind = Socket_Util.Host_Name_Spec then
         begin
-          Host := Socket.Host_Id_Of (Host_Rec.Name.Image);
+          Rem_Host.Id := Socket.Host_Id_Of (Host_Rec.Name.Image);
         exception
           when Socket.Soc_Name_Not_Found =>
             Basic_Proc.Put_Line_Error ("Unknown host name "
@@ -79,15 +83,37 @@ package body Partner is
             raise Invalid_Addr;
         end;
       else
-        Host := Host_Rec.Id;
+        Rem_Host.Id := Host_Rec.Id;
       end if;
-      Rem_Host.Id := Host;
+
+      -- Optional local port for client
+      if Loc_Port_Rec.Kind = Socket_Util.Port_Name_Spec then
+        if Loc_Port_Rec.Name.Is_Null then
+          Loc_Port.Num := 0;
+        else
+          begin
+            Loc_Port.Num := Socket.Port_Num_Of (Loc_Port_Rec.Name.Image,
+                                                Socket.Tcp);
+          exception
+            when Socket.Soc_Name_Not_Found =>
+              Basic_Proc.Put_Line_Error ("Unknown port name "
+                                       & Loc_Port_Rec.Name.Image & ".");
+              raise Invalid_Addr;
+          end;
+        end if;
+      else
+        Loc_Port.Num := Loc_Port_Rec.Num;
+      end if;
+
     else
+      -- Server
       Port_Rec := Ip_Addr.Parse (Addr);
     end if;
+
+    -- Client remote port and server local port
     if Port_Rec.Kind = Socket_Util.Port_Name_Spec then
       begin
-        Port := Socket.Port_Num_Of (Port_Rec.Name.Image, Socket.Tcp);
+        Port_Num := Socket.Port_Num_Of (Port_Rec.Name.Image, Socket.Tcp);
       exception
         when Socket.Soc_Name_Not_Found =>
           Basic_Proc.Put_Line_Error ("Unknown port name "
@@ -95,10 +121,13 @@ package body Partner is
           raise Invalid_Addr;
       end;
     else
-      Port := Port_Rec.Num;
+      Port_Num := Port_Rec.Num;
     end if;
-    Loc_Port.Num := Port;
-    Rem_Port.Num := Port;
+    if Client then
+      Rem_Port.Num := Port_Num;
+    else
+      Loc_Port.Num := Port_Num;
+    end if;
 
     -- Connect or accept
     Connect_Accept;

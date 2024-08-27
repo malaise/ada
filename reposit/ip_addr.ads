@@ -39,6 +39,16 @@ package Ip_Addr is
                    Host : out Socket_Util.Remote_Host;
                    Port : out Socket_Util.Remote_Port);
 
+  -- Parse a string at format [<port>:]<addr>:<port> where <addr> and <port>
+  --  are processed as in both Parse functions above
+  -- If the first <port>: is not provided, this leads to empty port name
+  -- <addr>: is supported (and leads to empty port name)
+  -- :<port> is supported (and leads to empty host name)
+  procedure Parse (Addr_Port : in String;
+                   Port1 : out Socket_Util.Local_Port;
+                   Host  : out Socket_Util.Remote_Host;
+                   Port2: out Socket_Util.Remote_Port);
+
   Parse_Error : exception;
 
   -- Image <addr>:<port> (xxx.yyy.zzz.ttt:pppp) of an Addr and Port

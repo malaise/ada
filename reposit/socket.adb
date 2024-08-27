@@ -103,7 +103,21 @@ package body Socket is
   function Soc_Set_Send_Ipm_Interface (S_Addr : System.Address;
                                        Host   : System.Address) return Result
     with Import => True, Convention => C,
+
          External_Name => "soc_set_send_ipm_interface";
+  function Soc_Bind_Service (S : System.Address;
+                             Service : System.Address) return Result
+    with Import => True, Convention => C,
+         External_Name => "soc_bind_service";
+  function Soc_Bind_Port (S : System.Address;
+                          Port : Word) return Result
+    with Import => True, Convention => C,
+         External_Name => "soc_bind_port";
+  function Soc_Get_Bound_Port (S : System.Address;
+                               Port : System.Address) return Result
+    with Import => True, Convention => C,
+         External_Name => "soc_get_bound_port";
+
   function Soc_Set_Dest_Name_Service (S : System.Address;
                                       Host_Lan : System.Address;
                                       Lan      : C_Types.Bool;
@@ -428,6 +442,31 @@ package body Socket is
     Res := Soc_Set_Send_Ipm_Interface (Socket.Soc_Addr, Host'Address);
     Check_Ok;
   end Set_Sending_Ipm_Interface;
+
+  -- Before setting the destination of a TCP socket, define the sending port
+  procedure Bind_Service (Socket  : in Socket_Dscr;
+                          Service : in String) is
+    Service_For_C : constant String := C_Str (Service);
+  begin
+    Res := Soc_Bind_Service (Socket.Soc_Addr, Service_For_C'Address);
+    Check_Ok;
+  end Bind_Service;
+
+  procedure Bind_Port (Socket  : in Socket_Dscr;
+                       Port   : in Port_Num) is
+  begin
+    Res := Soc_Bind_Port (Socket.Soc_Addr, Word (Port));
+    Check_Ok;
+  end Bind_Port;
+
+  -- Get bound port
+  function Get_Bound_Port (Socket : Socket_Dscr) return Port_Num is
+    Port : Word;
+  begin
+    Res := Soc_Get_Bound_Port (Socket.Soc_Addr, Port'Address);
+    Check_Ok;
+    return Port_Num(Port);
+  end Get_Bound_Port;
 
   -- Set destination (Host/Lan and port) for sending
   -- If Lan is true then Name is a LAN name to broadcast on

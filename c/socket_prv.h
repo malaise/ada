@@ -19,29 +19,30 @@ typedef enum {not_connected, connecting, connected} connect_state;
 /* Structure pointed by the token */
 typedef struct {
 #ifdef SOCKET_MUTEX
-        mutex_t         mutex;
+        mutex_t            mutex;
 #endif
-        socket_protocol socket_kind;
-        protocol_list   protocol;
-        tcp_list        tcp_kind;
-        domain_list     domain;
-        boolean         dest_set;
-        boolean         linked;
-        blocking_mode   blocking;
-        boolean         blocked;
-        byte            ttl;
-        connect_state   connection;
-        int             socket_id;
+        socket_protocol    socket_kind;
+        protocol_list      protocol;
+        tcp_list           tcp_kind;
+        domain_list        domain;
+        boolean            dest_set;
+        boolean            linked;
+        blocking_mode      blocking;
+        boolean            blocked;
+        byte               ttl;
+        connect_state      connection;
+        int                socket_id;
         struct sockaddr_in send_struct;
-        boolean         set_send_if;
-        struct in_addr  ipm_send_if;
-        char *          send_tail;
-        soc_length      send_len;
+        boolean            set_send_if;
+        struct in_addr     ipm_send_if;
+        soc_port           local_port;
+        char *             send_tail;
+        soc_length         send_len;
         struct sockaddr_in rece_struct;
-        struct in_addr  ipm_rece_if;
-        char *          rece_head;
-        soc_length      rece_len;
-        soc_length      expect_len;
+        struct in_addr     ipm_rece_if;
+        char *             rece_head;
+        soc_length         rece_len;
+        soc_length         expect_len;
 }soc_struct, *soc_ptr;
 
 const socklen_t socklen = sizeof (struct sockaddr_in);

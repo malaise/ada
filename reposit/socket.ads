@@ -193,6 +193,22 @@ package Socket is
   procedure Set_Sending_Ipm_Interface (Socket : in Socket_Dscr;
                                        Host   : in Host_Id);
 
+  -- Before setting the destination of a TCP inet socket,
+  --  define the sending port
+  -- May raise Soc_Proto_Error if socket is not TCP inet (Tcp or Tcp_Header)
+  -- May raise Soc_Link_Err if socket is linked and tcp
+  -- May raise Soc_Dest_Err if destination is already set
+  -- May raise Soc_Bind_Err if socket is alreay bound
+  -- May raise Soc_Name_Not_Found if Service is not found
+  -- May raise Soc_Addr_In_Use if port is alreay used
+  procedure Bind_Service (Socket  : in Socket_Dscr;
+                          Service : in String);
+  procedure Bind_Port (Socket  : in Socket_Dscr;
+                       Port   : in Port_Num);
+  -- Get bound port
+  -- May raise Soc_Bind_Err if socket is not bound
+  function Get_Bound_Port (Socket : Socket_Dscr) return Port_Num;
+
   -- Set destination (Host/Lan and port) for sending
   -- If Lan is true then Name is a LAN name to broadcast on
   -- Otherwise it is a host name
@@ -230,7 +246,7 @@ package Socket is
   -- * Set Destination
   -- * Receive (Set_To_Reply => True)
   -- May raise Soc_Proto_Err if socket is tcp
-  -- May raise Soc_Dest_Err is destination is not already set
+  -- May raise Soc_Dest_Err if destination is not already set
   -- May raise Soc_Name_Not_Found if Name or Service is not found
   procedure Change_Destination_Name (
                Socket : in Socket_Dscr;

@@ -26,6 +26,7 @@ package Socket_Util is
         null;
     end case;
   end record;
+  No_Local_Port : constant Local_Port := (others => <>);
 
   -- Specification of a remote port (name or num) to connect or send to
   type Remote_Port (Kind : Remote_Port_List := Port_Name_Spec) is record
@@ -36,6 +37,7 @@ package Socket_Util is
         Num : Port_Num := 0;
     end case;
   end record;
+  No_Remote_Port : constant Remote_Port := (others => <>);
 
   -- HOST DEFINITION --
   ---------------------
@@ -54,6 +56,7 @@ package Socket_Util is
         Id : Host_Id := Socket.Any_Host;
     end case;
   end record;
+  No_Host : constant Remote_Host := (others => <>);
 
 
   -- OPERATIONS

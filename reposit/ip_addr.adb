@@ -159,6 +159,30 @@ package body Ip_Addr is
     end if;
   end Parse;
 
+  -- Parse a string at format [<port>:]<addr>:<port> where <addr> and <port>
+  --  are processed as in both Parse functions above
+  -- If the first <port>: is not provided, this leads to empty port name
+  -- <addr>: is supported (and leads to empty port name)
+  -- :<port> is supported (and leads to empty host name)
+  procedure Parse (Addr_Port : in String;
+                   Port1 : out Socket_Util.Local_Port;
+                   Host  : out Socket_Util.Remote_Host;
+                   Port2 : out Socket_Util.Remote_Port) is
+    Colon : Natural;
+  begin
+    if Str_Util.Locate (Addr_Port, Sep, Occurence => 2) /= 0 then
+      -- <port>:<addr>:<port>
+      Colon := Str_Util.Locate (Addr_Port, Sep);
+      Port1 := Parse (Addr_Port (Addr_Port'First .. Colon - 1));
+      Parse (Addr_Port (Colon + 1 .. Addr_Port'Last), Host, Port2);
+    else
+      -- <addr>:<port>
+      Port1 := (others => <>);
+      Parse (Addr_Port, Host, Port2);
+    end if;
+  end Parse;
+
+
   -- Image <addr>:<port> (xxx.yyy.zzz.ttt:pppp) of an Addr and Port
   function Image  (Addr : Socket.Ip_Address;
                    Port : Socket.Port_Num) return String is

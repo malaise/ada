@@ -30,6 +30,7 @@ package body Tcp_Util is
     Cb : Connection_Callback_Access;
     Timer : Timers.Timer_Id;
     Dscr : Socket.Socket_Dscr;
+    Local_Port : Socket.Port_Num;
     Fd   : Event_Mng.File_Desc;
     Fd_Set : Boolean;
     Curr_Try : Natural;
@@ -74,14 +75,15 @@ package body Tcp_Util is
   -- Dscr is open and non blocking, or No_Socket if failure
   -- Sets connected if connection established
   procedure Try_Connect (
-           Protocol  : in Tcp_Protocol_List;
-           Host      : in Socket_Util.Remote_Host;
-           Port      : in Socket_Util.Remote_Port;
-           Ttl       : in Socket.Ttl_Range;
-           Dscr      : in out Socket.Socket_Dscr;
-           Connected : out Boolean) is
+           Protocol   : in Tcp_Protocol_List;
+           Host       : in Socket_Util.Remote_Host;
+           Port       : in Socket_Util.Remote_Port;
+           Ttl        : in Socket.Ttl_Range;
+           Local_Port : in Socket.Port_Num;
+           Dscr       : in out Socket.Socket_Dscr;
+           Connected  : out Boolean) is
+    use type Socket.Port_Num;
   begin
-
     Log_Connect.Log_Debug ("Tcp_Util.Try_Connect start");
     -- Open non blocking
     Dscr.Open (Protocol);
@@ -89,6 +91,10 @@ package body Tcp_Util is
     if Ttl /= Default_Ttl then
       Dscr.Set_Ttl (Ttl);
     end if;
+    if Local_Port /= 0 then
+      Dscr.Bind_Port (Local_Port);
+    end if;
+
     Log_Connect.Log_Debug ("Tcp_Util.Try_Connect socket open");
 
     -- Connect
@@ -128,6 +134,9 @@ package body Tcp_Util is
     when Socket.Soc_Would_Block =>
       Connected := False;
       Log_Connect.Log_Debug ("Tcp_Util.Try_Connect would block");
+    when Socket.Soc_Addr_In_Use =>
+      Connected := False;
+      Log_Connect.Log_Debug ("Tcp_Util.Try_Connect bind addr in use");
   end Try_Connect;
 
   -- Handle a connection success/failure according to Rec.Dscr (open or not)
@@ -317,8 +326,8 @@ package body Tcp_Util is
     end if;
 
     -- Try to connect
-    Try_Connect (Rec.Protocol, Rec.Host, Rec.Port, Rec.Ttl, Rec.Dscr,
-                 Connected);
+    Try_Connect (Rec.Protocol, Rec.Host, Rec.Port, Rec.Ttl, Rec.Local_Port,
+                 Rec.Dscr, Connected);
     Rec.Curr_Try :=  Rec.Curr_Try + 1;
 
     if Rec.Dscr.Is_Open and then Connected then
@@ -371,6 +380,19 @@ package body Tcp_Util is
     return False;
   end Connection_Timer_Cb;
 
+  -- Is local port specified
+  function Is_Set (Local_Port : Socket_Util.Local_Port) return Boolean is
+    use type Socket_Util.Local_Port, Socket_Util.Local_Port_List,
+             Socket.Port_Num;
+  begin
+    if Local_Port = Socket_Util.No_Local_Port then
+      return False;
+    else
+      return Local_Port.Kind = Socket_Util.Port_Name_Spec
+      or else Local_Port.Num /= 0;
+    end if;
+  end Is_Set;
+
   -- Connect to a remote Host/Port
   -- May make several tries (one each Delta_Retry) before giving up
   -- Return True if synchronous result
@@ -380,7 +402,10 @@ package body Tcp_Util is
                        Connection_Cb : in Connection_Callback_Access;
                        Delta_Retry   : in Positive_Duration := 1.0;
                        Nb_Tries      : in Natural := 1;
-                       Ttl           : in Socket.Ttl_Range := Default_Ttl)
+                       Ttl           : in Socket.Ttl_Range := Default_Ttl;
+                       Local_Port    : in Socket_Util.Local_Port
+                                          := Socket_Util.No_Local_Port)
+
            return Boolean is
     Rec : Connecting_Rec;
     use type Socket_Util.Local_Port_List, Socket_Util.Remote_Host_List;
@@ -420,6 +445,21 @@ package body Tcp_Util is
     Rec.Dscr := Socket.No_Socket;
     Rec.Curr_Try := 0;
     Rec.Fd_Set := False;
+    if Is_Set (Local_Port) then
+      if Local_Port.Kind = Socket_Util.Port_Name_Spec then
+        begin
+          Rec.Local_Port := Socket.Port_Num_Of (Local_Port.Name.Image,
+                                                Protocol);
+        exception
+          when others =>
+            raise Name_Error;
+        end;
+      else
+        Rec.Local_Port := Local_Port.Num;
+      end if;
+    else
+      Rec.Local_Port := 0;
+    end if;
     Con_List.Insert (Rec);
 
     -- Try to connect: call timer callback
@@ -472,14 +512,34 @@ package body Tcp_Util is
                        Host          : in Socket_Util.Remote_Host;
                        Port          : in Socket_Util.Remote_Port;
                        Timeout       : in Natural_Duration := 1.0;
-                       Ttl           : in Socket.Ttl_Range := Default_Ttl)
+                       Ttl           : in Socket.Ttl_Range := Default_Ttl;
+                       Local_Port    : in Socket_Util.Local_Port
+                                          := Socket_Util.No_Local_Port)
            return Socket.Socket_Dscr is
     Dscr : Socket.Socket_Dscr;
+    Port_Num : Socket.Port_Num;
+    use type Socket_Util.Local_Port_List;
   begin
     -- Open blocking
     Dscr.Open (Protocol);
     if Ttl /= Default_Ttl then
       Dscr.Set_Ttl (Ttl);
+    end if;
+    -- Bind if set
+    if Is_Set (Local_Port) then
+      Log_Connect.Log_Debug ("Tcp_Util.Connect_To sync bind");
+      if Local_Port.Kind = Socket_Util.Port_Name_Spec then
+        begin
+          Port_Num := Socket.Port_Num_Of (Local_Port.Name.Image,
+                                                Protocol);
+        exception
+          when others =>
+            raise Name_Error;
+        end;
+      else
+        Port_Num := Local_Port.Num;
+      end if;
+      Dscr.Bind_Port (Port_Num);
     end if;
     Log_Connect.Log_Debug ("Tcp_Util.Connect_To sync start");
     if Timeout = 0.0 then

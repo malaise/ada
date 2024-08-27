@@ -16,40 +16,45 @@ Syntax
 ...................................
 Usage: tcpipe <mode> [ <ports> ] [ <target> ]
 <mode>     ::= <client> | <server>
-<client>   ::= -c <host>:<port> | --client="<host>:<port>"
-<server>   ::= -s <port> | --server="<port>"
+<client>   ::= -c [<lport>:]<host>:<sport> | --client="[<lport>:]<host>:<sport>"
+<server>   ::= -s <sport> | --server="<sport>"
 <ports>    ::= -p <port_list> | --ports="<port_list>"
 <portlist> ::= <port>[{,<port>}]
 <target> ::= -t <host> | --target="<host>"
 ...................................
 
 The <client> and <server> options define the connection between two tcpipe
-instances. Each client conects to one and only one server, and each server
-accepts only one connection at a time.
+instances. Each client optionally binds to a local port <lport>. Then it
+connects to one and only one server on a <host> at port <sport>. Rach server
+accepts only one connection at a time on a port <sport>.
 
-The ports are the ones on which tcpipe accepts connections from user
+The <ports> are the ones on which tcpipe accepts connections from user 'client'
 applications.
 
-The target host is the one to which tcpipe attempts to connect to user
-applications.
+The <target> host is the one to which tcpipe attempts to connect to user
+'server' applications.
 
-NOTE: The only constraintes is that, for one pair of tcpipe, all the user
-'server' applications must be on the same node.
+NOTE: The only constraint is that, for one tcpipe, all the user 'server'
+applications must be on the same node.
 
 Goal
 ----
-Tcpipe can be useful for multiplexing several TCP connections between several
-user applications within one TCP connection, especially through a firewall.
+Tcpipe can be useful for multiplexing several TCP connections, between several
+user applications, through one TCP connection, especially through a firewall.
 
  * This reduces the number of TCP connections through the firewall,
  * This allows connections between user applications to be established
-despite the filters of the firewall (allowed ports, direction of connection...).
+according to the filters of the firewall (allowed ports, direction of
+connection...). +
+In this case, specifying a local port for the client (the first port if its
+adress) can be particularly usefull.
 
 Usage - Example
 ---------------
 On the host host1 start "tcpipe -s 50000 -p 40000,40001" +
-On the host host2 start "tcpipe -c host1:50000 -t appli2" +
--> tcpipe on host2 connects to tcpipe on host1, port 50000 +
+On the host host2 start "tcpipe -c 30000:host1:50000 -t appli2" +
+-> tcpipe on host2 binds on port 30000 and connects to tcpipe on host1,
+port 50000 +
 On the host appli2 that can be reached by host2, start a user application that
 accepts connections on port 40000 +
 On a host appli1 that can reach host1, start a user application that connects

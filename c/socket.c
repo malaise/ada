@@ -217,6 +217,7 @@ static int init (soc_ptr *p_soc,
   (*p_soc)->rece_head = NULL;
   (*p_soc)->rece_len = 0;
   (*p_soc)->expect_len = 0;
+  (*p_soc)->local_port = 0;
 
   /* Allow UDP broadcast */
   allow_sockopt = 1;
@@ -620,6 +621,148 @@ extern int soc_set_send_ipm_interface (soc_token token, const soc_host *host) {
   return (SOC_OK);
 }
 
+/* Bind the socket to a local port, before connecting - specify service */
+extern int soc_bind_service (soc_token token, const char *service) {
+  soc_ptr soc = (soc_ptr) token;
+  struct servent *serv_entry;
+  struct sockaddr_in rece_struct;
+  int res;
+
+  /* Check that socket is open */
+  if (soc == NULL) return (SOC_USE_ERR);
+  LOCK;
+
+  /* Tcp inet, not linked nor dest set nor bound */
+  if ( (soc->socket_kind != tcp_socket)
+    && (soc->socket_kind != tcp_header_socket) ) {
+      UNLOCK;
+      return (SOC_PROTO_ERR);
+  }
+  if (soc->linked) {
+    UNLOCK;
+    return (SOC_LINK_ERR);
+  }
+  if (soc->dest_set) {
+    UNLOCK;
+    return (SOC_DEST_ERR);
+  }
+  if (soc->local_port != 0) {
+    UNLOCK;
+    return (SOC_BIND_ERR);
+  }
+
+  /* Read port num */
+  if ((serv_entry = getservbyname(service, ns_proto[soc->protocol]))== NULL) {
+    errno = ENOENT;
+    UNLOCK;
+    return (SOC_NAME_NOT_FOUND);
+  }
+
+  /* Bind */
+  rece_struct.sin_port = serv_entry->s_port;
+  if (soc->domain == unix_domain) {
+    /* Afux */
+    res = sun_bind (soc->socket_id, (struct sockaddr*) &rece_struct, socklen);
+  } else {
+    /* Afinet : Bind on the interface (set_rece_interface) */
+    res  = bind (soc->socket_id, (struct sockaddr*) &rece_struct, socklen);
+  }
+  if (res < 0) {
+    UNLOCK;
+    if (errno == EADDRINUSE) {
+      return (SOC_ADDR_IN_USE);
+    } else {
+      perror("bind");
+      return (SOC_SYS_ERR);
+    }
+  }
+
+  /* Done */
+  soc->local_port = (soc_port) ntohs (rece_struct.sin_port);
+  UNLOCK;
+  return (SOC_OK);
+}
+
+/* Bind the socket to a local port, before connecting - specify port */
+extern int soc_bind_port (soc_token token, soc_port port) {
+  soc_ptr soc = (soc_ptr) token;
+  struct sockaddr_in rece_struct;
+  int res;
+
+  /* Check that socket is open */
+  if (soc == NULL) return (SOC_USE_ERR);
+  LOCK;
+
+  /* Tcp inet, not linked nor dest set nor bound */
+  if ( (soc->socket_kind != tcp_socket)
+    && (soc->socket_kind != tcp_header_socket) ) {
+      UNLOCK;
+      return (SOC_PROTO_ERR);
+  }
+  if (soc->linked) {
+    UNLOCK;
+    return (SOC_LINK_ERR);
+  }
+  if (soc->dest_set) {
+    UNLOCK;
+    return (SOC_DEST_ERR);
+  }
+  if (soc->local_port != 0) {
+    UNLOCK;
+    return (SOC_BIND_ERR);
+  }
+
+  /* Check port num */
+  if (port == 0) {
+    UNLOCK;
+    return (SOC_BIND_ERR);
+  }
+
+  /* Bind */
+  rece_struct.sin_port = htons ((uint16_t)port);
+  if (soc->domain == unix_domain) {
+    /* Afux */
+    res = sun_bind (soc->socket_id, (struct sockaddr*) &rece_struct, socklen);
+  } else {
+    /* Afinet : Bind on the interface (set_rece_interface) */
+    res  = bind (soc->socket_id, (struct sockaddr*) &rece_struct, socklen);
+  }
+  if (res < 0) {
+    UNLOCK;
+    if (errno == EADDRINUSE) {
+      return (SOC_ADDR_IN_USE);
+    } else {
+      perror("bind");
+      return (SOC_SYS_ERR);
+    }
+  }
+
+  /* Done */
+  soc->local_port = port;
+  UNLOCK;
+  return (SOC_OK);
+}
+
+/* Gets the port to which is bound a socket */
+extern int soc_get_bound_port (soc_token token, soc_port *p_port) {
+  soc_ptr soc = (soc_ptr) token;
+
+  /* Check that socket is open */
+  if (soc == NULL) return (SOC_USE_ERR);
+  LOCK;
+
+  /* Check that socket is bound */
+  if (soc->local_port == 0) {
+    UNLOCK;
+    return (SOC_BIND_ERR);
+  }
+
+  *p_port = soc->local_port;
+  UNLOCK;
+  return (SOC_OK);
+}
+
+
 /* Set the destination host/lan name and port - specify service */
 /* Broadcast if lan */
 extern int soc_set_dest_name_service (soc_token token, const char *host_lan,
@@ -634,14 +777,14 @@ extern int soc_set_dest_name_service (soc_token token, const char *host_lan,
   if (soc == NULL) return (SOC_USE_ERR);
   LOCK;
 
-  /* Not linked nor already connected if tcp */
+  /* Not linked nor dest already set if tcp */
   if (soc->protocol == tcp_protocol) {
     if (soc->linked) {
       UNLOCK;
       return (SOC_LINK_ERR);
-    } else if (soc->connection != not_connected) {
+    } else if (soc->dest_set) {
       UNLOCK;
-      return (SOC_CONN_ERR);
+      return (SOC_DEST_ERR);
     }
   }
 
@@ -716,14 +859,14 @@ extern int soc_set_dest_name_port (soc_token token, const char *host_lan,
   if (soc == NULL) return (SOC_USE_ERR);
   LOCK;
 
-  /* Not linked nor already connected if tcp */
+  /* Not linked nor dest already set if tcp */
   if (soc->protocol == tcp_protocol) {
     if (soc->linked) {
       UNLOCK;
       return (SOC_LINK_ERR);
-    } else if (soc->connection != not_connected) {
+    } else if (soc->dest_set) {
       UNLOCK;
-      return (SOC_CONN_ERR);
+      return (SOC_DEST_ERR);
     }
   }
 
@@ -787,14 +930,14 @@ extern int soc_set_dest_host_service (soc_token token, const soc_host *host,
   if (soc == NULL) return (SOC_USE_ERR);
   LOCK;
 
-  /* Not linked nor already connected if tcp */
+  /* Not linked nor dest already set if tcp */
   if (soc->protocol == tcp_protocol) {
     if (soc->linked) {
       UNLOCK;
       return (SOC_LINK_ERR);
-    } else if (soc->connection != not_connected) {
+    } else if (soc->dest_set) {
       UNLOCK;
-      return (SOC_CONN_ERR);
+      return (SOC_DEST_ERR);
     }
   }
 
@@ -841,14 +984,14 @@ extern int soc_set_dest_host_port (soc_token token, const soc_host *host,
   if (soc == NULL) return (SOC_USE_ERR);
   LOCK;
 
-  /* Not linked nor already connected if tcp */
+  /* Not linked nor dest already set if tcp */
   if (soc->protocol == tcp_protocol) {
     if (soc->linked) {
       UNLOCK;
       return (SOC_LINK_ERR);
-    } else if (soc->connection != not_connected) {
+    } else if (soc->dest_set) {
       UNLOCK;
-      return (SOC_CONN_ERR);
+      return (SOC_DEST_ERR);
     }
   }
 
@@ -898,7 +1041,10 @@ extern int soc_change_dest_name (soc_token token, const char *host_lan, boolean 
   }
 
   /* Check that a destination is already set */
-  if (!soc->dest_set) return (SOC_DEST_ERR);
+  if (!soc->dest_set) {
+    UNLOCK;
+    return (SOC_DEST_ERR);
+  }
 
   if (! lan) {
     /* Read  IP adress of host */
