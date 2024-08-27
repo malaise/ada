@@ -659,14 +659,9 @@ extern int soc_bind_service (soc_token token, const char *service) {
   }
 
   /* Bind */
+  memset (&rece_struct, 0, sizeof (struct sockaddr_in));
   rece_struct.sin_port = serv_entry->s_port;
-  if (soc->domain == unix_domain) {
-    /* Afux */
-    res = sun_bind (soc->socket_id, (struct sockaddr*) &rece_struct, socklen);
-  } else {
-    /* Afinet : Bind on the interface (set_rece_interface) */
-    res  = bind (soc->socket_id, (struct sockaddr*) &rece_struct, socklen);
-  }
+  res  = bind (soc->socket_id, (struct sockaddr*) &rece_struct, socklen);
   if (res < 0) {
     UNLOCK;
     if (errno == EADDRINUSE) {
@@ -719,14 +714,9 @@ extern int soc_bind_port (soc_token token, soc_port port) {
   }
 
   /* Bind */
+  memset (&rece_struct, 0, sizeof (struct sockaddr_in));
   rece_struct.sin_port = htons ((uint16_t)port);
-  if (soc->domain == unix_domain) {
-    /* Afux */
-    res = sun_bind (soc->socket_id, (struct sockaddr*) &rece_struct, socklen);
-  } else {
-    /* Afinet : Bind on the interface (set_rece_interface) */
-    res  = bind (soc->socket_id, (struct sockaddr*) &rece_struct, socklen);
-  }
+  res  = bind (soc->socket_id, (struct sockaddr*) &rece_struct, socklen);
   if (res < 0) {
     UNLOCK;
     if (errno == EADDRINUSE) {
