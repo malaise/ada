@@ -168,7 +168,7 @@ package Test is
   not overriding procedure Read(Obj: in Otyp12; X: out Otyp7);
 
   type Typ8 is access procedure (A : in Integer);
-  type Typ9 is not null acces Integer;
+  type Typ9 is not null access Integer;
   type Typ10 is access Integer;
   procedure Proc5 (A : in not null Typ10);
   function Func1 return not null Typ10;

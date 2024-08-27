@@ -282,7 +282,7 @@ package body Test is
 
   -- type Typ8 is access procedure (A : in Integer);
 
-  -- type Typ9 is not null Acces Integer;
+  -- type Typ9 is not null access Integer;
 
   -- type Typ10 is access Integer;
 
