@@ -7,8 +7,7 @@ with Basic_Proc, As.U, Argument, Lower_Str, Event_Mng, Socket,
 procedure T_Tcp_Util is
   Arg_Error : exception;
 
-  Protocol : constant Socket.Protocol_List := Socket.Tcp_Header;
-  -- Protocol : constant Socket.Protocol_List := Socket.Tcp_Header_Afux;
+  Protocol : Socket.Tcp_Protocol_List := Socket.Tcp_Header;
   Server : Boolean;
   Server_Name : As.U.Asu_Us;
   Server_Port_Name : As.U.Asu_Us;
@@ -18,6 +17,7 @@ procedure T_Tcp_Util is
   Local_Port : Socket_Util.Local_Port;
   Remote_Port : Socket_Util.Remote_Port;
   Client_Port : Socket_Util.Local_Port;
+  Result : Boolean;
 
   Give_Up : Boolean;
   In_Ovf : Boolean := False;
@@ -26,7 +26,7 @@ procedure T_Tcp_Util is
 
   Delay_Try : constant Duration := 10.0;
   Nb_Try : constant := 9;
-  Ttl : constant := 5;
+  Ttl : Socket.Ttl_Range := 5;
 
   Accept_Dscr, The_Dscr : Socket.Socket_Dscr;
 
@@ -55,16 +55,15 @@ procedure T_Tcp_Util is
     Sig := True;
   end Signal_Cb;
 
-  procedure Wait (Dur : in Duration) is
-  begin
-    if Event_Mng.Wait (Integer (Dur) * 1_000) then
-      Basic_Proc.Put_Line_Output ("Timer/Event");
-    else
-      Basic_Proc.Put_Line_Output ("Timeout");
-    end if;
-  end Wait;
-
   procedure Connect;
+
+  -- Is protocol Afux
+  function Is_Afux return Boolean is
+    use type Socket.Protocol_List;
+  begin
+    return Protocol = Socket.Tcp_Afux
+   or else Protocol = Socket.Tcp_Header_Afux;
+  end Is_Afux;
 
   -- Timer for connecting
   function Timer_Exp (Dummy_Id : in Timers.Timer_Id;
@@ -166,7 +165,7 @@ procedure T_Tcp_Util is
       Basic_Proc.Put_Line_Output ("Connected and non blocking");
       Lost := False;
       In_Ovf := False;
-      if The_Dscr.Get_Ttl /= Ttl then
+      if not Is_Afux and then The_Dscr.Get_Ttl /= Ttl then
         Basic_Proc.Put_Line_Output ("TTL lost!");
       end if;
     else
@@ -269,6 +268,7 @@ procedure T_Tcp_Util is
 
     -- Will exit with 0 (if no further error)
     Basic_Proc.Set_Ok_Exit_Code;
+    Result := True;
 
     -- Send / reply
     if not Server then
@@ -302,9 +302,20 @@ procedure T_Tcp_Util is
     return False;
   end Read_Cb;
 
+  -- Wait a bit
+  procedure Wait (Dur : in Duration) is
+  begin
+    if Event_Mng.Wait (Integer (Dur) * 1_000) then
+      Basic_Proc.Put_Line_Output ("Timer/Event");
+    else
+      Basic_Proc.Put_Line_Output ("Timeout");
+    end if;
+  end Wait;
+
 begin
   -- Will exit with 2 if no message received
   Basic_Proc.Set_Exit_Code (2);
+  Result := False;
 
   -- Server or client
   begin
@@ -357,17 +368,6 @@ begin
     Remote_Port := (Kind => Socket_Util.Port_Num_Spec, Num => Server_Port_Num);
   end if;
 
-  -- Set ports
-  if not Server_Port_Name.Is_Null then
-    Local_Port := (Kind => Socket_Util.Port_Name_Spec,
-                   Name => Server_Port_Name);
-    Remote_Port := (Kind => Socket_Util.Port_Name_Spec,
-                    Name => Local_Port.Name);
-  else
-    Local_Port := (Kind => Socket_Util.Port_Num_Spec, Num => Server_Port_Num);
-    Remote_Port := (Kind => Socket_Util.Port_Num_Spec, Num => Server_Port_Num);
-  end if;
-
   -- Optional client port name or num
   begin
     Argument.Get_Parameter (Client_Port_Name, 1, "L");
@@ -388,6 +388,16 @@ begin
     when others =>
       raise Arg_Error;
   end;
+
+  -- Optional Afux
+  if Argument.Is_Set (1, "a") then
+    if Argument.Get_Parameter (1, "a") = "" then
+      Protocol := Socket.Tcp_Header_Afux;
+      Ttl := Tcp_Util.Default_Ttl;
+    else
+      raise Arg_Error;
+    end if;
+  end if;
 
   -- Init
   Event_Mng.Set_Sig_Term_Callback (Signal_Cb'Unrestricted_Access);
@@ -416,7 +426,6 @@ begin
     Connect;
   end if;
 
-
   -- Main loop
   if not Give_Up and then not Sig then
     loop
@@ -425,12 +434,14 @@ begin
     end loop;
   end if;
 
+  -- Terminate
   begin
     Tcp_Util.Abort_Accept(Protocol, Server_Port_Num);
   exception
     when Tcp_Util.No_Such => null;
   end;
 
+  -- Close
   if The_Dscr.Is_Open then
     if Event_Mng.Fd_Callback_Set (The_Dscr.Get_Fd, True) then
       Event_Mng.Del_Fd_Callback (The_Dscr.Get_Fd, True);
@@ -440,13 +451,18 @@ begin
     end if;
     The_Dscr.Close;
   end if;
+
+  -- Global result (at least one message received)
+  Basic_Proc.Put_Line_Output (if Result then "OK" else "KO");
+
 exception
   when Arg_Error =>
     Basic_Proc.Put_Line_Output ("Usage: "
-            & Argument.Get_Program_Name & " <mode> <port> [ <client_port> ]");
-    Basic_Proc.Put_Line_Output (" <mode> ::= -c<server_host> | -s");
-    Basic_Proc.Put_Line_Output (" <port> ::= -P<port_name> | -p<port_num>");
+            & Argument.Get_Program_Name & " <mode> <port> [ <client_port> ] [ <afux> ]");
+    Basic_Proc.Put_Line_Output (" <mode>        ::= -c<server_host> | -s");
+    Basic_Proc.Put_Line_Output (" <port>        ::= -P<port_name> | -p<port_num>");
     Basic_Proc.Put_Line_Output (" <client_port> ::= -L<port_name> | -l<port_num>");
+    Basic_Proc.Put_Line_Output (" <afux>        ::= -a");
     Basic_Proc.Set_Error_Exit_Code;
   when Error : others =>
     Basic_Proc.Put_Line_Output ("Exception: "

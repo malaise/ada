@@ -20,6 +20,7 @@ export final_clean="1"
 function error {
   echo
   echo $* 2>&1
+  final_clean="0"
   exit 1
 }
 
@@ -128,15 +129,6 @@ function match {
   else
     return 1
   fi
-}
-
-# Export pid and exit code of process (in backgroup)
-child_pid=0
-function start_bg {
-  child_pid=$$
-  child_code=0
-  $*
-  child_code=$?
 }
 
 # Start list of function
@@ -2040,27 +2032,32 @@ EOF
 fi
 
 # t_tcp_util
-if `match $arg t_tcp_util` ; then
-  title t_tcp_util...
+function test_tcp_util {
   # Start server then client and wait 10s
-  start_bg t_tcp_util -s -p50000 >outs 2>&1 &
-  ser_pid=$child_pid
+  t_tcp_util -s -p50000 $1 >outs 2>&1 &
+  ser_pid=$!
   sleep 0.3
-  start_bg t_tcp_util -clocalhost -p50000 -l40000 >outc 2>&1 &
-  cli_pid=$child_pid
+  t_tcp_util -clocalhost -p50000 $1 $2 >outc 2>&1 &
+  cli_pid=$!
   sleep 10
   # Stop client then server
   kill $cli_pid
-  cli_code=$child_code
   sleep 0.1
   kill $ser_pid
-  ser_code=$child_code
-  if [ "$ser_cod" != 0 ] ; then
-    error "ERROR: server has exited with code $ser_code"
-  fi
-  if [ "$cli_cod" != 0 ] ; then
-    error "ERROR: client has exited with code $cli_code"
-  fi
+  # Check
+  echo "OK" >exp
+  tail -n -1 outs >tmps
+  tail -n -1 outc >tmpc
+  cmp tmps exp
+  cmp tmpc exp
+}
+
+if `match $arg t_tcp_util` ; then
+  title t_tcp_util inet...
+  test_tcp_util "" -l40000
+  echo "OK"
+  title t_tcp_util afux...
+  test_tcp_util -a
   echo "OK"
 fi
 
