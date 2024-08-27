@@ -90,7 +90,7 @@ comp cater           res_000.000
 comp Logrotator.txt  res_002.000
 comp makefile        res_004.000
 comp logrotator.adb  res_006.000 res_006.001
-comp Logrotator.html res_008.000 res_008.001
+comp Logrotator.html `ls res_008.00*`
 cmp err nul
 
 clean
