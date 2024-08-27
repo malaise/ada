@@ -2048,8 +2048,8 @@ function test_tcp_util {
   echo "OK" >exp
   tail -n -1 outs >tmps
   tail -n -1 outc >tmpc
-  cmp tmps exp
-  cmp tmpc exp
+  comp tmps exp
+  comp tmpc exp
 }
 
 if `match $arg t_tcp_util` ; then
