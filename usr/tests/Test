@@ -2045,6 +2045,7 @@ function test_tcp_util {
   sleep 0.1
   kill $ser_pid
   # Check
+  sleep 1
   echo "OK" >exp
   tail -n -1 outs >tmps
   tail -n -1 outc >tmpc
