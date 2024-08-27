@@ -2,8 +2,8 @@
 -- Role (client or server) port and server host are set by arguments
 -- Message is fixed ("Ah que coucou!")
 with Ada.Exceptions;
-with Basic_Proc, As.U, Argument, Lower_Str, Event_Mng, Socket, Socket_Util,
-     Tcp_Util;
+with Basic_Proc, As.U, Argument, Lower_Str, Event_Mng, Socket,
+     Socket_Util, Tcp_Util, Timers;
 procedure T_Tcp_Util is
   Arg_Error : exception;
 
@@ -13,8 +13,11 @@ procedure T_Tcp_Util is
   Server_Name : As.U.Asu_Us;
   Server_Port_Name : As.U.Asu_Us;
   Server_Port_Num : Socket.Port_Num;
+  Client_Port_Name : As.U.Asu_Us;
+  Client_Port_Num : Socket.Port_Num;
   Local_Port : Socket_Util.Local_Port;
   Remote_Port : Socket_Util.Remote_Port;
+  Client_Port : Socket_Util.Local_Port;
 
   Give_Up : Boolean;
   In_Ovf : Boolean := False;
@@ -52,15 +55,38 @@ procedure T_Tcp_Util is
     Sig := True;
   end Signal_Cb;
 
+  procedure Wait (Dur : in Duration) is
+  begin
+    if Event_Mng.Wait (Integer (Dur) * 1_000) then
+      Basic_Proc.Put_Line_Output ("Timer/Event");
+    else
+      Basic_Proc.Put_Line_Output ("Timeout");
+    end if;
+  end Wait;
+
   procedure Connect;
+
+  -- Timer for connecting
+  function Timer_Exp (Dummy_Id : in Timers.Timer_Id;
+                      Dummy_Data : in Timers.Timer_Data) return Boolean is
+  begin
+    Connect;
+    return False;
+  end Timer_Exp;
+
   procedure Send_Err_Cb (Dscr : in  Socket.Socket_Dscr;
                          Conn_Lost : in Boolean) is
+    Dummy_Timer : Timers.Timer_Id;
+    Appt : constant Timers.Delay_Rec := (Delay_Kind => Timers.Delay_Sec,
+                                         Delay_Seconds => 1.0,
+                                         others => <>);
   begin
     Basic_Proc.Put_Line_Output ("Send_Err_Cb with lost_conn=" & Conn_Lost'Img);
+    -- Tcp_Util will close Dscr
     Event_Mng.Del_Fd_Callback (Dscr.Get_Fd, True);
     The_Dscr := Socket.No_Socket;
     Lost := True;
-    Connect;
+    Dummy_Timer := Timers.Create (Appt, Timer_Exp'Unrestricted_Access);
   end Send_Err_Cb;
 
   function Send (Msg : in String) return Boolean is
@@ -161,7 +187,7 @@ procedure T_Tcp_Util is
     Dummy_Res := Tcp_Util.Connect_To (Protocol,
                                       Host, Remote_Port,
                                       Connect_Cb'Unrestricted_Access,
-                                      Delay_Try, Nb_Try, Ttl);
+                                      Delay_Try, Nb_Try, Ttl, Client_Port);
 
   end Connect;
 
@@ -188,15 +214,6 @@ procedure T_Tcp_Util is
       In_Ovf := False;
     end if;
   end Accept_Cb;
-
-  procedure Wait (Dur : in Duration) is
-  begin
-    if Event_Mng.Wait (Integer (Dur) * 1_000) then
-      Basic_Proc.Put_Line_Output ("Timer/Event");
-    else
-      Basic_Proc.Put_Line_Output ("Timeout");
-    end if;
-  end Wait;
 
   function Read_Cb (Fd : in Event_Mng.File_Desc; Unused_Read : in Boolean)
            return Boolean is
@@ -250,7 +267,10 @@ procedure T_Tcp_Util is
       raise Program_Error;
     end if;
 
+    -- Will exit with 0 (if no further error)
+    Basic_Proc.Set_Ok_Exit_Code;
 
+    -- Send / reply
     if not Server then
       Basic_Proc.Put_Line_Output ("      Working");
       delay 0.3;
@@ -283,6 +303,9 @@ procedure T_Tcp_Util is
   end Read_Cb;
 
 begin
+  -- Will exit with 2 if no message received
+  Basic_Proc.Set_Exit_Code (2);
+
   -- Server or client
   begin
     Argument.Get_Parameter (Server_Name, 1, "c");
@@ -330,11 +353,41 @@ begin
     Remote_Port := (Kind => Socket_Util.Port_Name_Spec,
                     Name => Local_Port.Name);
   else
-    Local_Port := (Kind => Socket_Util.Port_Num_Spec,
-                   Num => Server_Port_Num);
-    Remote_Port := (Kind => Socket_Util.Port_Num_Spec,
-                    Num => Server_Port_Num);
+    Local_Port := (Kind => Socket_Util.Port_Num_Spec, Num => Server_Port_Num);
+    Remote_Port := (Kind => Socket_Util.Port_Num_Spec, Num => Server_Port_Num);
   end if;
+
+  -- Set ports
+  if not Server_Port_Name.Is_Null then
+    Local_Port := (Kind => Socket_Util.Port_Name_Spec,
+                   Name => Server_Port_Name);
+    Remote_Port := (Kind => Socket_Util.Port_Name_Spec,
+                    Name => Local_Port.Name);
+  else
+    Local_Port := (Kind => Socket_Util.Port_Num_Spec, Num => Server_Port_Num);
+    Remote_Port := (Kind => Socket_Util.Port_Num_Spec, Num => Server_Port_Num);
+  end if;
+
+  -- Optional client port name or num
+  begin
+    Argument.Get_Parameter (Client_Port_Name, 1, "L");
+    if Client_Port_Name.Is_Null then
+      raise Arg_Error;
+    end if;
+    Client_Port := (Socket_Util.Port_Name_Spec, Client_Port_Name);
+  exception
+    when Argument.Argument_Not_Found =>
+      begin
+        Client_Port_Num := Socket.Port_Num'Value (
+            Argument.Get_Parameter (1, "l"));
+        Client_Port := (Socket_Util.Port_Num_Spec, Client_Port_Num);
+      exception
+        when Argument.Argument_Not_Found =>
+          null;
+      end;
+    when others =>
+      raise Arg_Error;
+  end;
 
   -- Init
   Event_Mng.Set_Sig_Term_Callback (Signal_Cb'Unrestricted_Access);
@@ -363,6 +416,7 @@ begin
     Connect;
   end if;
 
+
   -- Main loop
   if not Give_Up and then not Sig then
     loop
@@ -389,11 +443,14 @@ begin
 exception
   when Arg_Error =>
     Basic_Proc.Put_Line_Output ("Usage: "
-            & Argument.Get_Program_Name & " <mode> <port>");
+            & Argument.Get_Program_Name & " <mode> <port> [ <client_port> ]");
     Basic_Proc.Put_Line_Output (" <mode> ::= -c<server_host> | -s");
     Basic_Proc.Put_Line_Output (" <port> ::= -P<port_name> | -p<port_num>");
+    Basic_Proc.Put_Line_Output (" <client_port> ::= -L<port_name> | -l<port_num>");
+    Basic_Proc.Set_Error_Exit_Code;
   when Error : others =>
     Basic_Proc.Put_Line_Output ("Exception: "
                    & Ada.Exceptions.Exception_Name (Error));
+    Basic_Proc.Set_Error_Exit_Code;
 end T_Tcp_Util;
 
