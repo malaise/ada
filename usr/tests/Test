@@ -803,6 +803,7 @@ fi
 if `match $arg t_dirname` ; then
   title t_dirname
   try t_dirname
+export adadir=`readlink -f ${HOME}/ada`
   cat << EOF >exp
 Dirname /tools/toto.ads: /tools/
 Dirname toto.ads: 
@@ -815,9 +816,9 @@ Basename /tools/toto.a .ad: toto.a
 File_Prefix /tools/toto.ads: toto
 File_Suffix /tools/toto.ads: .ads
 Normalize /root/dir1/../dirok/./dir3/../toto.ads: /root/dirok/toto.ads
-Make_Full "": ${HOME}/ada/usr/tests
-Make_Full ".": ${HOME}/ada/usr/tests
-Make_Full dir1/../dirok/./dir3/../toto.ads: /home/malaise/ada/usr/tests/dirok/toto.ads
+Make_Full "": ${adadir}/usr/tests
+Make_Full ".": ${adadir}/usr/tests
+Make_Full dir1/../dirok/./dir3/../toto.ads: ${adadir}/usr/tests/dirok/toto.ads
 EOF
   comp err nul
   comp out exp
