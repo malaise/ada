@@ -1,5 +1,5 @@
 -- Test Tcp_Util connection and overflow
--- Start a server (-a <port>) and a client (<host><port>)
+-- Start a server (-a <port>) and a client ([<port>:]<host>:<port>)
 -- Client options: blocking (-b) and/or timeout (-t) 5.1s
 -- Message is fixed (many spaces)
 with Ada.Exceptions;
@@ -22,7 +22,7 @@ procedure T_Tcp_Send is
   Send_Timeout : Duration := 0.0;
   Default_Timeout : constant Duration := 5.1;
 
-  -- Connect synchronous result
+  -- Connect synchronous result, or reception of one message
   Result : Boolean;
 
   -- Sequence number
@@ -36,7 +36,7 @@ procedure T_Tcp_Send is
   Sig : Boolean := False;
   procedure Signal_Cb is
   begin
-    Logger.Log_Info ("Aborted.");
+    Logger.Log_Info ("Terminated.");
     Sig := True;
   end Signal_Cb;
 
@@ -62,6 +62,7 @@ procedure T_Tcp_Send is
   begin
     if Msg.Seq = Message.Seq then
       Logger.Log_Info ("Read Cb got " & Image (Msg.Seq));
+      Result := True;
     else
       Logger.Log_Info ("Read Cb got seq " & Image (Msg.Seq)
                                 & " while expecting " & Image (Message.Seq));
@@ -106,6 +107,7 @@ procedure T_Tcp_Send is
       if not Blocking then
         Sock.Set_Blocking (Socket.Non_Blocking);
       end if;
+      Result := True;
     end if;
     Logger.Log_Info ("Connection Cb " & Mixed_Str (Connected'Img));
   end Connect_Cb;
@@ -118,7 +120,7 @@ procedure T_Tcp_Send is
     Result := Tcp_Util.Connect_To (Protocol,
                                    Remote_Host, Remote_Port,
                                    Connect_Cb'Unrestricted_Access,
-                                   1.0, 0);
+                                   1.0, 0, Local_Port => Local_Port);
     Logger.Log_Info ("Connect result " & Mixed_Str (Result'Img));
   end Connect;
 
@@ -190,9 +192,14 @@ begin
     raise Arg_Error;
   end if;
 
+  -- Failure by default
+  Result := False;
+  Basic_Proc.Set_Error_Exit_Code;
+
   -- Accepter mode
   if Argument.Get_Nbre_Arg = 2
   and then Argument.Get_Parameter (1) = "-a" then
+    -- Receiver mode
     begin
       Local_Port := Ip_Addr.Parse (Argument.Get_Parameter (2));
     exception
@@ -205,46 +212,57 @@ begin
                           Accept_Cb'Unrestricted_Access,
                           Accept_Sock,
                           Port_Num);
+    Logger.Log_Debug ("Pause");
     Event_Mng.Pause (-1);
-    return;
+  else
+    -- Sender mode
+    Next_Arg := 1;
+    loop
+      declare
+        Arg : constant String := Argument.Get_Parameter (Next_Arg);
+      begin
+        if Arg = "-b" then
+          Blocking := True;
+        elsif Arg = "-t" then
+          Send_Timeout := Default_Timeout;
+        elsif Next_Arg = Argument.Get_Nbre_Arg then
+          -- Last arg = dest
+          exit;
+        else
+          raise Arg_Error;
+        end if;
+      end;
+      Next_Arg := Next_Arg + 1;
+    end loop;
+
+    begin
+      Ip_Addr.Parse (Argument.Get_Parameter (Next_Arg),
+                     Local_Port, Remote_Host, Remote_Port);
+    exception
+      when others =>
+        raise Arg_Error;
+    end;
+    Connect;
+
+    -- Main loop of sender
+    Logger.Log_Debug ("Main loop");
+    loop
+      Event_Mng.Pause (1_000);
+      exit when Sig;
+      Send;
+    end loop;
   end if;
 
-  -- Sender mode
-  Next_Arg := 1;
-  loop
-    declare
-      Arg : constant String := Argument.Get_Parameter (Next_Arg);
-    begin
-      if Arg = "-b" then
-        Blocking := True;
-      elsif Arg = "-t" then
-        Send_Timeout := Default_Timeout;
-      elsif Next_Arg = Argument.Get_Nbre_Arg then
-        -- Last arg = dest
-        exit;
-      else
-        raise Arg_Error;
-      end if;
-    end;
-    Next_Arg := Next_Arg + 1;
-  end loop;
-
-  begin
-    Ip_Addr.Parse (Argument.Get_Parameter (Next_Arg),
-                   Remote_Host, Remote_Port);
-  exception
-    when others =>
-      raise Arg_Error;
-  end;
-  Connect;
-
-  loop
-    Event_Mng.Pause (1_000);
-    exit when Sig;
-    Send;
-  end loop;
-
+  -- End
   Logger.Log_Debug ("Done.");
+  if Result then
+    Basic_Proc.Set_OK_Exit_Code;
+    Basic_Proc.Put_Line_Output ("OK");
+  else
+    Basic_Proc.Set_Error_Exit_Code;
+    Basic_Proc.Put_Line_Output ("KO");
+  end if;
+    
 exception
   when Arg_Error =>
     Logger.Log_Fatal ("Invalid_Argument");

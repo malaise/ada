@@ -350,5 +350,5 @@ Many projects in subdirectories of 'usr' also implement automatic tests that
 are launched by a local 'Test' script, and fail on error.
 
 Finally, a 'Tests' target in a parent directory lauches all the tests in its
-chldren directories. The test of the whole 'usr' subtree takes around 6 minutes.
+chldren directories. The test of the whole 'usr' subtree takes around 7 minutes.
 

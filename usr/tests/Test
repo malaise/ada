@@ -2031,6 +2031,30 @@ EOF
   echo "OK"
 fi
 
+# t_tcp_send
+if `match $arg t_tcp_send` ; then
+  title t_tcp_send...
+  # Start server then client and wait 5s
+  t_tcp_send -a 50000 >outs 2>&1 &
+  ser_pid=$!
+  sleep 0.3
+  t_tcp_send 4000:localhost:50000  >outc 2>&1 &
+  cli_pid=$!
+  sleep 5
+  # Stop client then server
+  kill $cli_pid
+  sleep 0.1
+  kill $ser_pid
+  # Check
+  sleep 1
+  echo "OK" >exp
+  tail -n -1 outs >tmps
+  tail -n -1 outc >tmpc
+  comp tmps exp
+  comp tmpc exp
+  echo "OK"
+fi
+
 # t_tcp_util
 function test_tcp_util {
   # Start server then client and wait 10s
