@@ -99,8 +99,7 @@ package body Day_Mng is
                   Microsecs : T_Microsecs) return Ada.Calendar.Day_Duration is
     Dur : Ada.Calendar.Day_Duration;
   begin
-    Dur := Ada.Calendar.Day_Duration (
-     Ada.Calendar.Day_Duration(Microsecs) / Mic_In_Sec);
+    Dur := Ada.Calendar.Day_Duration (Duration(Microsecs) / Mic_In_Sec);
     Dur := Dur + Ada.Calendar.Day_Duration (Seconds);
     Dur := Dur + Ada.Calendar.Day_Duration (Minutes * Sec_In_Min);
     Dur := Dur + Ada.Calendar.Day_Duration (Hours * Sec_In_Min * Min_In_Hor);
@@ -159,7 +158,7 @@ package body Day_Mng is
                   Seconds   : T_Seconds;
                   Microsecs : T_Microsecs) return Ada.Calendar.Time is
     (Ada.Calendar.Time_Of (Year, Month, Day,
-                           Pack (Hours, Minutes, Seconds, Microsecs)) );
+                           Packu (Hours, Minutes, Seconds, Microsecs)) );
 
 end Day_Mng;
 
