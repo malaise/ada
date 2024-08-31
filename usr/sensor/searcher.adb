@@ -56,6 +56,8 @@ package body Searcher is
     Moved : Boolean;
     -- Length of time
     Time_Len : Natural;
+    -- Time scan is OK
+    Time_Ok : Boolean;
     -- Time of record
     Time : Date_Text.Date_Rec;
     Current_Time, Line_Time, Ref_Time : Ada.Calendar.Time;
@@ -145,45 +147,62 @@ package body Searcher is
       Matches.Rewind;
       loop
         -- Extract date
-        Time := Date_Text.Scan (
-            Matches.Access_Current.Slice (1, Time_Len),
-            Time_Fmt.Image);
-        -- Fix year if it is not set
-        if Time.Years = Ada.Calendar.Year_Number'First then
-          Time.Years := Ada.Calendar.Year (Current_Time);
-          -- If result is above current time
-          --  either we are changing year (file date is december)
-          --    => substract 1 year
-          --  or time has stepped backwards (daylight saving to winter)
-          --    => keep this line
-          if Time_Of (Time) > Current_Time then
-            if Time.Months = 12 then
-              Time.Years := Time.Years - 1;
+        begin
+          Time := Date_Text.Scan (
+              Matches.Access_Current.Slice (1, Time_Len),
+              Time_Fmt.Image);
+          Time_Ok := True;
+        exception
+          when Date_Text.Invalid_String =>
+            -- As if Time is after; will keep it
+            Time_Ok := False;
+            Debug.Logger.Log_Debug (" Invalid date "
+                & Matches.Access_Current.Slice (1, Time_Len));
+        end;
+          if Time_Ok then
+            if Time.Years = Ada.Calendar.Year_Number'First then
+              -- Fix year if it is not set
+              Time.Years := Ada.Calendar.Year (Current_Time);
+              -- If result is above current time
+              --  either we are changing year (file date is december)
+              --    => substract 1 year
+              --  or time has stepped backwards (daylight saving to winter)
+              --    => keep this line
+              if Time_Of (Time) > Current_Time then
+                if Time.Months = 12 then
+                  Time.Years := Time.Years - 1;
+                else
+                  Time := Date_Text.Split (Current_Time);
+                end if;
+              end if;
+            end if;
+            Line_Time := Time_Of (Time);
+            if Line_Time < Start then
+              -- Remove lines before start time
+              Debug.Logger.Log_Debug (" Before start "
+                                      & Matches.Access_Current.Image);
+              Matches.Delete (Moved => Moved);
+            elsif Aging /= 0.0 and then Line_Time < Ref_Time then
+              -- Remove lines before ref time
+              Debug.Logger.Log_Debug (" Old " & Matches.Access_Current.Image);
+              Matches.Delete (Moved => Moved);
             else
-              Time := Date_Text.Split (Current_Time);
+              -- Keep
+              Moved := Matches.Check_Move;
+              if Moved then
+                Matches.Move_To;
+              end if;
+            end if;
+          else
+            -- Not Time_Ok => keep
+            Moved := Matches.Check_Move;
+            if Moved then
+              Matches.Move_To;
             end if;
           end if;
-        end if;
-        Line_Time := Time_Of (Time);
-        if Line_Time < Start then
-          -- Remove lines before start time
-          Debug.Logger.Log_Debug (" Before start "
-                                  & Matches.Access_Current.Image);
-          Matches.Delete (Moved => Moved);
-        elsif Aging /= 0.0 and then Line_Time < Ref_Time then
-          -- Remove lines before ref time
-          Debug.Logger.Log_Debug (" Old " & Matches.Access_Current.Image);
-          Matches.Delete (Moved => Moved);
-        else
-          -- Keep
-          Moved := Matches.Check_Move;
-          if Moved then
-            Matches.Move_To;
-          end if;
-        end if;
-        exit when not Moved;
-      end loop;
 
+          exit when not Moved;
+        end loop;
       if Debug.Logger.Is_On (Dump_Severity) then
         Dump_List ("In time", Matches);
       end if;
