@@ -20,7 +20,7 @@ with As.U, Trees, Trilean;
 package Xml_Parser is
 
   -- Version incremented at each significant change
-  Major_Version : constant String := "48";
+  Major_Version : constant String := "49";
   function Version return String;
 
   -----------
@@ -209,6 +209,7 @@ package Xml_Parser is
   -- On option, keep separators unchanged in attributes and text
   -- On option, make text compatible ('>' -> "&gt;")
   -- On option do not check compliance with Dtd
+  -- If not check Dtd, still load it (e.g. Entities)
   -- On option force an external Dtd file different from the DOCTYPE directive
   --  (does not affect the internal DTD).
   --  Use No_File to discard the external (keeping the internal DTD if any)
@@ -228,7 +229,8 @@ package Xml_Parser is
                    Expand     : in Boolean := True;
                    Normalize  : in Boolean := True;
                    Compatible : in Boolean := False;
-                   Use_Dtd    : in Boolean := True;
+                   Check_Dtd  : in Boolean := True;
+                   Load_Dtd   : in Boolean := False;
                    Dtd_File   : in String  := "";
                    Namespace  : in Boolean := False;
                    Warn_Cb    : in Warning_Callback_Access := null;
@@ -291,7 +293,8 @@ package Xml_Parser is
                             Expand     : in Boolean := True;
                             Normalize  : in Boolean := True;
                             Compatible : in Boolean := False;
-                            Use_Dtd    : in Boolean := True;
+                            Check_Dtd  : in Boolean := True;
+                            Load_Dtd   : in Boolean := False;
                             Dtd_File   : in String  := "";
                             Dtd_Path   : in String  := "";
                             Namespace  : in Boolean := False;
@@ -326,7 +329,8 @@ package Xml_Parser is
                    Expand     : in Trilean.Trilean := Trilean.Other;
                    Normalize  : in Trilean.Trilean := Trilean.Other;
                    Compatible : in Trilean.Trilean := Trilean.Other;
-                   Use_Dtd    : in Trilean.Trilean := Trilean.Other;
+                   Check_Dtd  : in Trilean.Trilean := Trilean.Other;
+                   Load_Dtd   : in Trilean.Trilean := Trilean.Other;
                    Dtd_File   : in String  := "";
                    Dtd_Path   : in String  := "";
                    Namespace  : in Trilean.Trilean := Trilean.Other;
@@ -833,8 +837,9 @@ private
     Compatible : Boolean := False;
     -- List of Elements with "xml:space 'preserve'" in dtd
     Preserved : As.U.Asu_Us;
-    -- Use Dtd
-    Use_Dtd : Boolean := True;
+    -- Check Dtd, otherwise load it
+    Check_Dtd : Boolean := True;
+    Load_Dtd : Boolean := False;
     Dtd_File, Dtd_Path : As.U.Asu_Us;
     -- Check and fill namespaces
     Namespace : Boolean := False;

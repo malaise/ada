@@ -1,11 +1,11 @@
 Xml_Checker
 ===========
-Version: V26.1
+Version: V27.0
 
-'Parser version: V48.2 +
+'Parser version: V49.0 +
 Generator version: V19.3 +
 Dtd_checker version: V4.0 +
-Dtd_generator version: V3.1'
+Dtd_generator version: V4.0'
 
 Xml_checker is a XML parser that checks the syntax (versus DTD) and formats the
 output.
@@ -16,8 +16,8 @@ Syntax
 xml_checker[ { <option> } ] [ { <file> } ]
  <option> ::= <silent> | <progress> | <dump> | <raw> | <width> | <one> | <split>
             | <expand> | <keep> | <namespace> | <canonical> | <normalize>
-            | <compat> | <check_dtd> | <no_dtd> | <validate> | <tree>
-            | <update_mix> | <copytree> | <warnings>
+            | <compat> | <dtd_file> | <no_check_dtd> | <load_dtd> | <validate>
+            | <tree> | <update_mix> | <copytree> | <warnings>
             | <help> | <version>
  <help>        ::= -h | --help      : Put this help
  <version>     ::= -v | --version   : Put versions
@@ -25,7 +25,7 @@ xml_checker[ { <option> } ] [ { <file> } ]
  <compat>      ::= -c | --compat    : Make text compatible ('>' -> "&gt;")
  <copytree>    ::= -c | --copytree  : Copy tree then dump the copy
  <dump>        ::= -D | --dump      : Dump expanded Xml tree
- <check_dtd>   ::= -d <Dtd> | --dtd=<Dtd>
+ <dtd_file>    ::= -d <Dtd> | --dtd=<Dtd>
                                     : Use a specific external dtd file
  <expand>      ::= -E | --expand    : Expand general entities
                                     :  and attributes with default
@@ -36,7 +36,8 @@ xml_checker[ { <option> } ] [ { <file> } ]
                                     :  markers)
                                     : Keep all (default)
  <update_mix>  ::= -m | --mixed     : Update Mixed tag in tree
- <no_dtd>      ::= -N | --no_dtd    : Do not use dtd
+ <no_dtd>      ::= -N | --no_dtd    : Do not check versus dtd
+ <Load_dtd>    ::= -l | --load_dtd  : if no check, still load dtd
  <namespace>   ::= -n | --namespace : Put Namespace^Suffix
  <normalize>   ::= --no-normalize   : Do not normalize attributes and text
  <one>         ::= -1 | --one       : Put one attribute per line
@@ -352,7 +353,8 @@ generates a DTD file representing the structure (elements and attributes) of
 these files.
 ...................................................
 dtd_generator [ <options> ] [ { <xml_file> } ]
-  <options> ::= [ [ <deviation> ] [ <elements> ] [ <enums> ] [ <width> ]
+  <options> ::= [ <load_dtd> [ <deviation> ] [ <elements> ] [ <enums> ] [ <width> ]
+  <load_dtd>  ::= -l | --load_dtd      // default ignore internal dtd
   <deviation> ::= --deviation=<val>    // default 11
   <elements>  ::= --elements=<val>     // default 210
   <enums>     ::= --enums=<val>        // default 21
@@ -362,6 +364,8 @@ dtd_generator [ <options> ] [ { <xml_file> } ]
 
 The options tune the behavior as follows (a value of '0' disables the check):
 
+* Load_dtd: load the content of internal dtd (e.g. entities). The external
+dtd is always ignored.
 * Deviation: The maximum number of changes introduced by a new set of
 children, after which the precise sequence of children is replaced by a choice
 ('(Elt|Elt|Elt...)*').

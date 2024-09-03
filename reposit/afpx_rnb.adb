@@ -614,7 +614,7 @@ begin
                Cdata => Xml_Parser.Keep_Cdata_Section,
                Expand => False,
                Normalize => False,
-               Use_Dtd => True, Dtd_File  => "",
+               Check_Dtd => True, Dtd_File  => "",
                Namespace => False,
                Warn_Cb => null, Parse_Cb => null);
     if not Parse_Ok then

@@ -1370,7 +1370,7 @@ package body Dtd is
     use type As.U.Asu_Us;
   begin
     -- Check that all elements referenced as children or in attlist are defined
-    if Adtd.Info_List.Is_Empty then
+    if Ctx.Load_Dtd or else Adtd.Info_List.Is_Empty then
       return;
     end if;
 
@@ -1485,6 +1485,9 @@ package body Dtd is
     Only : As.U.Asu_Us;
     use type As.U.Asu_Us;
   begin
+    if Ctx.Load_Dtd then
+      return;
+    end if;
     Debug ("Dtd check Xml children list " & Children.Children.Image
          & " Empty: " & Children.Is_Empty'Img
          & " Text : " & Children.Has_Text'Img);
@@ -1928,6 +1931,9 @@ package body Dtd is
     Expanded_List : As.U.Asu_Us;
     use type As.U.Asu_Us;
   begin
+    if Ctx.Load_Dtd then
+      return;
+    end if;
     Ctx.Elements.Read (Cell);
     Debug ("Dtd checking attributes of element " & Cell.Name.Image);
     if Cell.Name.Is_Null then
@@ -2177,6 +2183,9 @@ package body Dtd is
                            Children : in Children_Desc) is
     Cell : My_Tree_Cell;
   begin
+    if Ctx.Load_Dtd then
+      return;
+    end if;
     if Adtd.Set then
       Ctx.Elements.Read (Cell);
       Check_Children (Ctx, Adtd, Cell.Name, Cell.Line_No, Cell.Empty_Info,
@@ -2308,6 +2317,9 @@ package body Dtd is
     Cell : My_Tree_Cell;
     Children : Children_Desc;
   begin
+    if Ctx.Load_Dtd then
+      return;
+    end if;
     Ctx.Elements.Read (Cell);
     -- Check current element, attributes then children
     Check_Attributes (Ctx, Adtd);
@@ -2369,6 +2381,9 @@ package body Dtd is
     Idref : Id_Cell;
     Found : Boolean;
   begin
+    if Ctx.Load_Dtd then
+      return;
+    end if;
     Debug ("Checking final");
     -- Each IDREF must exist in IDs
     if not Ctx.Idrefs.Is_Empty then

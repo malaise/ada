@@ -638,7 +638,8 @@ package body Bencode is
     Logger.Init (Logger_Name);
     Logger.Log_Debug ("Encoding to Bencode");
     -- Parse the XML string into a tree
-    Ctx.Parse_Prologue (Xml_String, Dtd, Ok, Use_Dtd => False);
+    Ctx.Parse_Prologue (Xml_String, Dtd, Ok, Check_Dtd => False,
+                                             Load_Dtd => False);
     if not Ok then
       Logger.Log_Error ("Xml parsing error " & Ctx.Get_Parse_Error_Message);
       raise Format_Error;

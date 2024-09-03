@@ -3,7 +3,7 @@ with Trace.Loggers, Exception_Messenger, Directory, Str_Util, Reg_Exp, As.U.Util
 package body Xml_Parser is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "2";
+  Minor_Version : constant String := "0";
   function Version return String is
     ("V" & Major_Version & "." & Minor_Version);
 
@@ -341,7 +341,8 @@ package body Xml_Parser is
                    Expand     : in Boolean := True;
                    Normalize  : in Boolean := True;
                    Compatible : in Boolean := False;
-                   Use_Dtd    : in Boolean := True;
+                   Check_Dtd  : in Boolean := True;
+                   Load_Dtd   : in Boolean := False;
                    Dtd_File   : in String  := "";
                    Namespace  : in Boolean := False;
                    Warn_Cb    : in Warning_Callback_Access := null;
@@ -372,7 +373,8 @@ package body Xml_Parser is
     Ctx.Cdata_Policy := Cdata;
     Ctx.Normalize := Normalize;
     Ctx.Compatible := Compatible;
-    Ctx.Use_Dtd := Use_Dtd;
+    Ctx.Check_Dtd := Check_Dtd;
+    Ctx.Load_Dtd := Load_Dtd;
     Ctx.Dtd_File := As.U.Tus (Dtd_File);
     Ctx.Namespace := Namespace;
     Ctx.Warnings := Warn_Cb;
@@ -449,7 +451,8 @@ package body Xml_Parser is
     Ctx.Cdata_Policy := Remove_Cdata_Markers;
     Ctx.Normalize := True;
     Ctx.Compatible := False;
-    Ctx.Use_Dtd := True;
+    Ctx.Check_Dtd := True;
+    Ctx.Load_Dtd := False;
     Ctx.Dtd_File.Set_Null;
     Ctx.Dtd_Path.Set_Null;
     Ctx.Namespace := False;
@@ -576,7 +579,8 @@ package body Xml_Parser is
                             Expand     : in Boolean := True;
                             Normalize  : in Boolean := True;
                             Compatible : in Boolean := False;
-                            Use_Dtd    : in Boolean := True;
+                            Check_Dtd  : in Boolean := True;
+                            Load_Dtd   : in Boolean := False;
                             Dtd_File   : in String  := "";
                             Dtd_Path   : in String  := "";
                             Namespace  : in Boolean := False;
@@ -606,7 +610,8 @@ package body Xml_Parser is
     Ctx.Cdata_Policy := Cdata;
     Ctx.Normalize := Normalize;
     Ctx.Compatible := Compatible;
-    Ctx.Use_Dtd := Use_Dtd;
+    Ctx.Check_Dtd := Check_Dtd;
+    Ctx.Load_Dtd := Load_Dtd;
     Ctx.Dtd_File := As.U.Tus (Dtd_File);
     Ctx.Dtd_Path := As.U.Tus (Dtd_Path);
     Ctx.Namespace := Namespace;
@@ -705,7 +710,8 @@ package body Xml_Parser is
                    Expand     : in Trilean.Trilean := Trilean.Other;
                    Normalize  : in Trilean.Trilean := Trilean.Other;
                    Compatible : in Trilean.Trilean := Trilean.Other;
-                   Use_Dtd    : in Trilean.Trilean := Trilean.Other;
+                   Check_Dtd  : in Trilean.Trilean := Trilean.Other;
+                   Load_Dtd   : in Trilean.Trilean := Trilean.Other;
                    Dtd_File   : in String  := "";
                    Dtd_Path   : in String  := "";
                    Namespace  : in Trilean.Trilean := Trilean.Other;
@@ -732,8 +738,13 @@ package body Xml_Parser is
     if Compatible /= Trilean.Other then
       Ctx.Compatible := Trilean.Tri2Boo (Compatible);
     end if;
-    if Use_Dtd /= Trilean.Other then
-      Ctx.Use_Dtd := Trilean.Tri2Boo (Use_Dtd);
+    if Check_Dtd /= Trilean.Other then
+      Ctx.Check_Dtd := Trilean.Tri2Boo (Check_Dtd);
+    end if;
+    if Load_Dtd /= Trilean.Other then
+      Ctx.Load_Dtd := Trilean.Tri2Boo (Load_Dtd);
+    end if;
+    if Ctx.Check_Dtd or else Ctx.Load_Dtd then
       Ctx.Dtd_File := As.U.Tus (Dtd_File);
       Ctx.Dtd_Path := As.U.Tus (Dtd_Path);
     end if;

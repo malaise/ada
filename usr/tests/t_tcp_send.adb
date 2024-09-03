@@ -256,13 +256,13 @@ begin
   -- End
   Logger.Log_Debug ("Done.");
   if Result then
-    Basic_Proc.Set_OK_Exit_Code;
+    Basic_Proc.Set_Ok_Exit_Code;
     Basic_Proc.Put_Line_Output ("OK");
   else
     Basic_Proc.Set_Error_Exit_Code;
     Basic_Proc.Put_Line_Output ("KO");
   end if;
-    
+
 exception
   when Arg_Error =>
     Logger.Log_Fatal ("Invalid_Argument");

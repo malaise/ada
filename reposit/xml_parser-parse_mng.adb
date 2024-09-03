@@ -1073,7 +1073,7 @@ package body Parse_Mng  is
       Util.Error (Ctx.Flow, "Unexpected character " & Char & " in DOCTYPE");
     end if;
     -- Now Parse DTD file
-    if Ctx.Use_Dtd
+    if (Ctx.Check_Dtd or else Ctx.Load_Dtd)
     and then Ctx.Dtd_File.Is_Null
     and then not Doctype_File.Is_Null then
       -- Parse dtd file of doctype directive if no alternate file
@@ -1114,12 +1114,12 @@ package body Parse_Mng  is
       Dtd.Check_Warnings (Ctx, Adtd);
       Debug ("Parse doctype checked warnings");
     end if;
-    if not Ctx.Use_Dtd then
+    if not Ctx.Check_Dtd and then not Ctx.Load_Dtd then
       -- Reset dtd info
       Debug ("Parsing resetting dtd cause not to be used");
       Dtd.Init (Adtd);
     end if;
-    if Ctx.Expand or else not Ctx.Use_Dtd then
+    if Ctx.Expand or else not (Ctx.Check_Dtd or else Ctx.Load_Dtd) then
       -- Keep the lists of elements in which dtd sets to preserve spaces
       --  only when not Ctx.Expand
       Ctx.Preserved.Set_Null;
@@ -1254,7 +1254,7 @@ package body Parse_Mng  is
     -- Xml directive is mandatory in prologue, which is mandatory in doc
     Check_Xml (Ctx);
     -- Parse dtd alternate file if requested to do so
-    if Ctx.Use_Dtd
+    if (Ctx.Check_Dtd or else Ctx.Load_Dtd)
     and then not Ctx.Dtd_File.Is_Null
     and then Ctx.Dtd_File /= No_File then
       Util.Push_Flow (Ctx.Flow);
@@ -1973,7 +1973,7 @@ package body Parse_Mng  is
     Dtd.Init (Adtd);
     Util.Push_Flow (Ctx.Flow);
     -- Parse Dtd
-    if Ctx.Use_Dtd and then not Ctx.Doctype.Int_Def.Is_Null then
+    if Ctx.Check_Dtd and then not Ctx.Doctype.Int_Def.Is_Null then
       -- Internal directive
       Dtd.Switch_Input (Ctx, Adtd, Ctx.Doctype.Int_Def, False); --## rule line off Aliasing
       Adtd.Xml_Found := False;
@@ -2031,13 +2031,17 @@ package body Parse_Mng  is
     end if;
     Ctx.Elements.Move_Root;
     Steps_Logger.Log_Info ("Checking elements");
-    Dtd.Check_Subtree (Ctx, Adtd);
-    -- Check tail
-    Steps_Logger.Log_Info ("Checking tail");
-    Dtd.Check_Tail (Ctx);
-    -- Perform final checks versus dtd
-    Steps_Logger.Log_Info ("Checking versus DTD");
-    Dtd.Final_Check (Ctx);
+    if Ctx.Check_Dtd then
+      Dtd.Check_Subtree (Ctx, Adtd);
+      -- Check tail
+      Steps_Logger.Log_Info ("Checking tail");
+      Dtd.Check_Tail (Ctx);
+      -- Perform final checks versus dtd
+      Steps_Logger.Log_Info ("Checking versus DTD");
+      Dtd.Final_Check (Ctx);
+    else
+      Steps_Logger.Log_Info ("Not checking versus DTD");
+    end if;
     -- Clean Dtd before it disapears
     Dtd.Init (Adtd);
     Steps_Logger.Log_Info ("Done Check");

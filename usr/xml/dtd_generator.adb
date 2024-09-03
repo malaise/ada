@@ -6,7 +6,7 @@ with Argument, Argument_Parser, Basic_Proc, As.U, Str_Util, Mixed_Str,
 procedure Dtd_Generator is
 
   -- Current version
-  Version : constant String := "V3.1";
+  Version : constant String := "V4.0";
 
   -- Algorithm criteria
 
@@ -31,6 +31,8 @@ procedure Dtd_Generator is
   Output_Width : Natural := 0;
   Min_Width : constant Positive := 40;
 
+  -- Load internal dtd
+  Load_Dtd : Boolean := False;
 
   -- Put usage
   procedure Usage is
@@ -40,8 +42,10 @@ procedure Dtd_Generator is
     Basic_Proc.Put_Line_Error ("or " & Argument.Get_Program_Name
         & " -h | --help | -v | --version");
     Basic_Proc.Put_Line_Error (
-        "  <options> ::= [ [ <deviation> ] [ <elements> ] [ <enums> ]"
+      "  <options> ::= [ <load_dtd> ] [ <deviation> ] [ <elements> ] [ <enums> ]"
         & " [ <width> ]");
+    Basic_Proc.Put_Line_Error (
+        "  <load_dtd>  ::= --load_dtd           // default: ignore internal dtd");
     Basic_Proc.Put_Line_Error (
         "  <deviation> ::= --deviation=<val>    // default "
         & Int_Img (Max_Deviation));
@@ -114,7 +118,8 @@ procedure Dtd_Generator is
    05 => (True, Argument_Parser.No_Key_Char,
                 As.U.Tus ("enums"), False, True, As.U.Asu_Null),
    06 => (True, Argument_Parser.No_Key_Char,
-                As.U.Tus ("width"), False, True, As.U.Asu_Null));
+                As.U.Tus ("width"), False, True, As.U.Asu_Null),
+   07 => (False, 'l', As.U.Tus ("load_dtd"), False));
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
   No_Key_Index : constant Argument_Parser.The_Keys_Index
                := Argument_Parser.No_Key_Index;
@@ -650,6 +655,7 @@ begin
         return;
       end if;
     end if;
+    Load_Dtd := Arg_Dscr.Is_Set (7);
   exception
     when others =>
       Error ("Invalid argument");
@@ -677,7 +683,9 @@ begin
            else "file " & File_Name.Image));
     begin
       -- Allow comments  otherwise we detect wrongly Empty
-      Ctx.Parse (File_Name.Image, Parse_Ok, Comments => True, Use_Dtd => False);
+      Ctx.Parse (File_Name.Image, Parse_Ok, Comments => True,
+                 Check_Dtd => False, Load_Dtd => Load_Dtd,
+                 Dtd_File => Xml_Parser.No_File);
     exception
       when Xml_Parser.File_Error =>
         Error ("File " & File_Name.Image & " not found");
