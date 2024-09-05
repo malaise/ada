@@ -9,6 +9,7 @@ procedure Astat is
   First : Positive := 1;
   Java_Syntax : Boolean := False;
   Details : Boolean := True;
+  Max_Len : Positive;
 begin
   if Argument.Get_Nbre_Arg = 1
   and then (Argument.Get_Parameter (1) = "--help"
@@ -32,20 +33,32 @@ begin
     end if;
   end loop;
 
+  -- Compute length of longest file name
+  Max_Len := 1;
+  for Arg in First .. Argument.Get_Nbre_Arg loop
+    declare
+      Text : constant String := Argument.Get_Parameter (Arg);
+    begin
+      if Text'Length > Max_Len then
+        Max_Len := Text'Length;
+      end if;
+    end;
+  end loop;
+
   -- Put header of list
   if Details then
-    One_File_Statements.Put_Header;
+    One_File_Statements.Put_Header (Max_Len);
   end if;
 
   -- Store all files
   for Arg in First .. Argument.Get_Nbre_Arg loop
     -- One stat on each file
     One_File_Statements.Statements_Of_File (Argument.Get_Parameter (Arg),
-                                            Java_Syntax, Details);
+                                            Java_Syntax, Details, Max_Len);
   end loop;
 
   -- Total
-  One_File_Statements.Put_Total (Details);
+  One_File_Statements.Put_Total (Details, Max_Len);
 
 end Astat;
 

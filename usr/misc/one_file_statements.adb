@@ -1,5 +1,4 @@
-with Normal, Basic_Proc, Sys_Calls, Text_Line, Text_Char, My_Math;
-
+with Normal, Basic_Proc, Sys_Calls, Text_Line, Text_Char, My_Math, As.U;
 -- Count Ada statements
 package body One_File_Statements is
 
@@ -193,12 +192,9 @@ package body One_File_Statements is
       raise;
   end Count_Statements_Of_File;
 
-  -- Formating info
-  Max_Dig : constant := 9;
-  Gap : constant String := "  ";
-  Max_Tab : constant := 68;
   File : Text_Line.File_Type;
 
+  -- Statments in a output file
   procedure Open_File is
   begin
     if not File.Is_Open then
@@ -206,10 +202,16 @@ package body One_File_Statements is
     end if;
   end Open_File;
 
-  procedure Put_Delimiter is
+
+  -- Formating info
+  Max_Dig : constant := 9;
+  Gap : constant String := "  ";
+
+  -- Put a full line of '-'
+  procedure Put_Delimiter (Width : in Positive) is
   begin
     for I in Integer range 1 ..
-          Max_Tab + 1
+          Width
           + Gap'Length + Max_Dig
           + Gap'Length + 4 + Gap'Length + Max_Dig loop
         Text_Line.Put (File, "-");
@@ -217,44 +219,105 @@ package body One_File_Statements is
     Text_Line.New_Line (File);
   end Put_Delimiter;
 
-  procedure Put_Header is
-    Title : constant String := "File";
+  -- Put formated line:
+  -- <name> [ ' ' { '.' } ] <gap> <statmts> <gap> <%cmts> <gap> <lines>
+  procedure Put_Line (Name  : in String;
+                      Dot   : in Character;
+                      Statmts, Cmts, Lines : in String;
+                      Width : in Positive) is
+    Name_Len : Natural := Name'Length;
   begin
-    Open_File;
-    Text_Line.Put (File, Title);
-    for I in Integer range Title'Length .. Max_Tab loop
+    -- Put Name
+    Text_Line.Put (File, Name);
+    if Name_Len > Width then
+      -- New line
+      Text_Line.New_Line (File);
+      Name_Len := 0;
+    end if;
+    -- Complete up to first '.'
+    if Name_Len = 0 then
+      Text_Line.Put (File, Dot & "");
+      Name_Len := 1;
+    elsif Name_Len /= Width then
       Text_Line.Put (File, " ");
+      Name_Len := Name_Len + 1;
+    end if;
+    -- Complete up to Width
+    for I in Name_Len + 1 .. Width loop
+      Text_Line.Put (File, Dot & "");
     end loop;
-    Text_Line.Put_Line (File, " Statements" & " %Cmts" & "      Lines");
-    Put_Delimiter;
-  end Put_Header;
+    -- Gap Statmt Gap Cmts Gap Lines
+     Text_Line.Put_Line (File, Gap & Statmts & Gap & Cmts & Gap & Lines);
+  end Put_Line;
 
-  procedure Put_Vals (File : in out Text_Line.File_Type;
-                      Vals : Metrics) is
+  -- Put a metric
+  procedure Put_Line (Name   : in String;
+                      Dot    : in Character;
+                      Metric : in Metrics;
+                      Width  : in Positive) is
     Percent : Natural;
     Lines : Natural;
     use type My_Math.Real;
   begin
-    if Vals.Statements = 0 then
+    if Metric.Statements = 0 then
       Percent := 0;
       Lines := 0;
     else
-      Percent := Natural (My_Math.Round (My_Math.Real (Vals.Comments) * 100.0
-                                       / My_Math.Real (Vals.Statements)));
-      Lines := Vals.Lines;
+      Percent := Natural (My_Math.Round (
+            My_Math.Real (Metric.Comments) * 100.0
+          / My_Math.Real (Metric.Statements)));
+        Lines := Metric.Lines;
     end if;
-    Text_Line.Put_Line (File, Gap & Normal (Vals.Statements, Max_Dig)
-                            & Gap & Normal (Percent, 4)
-                            & Gap & Normal (Lines, Max_Dig));
-  end Put_Vals;
+    Put_Line (Name, Dot, Normal (Metric.Statements, Max_Dig),
+              Normal (Percent, 4), Normal (Lines, Max_Dig), Width);
+  end Put_Line;
+
+  procedure Put_Header (Width : in Positive := Default_Width) is
+  begin
+    Open_File;
+    Put_Line ("File", ' ', " Statemts", "%Cmt", "    Lines", Width);
+    Put_Delimiter (Width);
+  end Put_Header;
+
+   -- Put and reset the total so far
+  --  if Summary, then put the formated total (3 values)
+  --  else put the unformated total of statements so far
+  procedure Put_Total (Summary : in Boolean;
+                       Width   : in Positive := Default_Width) is
+
+    Total_Str : constant String
+                  := "TOTAL (statms, %cmt, lines)";
+    Short_Str : constant String := "TOTAL:";
+    Title : As.U.Asu_Us;
+
+  begin
+    Open_File;
+    -- Summary so far
+    if Summary then
+      -- Put formated output
+      Put_Delimiter (Width);
+      if Total_Str'Length <= Width then
+        Title.Set (Total_Str);
+      elsif Short_Str'Length <= Width then
+        Title.Set (Short_Str);
+      else
+        Title.Set_Null;
+      end if;
+      Put_Line (Title.Image, ' ', Total, Width);
+    else
+      -- Just put number of statements
+      Text_Line.Put (File, Normal(Total.Statements, Max_Dig));
+    end if;
+    Total := (others => <>);
+    Text_Line.Close (File);
+  end Put_Total;
 
   -- If File_Name is empty, put total so far and reset it
   procedure Statements_Of_File (
-             File_Name : String;
-             Java_Syntax : Boolean := False;
-             Summary : in Boolean := True) is
-
-    File_Name_Len : constant Natural := File_Name'Length;
+             File_Name   : in String;
+             Java_Syntax : in Boolean := False;
+             Summary     : in Boolean := True;
+             Width       : in Positive := Default_Width) is
     Current : Metrics;
     Ok : Boolean;
   begin
@@ -271,23 +334,10 @@ package body One_File_Statements is
     if Summary then
       -- Put formatted output
       Open_File;
-      Text_Line.Put (File, File_Name);
-      if File_Name_Len < Max_Tab then
-        Text_Line.Put (File, " ");
-        for I in File_Name_Len + 1 .. Max_Tab loop
-          Text_Line.Put (File, ".");
-        end loop;
-      elsif File_Name_Len > Max_Tab then
-        Text_Line.New_Line (File);
-        for I in Integer range 1 .. Max_Tab + 1 loop
-          Text_Line.Put (File, ".");
-        end loop;
-      end if;
-
       if Ok then
-        Put_Vals (File, Current);
+        Put_Line (File_Name, '.', Current, Width);
       else
-        Text_Line.Put_Line (File, Gap & "  SKIPPED");
+        Text_Line.Put_Line (File, File_Name & " SKIPPED");
       end if;
     end if;
 
@@ -296,38 +346,7 @@ package body One_File_Statements is
       Total.Comments := Total.Comments + Current.Comments;
       Total.Lines := Total.Lines + Current.Lines;
     end if;
-
   end Statements_Of_File;
-
-   -- Put and reset the total so far
-  --  if Summary, then put the formated total (3 values)
-  --  else put the unformated total of statements so far
-  procedure Put_Total (Summary : in Boolean) is
-
-  begin
-    Open_File;
-    -- Summary so far
-    if Summary then
-      -- Put formatted output
-      Put_Delimiter;
-
-      declare
-        Total_Str : constant String
-                  := "TOTAL (statements, % comments per statements, lines)";
-      begin
-        Text_Line.Put (File, Total_Str);
-        for I in Integer range Total_Str'Length .. Max_Tab loop
-          Text_Line.Put (File, " ");
-        end loop;
-      end;
-      Put_Vals (File, Total);
-    else
-      -- Just put number of statements
-      Text_Line.Put (File, Normal(Total.Statements, Max_Dig));
-    end if;
-    Total := (others => <>);
-    Text_Line.Close (File);
-  end Put_Total;
 
 end One_File_Statements;
 
