@@ -140,6 +140,7 @@ fi
 
 # All compressions
 if [ \( -z "$1" \) -o \( "$1" = "compress" \) ] ; then
+  echo "compression"
   # Azf on lzf, lz4 and snappy, and then lz4l
   for file in `ls *.ads *.adb lib/*` ; do
     echo -n "$file "
