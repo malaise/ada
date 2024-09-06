@@ -1,11 +1,11 @@
 Xml_Checker
 ===========
-Version: V27.0
+Version: V27.1
 
-'Parser version: V49.0 +
+'Parser version: V49.1 +
 Generator version: V19.3 +
 Dtd_checker version: V4.0 +
-Dtd_generator version: V4.0'
+Dtd_generator version: V4.1'
 
 Xml_checker is a XML parser that checks the syntax (versus DTD) and formats the
 output.
@@ -364,8 +364,8 @@ dtd_generator [ <options> ] [ { <xml_file> } ]
 
 The options tune the behavior as follows (a value of '0' disables the check):
 
-* Load_dtd: load the content of internal dtd (e.g. entities). The external
-dtd is always ignored.
+* Load_dtd: load the content of internal dtd (e.g. entities). Anyway, the
+external dtd is always ignored and the check versus dtd never performed.
 * Deviation: The maximum number of changes introduced by a new set of
 children, after which the precise sequence of children is replaced by a choice
 ('(Elt|Elt|Elt...)*').
@@ -379,6 +379,11 @@ for the lists of attribute values.
 If no file is provided then dtd_generator parses stdin. +
 It puts the generated DTD on stdout. +
 Dtd_generator exits with 0 if no error is detected and with 1 otherwise.
+
+NOTE: Dtd_Generator calls Xml_Parser in the following mode: Keep
+comments, remove cdata, expand general entities and use default attribute
+values, preserve separators, preserve text, do not check but load dtd, discard
+external dtd, discard namespace, tree mode.
 
 NOTE: Dtd_generator uses the xref:Tree[tree] mode of the XML parser, so it
 may not be usable with very big files.

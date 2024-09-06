@@ -5,7 +5,7 @@ with As.U.Utils, Argument, Argument_Parser, Xml_Parser.Generator,
      Trace.Loggers, Mixed_Str, Long_Longs, Normalization;
 procedure Xml_Checker is
   -- Current version
-  Version : constant String := "V27.0";
+  Version : constant String := "V27.1";
 
   procedure Ae_Re (E : in Ada.Exceptions.Exception_Id;
                    M : in String := "")
@@ -112,7 +112,7 @@ procedure Xml_Checker is
     10 => As.U.Tus ("update_mix"),
     11 => As.U.Tus ("no_check_dtd"),
     14 => As.U.Tus ("normalize"),
-    18 => As.U.Tus ("split"),
+    19 => As.U.Tus ("split"),
     others => As.U.Asu_Null);
 
   Helps : constant As.U.Utils.Asu_Array (Keys'Range) := (

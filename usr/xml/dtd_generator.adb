@@ -6,7 +6,7 @@ with Argument, Argument_Parser, Basic_Proc, As.U, Str_Util, Mixed_Str,
 procedure Dtd_Generator is
 
   -- Current version
-  Version : constant String := "V4.0";
+  Version : constant String := "V4.1";
 
   -- Algorithm criteria
 
@@ -682,9 +682,15 @@ begin
         & (if File_Name.Is_Null then "stdin"
            else "file " & File_Name.Image));
     begin
-      -- Allow comments  otherwise we detect wrongly Empty
-      Ctx.Parse (File_Name.Image, Parse_Ok, Comments => True,
-                 Check_Dtd => False, Load_Dtd => Load_Dtd,
+      -- Keep comments otherwise we identify wrongly Empty
+      -- Load internal DTD if requested
+      -- Discard external dtd, no check
+      Ctx.Parse (File_Name.Image,
+                 Parse_Ok,
+                 Comments => True,
+                 Normalize => False,
+                 Check_Dtd => False,
+                 Load_Dtd => Load_Dtd,
                  Dtd_File => Xml_Parser.No_File);
     exception
       when Xml_Parser.File_Error =>
