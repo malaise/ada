@@ -31,7 +31,8 @@ package Movements is
   procedure Move_To_Pull (Forward : in Boolean; Add : in Boolean);
 
   -- Refill the reserve stack with the (reverse) content of the pull stack
-  -- Allowed only twice per game
+  -- May be allowed only twice per game
+  Limit_Refill : Boolean := False;
   -- If forward is False then undo a refill
   -- If Add then push one movement from Pull to Reserve
   procedure Refill (Forward : in Boolean; Add : in Boolean);

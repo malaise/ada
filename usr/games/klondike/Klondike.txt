@@ -1,6 +1,6 @@
 Klondike
 ========
-V1.0
+V2.0
 
 Klondike is a famous solitaire card game.
 
@@ -49,7 +49,7 @@ one from the Reserve stack to the Pull stack. The card at the top of the Pull
 stack can be moved to a Play stack or a Done stack.
 
 When the Reserve stack is empty, it is filled back with the content of the Pull
-stack. This can be done only twice.
+stack.
 
 Menu
 ~~~~
@@ -118,8 +118,12 @@ The Dock stacks
 ~~~~~~~~~~~~~~~
 As long as there are cards (face down) in the Reserve stack, then a left click
 on the stack moves the top card, face up, to the Pull stack. When the
-Reserve stack is empty, then a left click on the stack moves all the reamining
+Reserve stack is empty, then a left click on the stack moves all the remaining
 cards of the pull stack again face down in the Reserve stack.
+
+By default, there is no limitation on the number of recycling operations (
+moving the Pull stack back as a Reserve). This operation can be limited to
+twice by providing the argument '"-lr"- in the command line.
 
 The top card of the Pull stack can be selected and moved in the Play or the
 Done area.

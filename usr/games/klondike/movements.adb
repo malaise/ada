@@ -5,7 +5,7 @@ package body Movements is
   -- Debug
   Logger : Trace.Loggers.Logger;
 
-  -- Max number of refill per game
+  -- Max number of refill per game (on option)
   Max_Refill : constant := 2;
   Nb_Refill : Natural;
 
@@ -398,14 +398,16 @@ package body Movements is
     Source, Target, Card : Cards.Card_Access;
     use type Cards.Card_Access;
   begin
-    -- Max refill
-    if Forward and then Nb_Refill = Max_Refill then
-       return;
-    end if;
-    if Forward then
-      Nb_Refill := Nb_Refill + 1;
-    else
-      Nb_Refill := Nb_Refill - 1;
+    -- Max refill, on otion
+    if Limit_Refill then
+      if Forward and then Nb_Refill = Max_Refill then
+         return;
+      end if;
+      if Forward then
+        Nb_Refill := Nb_Refill + 1;
+      else
+        Nb_Refill := Nb_Refill - 1;
+      end if;
     end if;
 
     if Forward then
