@@ -140,7 +140,7 @@ package body Movements is
   --------------
   -- Internal: Move one card
   procedure Move_One (Mov : Movement; Add : in Boolean; Wait : in Boolean) is
-    Curr, Prev, Stack : Cards.Card_Access;
+    Curr, Prev, Stack, Parent : Cards.Card_Access;
     Valid, Movable : Boolean;
     Nb_Children : Natural;
     use type Cards.Card_Access, Cards.Deck.Full_Suit_List;
@@ -148,6 +148,7 @@ package body Movements is
     -- Adjust the stack and top card of From
     Curr := Mov.Card;
     Prev := Mov.Card.Prev;
+    Parent := Mov.Card.Prev;
     Stack := Mov.From;
     if Stack.Nb_Children = 1 then
       -- The stack becomes empty
@@ -217,8 +218,9 @@ package body Movements is
     Stack.Prev := Curr;
     Stack.Nb_Children := Stack.Nb_Children + 1;
 
+    -- Last adjustments
     if Stack.Suit = Cards.Deck.Empty then
-      -- When undo from Done stack
+      -- Move to play or tmp stack, including undo from Done stack
       Curr.Movable := True;
       -- Increment the number of children of each ancestor of a play stack
       if Cards.Is_Play_Stack (Stack) then
@@ -228,8 +230,12 @@ package body Movements is
           Curr.Nb_Children := Curr.Nb_Children + 1;
         end loop;
       end if;
+      if Parent.Stack.Suit /= Cards.Deck.Empty then
+        -- If undo a move to Done stack, overwrite Movable of parent
+        Parent.Movable := Allow_From_Done;
+      end if;
     elsif not Allow_From_Done then
-      -- Done stack => Irreversible
+      -- Move to Done stack (direct or undo) => Irreversible
       Curr.Movable := False;
     end if;
 
