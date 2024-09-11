@@ -1,4 +1,4 @@
-with As.U, Afpx.Utils, Basic_Proc, Int_Img, Directory,
+with As.U, Afpx.Utils, Basic_Proc, Int_Img, Directory, Long_Longs,
      Dir_Mng, Sys_Calls, Argument, Argument_Parser, Socket, Environ, Command;
 with Utils.X, Git_If, Config, Bookmarks, History, Tree, Tags, Commit, Push_Pull,
      Confirm, Confirm_Diff_Dir, Error, Stash, Branch, Afpx_Xref, Reset, Aski,
@@ -124,6 +124,10 @@ procedure Agite is
       exit when not Moved;
     end loop;
     Files.Rewind;
+  exception
+    when Dir_Mng.Access_Error =>
+      -- We can go in dir but cannot read it
+      Files.Rewind (Check_Empty => False);
   end List_Files;
 
   -- Update list of files
@@ -343,6 +347,7 @@ procedure Agite is
     Str : constant String
         := Utils.Parse_Spaces (Afpx.Decode_Field (Dir_Field, 0, False));
     Target : As.U.Asu_Us;
+    use type Long_Longs.Llu_Natural;
   begin
     begin
       if New_Dir = "" then
@@ -406,6 +411,9 @@ procedure Agite is
     Afpx.Utils.Protect_Field (Afpx_Xref.Main.Tags, Root.Is_Null);
     Afpx.Utils.Protect_Field (Afpx_Xref.Main.Reset, Root.Is_Null);
     Afpx.Utils.Protect_Field (Afpx_Xref.Main.Stash, Root.Is_Null);
+    -- No revert if dir is empty
+    Afpx.Utils.Protect_Field (Afpx_Xref.Main.Revert,
+                              Afpx.Line_List.List_Length <= 2);
   end Change_Dir;
 
   -- Check validity of current directory
@@ -925,27 +933,35 @@ procedure Agite is
   --- Update the list status
   procedure List_Change (Unused_Action : in Afpx.List_Change_List;
                          Unused_Status : in Afpx.List_Status_Rec) is
-    -- The list cannot be empty
-    File : constant Git_If.File_Entry_Rec := Get_Current_File;
+    File : Git_If.File_Entry_Rec;
     Dummy_Target : As.U.Asu_Us;
     Kind : Character;
     Dotdot : Boolean;
     Untracked : Boolean;
   begin
-    -- Resolve Sym link kind
-    if File.Kind /= '@' then
-      Kind := File.Kind;
-    else
-      Link_Target (File.Name.Image, Dummy_Target, Kind);
-    end if;
+    begin
+      File := Get_Current_File;
+      -- Resolve Sym link kind
+      if File.Kind /= '@' then
+        Kind := File.Kind;
+      else
+        Link_Target (File.Name.Image, Dummy_Target, Kind);
+      end if;
+    exception
+      -- The list can be empty (dir accessible but unreadable)
+      -- Protect as if on ".."
+      when Afpx.Line_List_Mng.Empty_List =>
+        Kind := '/';
+        File.Name.Set ("..");
+    end;
     -- Edit is always possible on file
     Afpx.Utils.Protect_Field (Afpx_Xref.Main.Edit, Kind = '/');
     if Root.Is_Null then
-      -- No ther function if not in Git (already protected by Init)
+      -- No there if not in Git (already protected by Init)
       return;
     end if;
     -- No Diff, Hist, Add, Revert on ".." (already de-activated if not in Git)
-    Dotdot := File.Name.Image = ".." or else Root.Is_Null;
+    Dotdot := File.Name.Image = "..";
     -- No Diff, Hist, Tree on untracked file
     Untracked := File.S2 = '?';
     Afpx.Utils.Protect_Field (Afpx_Xref.Main.Diff, Dotdot or else Untracked);
