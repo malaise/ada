@@ -549,6 +549,7 @@ package Afpx is
   --               String_Too_Long (if an item in list is too long),
   --               Suspended (Afpx is currentlky suspended)
   --               In_Put_Then_Get (already in Put_Then_Get while calling Afpx)
+  --               Cb_Error a callback as raised an exception
   procedure Put_Then_Get (Get_Handle    : in out Get_Handle_Rec;
                           Result        : out Result_Rec;
                           Right_Select  : in Boolean := False;
@@ -577,7 +578,7 @@ package Afpx is
   -- On call
   No_Descriptor, Invalid_Field, Invalid_Square, Invalid_Row, Invalid_Col,
   String_Too_Long, Invalid_Color, List_In_Put, In_Put_Then_Get,
-  Suspended : exception;
+  Suspended, Cb_Error : exception;
 
 end Afpx;
 

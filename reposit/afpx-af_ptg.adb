@@ -173,6 +173,22 @@ package body Af_Ptg is
     return Last_Index (Str, True);
   end Last_Col;
 
+  -- Notify user of list change
+  procedure Notify_List_Change (List_Change_Cb : access
+        procedure (Action : in List_Change_List;
+                   Status : in List_Status_Rec);
+                                Action : in List_Change_List;
+                                Status : in List_Status_Rec) is
+  begin
+    if List_Change_Cb = null then
+      return;
+    end if;
+    List_Change_Cb (Action, Status);
+  exception
+    when others =>
+      raise Cb_Error;
+  end;
+
   -- Click is valid if Left or Right button press
   -- Wheele and Middle button press are handled internally here
   function Valid_Click (List_Present : Boolean;
@@ -244,8 +260,8 @@ package body Af_Ptg is
       Last_Position := Click_Pos;
       Last_Double := Mouse_Status.Double_Click;
     end if;
-    if Scroll and then List_Change_Cb /= null then
-      List_Change_Cb (Afpx.Scroll, Af_List.Get_Status);
+    if Scroll then
+      Notify_List_Change (List_Change_Cb, Afpx.Scroll, Af_List.Get_Status);
     end if;
     return Valid;
   end Valid_Click;
@@ -477,18 +493,16 @@ package body Af_Ptg is
           List_Status := Af_List.Get_Status;
           Last_Selected_Field := Lfn;
           Last_Selected_Id := List_Status.Ids_Selected(List_Left);
-          if List_Change_Cb /= null then
-            List_Change_Cb (Left_Selection, Af_List.Get_Status);
-          end if;
+          Notify_List_Change (List_Change_Cb,
+                              Left_Selection, Af_List.Get_Status);
         else
           -- Valid right click on selected: flip/flop => Unselect
           Af_List.Set_Selected (List_But, 0);
           Save_Pos;
           Af_List.Put (Click_Row_List, Normal, False);
           Restore_Pos;
-          if List_Change_Cb /= null then
-            List_Change_Cb (Right_Selection, Af_List.Get_Status);
-          end if;
+          Notify_List_Change (List_Change_Cb,
+                              Right_Selection, Af_List.Get_Status);
         end if;
       else
         -- Click on new row
@@ -552,12 +566,12 @@ package body Af_Ptg is
             Af_List.Put (Click_Row_List, Selected, False);
           end if;
           Af_List.Set_Current;
-          if Selection_Modified and then List_Change_Cb /= null then
-            if Click_But = Con_Io.Left then
-              List_Change_Cb (Left_Selection, Af_List.Get_Status);
-            else
-              List_Change_Cb (Right_Selection, Af_List.Get_Status);
-            end if;
+          if Selection_Modified then
+            Notify_List_Change (
+                List_Change_Cb,
+                (if Click_But = Con_Io.Left then Left_Selection
+                 else Right_Selection),
+                Af_List.Get_Status);
           end if;
         end if;
         if Click_But = Con_Io.Left then
@@ -762,6 +776,9 @@ package body Af_Ptg is
                                Offset,
                                Enter_Field_Cause,
                                Str);
+    exception
+      when others =>
+        raise Cb_Error;
     end;
     -- Check result vs width
     if Result >= Field.Width then
@@ -769,6 +786,8 @@ package body Af_Ptg is
     end if;
     return Result;
   exception
+    when Cb_Error =>
+      raise;
     when others =>
       return Field.Width - 1;
   end Get_Cursor_Col;
@@ -956,9 +975,8 @@ package body Af_Ptg is
       Init_List (List_Present);
 
       -- Call List_Scrolled_Cb only once, when called
-      if Af_Dscr.Has_List and then List_Change_Cb /= null
-      and then not List_Init then
-        List_Change_Cb (Init, Af_List.Get_Status);
+      if Af_Dscr.Has_List and then not List_Init then
+        Notify_List_Change (List_Change_Cb, Init, Af_List.Get_Status);
       end if;
       List_Init := True;
 
@@ -1409,8 +1427,8 @@ package body Af_Ptg is
       end if;
 
       -- Notify of change of list because of key
-      if List_Scrolled and then List_Change_Cb /= null then
-        List_Change_Cb (Scroll, Af_List.Get_Status);
+      if List_Scrolled then
+        Notify_List_Change (List_Change_Cb, Scroll, Af_List.Get_Status);
       end if;
 
       exit when Done;
