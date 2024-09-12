@@ -184,6 +184,9 @@ package Hashed_List is
 
   -- If internal inconsistency (on delete)
   Internal_Error : exception;
+
+  -- If Iteration raises an exception
+  Iteration_Error : exception;
 private
   -- The limited list of items
   package List_Mng is new Long_Long_Limited_List (Element_Type, Set);

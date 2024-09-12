@@ -138,6 +138,9 @@ package Event_Mng is
   -- When Delay_Spec of Wait has a clock (i.e. is not real time)
   Invalid_Delay : exception;
 
+  -- If a callback raises an exception
+  Cb_Error : exception;
+
 private
 
   -- For Handling child package

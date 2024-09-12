@@ -143,6 +143,7 @@ package Str_Util is
 
   -- Try to cut Str so that it best matches the requested line Length
   -- Looks for separator character
+  -- Exceptions raised by this callback are propagated
   type Separator_Access is access function (Char : Character) return Boolean;
   -- Default Separator function, True for Space and Latin.Ht.
   function Is_Separator (Char : Character) return Boolean;
@@ -201,6 +202,7 @@ package Str_Util is
 
   -- This function returns the value of a variable. It may raise exceptions
   --  (that will be propagated by Eval_Variables).
+  -- Exceptions raised by this callback are propagated
   type Resolv_Access is access function (Variable_Name : String) return String;
   -- Replace all variables by their values provided by the Resolv callback.
   -- A variable name is identified when it is within delimiters (strings).

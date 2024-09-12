@@ -37,6 +37,7 @@ package State_Machine is
   subtype Transition_Rec is State_Change_Rec (On_Event => True);
 
   -- Procedure to report a new state, on event or not
+  -- Exceptions raised by this callback are caught and ignored
   type State_Report_Access is
        access procedure (Id : in Machine_Id;
                          State_Change : in State_Change_Rec);
@@ -50,6 +51,7 @@ package State_Machine is
 
 
   -- Procedure to report a transition, always on event
+  -- Exceptions raised by this callback are caught and ignored
   type Transition_Report_Access is
        access procedure (Id : in Machine_Id;
                          Transition : in Transition_Rec);

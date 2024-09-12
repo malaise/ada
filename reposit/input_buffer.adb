@@ -55,7 +55,12 @@ package body Input_Buffer is
       Buf.Text.Delete (1, Ind);
       -- Finally notify (after the delete so that exception in Notifier
       --  don't lead to infinite loop if ignored by push/resume.)
-      Buf.Notif (Head.Image);
+      begin
+        Buf.Notif (Head.Image);
+      exception
+        when others =>
+          null;
+      end;
     end loop;
   end Flush;
 

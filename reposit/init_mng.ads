@@ -11,6 +11,7 @@ package Init_Mng is
   -- When being set, the handler is called with the bufferized events,
   --  then with any new event that was injected meanwhile,
   --  then this call returns
+  -- Exceptions raised by Handler are caught and ignored
   type Event_Handler is access procedure (Event : in Event_Type);
   procedure Set_Handler (Handler : Event_Handler);
 

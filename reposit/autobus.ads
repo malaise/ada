@@ -117,6 +117,7 @@ package Autobus is
   -- Address has the form "host_addr:port_num/mode"
   -- In Sup_Callback it is forbidden to initialise or reset a Bus or a
   --  Subscriber, this would raise the exception In_Callback
+  -- Exceptions raised by Sup_Callback are caught and hidden
   type Sup_Report is record
     Addr  : As.U.Asu_Us;
     State : Trilean.Trilean;

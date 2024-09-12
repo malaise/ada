@@ -3,6 +3,7 @@ with Many_Strings, Sys_Calls;
 package Proc_Family is
 
   -- Callback for death report
+  -- Exceptions raised by this callback are caught and ignored
   subtype Death_Cause_List is Sys_Calls.Death_Cause_List;
   type Death_Rec (Cause : Death_Cause_List := Sys_Calls.Exited) is record
     case Cause is

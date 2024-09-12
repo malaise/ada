@@ -30,6 +30,7 @@ package Queues.Timed is
 
   -- Remove expired items and read the first item pushed that matches
   --  criteria
+  -- Exceptions raised by Equal are propagated as Equal_Error
   procedure Read (Queue  : in out Timed_Type;
                   Crit   : in Item;
                   Equal  : not null access function (X, Criteria : Item)
@@ -60,6 +61,8 @@ package Queues.Timed is
   Timed_Full, Timed_Empty : exception;
   -- Exception raised when setting the clock on a non-empty stack
   Timed_Not_Empty : exception;
+  -- If Equal raises an exception
+  Equal_Error : exception;
 private
   -- Item and its expiration time
   type Timer_Access is access Chronos.Passive_Timers.Passive_Timer;

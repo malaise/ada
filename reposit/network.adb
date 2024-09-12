@@ -25,14 +25,18 @@ package body Network is
     Of_Node.Data := Data;
     -- Inform the node of node data change
     if Of_Node.Process_Node_Data_Change /= null then
-      Of_Node.Process_Node_Data_Change (Of_Node'Unchecked_Access);
+      begin
+        Of_Node.Process_Node_Data_Change (Of_Node'Unchecked_Access);
+      exception
+        when others =>
+          null;
+      end;
     end if;
   end Set_Data;
 
   -- Returns the data of a node
   function Get_Data (Of_Node : Node_Type) return Node_Data_Type is
     (Of_Node.Data);
-
 
   ----------------
   -- Connection --
@@ -72,12 +76,22 @@ package body Network is
           To_Node.Connections.Access_Current;
     -- Inform both nodes of connection data change
     if Of_Node.Process_Connection_Data_Change /= null then
-      Of_Node.Process_Connection_Data_Change (Of_Node'Unchecked_Access,
+      begin
+        Of_Node.Process_Connection_Data_Change (Of_Node'Unchecked_Access,
                                               Of_Node.Connections.List_Length);
+      exception
+        when others =>
+          null;
+      end;
     end if;
     if To_Node.Process_Connection_Data_Change /= null then
-      To_Node.Process_Connection_Data_Change (To_Node'Unchecked_Access,
+      begin
+        To_Node.Process_Connection_Data_Change (To_Node'Unchecked_Access,
                                               To_Node.Connections.List_Length);
+      exception
+        when others =>
+          null;
+      end;
     end if;
   end Connect_To;
 
@@ -161,7 +175,13 @@ package body Network is
     Of_Node.Connections.Access_Current.Data := Of_Conn_Data;
     -- Inform the node of connection data change
     if Of_Node.Process_Connection_Data_Change /= null then
-      Of_Node.Process_Connection_Data_Change (Of_Node'Unchecked_Access, Index);
+      begin
+        Of_Node.Process_Connection_Data_Change (Of_Node'Unchecked_Access,
+                                                Index);
+      exception
+        when others =>
+          null;
+      end;
     end if;
   end Set_Data;
 
@@ -180,7 +200,13 @@ package body Network is
     -- Inform the node of connection data change
     if Of_Node.Process_Connection_Data_Change /= null then
       Index := Of_Node.Connections.Get_Position;
-      Of_Node.Process_Connection_Data_Change (Of_Node'Unchecked_Access, Index);
+      begin
+        Of_Node.Process_Connection_Data_Change (Of_Node'Unchecked_Access,
+                                                Index);
+      exception
+        when others =>
+          null;
+      end;
     end if;
   end Set_Data;
 
@@ -355,7 +381,13 @@ package body Network is
     if To_Node.Process_Message = null then
       return;
     end if;
-    To_Node.Process_Message (From_Node'Unchecked_Access, Message);
+    begin
+      To_Node.Process_Message (From_Node'Unchecked_Access, Message);
+    exception
+      when others =>
+        null;
+    end;
+
   end Send_Message;
 
   -- Set processing of change of node data
@@ -393,5 +425,4 @@ package body Network is
   end Finalize;
 
 end Network;
-
 

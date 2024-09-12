@@ -321,7 +321,12 @@ package body Ada_Parser is
       Parse_Next (Context, File, Text, Lexic, False, Version);
       exit when Text.Is_Null;
       -- Call callback
-      Cb (Text.Image, Lexic);
+      begin
+        Cb (Text.Image, Lexic);
+      exception
+        when others =>
+          raise Cb_Error;
+      end;
     end loop;
   end Parse;
 

@@ -126,6 +126,9 @@ package body Queues.Timed is
       Found := True;
     end if;
     Queue.List.Rewind (Check_Empty => False);
+  exception
+    when Item_List_Mng.Match_Error =>
+      raise Equal_Error;
   end Read;
 
   -- Remove all items

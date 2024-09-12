@@ -226,7 +226,7 @@ package body Computer is
         return Memory.External_Resolver.all (Name);
       exception
         when others =>
-          Log ("Resolv raises Unknown_Variable on " & Name);
+          Log ("Resolv catches resolver exception on " & Name);
           raise Unknown_Variable;
       end;
     end Ext_Get;

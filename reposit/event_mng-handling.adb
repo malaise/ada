@@ -22,9 +22,14 @@ package body Event_Mng.Handling is
                    & Event.Fd'Img & " " & Event.Read'Img);
           -- Call it and propagate event if callback returns true
           if Cb_Searched.Cb /= null then
-            if Cb_Searched.Cb (Cb_Searched.Fd, Cb_Searched.Read) then
-              return Fd_Event;
-            end if;
+            begin
+              if Cb_Searched.Cb (Cb_Searched.Fd, Cb_Searched.Read) then
+                return Fd_Event;
+              end if;
+            exception
+              when others =>
+                raise Cb_Error;
+            end;
           end if;
         end if;
       when Signal_Event =>
@@ -47,22 +52,42 @@ package body Event_Mng.Handling is
             return Signal_Event;
           when Terminate_Sig =>
             if Cb_Term_Sig /= null then
-              Cb_Term_Sig.all;
+              begin
+                Cb_Term_Sig.all;
+              exception
+                when others =>
+                  raise Cb_Error;
+              end;
               return Signal_Event;
             end if;
           when Child_Sig =>
             if Cb_Child_Sig /= null then
-              Cb_Child_Sig.all;
+              begin
+                Cb_Child_Sig.all;
+              exception
+                when others =>
+                  raise Cb_Error;
+              end;
               return Signal_Event;
             end if;
           when Usr1_Sig =>
             if Cb_Usr1_Sig /= null then
-              Cb_Usr1_Sig.all;
+              begin
+                Cb_Usr1_Sig.all;
+              exception
+                when others =>
+                  raise Cb_Error;
+              end;
               return Signal_Event;
             end if;
           when Usr2_Sig =>
             if Cb_Usr2_Sig /= null then
-              Cb_Usr2_Sig.all;
+              begin
+                Cb_Usr2_Sig.all;
+              exception
+                when others =>
+                  raise Cb_Error;
+              end;
               return Signal_Event;
             end if;
             -- else No_Event

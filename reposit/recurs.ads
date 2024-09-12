@@ -8,6 +8,7 @@
 --  Go_On:
 --    True: Go on recusive
 --    False: Skip sub-directories of current
+-- Exceptions that it would raise would be propagated
 
 
 -- Display "==> complete_path <==" when entering each dir, or not

@@ -395,6 +395,12 @@ package Long_Long_Limited_List is
   -- When sorting, most often because Less_Than is not strict
   Sort_Error : exception;
 
+  -- If Match raises an exception
+  Match_Error : exception;
+
+  -- If Iteration raises an exception
+  Iteration_Error : exception;
+
 private
   type Link is access all Cell;
   type Cell is record

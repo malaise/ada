@@ -260,13 +260,21 @@ package body Hashed_List is
           Moved => Moved);
       if Iteration /= null then
         List.In_Cb := True;
-        Iteration (Item, Go_On);
+        begin
+          Iteration (Item, Go_On);
+        exception
+          when others =>
+            List.In_Cb := False;
+            raise Iteration_Error;
+        end;
         List.In_Cb := False;
       end if;
       -- Callback requests to stop or end of list
       exit when not Go_On or else not Moved;
     end loop;
   exception
+    when Iteration_Error =>
+      raise;
     when others =>
       List.In_Cb := False;
       raise;

@@ -863,11 +863,16 @@ package body Long_Long_Limited_List is
       if Occurence /= 1 then
         raise Constraint_Error;
       end if;
-      if Match (List.Current.Value, Criteria) then
-        -- Optim worked, done
-        List.In_Cb := False;
-        return True;
-      end if;
+      begin
+        if Match (List.Current.Value, Criteria) then
+          -- Optim worked, done
+          List.In_Cb := False;
+          return True;
+        end if;
+      exception
+        when others =>
+          raise Match_Error;
+      end;
     end if;
 
     -- Start from
@@ -965,7 +970,13 @@ package body Long_Long_Limited_List is
                           Occurence : in Ll_Positive := 1;
                           From      : in Search_Kind_List) is
     function Loc_Match (Current, Criteria : Element_Type) return Boolean is
-      (Match (Current, Criteria));
+    begin
+      return Match (Current, Criteria);
+    exception
+      when others =>
+        raise Match_Error;
+    end;
+
   begin
     if not Search_Match (List, Loc_Match'Unrestricted_Access,
                          Criteria, Where, Occurence, From) then
@@ -1004,7 +1015,12 @@ package body Long_Long_Limited_List is
         -- Forbid calls from application
         List.In_Cb := True;
         -- Call cb
-        Iteration (List.Current.Value, Go_On);
+        begin
+          Iteration (List.Current.Value, Go_On);
+        exception
+          when others =>
+            raise Iteration_Error;
+        end;
         List.In_Cb := False;
         List.Modified := True;
         -- Cb wants to stop processing now

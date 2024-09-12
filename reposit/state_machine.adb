@@ -31,28 +31,43 @@ package body State_Machine is
     -- Call user report callbacks
     if Report then
       if Machine.Event_Cbs(Transition.Event) /= null then
-        Machine.Event_Cbs (Transition.Event) (
-            Machine.Id,
-            (True,
-             From_State,
-             Transition.New_State,
-             Transition.Event) );
+        begin
+          Machine.Event_Cbs (Transition.Event) (
+              Machine.Id,
+              (True,
+               From_State,
+               Transition.New_State,
+               Transition.Event) );
+        exception
+          when others =>
+            null;
+        end;
       end if;
       if Transition.Report /= null then
-        Transition.Report (
-            Machine.Id,
-            (True,
-             From_State,
-             Transition.New_State,
-             Transition.Event) );
+        begin
+          Transition.Report (
+              Machine.Id,
+              (True,
+               From_State,
+               Transition.New_State,
+               Transition.Event) );
+        exception
+          when others =>
+            null;
+        end;
       end if;
       if Machine.State_Cbs(Transition.New_State) /= null then
-        Machine.State_Cbs(Transition.New_State) (
-            Machine.Id,
-            (True,
-             From_State,
-             Transition.New_State,
-             Transition.Event) );
+        begin
+          Machine.State_Cbs(Transition.New_State) (
+              Machine.Id,
+              (True,
+               From_State,
+               Transition.New_State,
+               Transition.Event) );
+        exception
+          when others =>
+            null;
+        end;
       end if;
     end if;
     Machine.Curr_State := Transition.New_State;

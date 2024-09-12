@@ -21,6 +21,7 @@ package Input_Buffer is
 
   -- Callback invoqued when a sentence has been identified in input flow
   --  (text ending by delimiter) or when the buffer is full
+  -- Exceptions raised by the Notifier are caught and ignored
   type Sentence_Notifier is access procedure (Sentence : in String);
 
   -- A buffer

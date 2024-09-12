@@ -117,7 +117,12 @@ package body Proc_Family is
                    Death_Dscr.Signaled_Pid,
                    Death_Dscr.Signal);
       end if;
-      Child.Child_Cb (Report);
+      begin
+        Child.Child_Cb (Report);
+      exception
+        when others =>
+          null;
+      end;
     end if;
 
     -- Done

@@ -731,7 +731,12 @@ package body Async_Stdin is
         Console.Set_Col (1);
       end if;
       Insert_Mode := True;
-      Result := Cb (Language.Unicode_To_String (Seq));
+      begin
+        Result := Cb (Language.Unicode_To_String (Seq));
+      exception
+        when others =>
+          raise Cb_Error;
+      end;
     end;
     return Result;
 

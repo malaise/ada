@@ -55,6 +55,9 @@ package Ada_Parser is
   -- Raise_End set and end of file reached
   End_Error : exception;
 
+  -- Parse Callback raised an exception
+  Cb_Error : exception;
+
 private
   type Parsing_Context is tagged record
     -- Previous significant lexical element (not comment nor separator)

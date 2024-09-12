@@ -83,5 +83,8 @@ package Async_Stdin is
   -- Error when putting or getting
   Io_Error : exception renames Basic_Proc.Io_Error;
 
+  -- User callback has raised an exception
+  Cb_Error : exception;
+
 end Async_Stdin;
 

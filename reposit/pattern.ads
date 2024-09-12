@@ -92,6 +92,9 @@ package Pattern is
   -- On any other call Rule has not been got.
   No_Rule : exception;
 
+  -- If Match_Cb raises an exception
+  Cb_Error : exception;
+
   -- Example:
   -- Set (R, 10, "get alias", Cb);
   -- Set (R, 20, "get", Cb);

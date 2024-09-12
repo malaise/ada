@@ -381,7 +381,12 @@ package body Pattern is
       if Ok and then Term.Cb /= null then
         Put_Debug ("Check", "Calling Cb (Id=" & Term.Id4Cb'Img
                           & ", Nb_Match=" & Nb_Match'Img & ")");
-        Res := Term.Cb (Rule, Term.Id4Cb, Nb_Match, Iter);
+        begin
+          Res := Term.Cb (Rule, Term.Id4Cb, Nb_Match, Iter);
+        exception
+          when others =>
+            raise Cb_Error;
+        end;
       end if;
       Parser.Del (Iter);
       Put_Debug ("Check", "Done");

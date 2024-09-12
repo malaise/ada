@@ -3,6 +3,7 @@ private with As.U;
 package Parser is
 
   -- The function to define separating characters
+  -- Exceptions raised by this function are propagated
   type Separing_Function is
        access function (C : Character) return Boolean;
 
