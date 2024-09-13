@@ -199,9 +199,9 @@ package Git_If is
                     Set_Upstream : Boolean;
                     Force : Boolean) return String;
 
-  -- Launch a fetch (or pull) synchronous, "" if OK, else the error
-  function Do_Fetch (Remote : String; Branch : String; Pull : Boolean)
-                    return String;
+  -- Launch a fetch (or pull) synchronous, Output flow if Ok, else Error flow
+  procedure Do_Fetch (Remote : in String; Branch : in String; Pull : in Boolean;
+                      Ok : out Boolean; Flow : out As.U.Asu_Us);
 
   -- Prune useless tracked branches on Remote
   procedure Do_Prune (Remote : String);

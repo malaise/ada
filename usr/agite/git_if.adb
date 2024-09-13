@@ -1245,9 +1245,10 @@ package body Git_If is
   end Do_Push;
 
   -- Launch a pull synchronous
-  function Do_Fetch (Remote : String; Branch : String; Pull : Boolean)
-           return String is
+  procedure Do_Fetch (Remote : in String; Branch : in String; Pull : in Boolean;
+                      Ok : out Boolean; Flow : out As.U.Asu_Us) is
     Cmd : Many_Strings.Many_String;
+    use type As.U.Asu_Us;
   begin
     Cmd.Set ("git");
     if Pull then
@@ -1264,13 +1265,15 @@ package body Git_If is
     if Exit_Code /= 0 then
       if not Err_Flow_1.Str.Is_Null then
         -- Something in Err flow
-        return Err_Flow_1.Str.Image;
+        Flow := Err_Flow_1.Str;
       else
         -- Output flow
-        return Out_Flow_3.Str.Image;
+        Flow := Out_Flow_3.Str;
       end if;
+      Ok := False;
     else
-      return "";
+      Flow := Err_Flow_1.Str & Out_Flow_3.Str;
+      Ok := True;
     end if;
   end Do_Fetch;
 

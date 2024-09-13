@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V42.11
+V42.12
 
 General purpose
 ---------------
@@ -1986,8 +1986,8 @@ current branch) or 'Checkout' (the selected remote branch does not exist
 locally), then this button is active and allows only fetching the remote
 branch into the local tracking branch, for a later manual merge.
 
-If there is no error then Agite returns back to the xref:XDir[directory] menu,
-otherwise the error is reported through a specific screen.
+Then Agite show the output or error message of the command in a specific
+screen.
 
 .Back
 

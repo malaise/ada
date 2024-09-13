@@ -88,16 +88,13 @@ package body Push_Pull is
   function Do_Get (Force_Fetch : in Boolean) return Boolean is
     Branch, Log : As.U.Asu_Us;
     Action : Action_List;
-    function Check (Msg : in String) return Boolean is
+    Ok : Boolean;
+
+    procedure Check (Msg : in String) is
     begin
-      if Log.Is_Null then
-        return True;
-      else
-        Error (Msg & " branch " & Branch.Image,
-               "from remote " & Remote.Image,
-               Log.Image);
-        return False;
-      end if;
+      Error (Msg & " branch " & Branch.Image,
+             "from remote " & Remote.Image,
+             Log.Image, Ok);
     end Check;
 
   begin
@@ -109,30 +106,35 @@ package body Push_Pull is
     case Action is
       when Pull =>
         -- Pull or force Fetch
-        Log := As.U.Tus (Git_If.Do_Fetch (Remote.Image, Branch.Image,
-                                          Pull => not Force_Fetch));
-        return Check (if Force_Fetch then "Fetching" else "Pulling");
+        Git_If.Do_Fetch (Remote.Image, Branch.Image, not Force_Fetch, Ok, Log);
+        Check (if Force_Fetch then "Fetching" else "Pulling");
       when Fetch =>
         -- Fetch
-        Log := As.U.Tus (Git_If.Do_Fetch (Remote.Image, Branch.Image, False));
-        return Check ("Fetching");
+        Git_If.Do_Fetch (Remote.Image, Branch.Image, False, Ok, Log);
+        Check ("Fetching");
       when Checkout =>
         -- Fetch
-        Log := As.U.Tus (Git_If.Do_Fetch (Remote.Image, Branch.Image, False));
-        if not Check ("Fetching") then
+        Git_If.Do_Fetch (Remote.Image, Branch.Image, False, Ok, Log);
+        Check ("Fetching");
+        if not Ok then
           return False;
         end if;
         -- Checkout remote tracking into local
         Log := As.U.Tus (Git_If.Do_Checkout (
             Remote.Image & Git_If.Separator & Branch.Image,
             Branch.Image));
-        return Check ("Checking out");
+        Ok := Log.Is_Null;
+        if not Ok then
+          Check ("Checking out");
+        end if;
     end case;
+    return Ok;
   end Do_Get;
 
   function Fetch_All return Boolean is
     Ref : As.U.Asu_Us;
     Res : As.U.Asu_Us;
+    Ok : Boolean;
   begin
     List.Move_At (Afpx.Line_List.Get_Position);
     Ref := List.Access_Current.all;
@@ -140,13 +142,9 @@ package body Push_Pull is
                     "This may take some time and create many branches") then
        return False;
     end if;
-    Res := As.U.Tus (Git_If.Do_Fetch (Ref.Image, "", False));
-    if Res.Is_Null then
-      return True;
-    else
-      Error ("Fetching all branches", "from remote " & Ref.Image, Res.Image);
-      return False;
-    end if;
+    Git_If.Do_Fetch (Ref.Image, "", False, Ok, Res);
+    Error ("Fetching all branches", "from remote " & Ref.Image, Res.Image, Ok);
+    return Ok;
   end Fetch_All;
 
   --- Update the list status

@@ -26,7 +26,7 @@ begin
   Afpx.Set_Field_Protection (Afpx.List_Field_No, True);
   if Info then
     Afpx.Set_Field_Colors (Afpx_Xref.Error.Title,
-        Foreground => Con_Io.Color_Of ("Black"));
+        Foreground => Con_Io.Color_Of ("Dark_Green"));
     Utils.X.Center_Field ("Info", Afpx_Xref.Error.Title);
   end if;
   Utils.X.Center_Field (Action, Afpx_Xref.Error.Action, Offset => Offset);
