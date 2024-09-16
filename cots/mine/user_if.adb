@@ -528,15 +528,15 @@ package body User_If is
     Show (Level);
     Pack_Start (Right_Side, Level, False);
 
-    Gtk_New (Mark_Check, "Auto Mark");
-    Set_Active (Mark_Check, Auto_Marking_Desired);
-    Check_Cb.Connect (Mark_Check, "toggled", Mark_Toggle'Access);
-    Pack_Start (Right_Side, Mark_Check, False);
-
     Gtk_New (Step_Check, "Auto Step" & Latin_1.Lf & "after Mark");
     Set_Active (Step_Check, Extended_Stepping_Desired);
     Check_Cb.Connect (Step_Check, "toggled", Step_Toggle'Access);
     Pack_Start (Right_Side, Step_Check, False);
+
+    Gtk_New (Mark_Check, "Auto Mark");
+    Set_Active (Mark_Check, Auto_Marking_Desired);
+    Check_Cb.Connect (Mark_Check, "toggled", Mark_Toggle'Access);
+    Pack_Start (Right_Side, Mark_Check, False);
 
     Gtk_New (Rules, "Rules");
     Button_Cb.Connect (Rules, "clicked", Rules_Pressed'Access);
