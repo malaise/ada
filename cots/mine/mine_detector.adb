@@ -5,12 +5,11 @@
 -- V1.0/GTK3 2016 Feb 15
 --
 with Gtk.Main;
-with User_IF;
+with User_If;
 procedure Mine_Detector is
-   -- null;
-begin -- Mine_Detector
-   User_If.Init;
-   Gtk.Main.Main;
+begin
+  User_If.Init;
+  Gtk.Main.Main;
 end Mine_Detector;
 --
 -- This is free software; you can redistribute it and/or modify it under
@@ -21,3 +20,4 @@ end Mine_Detector;
 -- or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
 -- for more details. Free Software Foundation, 59 Temple Place - Suite
 -- 330, Boston, MA 02111-1307, USA.
+

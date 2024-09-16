@@ -7,15 +7,17 @@
 -- V1.0/GTK3 2016 Feb 15
 --
 package Field is
-   subtype Valid_Row    is Positive range 1 .. 16; -- Size of the mine field
-   subtype Valid_Column is Positive range 1 .. 30;
+  -- Size of the mine field
+  subtype Valid_Row    is Positive range 1 .. 16;
+  subtype Valid_Column is Positive range 1 .. 30;
 
-   type Cell_Location is record
-      Row    : Valid_Row    := 1;
-      Column : Valid_Column := 1;
-   end record;
+  type Cell_Location is record
+    Row    : Valid_Row    := 1;
+    Column : Valid_Column := 1;
+  end record;
 
-   subtype Valid_Count is Natural range 0 .. 9; -- Count of # of mines in a cell & its neighbors
+  -- Count of # of mines in a cell & its neighbors
+  subtype Valid_Count is Natural range 0 .. 9;
 end Field;
 --
 -- This is free software; you can redistribute it and/or modify it under
@@ -26,3 +28,4 @@ end Field;
 -- or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
 -- for more details. Free Software Foundation, 59 Temple Place - Suite
 -- 330, Boston, MA 02111-1307, USA.
+

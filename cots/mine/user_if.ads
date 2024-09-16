@@ -7,27 +7,34 @@
 -- V1.0/GTK3 2016 Feb 15
 --
 with Field;
-package User_IF is
-   procedure Init;
+package User_If is
+  procedure Init;
 
-   procedure Display_Count (Count    : in Field.Valid_Count;
-                            Stepped  : in Boolean;
-                            Cell     : in Field.Cell_Location);
+  procedure Display_Count (Count    : in Field.Valid_Count;
+                           Stepped  : in Boolean;
+                           Cell     : in Field.Cell_Location);
 
-   procedure Display_Mark (Cell : in Field.Cell_Location); -- Display a marked cell
+  -- Display a marked cell
+  procedure Display_Mark (Cell : in Field.Cell_Location);
 
-   procedure Display_Mine (Cell : in Field.Cell_Location); -- Display a mine.
+  -- Display a mine
+  procedure Display_Mine (Cell : in Field.Cell_Location);
 
-   procedure Display_Blank (Cell : in Field.Cell_Location); -- Display a blank cell
+  -- Display a blank cell
+  procedure Display_Blank (Cell : in Field.Cell_Location);
 
-   procedure Display_To_Go (To_Go : in Integer); -- Display # of mines still to mark
+  -- Display # of mines still to mark
+  procedure Display_To_Go (To_Go : in Integer);
 
-   procedure Reset_Screen; -- Return to start of game condition
+  -- Return to start of game condition
+  procedure Reset_Screen;
 
-   function Auto_Marking return Boolean; -- Get auto-marking state
+  -- Get auto-marking state
+  function Auto_Marking return Boolean;
 
-   function Extended_Stepping return Boolean; -- Get extended-stepping (after mark) state
-end User_IF;
+  -- Get extended-stepping (after mark) state
+  function Extended_Stepping return Boolean;
+end User_If;
 --
 -- This is free software; you can redistribute it and/or modify it under
 -- terms of the GNU General Public License as published by the Free Software
@@ -37,3 +44,4 @@ end User_IF;
 -- or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
 -- for more details. Free Software Foundation, 59 Temple Place - Suite
 -- 330, Boston, MA 02111-1307, USA.
+

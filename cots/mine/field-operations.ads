@@ -7,20 +7,24 @@
 -- V6.0 2009 Aug 01
 --
 package Field.Operations is
-   procedure Reset; -- Reset the mine field to its initial condition
+  -- Reset the mine field to its initial condition
+  procedure Reset;
 
-   procedure Mark (Cell : in Cell_Location); -- Mark a cell as having a mine, or unmark a marked cell
+  -- Mark a cell as having a mine, or unmark a marked cell
+  procedure Mark (Cell : in Cell_Location);
 
-   procedure Step (Cell : in Cell_Location); -- Step on a cell
+  -- Step on a cell
+  procedure Step (Cell : in Cell_Location);
 
-   procedure Restore (Cell : in Cell_Location); -- Restore a cell status
+  -- Restore a cell status
+  procedure Restore (Cell : in Cell_Location);
 
-   type Game_State_ID is (In_Progress, Won, Lost);
+  type Game_State_Id is (In_Progress, Won, Lost);
 
-   function Game_State return Game_State_ID;
+  function Game_State return Game_State_Id;
 
-   procedure Set_Mine_Count (New_Mine_Count : in Natural);
-   -- Takes effect the next time a game is created.
+  -- Takes effect the next time a game is created.
+  procedure Set_Mine_Count (New_Mine_Count : in Natural);
 end Field.Operations;
 --
 -- This is free software; you can redistribute it and/or modify it under
@@ -31,3 +35,4 @@ end Field.Operations;
 -- or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
 -- for more details. Free Software Foundation, 59 Temple Place - Suite
 -- 330, Boston, MA 02111-1307, USA.
+
