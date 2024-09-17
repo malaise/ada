@@ -29,11 +29,9 @@ procedure Klondike is
 
   -- Save selection, purge and restore selection
   procedure Purge is
-    Tmp_Status : Status_List;
   begin
     -- Save selection
     Tmp_Card := Selected_Source;
-    Tmp_Status := Status;
     Reset;
     Movements.Purge;
     -- Restore selection if it has not been purged in Done stack
