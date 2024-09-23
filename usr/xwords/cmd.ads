@@ -1,17 +1,27 @@
-with Trace.Loggers, Command;
+with As.U.Utils;
 package Cmd is
-  -- A common logger
-  Logger : Trace.Loggers.Logger;
 
-  package Res_Mng renames Command.Res_Mng;
-  subtype Res_List is Res_Mng.Dyn_List.List_Type;
+  -- Init links to files (for Add/Del), regexps...
+  Init_Error : exception;
+  procedure Init (Words_File, Nouns_File : in String);
+
+  -- Search result or error
+  package Res_Mng renames As.U.Utils.Asu_Dyn_List_Mng;
+  subtype Res_List is Res_Mng.List_Type;
 
   -- Execute command
-  -- Set result and its output/error data
+  -- Noun is not significant for Search, which looks in both lists
+  -- Regex is not significant for Add and Del
+  -- If search OK then append result to Res
+  -- If error then Set result to output/error data
+  type Cmd_List is (Search, Add, Del);
   Terminate_Request : exception;
-  procedure Exec (Com : in String;
-                  Arg : in String;
-                  Ok : out Boolean;
-                  Res : in out Res_List);
+  procedure Exec (Comd  : in Cmd_List;
+                  Regex : in Boolean;
+                  Noun  : in Boolean;
+                  Arg   : in String;
+                  Ok    : out Boolean;
+                  Res   : in out Res_List);
+
 end Cmd;
 

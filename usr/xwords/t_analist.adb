@@ -1,5 +1,5 @@
 with As.U.Utils, Basic_Proc, Argument;
-with Analist;
+with Database, Analist;
 procedure T_Analist is
 
   Anagrams : As.U.Utils.Asu_Ua.Unb_Array;
@@ -13,7 +13,7 @@ begin
     return;
   end if;
   Basic_Proc.Put_Line_Output ("Loading...");
-  Analist.Init (Argument.Get_Parameter (1), Argument.Get_Parameter (2));
+  Database.Init (Argument.Get_Parameter (1), Argument.Get_Parameter (2));
   if Argument.Is_Set (3) and then Argument.Get_Parameter (3) = "-n" then
     Nouns := True;
     Start := 4;

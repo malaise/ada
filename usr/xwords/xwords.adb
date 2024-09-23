@@ -1,12 +1,12 @@
 -- Search for words matching criteria (au:o.obile) or regexp (au.*bile)
 -- Or search anagrams
 with As.U.Utils, Argument, Con_Io, Afpx.Utils, Basic_Proc, Language,
-     Many_Strings, Str_Util, Lower_Str, Environ, Images, Event_Mng, Afpx_Xref,
+     Str_Util, Lower_Str, Mixed_Str, Environ, Images, Event_Mng, Afpx_Xref,
      Mutexes, Protected_Var, Trilean, Rounds, Normal, Reg_Exp, Long_Longs;
-with Cmd, Analist, Icon;
+with Database, Cmd, Analist, Icon;
 procedure Xwords is
 
-  -- Name of ENV variable for anagrams dictionary
+  -- Name of ENV variable for database
   Words_Env_Name : constant String := "DICTIO_WORDS_FILE";
   Nouns_Env_Name : constant String := "DICTIO_NOUNS_FILE";
 
@@ -28,6 +28,7 @@ procedure Xwords is
   Status     : Status_List;
 
   -- Fields
+  List_Fld : constant Afpx.Absolute_Field_Range := Afpx.List_Field_No;
   Clear_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Clear;
   Recall_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Recall;
   Nouns_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Nouns;
@@ -60,9 +61,9 @@ procedure Xwords is
   -- A line of text
   Line : As.U.Asu_Us;
 
-  -- Dictio init status
+  -- Database init status
   Words_File_Name, Nouns_File_Name : As.U.Asu_Us;
-  Loading_Anagrams : Boolean;
+  Loading_Database : Boolean;
 
   -- List is words or history or anagrams
   type List_Content_List is (Words, Anagrams, History, Error, Empty);
@@ -319,42 +320,47 @@ procedure Xwords is
   -- Build and launch a Words command
   procedure Do_Command (Num : Afpx.Field_Range) is
     Result : Cmd.Res_List;
-    Com, Arg : Many_Strings.Many_String;
+    Command : Cmd.Cmd_List;
+    Regex, Noun : Boolean;
     Word : As.U.Asu_Us;
     Command_Ok : Boolean;
-    use type As.U.Asu_Us, Afpx.Field_Range, Afpx.Line_List_Mng.Ll_Natural;
+    use type As.U.Asu_Us, Afpx.Field_Range, Afpx.Line_List_Mng.Ll_Natural,
+             Cmd.Cmd_List;
   begin
+    -- This can take some time
+    Afpx.Set_Field_Colors (Get_Fld,
+        Background => Con_Io.Color_Of ("Cyan"));
     -- Clear result
     Afpx.Line_List.Delete_List (Deallocate => False);
+    Afpx.Set_Field_Activation (List_Fld, False);
+    Afpx.Put;
+    Afpx.Set_Field_Activation (List_Fld, True);
 
     -- Build command
     Word := As.U.Tus (Lower_Str (Strip (
               Afpx.Decode_Field (Get_Fld, 0, False))));
-    Com.Set ("words");
     case Num is
       when Search_Fld | Research_Fld =>
-        Arg.Set ("search");
+        Command := Cmd.Search;
       when Add_Word_Fld | Add_Noun_Fld =>
-        Arg.Set ("add");
+        Command := Cmd.Add;
       when Del_Word_Fld | Del_Noun_Fld =>
-        Arg.Set ("delete");
+        Command := Cmd.Del;
       when others =>
         List_Content := Error;
         Status := Error;
         return;
     end case;
-    if Num = Research_Fld then
-      Arg.Cat ("-re");
-    elsif Num = Add_Noun_Fld or else Num = Del_Noun_Fld then
-      Arg.Cat ("-noun");
-    end if;
-    Arg.Cat ('"' & Word & '"');
+    Regex := Num = Research_Fld;
+    Noun := Num = Add_Noun_Fld or else Num = Del_Noun_Fld;
 
     -- Prevent X events to interfere with the Command internal loop
     --  and execute command
-    Afpx.Suspend;
-    Cmd.Exec (Com.Image, Arg.Image, Command_Ok, Result);
-    Afpx.Resume;
+    Cmd.Exec (Command, Regex, Noun, Word.Image, Command_Ok, Result);
+    if Command = Cmd.Search and then Command_Ok then
+      -- Append result of search noun
+      Cmd.Exec (Command, Regex, True, Word.Image, Command_Ok, Result);
+    end if;
 
     -- Set status
     if not Command_Ok then
@@ -367,19 +373,6 @@ procedure Xwords is
       Status := Ok;
     end if;
 
-    -- Add/del normal word to anagram list
-    if Status = Ok then
-      if Num = Add_Word_Fld then
-        Analist.Add (Word, False);
-      elsif Num = Add_Noun_Fld then
-        Analist.Add (Word, True);
-      elsif Num = Del_Word_Fld then
-        Analist.Del (Word, False);
-      elsif Num = Del_Noun_Fld then
-        Analist.Del (Word, True);
-      end if;
-    end if;
-
     -- Store in history if search
     if (Num = Search_Fld or else Num = Research_Fld)
     and then not Word.Is_Null then
@@ -388,10 +381,10 @@ procedure Xwords is
 
     -- Log request if needed
     if Log then
-      Line := Com.Image;
-      for I in 1 .. Arg.Nb loop
-        Line := Line & " " & As.U.Asu_Us'(Arg.Nth (I));
-      end loop;
+      Line := Mixed_Str (Command'Img) & " "
+      & (if Regex then "Regex " else "")
+      & (if Noun then "Noun " else "")
+      & Word;
       Basic_Proc.Put_Line_Output (Line.Image);
     end if;
 
@@ -438,9 +431,11 @@ procedure Xwords is
     end if;
 
     -- Make ready for a brand new command
-    if Status /= Error then
-      Afpx.Clear_Field (Get_Fld);
-    end if;
+    Afpx.Reset_Field (Get_Fld,
+      Reset_Colors => True,
+      Reset_String => Status /= Error,
+      Reset_Activation => True,
+      Reset_Protection => True);
   end Do_Command;
 
   -- Search the content of Get_Fld in the list of anagrams
@@ -514,28 +509,28 @@ procedure Xwords is
   begin
     Afpx.Clear_Field (Get_Fld);
     if not History_List.Is_Empty then
-      History_List.Read (Line, Cmd.Res_Mng.Dyn_List.Current);
+      History_List.Read (Line, Cmd.Res_Mng.Current);
       Afpx.Encode_Field (Get_Fld, (0, 0), Lower_Str (Line.Image));
     end if;
   end Do_Recall;
 
-  -- Task to load anagrams in background
-  task Load_Anagrams is
+  -- Task to load database in background
+  task Load_Database is
     entry Start (Words_File_Name, Nouns_File_Name : in As.U.Asu_Us);
     entry Stop;
-  end Load_Anagrams;
+  end Load_Database;
 
-  -- Anagram loading status: Ok, Failed or Pending
+  -- Database loading status: Ok, Failed or Pending
   package Protected_Trilean is new Protected_Var (Trilean.Trilean);
-  Anagram_Loaded : Protected_Trilean.Protected_T(Mutexes.Simple);
-  function Anagrams_Ok return Boolean is
+  Database_Loaded : Protected_Trilean.Protected_T(Mutexes.Simple);
+  function Database_Ok return Boolean is
     use type Trilean.Trilean;
   begin
-    return Anagram_Loaded.Get = Trilean.True;
-  end Anagrams_Ok;
+    return Database_Loaded.Get = Trilean.True;
+  end Database_Ok;
 
-  -- Task loading the anagrams
-  task body Load_Anagrams is
+  -- Task loading the database
+  task body Load_Database is
     Words_Name, Nouns_Name : As.U.Asu_Us;
     Ok : Boolean;
   begin
@@ -543,38 +538,38 @@ procedure Xwords is
     select
       -- Load: Get file name
       accept Start (Words_File_Name, Nouns_File_Name : in As.U.Asu_Us) do
-        Cmd.Logger.Log_Debug ("Loading");
+        Database.Logger.Log_Debug ("Loading");
         Words_Name := Words_File_Name;
         Nouns_Name := Nouns_File_Name;
       end Start;
 
       -- Load dictionary
       begin
-        Analist.Init (Words_Name.Image, Nouns_Name.Image);
+        Database.Init (Words_Name.Image, Nouns_Name.Image);
         Ok := True;
       exception
-        when Analist.Init_Error =>
+        when Database.Init_Error =>
           Ok := False;
-          Basic_Proc.Put_Line_Error ("Cannot load anagrams");
+          Basic_Proc.Put_Line_Error ("Cannot load database");
       end;
-      Cmd.Logger.Log_Debug ("Loaded");
+      Database.Logger.Log_Debug ("Loaded");
       -- Report completion: Ok or failure
-      Anagram_Loaded.Set (Trilean.Boo2Tri (Ok));
-      Cmd.Logger.Log_Debug ("Reported");
+      Database_Loaded.Set (Trilean.Boo2Tri (Ok));
+      Database.Logger.Log_Debug ("Reported");
       -- Wake up main task
       Event_Mng.Send_Dummy_Signal;
-      Cmd.Logger.Log_Debug ("Signaled");
+      Database.Logger.Log_Debug ("Signaled");
     or
       -- Do not load
       accept Stop;
-      Anagram_Loaded.Set (Trilean.False);
+      Database_Loaded.Set (Trilean.False);
     or
       -- If main returns without calling
       terminate;
     end select;
 
    -- Done
-  end Load_Anagrams;
+  end Load_Database;
 
   -- Switch to Anagrams mode
   procedure Switch_To_Anagrams (To_Anagrams : in Boolean) is
@@ -595,9 +590,9 @@ procedure Xwords is
       Afpx.Clear_Field (Get_Fld);
       Afpx.Clear_Field (Ananame_Fld);
       Afpx.Reset_Field (Anagrams_Fld, Reset_Activation => False);
-      Afpx.Set_Field_Activation (Ananouns_Title_Fld, Anagrams_Ok);
+      Afpx.Set_Field_Activation (Ananouns_Title_Fld, Database_Ok);
       In_Anagrams := False;
-      Afpx.Set_Field_Activation (Ananouns_Fld, Anagrams_Ok);
+      Afpx.Set_Field_Activation (Ananouns_Fld, Database_Ok);
     end if;
   end Switch_To_Anagrams;
 
@@ -614,9 +609,23 @@ procedure Xwords is
     end if;
   end Allow_Nouns;
 
+  -- Activate the buttons that interact with database
+  procedure Activate_Db (On : in Boolean) is
+  begin
+    Afpx.Set_Field_Activation (Anagrams_Fld, On);
+    Afpx.Set_Field_Activation (Ananouns_Fld, On);
+    Afpx.Set_Field_Activation (Ananouns_Title_Fld, On);
+    Afpx.Set_Field_Activation (Search_Fld, On);
+    Afpx.Set_Field_Activation (Research_Fld, On);
+    Afpx.Set_Field_Activation (Add_Word_Fld, On);
+    Afpx.Set_Field_Activation (Del_Word_Fld, On);
+    Afpx.Set_Field_Activation (Add_Noun_Fld, On);
+    Afpx.Set_Field_Activation (Del_Noun_Fld, On);
+  end Activate_Db;
+
   use type Afpx.Field_Range;
 begin
-  Cmd.Logger.Init ("Xwords");
+  Database.Logger.Init ("Xwords");
   -- Parse option for Log
   if Argument.Get_Nbre_Arg > 1 then
     Error;
@@ -638,22 +647,20 @@ begin
   Get_Handle.Cursor_Field := Get_Fld;
 
   -- Load Anagram dictio
-  Anagram_Loaded.Set (Trilean.Other);
+  Database_Loaded.Set (Trilean.Other);
   begin
-    -- Button is inactive until dictio is loaded OK
-    Afpx.Set_Field_Activation (Anagrams_Fld, False);
-    Afpx.Set_Field_Activation (Ananouns_Fld, False);
-    Afpx.Set_Field_Activation (Ananouns_Title_Fld, False);
+    -- Buttons are inactive until database is loaded OK
+    Activate_Db (False);
     Words_File_Name := As.U.Tus (Environ.Getenv_If_Set (Words_Env_Name));
     Nouns_File_Name := As.U.Tus (Environ.Getenv_If_Set (Nouns_Env_Name));
-    Load_Anagrams.Start (Words_File_Name, Nouns_File_Name);
-    Loading_Anagrams := True;
+    Load_Database.Start (Words_File_Name, Nouns_File_Name);
+    Loading_Database := True;
   exception
     when Environ.Name_Error =>
       -- No Env variable => no dictio => no anagram, stop task
       Basic_Proc.Put_Line_Error ("No dictio => no anagram");
-      Load_Anagrams.Stop;
-      Loading_Anagrams := False;
+      Load_Database.Stop;
+      Loading_Database := False;
   end;
   -- Not in anagrams
   Switch_To_Anagrams (False);
@@ -663,19 +670,18 @@ begin
   -- Main loop
   loop
     -- Get result of loading the dictio: polling
-    if Loading_Anagrams then
-      case Anagram_Loaded.Get is
+    if Loading_Database then
+      case Database_Loaded.Get is
         when Trilean.True =>
           -- Dictio loaded OK, enable
-          Cmd.Logger.Log_Debug ("Activated");
-          Afpx.Set_Field_Activation (Anagrams_Fld, True);
-          Afpx.Set_Field_Activation (Ananouns_Fld, True);
-          Afpx.Set_Field_Activation (Ananouns_Title_Fld, True);
-          Loading_Anagrams := False;
+          Database.Logger.Log_Debug ("Activated");
+          Cmd.Init (Words_File_Name.Image, Nouns_File_Name.Image);
+          Activate_Db (True);
+          Loading_Database := False;
         when Trilean.False =>
           -- Dictio loading failed
           Basic_Proc.Put_Line_Error (
-                 "Error while loading anagrams dictionaries: "
+                 "Error while loading database dictionaries: "
                 & Words_File_Name.Image & " and "
                 & Nouns_File_Name.Image & ".");
 
@@ -717,18 +723,22 @@ begin
     end case;
 
     -- Words command when in anagrams
-    Afpx.Set_Field_Activation (Add_Word_Fld, not In_Anagrams);
-    Afpx.Set_Field_Activation (Add_Noun_Fld, not In_Anagrams);
-    Afpx.Set_Field_Activation (Del_Word_Fld, not In_Anagrams);
-    Afpx.Set_Field_Activation (Del_Noun_Fld, not In_Anagrams);
+    Afpx.Set_Field_Activation (Add_Word_Fld,
+        Database_Ok and then not In_Anagrams);
+    Afpx.Set_Field_Activation (Add_Noun_Fld,
+        Database_Ok and then not In_Anagrams);
+    Afpx.Set_Field_Activation (Del_Word_Fld,
+        Database_Ok and then not In_Anagrams);
+    Afpx.Set_Field_Activation (Del_Noun_Fld,
+        Database_Ok and then not In_Anagrams);
 
     -- Set cursor at last significant char of the Get field
     Get_Handle.Cursor_Col := Afpx.Last_Index (Afpx.Decode_Field (Get_Fld, 0),
                                               True);
-    Cmd.Logger.Log_Debug ("Calling PTG");
+    Database.Logger.Log_Debug ("Calling PTG");
     Afpx.Put_Then_Get (Get_Handle, Ptg_Result,
                        List_Change_Cb => List_Cb 'Unrestricted_Access);
-    Cmd.Logger.Log_Debug ("PTG returning");
+    Database.Logger.Log_Debug ("PTG returning");
 
     case Ptg_Result.Event is
       when Afpx.Keyboard =>
@@ -807,7 +817,7 @@ begin
               -- Move to Bottom
               Afpx.Line_List.Rewind;
               Afpx.Update_List(Afpx.Top);
-              History_List.Rewind (Cmd.Res_Mng.Dyn_List.Prev);
+              History_List.Rewind (Cmd.Res_Mng.Prev);
             end if;
             Status := Found;
             List_Content := History;

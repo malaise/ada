@@ -1,18 +1,17 @@
 Xwords
 ======
-V1.1
+V2.0
 
-Xwords is a graphical interface to the 'words' script, which searches in a
-databse for words that match a pattern. Xwords also allows searching and listing
-anagrams of a word.
+Xwords is a graphical program that searches in a databse for words that match a
+pattern. Tje database consists of a file of words and a fil of nouns.
+
+Xwords also allows searching and listing anagrams of a word.
 
 General behavior
 ----------------
 Xwords doesn't take any command line arguments, but requires several environment
 variables to be set:
 
-* WORDS_PATH: set to the directory where to find the script 'words' and
-its files
 * DICTIO_WORDS_FILE: set to the the path and name of the french common words
 dabase
 * DICTIO_NOUNS_FILE: set to the path and name of the french nounds database
@@ -46,9 +45,11 @@ done. A double clic in one of them copies it in the 'get' field.
 The button 'Clear' on the right clears the list (or error message).
 
 .Actions on the get field
-The button 'Recall' restores the pattern previously used for search.
+The button 'Recall' restores the pattern previously used for search. The 'Esc'
+keyboard key does the same.
 
-The button 'Clear' on the top clears the 'get' field.
+The button 'Clear' on the top clears the 'get' field. (The 'Ctrl'+'Suppr'
+keyboard combination does the same).
 
 .Words database management
 The buttons 'Add' and 'Del' allow adding or removing a common word or a noun.
@@ -58,8 +59,9 @@ Anagrams mode
 In this mode, you can enter letters (not pattern) in the 'get' field, then
 click on the 'Anagrams' button.
 
-By default, the common words are listed, but you can tick the 'Nouns' button
-before 'Anagrams', in order to search for anagrams in the nouns database.
+By default, the Xwords shows anagrams of the common words database. But you can
+tick the 'Nouns' button before searching 'Anagrams', and you get anagrams
+of the nouns database.
 
 The list shows the various words (sorted by decreasing length) that are
 anagrams of the letters that you entered in the 'get' field.

@@ -13,14 +13,14 @@
       <Colors Foreground="Black" Background="Dark_Grey" Selected="Lime_Green"/>
     </List>
     <Field Num="1" Kind="Put">
-      <Geometry Up="0" Left="25" Height="1" Width="9"/>
+      <Geometry Up="0" Left="23" Height="1" Width="11"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
-      <Init Row="0" Col="0">W O R D S</Init>
+      <Init Row="0" Col="0">X W O R D S</Init>
     </Field>
     <Field Num="2" Kind="Put" Name="Version">
       <Geometry Up="0" Right="${Screen.Right}" Height="1" Width="6"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
-      <Init Row="0" Col="0">V1.0</Init>
+      <Init Row="0" Col="0">V2.0</Init>
     </Field>
 
     <!-- Input area -->

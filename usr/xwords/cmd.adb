@@ -1,95 +1,138 @@
-with As.U, Aski, Environ, Many_Strings, Str_Util;
+with Ada.Exceptions;
+with Str_Util, Reg_Exp, Basic_Proc, Upper_Str;
+with Database;
 package body Cmd is
 
-  -- Path to Words
-  Words_Path_Env_Name : constant String := "WORDS_PATH";
-  Words_Path_Init : Boolean := False;
-  Words_Path : As.U.Asu_Us;
+  -- Path to Words and files
+  Words_File : As.U.Asu_Us;
+  Nouns_File : As.U.Asu_Us;
 
-  -- Outputs of execution
-  Output_Flow : aliased Command.Flow_Rec (Command.List);
-  Error_Flow : aliased Command.Flow_Rec (Command.Str);
-  Exit_Code : Command.Exit_Code_Range;
+  -- Non regex pattern
+  Non_Regex_Crit : constant String := "[a-z?:*.]+";
+  Non_Regex_Patt : Reg_Exp.Compiled_Pattern;
 
-  -- Words exits with 0 if found, 1 i not found and 2 on error
-  Words_Error : constant Command.Exit_Code_Range := 2;
-
-  -- Replace all LineFeeds by spaces
-  procedure Normalize (List : in out Res_List) is
-    Line : As.U.Asu_Us;
-    Moved : Boolean;
+  -- Init links to files (for Add/Del)
+  procedure Init (Words_File, Nouns_File : in String) is
+    Ok : Boolean;
   begin
-    if List.Is_Empty then
-      return;
+    Cmd.Words_File.Set (Words_File);
+    Cmd.Nouns_File.Set (Nouns_File);
+    -- Compile non-regex pattern
+    Non_Regex_Patt.Compile (Ok, Non_Regex_Crit);
+    if not Ok then
+      Basic_Proc.Put_Line_Error ("Error compiling non regexp pattern");
+      raise Init_Error;
     end if;
-    List.Rewind;
-    loop
-      -- Replace Lf by space for each Rec
-      List.Read (Line, Res_Mng.Dyn_List.Current);
-      Line := As.U.Tus (Str_Util.Substit (Line.Image, Aski.Lf_S, " "));
-      -- Remove trailing spaces
-      Line := As.U.Tus (Str_Util.Strip (Line.Image));
-      List.Modify (Line, Moved => Moved);
-      exit when not Moved;
-    end loop;
-    -- Rewind to end
-    List.Rewind (Res_Mng.Dyn_List.Prev);
-  end Normalize;
+  end Init;
+
+  -- Word (add or del) pattern
+  Word_Pattern : constant String := "[a-z]+";
+
+  -- One of the Db
+  type Db_Access is access all As.U.Utils.Asu_Dyn_List_Mng.List_Type;
 
   -- subtype Line_Type is Asu_Us;
-  -- package Res_Mng is newDynamic_List (Line_Type);
+  -- package Res_Mng is new Dynamic_List (Line_Type);
   -- subtype Res_List is Res_Mng.Dyn_List.List_Type;
-  procedure Exec (Com : in String;
-                  Arg : in String;
-                  Ok : out Boolean;
-                  Res : in out Res_List) is
-    Cmd : Many_Strings.Many_String;
-    use type As.U.Asu_Us;
+  procedure Exec (Comd  : in Cmd_List;
+                  Regex : in Boolean;
+                  Noun  : in Boolean;
+                  Arg   : in String;
+                  Ok    : out Boolean;
+                  Res   : in out Res_List) is
+
+    -- Set error Msg in Res
+    procedure Error (Msg : in String) is
+    begin
+      Res.Delete_List;
+      Res.Insert (As.U.Tus (Msg));
+      Ok := False;
+    end Error;
+
+    Txt : As.U.Asu_Us;
+    Index : Natural;
+    Search_Patt : Reg_Exp.Compiled_Pattern;
+    Found : Boolean;
+    Db : Db_Access;
   begin
-    -- Init path to Words if first call and ENV set
-    if not Words_Path_Init then
-      if Environ.Is_Set (Words_Path_Env_Name) then
-        Words_Path := As.U.Tus (Environ.Getenv (Words_Path_Env_Name) & "/");
+
+    Database.Logger.Log_Debug ("Command " & Comd'Img & " " & Regex'Img
+                      & " " & Noun'Img & " >" & Arg & "<");
+    Ok := True;
+    if Comd = Search then
+      -- Build search string
+      Txt.Set (Arg);
+
+      if not Regex then
+        -- Check and transalte non-regex
+        -- Match non-regex syntax
+        if not Non_Regex_Patt.Match (Txt.Image, True) then
+          Database.Logger.Log_Debug ("KO");
+          Error ("Invalid pattern");
+          return;
+        end if;
+        -- '*' if any must be the last char
+        Index := Txt.Locate ("*");
+        if Index /= 0 and then Index /= Txt.Length then
+          Error ("Invalid pattern");
+          return;
+        end if;
+        -- Replace '?' and ':' by  '.'
+        Txt.Set (Str_Util.Substit (Txt.Image, "?", "."));
+        Txt.Set (Str_Util.Substit (Txt.Image, ":", "."));
+        -- Replace '*' and ':' by  '.*'
+        Txt.Set (Str_Util.Substit (Txt.Image, "*", ".*"));
       end if;
-      Words_Path_Init := True;
+
+      -- Compile
+      Search_Patt.Compile (Ok, Txt.Image);
+      if not Ok then
+        Error ("Invalid pattern");
+        return;
+      end if;
+      Database.Logger.Log_Debug ("Pattern >" & Txt.Image & "< compiled");
+
+      -- Search in Db
+      Db := (if Noun then Database.Nouns_Db'Access
+             else Database.Words_Db'Access);
+      if Db.Is_Empty then
+        return;
+      end if;
+      Db.Rewind;
+      loop
+        Db.Read (Txt, Moved => Found);
+        if Search_Patt.Match (Txt.Image, True) then
+          -- Insert matching words (uppercase if noun)
+          if Noun then
+           Txt.Set (Upper_Str (Txt.Image));
+          end if;
+          Res.Insert (Txt);
+        end if;
+        exit when not Found;
+      end loop;
+    return;
     end if;
 
-    -- Spawn
-    Logger.Log_Debug ("Executing >" & Words_Path.Image & Com & "<>" & Arg & "<");
-    Cmd.Set (Words_Path & Com);
-    Cmd.Cat (Arg);
-    -- Words needs bash
-    Command.Execute (Cmd, True,
-        Output_Flow'Access, Error_Flow'Access, Exit_Code, "/bin/bash");
-
-    if Exit_Code = Words_Error then
-      Logger.Log_Debug ("Words error");
-      if Error_Flow.Str.Is_Null then
-        Res.Insert (As.U.Tus ("Words error"));
-      else
-        Res.Insert (Error_Flow.Str);
-      end if;
-      Normalize (Res);
-      Ok := False;
+    -- Add or Del: Check Word
+    if not Reg_Exp.Match (Word_Pattern, Arg, True) then
+      Error ("Invalid word");
       return;
     end if;
 
-    -- Set "out" values: Copy list of output lines and append
-    --  error string
-    Logger.Log_Debug ("Copying result");
-    Res.Insert_Copy (Output_Flow.List);
-    if not Error_Flow.Str.Is_Null then
-      Res.Insert (Error_Flow.Str);
+    if Comd = Add then
+      Database.Add (As.U.Tus (Arg), Noun);
+    else
+      Database.Del (As.U.Tus (Arg), Noun);
     end if;
-    Normalize (Res);
-    Ok := True;
+    Database.Save (Noun);
 
   exception
-    when Command.Spawn_Error =>
-      Logger.Log_Error ("Spwan error");
-      Res.Insert (As.U.Tus ("Spawn error"));
-      Normalize (Res);
-      Ok := False;
+    when Database.Backup_Error =>
+      Error ("Cannot create backup file");
+    when Database.Save_Error =>
+      Error ("Cannot save database in file");
+    when Err:others =>
+      Error ("Exception  " & Ada.Exceptions.Exception_Name (Err));
   end Exec;
 
 end Cmd;
