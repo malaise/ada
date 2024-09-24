@@ -1,24 +1,14 @@
 -- Search for words matching criteria (au:o.obile) or regexp (au.*bile)
 -- Or search anagrams
-with As.U.Utils, Argument, Con_Io, Afpx.Utils, Basic_Proc, Language,
-     Str_Util, Lower_Str, Mixed_Str, Environ, Images, Event_Mng, Afpx_Xref,
-     Mutexes, Protected_Var, Trilean, Rounds, Normal, Reg_Exp, Long_Longs;
+with As.U.Utils, Con_Io, Afpx.Utils, Basic_Proc, Language, Str_Util,
+     Lower_Str, Environ, Images, Event_Mng, Afpx_Xref, Mutexes, Protected_Var,
+     Trilean, Rounds, Normal, Reg_Exp, Long_Longs;
 with Database, Cmd, Analist, Icon;
 procedure Xwords is
 
   -- Name of ENV variable for database
   Words_Env_Name : constant String := "DICTIO_WORDS_FILE";
   Nouns_Env_Name : constant String := "DICTIO_NOUNS_FILE";
-
-  procedure Error is
-  begin
-    Basic_Proc.Put_Line_Error ("Usage : "
-                             & Argument.Get_Program_Name & " [ -l ]");
-    Basic_Proc.Set_Error_Exit_Code;
-  end Error;
-
-  -- Log option
-  Log : Boolean := False;
 
   -- Afpx stuff
   Get_Handle : Afpx.Get_Handle_Rec;
@@ -324,8 +314,7 @@ procedure Xwords is
     Regex, Noun : Boolean;
     Word : As.U.Asu_Us;
     Command_Ok : Boolean;
-    use type As.U.Asu_Us, Afpx.Field_Range, Afpx.Line_List_Mng.Ll_Natural,
-             Cmd.Cmd_List;
+    use type Afpx.Field_Range, Afpx.Line_List_Mng.Ll_Natural, Cmd.Cmd_List;
   begin
     -- This can take some time
     Afpx.Set_Field_Colors (Get_Fld,
@@ -379,15 +368,6 @@ procedure Xwords is
       History_List.Insert (Word);
     end if;
 
-    -- Log request if needed
-    if Log then
-      Line := Mixed_Str (Command'Img) & " "
-      & (if Regex then "Regex " else "")
-      & (if Noun then "Noun " else "")
-      & Word;
-      Basic_Proc.Put_Line_Output (Line.Image);
-    end if;
-
     -- Reset selection on error
     if Status /= Found then
       Afpx.Set_Selection ("");
@@ -402,9 +382,7 @@ procedure Xwords is
       loop
         Result.Read (Line, Moved => Moved);
         Afpx.Line_List.Insert (Us2Afpx (Line));
-        if Log then
-          Basic_Proc.Put_Line_Output (Line.Image);
-        end if;
+        Database.Logger.Log_Info (Line.Image);
         exit when not Moved;
       end loop;
 
@@ -626,19 +604,6 @@ procedure Xwords is
   use type Afpx.Field_Range;
 begin
   Database.Logger.Init ("Xwords");
-  -- Parse option for Log
-  if Argument.Get_Nbre_Arg > 1 then
-    Error;
-    return;
-  elsif Argument.Get_Nbre_Arg = 1 then
-    if Argument.Get_Parameter (1) = "-l" then
-      Log := True;
-    else
-      Error;
-      return;
-    end if;
-  end if;
-
   -- Init Afpx
   Afpx.Use_Descriptor (Afpx_Xref.Main.Dscr_Num);
   Afpx.Get_Console.Set_Icon (Icon.Xwords_Xpm);
@@ -719,7 +684,7 @@ begin
       when Error =>
         Afpx.Set_Field_Protection (Afpx.List_Field_No, True);
         Afpx.Set_Field_Colors (Afpx.List_Field_No,
-                  Background => Con_Io.Color_Of ("Red"));
+                  Foreground => Con_Io.Color_Of ("Red"));
     end case;
 
     -- Words command when in anagrams

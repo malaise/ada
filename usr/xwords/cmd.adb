@@ -50,7 +50,6 @@ package body Cmd is
     end Error;
 
     Txt : As.U.Asu_Us;
-    Index : Natural;
     Search_Patt : Reg_Exp.Compiled_Pattern;
     Found : Boolean;
     Db : Db_Access;
@@ -71,16 +70,10 @@ package body Cmd is
           Error ("Invalid pattern");
           return;
         end if;
-        -- '*' if any must be the last char
-        Index := Txt.Locate ("*");
-        if Index /= 0 and then Index /= Txt.Length then
-          Error ("Invalid pattern");
-          return;
-        end if;
         -- Replace '?' and ':' by  '.'
         Txt.Set (Str_Util.Substit (Txt.Image, "?", "."));
         Txt.Set (Str_Util.Substit (Txt.Image, ":", "."));
-        -- Replace '*' and ':' by  '.*'
+        -- Replace '*' by  '.*'
         Txt.Set (Str_Util.Substit (Txt.Image, "*", ".*"));
       end if;
 

@@ -1,6 +1,6 @@
 Xwords
 ======
-V2.0
+V2.1
 
 Xwords is a graphical program that searches in a databse for words that match a
 pattern. Tje database consists of a file of words and a fil of nouns.
@@ -28,10 +28,10 @@ Search mode
 In this mode, you can enter a pattern in the 'get' field (the field with white
 background) and search with the button 'Search' the words that match this
 pattern. In this mode, the pattern can contain '*' for any characters (none,
-one or several), and '?' for any character once.
+one or several), and '.', '?' or ":"for any single character.
 
-Alternataively, you can enter a regular expression pattern and search with the
-button 'ReSearch'.
+Alternataively, you can enter a regular expression pattern (see PCRE, Perl
+Compatible Regular Expressions) and search with the button 'ReSearch'.
 
 The list then shows the matching words. Common words are first listed in lower
 case, then the nouns are listed in upper case.

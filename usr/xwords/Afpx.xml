@@ -20,7 +20,7 @@
     <Field Num="2" Kind="Put" Name="Version">
       <Geometry Up="0" Right="${Screen.Right}" Height="1" Width="6"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
-      <Init Row="0" Col="0">V2.0</Init>
+      <Init Row="0" Col="0">V2.1</Init>
     </Field>
 
     <!-- Input area -->
