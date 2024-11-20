@@ -1,6 +1,6 @@
 Freecell
 ========
-V4.4
+V4.5
 
 Freecell is a famous solitaire card game.
 

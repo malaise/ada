@@ -1,6 +1,6 @@
 La Peau
 =======
-V4.4
+V4.5
 
 "La Peau" is a solitaire card game.
 

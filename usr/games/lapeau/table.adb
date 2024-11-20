@@ -1,6 +1,6 @@
 with Ada.Calendar;
 with X_Mng, Timers, Long_Long_Limited_Pool, Trace.Loggers, Int_Img,
-     Aski.Unicode, Language, Perpet;
+     Aski.Unicode, Language;
 with Movements;
 package body Table is
   -- Debug logger
@@ -227,12 +227,9 @@ package body Table is
   -- Local: Decode a card event
   No_Click : constant Event_Rec := (Leave, null);
   Prev_Click : Event_Rec := No_Click;
-  Prev_Time : Ada.Calendar.Time := Perpet.Origin;
   function Decode_Card_Event (Mouse_Event : Con_Io.Mouse_Event_Rec;
                               Event : out Event_Rec) return Boolean is
     Acc : Cards.Card_Access;
-    Time : Ada.Calendar.Time;
-    use type Ada.Calendar.Time;
     use type Con_Io.Mouse_Button_List, Cards.Card_Access;
   begin
     -- Default
@@ -249,17 +246,15 @@ package body Table is
         if Mouse_Event.Button = Con_Io.Left then
           Event := (Left_Pressed, Acc);
           -- Handle double left click
-          Time := Ada.Calendar.Clock;
           if Event = Prev_Click
-          and then Time - Prev_Time < Console.Get_Double_Click_Delay then
+          and then Mouse_Event.Double_Click then
             -- Yes
             Event := (Double_Click, Acc);
             Prev_Click := No_Click;
-            Prev_Time := Perpet.Origin;
+             Console.Cancel_Double_Click;
           else
             -- No => store for next time
             Prev_Click := Event;
-            Prev_Time := Time;
           end if;
         elsif Mouse_Event.Button = Con_Io.Right then
           Event := (Right_Pressed, Acc);
