@@ -1,6 +1,6 @@
 Klondike
 ========
-V2.0
+V2.1
 
 Klondike is a famous solitaire card game.
 

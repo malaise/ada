@@ -323,6 +323,11 @@ package body Movements is
       Acc := Cards.The_Dock(Cards.Dock_Pull).Prev;
       if Acc /= null and then Can_Be_Purged (Acc) then
         Purge_One (Acc);
+        -- Refill if necessary and possible
+        if       Cards.The_Dock(Cards.Dock_Pull).Next = null
+        and then Cards.The_Dock(Cards.Dock_Reserve).Next /= null then
+          Refill (True, True);
+        end if;
       end if;
       exit Iter when not One_Moved;
     end loop Iter;
