@@ -32,7 +32,7 @@
 -s AL => 482: AL/RU-AL/RU-AL/Altai Republic Parent: RUS
 -S altai => 483: ALT/RU-ALT/ALT/Altai Krai Parent: RUS
 
-# NLD, with high precision
+# NLD
 -d NLD 49.4V => 52.376514000 4.908543375
 -c 52.376514000 4.908543375 NLD => NLD 49.4V 'NLD 49.4V' 112
 -d NLD 49.4V-V => 52.376476500 4.908514225
@@ -91,7 +91,6 @@
 -c -21.050171000 55.222207500 REU => REU 0C.JKV 'REU 0C.JKV' 67
 -d REU 7XC.4PP => -21.050162500 55.222211000
 -c -21.050162500  55.222211000 REU all => REU 7XC.4PP 'REU 7XC.4PP' 67
-
 
 # MUS - Rodrigues
 -d MUS BLX.43 => -19.754036000 63.358374000
@@ -246,3 +245,4 @@
 -l FTGC.R3T-K3 ଓଡ଼ିଆ => ଘବଚଖ.ନ3ବ-ଡ3
 -l FTGC.R3T-K3 ಕನ್ನಡ => ಙಫಚಖ.ನ3ಫ-ಠ3
 -l FTGC.R3T-K3 ગુજરાતી => દફબજ.ઞ3ફ-ટ3
+
