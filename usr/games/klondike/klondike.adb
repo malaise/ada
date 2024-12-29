@@ -32,6 +32,12 @@ procedure Klondike is
   begin
     -- Save selection
     Tmp_Card := Selected_Source;
+    if Selected_Source = null
+    and then Event.Kind in Table.Card_Event_List
+    and then Event.Card /= null then
+      -- Double click on a selected done card
+      Tmp_Card := Event.Card;
+    end if;
     Reset;
     Movements.Purge;
     -- Restore selection if it has not been purged in Done stack
