@@ -300,6 +300,12 @@ package body Movements is
     use type Cards.Card_Access;
 
   begin
+    -- If Pull stack is empty and Reserve stack is not, then move one to Pull
+    if Cards.The_Dock(Cards.Dock_Pull).Next = null
+    and then Cards.The_Dock(Cards.Dock_Reserve).Next /= null then
+      Move_To_Pull (True, True);
+    end if;
+
     -- Loop until no move
     Iter:
     loop
