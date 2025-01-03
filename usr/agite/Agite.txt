@@ -2158,7 +2158,7 @@ At this point there are two possibilities: continue or abort.
 
 Fix, commit and continue
 ^^^^^^^^^^^^^^^^^^^^^^^^
-Hopefully you can use the file edition, strashing and stageing in order to
+Hopefully you can use the file edition, stashing and stageing in order to
 resolve the conflict. You should then commit the changes and then click on the
 'Done' button. The loop will continue processing the remaining cherries.
 
@@ -2167,8 +2167,8 @@ Abort
 If you need more tools or more time to solve the conflict, then you can click
 on the 'Abort' button to cancel the commit and exit the the loop of cherry
 picking. You are then back in the xref:XDir[directory] menu, from which you
-should fix the conflict and commit the result. Beware that you likely are  on a
-temporary branch. +
+should fix the conflict and commit the result. +
+Beware that **you likely are on a temporary branch**. +
 Restarting the loop depends on wether the failure occured during a
 xref:XRebase[rebase] or xref:XReorg[reorg], or during a
 xref:XCherry[cherry-pick].
