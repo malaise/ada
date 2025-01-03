@@ -244,9 +244,10 @@ begin
   exception
     when others =>
       Basic_Proc.Put_Line_Error (
-          "ERROR: Invalid argument. Usage: ");
+          "ERROR: Invalid argument.");
       Basic_Proc.Put_Line_Error (
-          Argument.Get_Program_Name & " <compute_route> | <apply_route>");
+          "Usage: " & Argument.Get_Program_Name
+        & " <compute_route> | <apply_route>");
       Basic_Proc.Put_Line_Error (
           "<compute_route> ::= -c <point> <point> | -c <code> <code>");
       Basic_Proc.Put_Line_Error (
