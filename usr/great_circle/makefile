@@ -13,5 +13,9 @@ EXES := gc hp_gc intercept geo_conv
 CLIBS := $(UTILS_SLIBS) $(PCRE_SLIBS)
 CLIBS_gc := $(PCRE_SLIBS) $(X11_SLIBS)
 
+TXT := Great_Circle
+DOCOPTS_Great_Circle := -a toc
+
+
 include $(TEMPLATES)/ada.mk
 

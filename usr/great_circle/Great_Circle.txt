@@ -1,0 +1,292 @@
+Great_Circle
+============
+
+This is a set of tools that compute the route along the great circle between
+two points on earth.
+
+== gc
+
+=== Goal
+
+'gc' (Great Circle) provides by default a graphical mode that allows:
+
+-  entering two points A and B of a given kind, which is either
+anchor:XKind[]:
+
+* sexagesimal lat/long,
+* or decimal lat/long,
+* or mapcode, 
+* or open location code, 
+* or geohash,
+* or geohash36,
+- converting these two points into any other kind,
+- computing the great circle routes between this two points (heading from A to B, length, and reverse
+heading from B to A).
+
+Alternatively, 'gc' supports the command line definition of two points A and B,
+and it outputs on stdout the great circle route from A to B.
+
+Alternatively, it displays the regular expressions that allow detecting the
+kind of an input and checking its format.
+
+NOTE: Both codes must be of the same kind.
+
+NOTE: As some geohash and geohash36 codes might be ambiguous (especially if they
+contain only digits and lower-case letters) it is possible to append '@GH' or
+'@GH36' to such codes.
+
+=== Syntax
+...................................................
+Usage: gc [ -x ] | [ --gui ]      // and default: interactive mode
+   or: gc -r | -- regexp          // show the regexp for each kind of position
+   or: gc add.mm.ssss/oddd.mm.ssss add.mm.ssss/oddd.mm.ssss
+   or: gc add.ijklmn/oddd.ijklmn add.ijklmn/oddd.ijklmn
+     where a is N or S and o is E or W.
+   or: gc [<context>:]<mapcode> [<context>:]<mapcode>
+   or: gc <open_loc_code> <open_loc_code>
+     where <open_loc_code> ::= { <letter_or_digit> } + [ { <letter_or_digit> } ]
+   or: gc <geohash36_code> <geohash36_code>
+     where <geohash36_code> ::= { <letter_or_digit> } [ @GH36 ]
+   or: gc <geohash_code> <geohash_code>
+     where <geohash_code> ::= { <letter_or_digit> } [ @GH ]
+...................................................
+
+
+=== Precision
+.Input
+For sexagesimal lat/long, 'gc' support the hundredth of seconds (ex:
+N10.00.0000/W010.00.0000), and for decimal lat/long, it support billionth
+of degrees (ex: 44.815833/-1.149444).
+
+For the input codes, 'gc' supports any precision.
+
+.Output
+The route length is always rounded into nautical miles (Nm).
+
+The heading is in sexagesimal up to the second (ex: 077.19.20), except when the
+points are defined in decimal lat/long, then the heading is in decimal
+up to ten thousandth of degrees (ex: 089.5656).
+
+== hp_gc
+=== Goal
+'hp_gc' (High Precision Great Circle) is similar to 'gc', except that:
+
+* it only supports command line arguments (no graphical interface),
+* it can alternatively apply a route to a point, leading to another point,
+* it provides higher precision.
+
+
+=== Syntax
+
+...................................................
+Usage: hp_gc <compute_route> | <apply_route>
+  <compute_route> ::= -c <point> <point> | -c <code> <code>
+  <apply_route>   ::= -a <point> <route> | -a <code> <route>
+  <point>         ::= <sexa> | <deci>
+  <sexa>     ::= add.mm.ssssss/oddd.mm.ssssss
+    where a is N or S and o is E or W.
+  <deci>         ::= D.d/D.d
+    where D is positivie or negative, and d up to 9 digits
+  <code>      ::= <map_code> | <olc> | <geohash36> | <geohash>
+  <map_code>  ::= [ <context>: ] <mapcode>
+  <olc>       ::= { <letter_or_digit> } + [ { <letter_or_digit> } ]
+  <geohash36> ::= { <letter_or_digit> } [ @GH36 ]
+  <geohash>   ::= { <letter_or_digit> } [ @GH ]
+  <route>         ::= <heading> <length><unit>
+  <unit>          ::= Nm | km | m | mm
+...................................................
+
+=== Precision
+.Input
+For sexagesimal lat/long, 'hp_gc' support the ten thousandth of degrees
+(ex: N10.00.123456/W010.00.123456), and for decimal lat/long it support
+up to 9 decimals for the degrees (ex: 44.123456789/-1.123456789).
+
+For the route to apply, the heading can have the same format and precision as
+above (positive degrees from 0 to 360), and the length can be in Nm, km, m or
+mm.
+
+.Output
+The route is displayed with:
+
+* A heading at precision of hundreds of seconds if the input points are in
+sexagesimal, or 9 digits of degrees otherwise,
+* A length with 6 decimals, in Nm and km, (and down to m and mm if necessary).
+
+When applying a route, the target point has the same kind and precision as the
+input point.
+
+== geo_conv
+=== Goal
+'geo_conv' (Gegraphic Conversion) converts a point of any xref:XKind[kind]
+into all the possible kinds.
+
+=== Syntax
+...................................................
+Usage: geo_conv <location> [ <precisions> ]
+  <location> ::= <sexa> | <deci> | code>
+  <sexa>     ::= add.mm.ssss[ss]/oddd.mm.ssss[ss]
+    where a is N or S and o is E or W.
+  <deci>     ::= D.d/D.d
+    where D is positivie or negative, and d up to 9 digits
+  <code> ::= <map_code> | <olc_code> | <geohash36> | <geohash>
+  <map_code> ::= [<context>:]<mapcode>
+  <olc_code>     ::= <open_location_code>
+  <precisions>   ::= -p <prec_set>
+  <prec_set>     ::= [<sexa_prec>]/[<deci_prec>]/[<map_prec>]/[<olc_prec>]
+                     /[<gh36_prec>]/[<gh_prec>]
+  <sexa_prec>    ::= 4 | 6
+  <deci_prec>    ::= 1 .. 9
+  <map_prec>     ::= 0 .. 8
+  <olc_prec>     ::= 2 | 15
+  <gh36_prec>    ::= 1 | 15
+  <gh_prec>      ::= 1 | 12
+    where the default precisions are the max of each kind.
+...................................................
+
+=== Precision
+.Input
+As input 'geo_conv' supports the same formats as 'hp_gc'.
+
+.Output
+By default, 'geo_conv' outputs the value of each kind with the maximum precision
+for the kind, but it is possible to specifiy a reduced precision for any kind.
+Examples:
+
+...................................................
+geo_conv YPM0J.48W6-5D 
+  N75.11.038382/E071.07.393662
+  75.184399500/71.127601733
+  YPM0J.48W6-5DK30000
+  CJ7H54MH+Q25VRCF
+  6FRQn48CdVWLgX5
+  vt6edwcsc5zu
+
+
+geo_conv YPM0J.48W6-5D -p 4////3/5
+  N75.11.0384/E071.07.3937
+  75.184399500/71.127601733
+  YPM0J.48W6-5DK30000
+  CJ7H54MH+Q25VRCF
+  6FR
+  vt6ed
+...................................................
+
+
+== intercept
+=== Goal
+'intercept' computes the interception route for an aircraft, which is 
+approaching an airport with a given route (heading), in order to to land on a
+given runway (QFU).
+
+Two variants of the interception are possible: a primary and an alternate,
+one on each side of the runway.
+
+From a given distance of the airport it may insert one segment (direct
+interception) or two (indirect interception), in order to intercept the axis at
+a given distance and within a reasonnable angle.
+
+
+=== Syntax
+...................................................
+Usage: intercept <dme> | <app>
+  <dme>   ::= -d | --dme
+  <app>   ::= [ <short> ] <QFU> <Heading> [ <fpl> | <dbfpl>]
+  <short> ::= -s | --short
+  <fpl>   ::= <mode> <decl> <file_name>
+  <mode> ::= -a | --append | -A | --append_alternate
+  <decl> ::= + | - | E | W <val>
+  <dbfpl> ::= <dbcmd> <alt> <lat> <lon> <decl>
+  <dbcmd> ::= --debug | --debug_alternate
+Angles from 0 to 359
+...................................................
+
+.dme
+In 'dme' mode, it only shows the distances of the turning points for
+the legs of an indirect interception. These distances are independant from the
+heading and QFU.
+Example:
+...................................................
+intercept -d
+30 21 13
+...................................................
+
+.short
+In 'short' mode, for automatic tests, it dumps the mode of primary interception, and
+the headings and QDM for each turning point of the primary interception, and the
+headings and QDM for each turning point of the alternate interception.
+
+NOTE: The distances are fixed, as seen above.
+
+NOTE: The alternate interception is always indirect.
+
+Example: 
+...................................................
+intercept -s 255 155 
+255 155 Indirect  left 119 241 right 215  left 129 269 right 295
+...................................................
+
+.normal
+By default, 'intercept' displays in detail (human friendly) each variant.
+Example:
+...................................................
+intercept 255 155
+Indirect interception
+At DME 30 turn left heading 119,
+at DME 21 QDM 241 turn right heading 215 to intercept final heading 255.
+Alternate indirect interception
+At DME 30 turn left heading 129,
+at DME 21 QDM 269 turn right heading 295 to intercept final heading 255.
+...................................................
+
+.flight plan option
+In normal (non short) mode, it may optionnaly generate the flight plan points,
+at XPlane-11 format, of either the primary or the alternate interception. +
+
+* Either it ammends the end of an existing flight plan file, which requires
+specifying the magnetic declination at the airport and the file name,
+* Or (debug mode) it dumps the corresponding points, which requires
+specifying the altitude, latitude, longitude and the magnetic declination of
+the airport. Examples (primary interception flight plan):
+...................................................
+intercept 145 155 --debug 1905.000000  47.260277  11.343889 E3
+Direct interception
+At DME 30 turn right heading 162 to intercept final heading 145.
+Alternate indirect interception
+At DME 30 turn right heading 193,
+at DME 21 QDM 131 turn left heading 105 to intercept final heading 145.
+28 APP1 DRCT 6905.000000 47.723221 11.065650
+28 APP2 DRCT 4905.000000 47.443772 11.174237
+1 ADES ADES 1905.000000 47.260277 11.343889
+
+intercept  255 155 --debug 1905.000000  47.260277  11.343889 E3
+Indirect interception
+At DME 30 turn left heading 119,
+at DME 21 QDM 241 turn right heading 215 to intercept final heading 255.
+Alternate indirect interception
+At DME 30 turn left heading 129,
+at DME 21 QDM 269 turn right heading 295 to intercept final heading 255.
+28 APP1 DRCT 8905.000000 47.723221 11.065650
+28 APP2 DRCT 6905.000000 47.412667 11.808439
+28 APP3 DRCT 4905.000000 47.308265 11.680265
+1 ADES ADES 1905.000000 47.260277 11.343889
+...................................................
+
+== Test
+The 'Test' script performs the following tests:
+
+* play the 'gc' scenario, calling gc mostly on fixed sexagesimal points, and
+check the result.
+* call 'hp_gc' for computing route and adding route mostly on fixed decimal
+points, and check the result.
+* loop on random 'LoopRndHpgc': add a random route to a random point P1, add
+the reverse route and check the result (close to P1).
+* run 'intercept' scenario with several fixed inputs and check the result.
+* loop on random 'LoopRndGeoconv': from a random position P1, for the
+equivalent of each kind, check that it converts to itself in its kind, and
+that it converts close to P1.
+* launch 'geoconv' with some fixed inputs and check the result.
+* loop on random 'LoopRndHpConv': from two random positions P1 and P2, convert
+them into their equivalent in each kind, and for each pair compute the great
+circle route, and check that they are all similar.
+
