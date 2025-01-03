@@ -2,9 +2,8 @@
 -- procedure, among:
 -- If Heading is the QFU, then direct final, straight on.
 -- Otherwise, from a fixed interception distance:
--- * If within +/- a fixed max interception angle (40Deg), then reach the final
---   at a fixed direct final distance (13Nm), so with an angle less that the
---   max,
+-- * If interception at a fixed direct final distance (13Nm) is
+--   within +/- a fixed max interception angle (40Deg), then reach the final
 -- * Otherwise reach the entrance of a joining leg of fixed length
 --   (join distance, 5Nm) that reaches the final with the max interception
 --   angle at a fixed distance, indirect final distance (14Nm),
@@ -89,7 +88,7 @@ procedure Intercept is
   procedure Error (Message : in String) is
   begin
     Basic_Proc.Put_Line_Error (Message & ".");
-    Basic_Proc.Put_Line_Error ("Usage:"
+    Basic_Proc.Put_Line_Error ("Usage: "
         & Argument.Get_Program_Name & " <dme> | <app>");
     Basic_Proc.Put_Line_Error ("  <dme>   ::= -d | --dme");
     Basic_Proc.Put_Line_Error (
@@ -160,7 +159,8 @@ begin
   and then (Argument.Get_Parameter = "-d"
             or else Argument.Get_Parameter = "--dme") then
     Basic_Proc.Put_Line_Output (Dist_Image (Intercep_Distance) & " "
-                             &  Dist_Image (Beta_Dme));
+                             &  Dist_Image (Beta_Dme) & " "
+                             &  Dist_Image (Direct_Final_Distance));
     return;
   end if;
 
