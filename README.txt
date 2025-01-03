@@ -147,8 +147,8 @@ They all depend on C and Reposit and are independant one from the others (except
 The more usefull are 'udp_spy' and 'alook' (in directory 'misc'),
 'xml_checker' (in directory xml) 'agite', 'als', 'asubst', 'lsadeps' and 'mcd'.
 
-The games are 'g' (in directory 'misc'), 'battleship', 'lapeau', 'lem',
-'mmind', 'nimmari' and 'sokoban'.
+The games are 'g' (in directory 'misc'), 'battleship', 'freecell', 'klondike',
+'lapeau', 'lem', 'mmind', 'nimmari' and 'sokoban'.
 
 Hereafter is the full list and description, rated from 1 (simple) to 3 (very
 complex) on subjective criteria. A 'd' indicates that there is a specific
@@ -219,8 +219,9 @@ Geohash (1)::
 Geohash36 (1)::
      Geohash 36 encoding and decoding.
 
-Great_Circle (1)::
-     Computation of heading and distance between two points on earth (GPS).
+Great_Circle (2d)::
+     Computation of heading and distance between two points on earth (GPS),
+     and associated tools.
 
 Heart (3)::
      Dta base of heart rate measures, displayed with 'Afpx'.
@@ -333,10 +334,10 @@ Xwords (2)::
 Cots directories
 ----------------
 
-This directory mainly contains a copy of pragmarc and mine_detector
+This directory mainly contains a copy of mine_detector
 from http://pragmada.x10hosting.com/mindet.html (under GPL).
 
-Mine detector uses Gtk-Ada GPL_2016 (GTK3).
+Mine detector uses Gtk-Ada GPL_2018 (GTK3).
 
 Testing
 -------
@@ -350,5 +351,6 @@ Many projects in subdirectories of 'usr' also implement automatic tests that
 are launched by a local 'Test' script, and fail on error.
 
 Finally, a 'Tests' target in a parent directory lauches all the tests in its
-chldren directories. The test of the whole 'usr' subtree takes around 7 minutes.
+children directories. The test of the whole 'usr' subtree takes around 7
+minutes.
 
