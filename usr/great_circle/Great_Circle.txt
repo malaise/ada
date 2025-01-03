@@ -1,5 +1,4 @@
-Great_Circle
-============
+= Great_Circle
 
 This is a set of tools that compute the route along the great circle between
 two points on earth.
