@@ -1,11 +1,11 @@
--- Usage: prime -list [ <number> ] list prime numbers up to number
---        prime -from <number>     list prime numbers greater than number
---        prime -is <number>       is a number prime
---        prime -next <number>     first prime greater than number
---        prime -prev <number>     last prime smaller than number
---        prime -fact <number>     decomposition of number in prime factors
---        prime -hcd <n1> <n2>     highest common divisor
---        prime -lcm <n1> <n2>     lowest common multiple
+-- Usage: prime list [ <number> ] list prime numbers up to number
+--        prime from <number>     list prime numbers greater than number
+--        prime is <number>       is a number prime
+--        prime next <number>     first prime greater than number
+--        prime prev <number>     last prime smaller than number
+--        prime fact <number>     decomposition of number in prime factors
+--        prime hcd <n1> <n2>     highest common divisor
+--        prime lcm <n1> <n2>     lowest common multiple
 
 with Argument, Arbitrary.Factors, Arbitrary.Prime_List, Basic_Proc;
 procedure Prime is
