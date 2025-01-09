@@ -3,9 +3,9 @@ with Afpx_Xref;
 
 package body Screen is
   -- Previous and new input
-  Prev_Input, Cur_Input : Input_Rec;
+  Prev_Input, Curr_Input : Input_Rec;
   -- Has cursor changed
-  Cursor_Changed : Boolean := True;
+  Prev_Cursor, Curr_Cursor : Afpx.Field_Range := 1;
 
   -- LOCAL: Is an option set
   function Is_Set (Fld : Afpx.Field_Range) return Boolean is
@@ -24,43 +24,65 @@ package body Screen is
   end First_Text;
 
   -- Current cursor has changed
-  procedure Cursor_Has_Changed is
+  procedure Cursor_Has_Changed (Cursor_Field : in Afpx.Field_Range) is
+    use type Afpx.Field_Range;
   begin
-    Cursor_Changed := True;
+    if Cursor_Field >= First_Text then
+      -- Valid new cursor field
+      Curr_Cursor := Cursor_Field;
+    elsif Curr_Cursor < First_Text then
+      -- Default to first
+      Curr_Cursor := First_Text;
+    end if;
+    -- Update cursor field
+    Afpx.Clear_Field (Afpx_Xref.Main.Cursor);
+    Afpx.Encode_Field (Afpx_Xref.Main.Cursor,
+        (Con_Io.Row_Range (Curr_Cursor - First_Text), 0),
+        "->");
   end Cursor_Has_Changed;
 
+  -- Has a cursor changed since previous call
+  function Has_Cursor_Changed return Boolean is
+    use type Afpx.Field_Range;
+  begin
+    -- Force a first update ad First_Text
+    Cursor_Has_Changed (1);
+    return Curr_Cursor /= Prev_Cursor;
+  end Has_Cursor_Changed;
+
   -- Has an input changed since previous call
-  function Input_Changed return Boolean is
+  function Has_Input_Changed return Boolean is
     use type Afpx.Field_Range;
   begin
     -- Decode option
-    Cur_Input.Case_Sensitive := Is_Set (Afpx_Xref.Main.Case_Sensitive);
+    Curr_Input.Case_Sensitive := Is_Set (Afpx_Xref.Main.Case_Sensitive);
     -- Decode Regex
-    Afpx.Decode_Field (Afpx_Xref.Main.Regex, 0, Cur_Input.Regex, False);
-    Strip (Cur_Input.Regex);
+    Afpx.Decode_Field (Afpx_Xref.Main.Regex, 0, Curr_Input.Regex, False);
+    Strip (Curr_Input.Regex);
     -- Decode text
     for I in Text_Range loop
       Afpx.Decode_Field (Afpx_Xref.Main.Text1 + Afpx.Field_Range (I) - 1, 0,
-                         Cur_Input.Text(I), False);
-      Strip (Cur_Input.Text(I));
+                         Curr_Input.Text(I), False);
+      Strip (Curr_Input.Text(I));
     end loop;
-    -- Update Prev if intput has changed
-    return Res : Boolean do
-      Res := Cur_Input /= Prev_Input;
-      if Res then
-        Prev_Input := Cur_Input;
-      end if;
-      Res := Res or else Cursor_Changed;
-      Cursor_Changed := False;
-    end return;
-  end Input_Changed;
+    return Curr_Input /= Prev_Input;
+  end Has_Input_Changed;
 
   -- Get (changed) input
   function Get_Input return Input_Rec is
   begin
-    Prev_Input := Cur_Input;
+    Prev_Input := Curr_Input;
     return Prev_Input;
   end Get_Input;
+
+  -- Get (changed) cursor
+  function Get_Cursor return Afpx.Field_Range is
+  begin
+    -- Trigger first update
+    Cursor_Has_Changed (1);
+    Prev_Cursor := Curr_Cursor;
+    return Curr_Cursor;
+  end Get_Cursor;
 
   -- Clear clear regex and reset flag
   procedure Clear_Regex is
@@ -82,18 +104,11 @@ package body Screen is
     (Normal (I, 2, Gap => '0'));
 
   -- Put result
-  procedure Put_Results (Cursor_Field : in Afpx.Absolute_Field_Range := 1;
+  procedure Put_Results (
                          Line : in Text_Range := 1;
                          Results : in Results_Array) is
-    Curs_Col : constant Con_Io.Col_Range := 27;
-    use type Afpx.Absolute_Field_Range;
   begin
-    -- Encode cursor line
-    Afpx.Encode_Field (Afpx_Xref.Main.Title, (0, Curs_Col),
-      Int_Img (
-          if Cursor_Field < Afpx_Xref.Main.Text1 then 1
-          else Integer (Cursor_Field - Afpx_Xref.Main.Text1 + 1)));
-    -- Encode Line
+    -- Encode matching line
     Afpx.Encode_Field (Afpx_Xref.Main.Line, (0, 0),
         Int_Img (if Results = No_Results then 0 else Line));
     -- Reset result

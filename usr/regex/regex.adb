@@ -16,7 +16,7 @@ procedure Regex is
   begin
     -- Update the current cursor col, move to last char and notify screen
     Get_Handle.Cursor_Field := Cursor_Field;
-    Screen.Cursor_Has_Changed;
+    Screen.Cursor_Has_Changed (Cursor_Field);
     if New_Field then
       return Afpx.Last_Index (Str, True);
     else
@@ -56,7 +56,7 @@ procedure Regex is
     Ok := False;
     for I in Input.Text'Range loop
       if not Input.Text(I).Is_Null
-      and then I >= Integer (Get_Handle.Cursor_Field - Screen.First_Text + 1)
+      and then I >= Integer (Screen.Get_Cursor - Screen.First_Text + 1)
       then
         Pattern.Exec (Input.Text(I).Image, N_Matched, Match_Info);
         if N_Matched /= 0 then
@@ -83,7 +83,7 @@ procedure Regex is
     end if;
 
     -- Put result
-    Screen.Put_Results (Get_Handle.Cursor_Field, Line, Results);
+    Screen.Put_Results (Line, Results);
 
   end Update;
 
@@ -145,7 +145,7 @@ begin
         Update;
       when Afpx.Refresh =>
         -- Check if intput has changed
-        if Screen.Input_Changed then
+        if Screen.Has_Cursor_Changed or Screen.Has_Input_Changed then
           Update;
         end if;
       when others =>

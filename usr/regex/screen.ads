@@ -20,15 +20,21 @@ package Screen is
   end record;
 
   -- Current cursor has changed
-  procedure Cursor_Has_Changed;
+  procedure Cursor_Has_Changed (Cursor_Field : in Afpx.Field_Range);
+
+  -- Has cursor changed since previous call
+  function Has_Cursor_Changed return Boolean;
 
   -- Has an input changed since previous call
-  function Input_Changed return Boolean;
+  function Has_Input_Changed return Boolean;
+
+  -- Get (changed) cursor
+  function Get_Cursor return Afpx.Field_Range;
 
   -- Get (changed) input
   function Get_Input return Input_Rec;
 
-  -- Clear clear regex and reset flags
+  -- Clear regex and reset flags
   procedure Clear_Regex;
 
   -- Clear all lines of text
@@ -49,7 +55,6 @@ package Screen is
   No_Results : constant Results_Array := (others => <>);
 
   procedure Put_Results (
-    Cursor_Field : in Afpx.Absolute_Field_Range := 1;
     -- Line will be 0 if first (and other) result is empty
     Line : in Text_Range := 1;
     Results : in Results_Array);
