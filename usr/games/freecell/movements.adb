@@ -27,7 +27,7 @@ package body Movements is
       -- Not a real card
       return False;
     end if;
-    if Target.Stack.Suit = Cards.Deck.Empty then
+    if Cards.Is_Done_Stack (Target.Stack) then
       -- Target is in a play stack or a tmp stack
       if Target = Target.Stack then
         -- Target is a play or tmp stack, it must be empty

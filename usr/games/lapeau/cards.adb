@@ -74,9 +74,9 @@ package body Cards is
   end X_To_Card;
 
   -- Is a stack a Done stack
-  function Is_Done_Stack (Card : Card_Access) return Boolean is
+  function Is_Done_Stack (Stack : Card_Access) return Boolean is
   begin
-    return Card.Xcard.Is_Symbol;
+    return Stack.Xcard.Is_Symbol;
   end Is_Done_Stack;
 
   -- Image of a card access

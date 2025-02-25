@@ -88,16 +88,17 @@ package body Cards is
   end X_To_Card;
 
   -- Is a stack a Done stack
-  function Is_Done_Stack (Card : Card_Access) return Boolean is
+  function Is_Done_Stack (Stack : Card_Access) return Boolean is
   begin
-    return Card.Xcard.Is_Symbol;
+    return Stack.Image(1) = 'd';
   end Is_Done_Stack;
 
-  -- Otherwise, is it a Play stack (or a Tmp stack)
-  function Is_Play_Stack (Card : Card_Access) return Boolean is
+  -- Is it a stack a Play stack
+  function Is_Play_Stack (Stack : Card_Access) return Boolean is
   begin
-    return Card.Xcard.Get_Name in Play_Stack_Range;
+    return Stack.Image(1) = 'p';
   end Is_Play_Stack;
+
   -- Image of a card access
   function Image (Card : Card_Access) return String is
   (if Card  /= null then Card.Image else "");
