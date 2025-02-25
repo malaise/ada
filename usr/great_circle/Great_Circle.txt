@@ -14,8 +14,8 @@ anchor:XKind[]:
 
 * sexagesimal lat/long,
 * or decimal lat/long,
-* or mapcode, 
-* or open location code, 
+* or mapcode,
+* or open location code,
 * or geohash,
 * or geohash36,
 - converting these two points into any other kind,
@@ -153,7 +153,7 @@ for the kind, but it is possible to specifiy a reduced precision for any kind.
 Examples:
 
 ...................................................
-geo_conv YPM0J.48W6-5D 
+geo_conv YPM0J.48W6-5D
   N75.11.038382/E071.07.393662
   75.184399500/71.127601733
   YPM0J.48W6-5DK30000
@@ -174,7 +174,7 @@ geo_conv YPM0J.48W6-5D -p 4////3/5
 
 == intercept
 === Goal
-'intercept' computes the interception route for an aircraft, which is 
+'intercept' computes the interception route for an aircraft, which is
 approaching an airport with a given route (heading), in order to to land on a
 given runway (QFU).
 
@@ -219,9 +219,9 @@ NOTE: The distances are fixed, as seen above.
 
 NOTE: The alternate interception is always indirect.
 
-Example: 
+Example:
 ...................................................
-intercept -s 255 155 
+intercept -s 255 155
 255 155 Indirect  left 119 241 right 215  left 129 269 right 295
 ...................................................
 
