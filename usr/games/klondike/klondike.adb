@@ -324,6 +324,7 @@ begin
       when Table.Right_Pressed | Table.Double_Click =>
         if Event.Card /= null
         and then not Cards.Is_Done_Stack (Event.Card.Stack)
+        and then not Cards.Is_Reserve_Stack (Event.Card.Stack)
         and then Event.Card.Stack /= Event.Card
         and then (Status = Selectable
           or else (Status = Selected
