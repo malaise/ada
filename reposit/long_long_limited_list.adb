@@ -975,7 +975,7 @@ package body Long_Long_Limited_List is
     exception
       when others =>
         raise Match_Error;
-    end;
+    end Loc_Match;
 
   begin
     if not Search_Match (List, Loc_Match'Unrestricted_Access,

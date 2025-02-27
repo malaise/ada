@@ -187,7 +187,7 @@ package body Af_Ptg is
   exception
     when others =>
       raise Cb_Error;
-  end;
+  end Notify_List_Change;
 
   -- Click is valid if Left or Right button press
   -- Wheele and Middle button press are handled internally here
