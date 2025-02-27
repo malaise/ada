@@ -145,7 +145,8 @@ begin
         Update;
       when Afpx.Refresh =>
         -- Check if intput has changed
-        if Screen.Has_Cursor_Changed or Screen.Has_Input_Changed then
+        if Screen.Has_Cursor_Changed
+        or Screen.Has_Input_Changed then --## rule line off Andor_Boolean
           Update;
         end if;
       when others =>
