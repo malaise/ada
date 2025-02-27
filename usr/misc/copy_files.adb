@@ -140,7 +140,7 @@ begin
       Error ("Destination " & Dest.Image & " is not a directory");
     end if;
     Sys_Calls.File_Access.Has_Access (Status, R, W, X);
-    if not (R and W and X) then
+    if not (R and W and X) then --## rule line off Andor_Boolean
       Error ("User does not have enough access rights to destinaton "
           & Dest.Image);
     end if;
