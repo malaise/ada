@@ -481,8 +481,8 @@ package body History is
       Found : Boolean;
       use type As.U.Asu_Us;
     begin
-      Log.Hash := Remote_Head ( (if Branch /= "" then Branch
-                                 else Git_If.Current_Branch) );
+      Log.Hash := Remote_Head (if Branch /= "" then Branch
+                               else Git_If.Current_Branch);
       if Log.Hash /= Git_If.No_Hash then
         Found := List_Hash_Search (Logs, Log, From => Git_If.Log_Mng.Absolute);
         if Found then
