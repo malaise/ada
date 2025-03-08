@@ -15,7 +15,6 @@ package body Mesu_Mng is
     Line         : Afpx.Line_Rec;
     File_Name    : Mesu_Nam.File_Name_Str;
     Prev_Name    : Mesu_Nam.File_Name_Str;
-    Exit_Program : Boolean;
     Current_Date : Str_Mng.Date_Str_Rec;
     Person : Pers_Def.Person_Rec;
     Date_Aft, Date_Bef : Mesu_Def.Date_Str;
@@ -341,7 +340,7 @@ package body Mesu_Mng is
               Get_Handle.Cursor_Col := 0;
               Get_Handle.Insert := False;
             when Afpx.Break_Key =>
-              exit;
+              raise Pers_Def.Exit_Requested;
           end case;
 
         when Afpx.Mouse_Button =>
@@ -398,10 +397,7 @@ package body Mesu_Mng is
           elsif Ptg_Result.Field_No = Afpx_Xref.Main.Db then
             -- Activiy Db
             Save;
-            Pers_Lis.List (Exit_Program);
-            if Exit_Program then
-              exit;
-            end if;
+            Pers_Lis.List;
             Init (False);
           elsif Ptg_Result.Field_No = Afpx_Xref.Main.Unselect then
             -- Unselect

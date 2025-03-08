@@ -36,7 +36,7 @@ package body Pers_Lis is
     end if;
   end Set_Protection;
 
-  procedure List (Exit_Program : out Boolean) is
+  procedure List is
 
     First_Field : Afpx.Field_Range;
 
@@ -237,7 +237,6 @@ package body Pers_Lis is
     end Compute;
 
    begin
-    Exit_Program := False;
 
     Afpx.Use_Descriptor(Afpx_Xref.Activity.Dscr_Num);
 
@@ -332,10 +331,7 @@ package body Pers_Lis is
               Get_Handle.Cursor_Col := 0;
               Get_Handle.Insert := False;
             when Afpx.Break_Key =>
-              if State = In_List then
-                Exit_Program := True;
-                exit;
-              end if;
+              raise Pers_Def.Exit_Requested;
           end case;
 
         when Afpx.Mouse_Button =>
@@ -346,8 +342,7 @@ package body Pers_Lis is
               exit;
             when Afpx_Xref.Activity.Quit =>
               -- Exit
-              Exit_Program := True;
-              exit;
+              raise Pers_Def.Exit_Requested;
             when Afpx_Xref.Activity.Create =>
               -- Create
               State := In_Create;

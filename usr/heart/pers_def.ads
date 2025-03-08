@@ -35,5 +35,8 @@ package Pers_Def is
   subtype Person_List is Person_List_Mng.List_Type;
   The_Persons : Person_List;
 
+  -- Exception on Ctrl-C (and window manager closing request)
+  Exit_Requested : exception;
+
 end Pers_Def;
 

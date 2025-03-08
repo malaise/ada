@@ -502,11 +502,12 @@ package body Mesu_Gra is
         Char := '#';
       end if;
 
-      -- Exit when Escape
       if Get_Res.Mvt = Con_Io.Esc then
+        -- Exit when Escape
         exit Main_Loop;
       elsif Get_Res.Mvt = Con_Io.Break then
-        exit Main_Loop;
+        -- Break
+        raise Pers_Def.Exit_Requested;
       elsif Char = 'T' then
         if Tz_Drown then
           -- Hide Tzs
@@ -569,6 +570,8 @@ package body Mesu_Gra is
     Screen.Clear;
     Afpx.Redisplay;
   exception
+    when Pers_Def.Exit_Requested =>
+      raise;
     when Error:others =>
       Basic_Proc.Put_Line_Error ("Exception "
        & Ada.Exceptions.Exception_Name (Error) & " raised.");

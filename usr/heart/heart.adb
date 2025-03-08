@@ -1,5 +1,5 @@
 with Argument, Afpx, Basic_Proc;
-with Pers_Fil, Mesu_Mng, Str_Mng;
+with Pers_Def, Pers_Fil, Mesu_Mng, Str_Mng;
 procedure Heart is
   Nb_Month : Str_Mng.Offset_Range;
 
@@ -33,6 +33,8 @@ begin
   End_Of_Program;
 
 exception
+  when Pers_Def.Exit_Requested =>
+    End_Of_Program;
   when Pers_Fil.Io_Error =>
     Basic_Proc.Put_Line_Error ("File PERSONS.LST not found. Wrong directory?");
   when others =>

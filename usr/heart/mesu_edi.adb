@@ -368,7 +368,7 @@ package body Mesu_Edi is
               Get_Handle.Cursor_Col := 0;
               Get_Handle.Insert := False;
             when Afpx.Break_Key =>
-              null;
+              raise Pers_Def.Exit_Requested;
           end case;
 
         when Afpx.Mouse_Button =>
@@ -603,7 +603,12 @@ package body Mesu_Edi is
            | Afpx.Refresh =>
           null;
         when Afpx.Keyboard =>
-          null;
+          case Ptg_Result.Keyboard_Key is
+            when Afpx.Break_Key =>
+              raise Pers_Def.Exit_Requested;
+            when others =>
+              null;
+          end case;
         when Afpx.Mouse_Button =>
 
           if Ptg_Result.Field_No = Afpx_Xref.Records.Cancel then
