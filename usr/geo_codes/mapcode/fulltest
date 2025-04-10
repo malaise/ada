@@ -80,10 +80,11 @@ done
 if [ \( $SCENARIO_ONLY -eq 1 \) -a \( $TEST -eq 1 \) ] ; then
   error "Options \"scenario_only\" and \"test\" are mutually exclusive"
 fi
-let P=0+$PRECISION
-if [ \( $P -lt 0 \) -a \( $P -gt 8 \) ] ; then
-  error "Invalid precision $PRECISION"
+if ! [[ $PRECISION =~ [0-8] ]] ; then
+  error "Invalid precision"
 fi
+
+let P=0+$PRECISION
 echo Precision $PRECISION
 PRECISION=P${PRECISION}
 

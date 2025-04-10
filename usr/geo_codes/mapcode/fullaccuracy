@@ -8,11 +8,17 @@ function usage {
   echo "    or `basename $0` [ -h | --help ]"
 }
 
+function error {
+  echo "ERROR: $1."
+  usage
+  exit 1
+}
 
+# Parse options
 export WARN=""
 export THREADS=1
 export TDIR=test
-export PRECISION="P2"
+export PRECISION="2"
 
 T0=`date "+%s"`
 
@@ -26,11 +32,11 @@ while [ -n "$1" ] ; do
       WARN="-w"
     ;;
    ("-p")
-      export PRECISION="P$2"
+      export PRECISION="$2"
       shift
     ;;
     (--precision=*)
-      export PRECISION="P${1#*=}"
+      export PRECISION="${1#*=}"
     ;;
    ("-t")
       export THREADS=$2
@@ -40,12 +46,29 @@ while [ -n "$1" ] ; do
       export THREADS=${1#*=}
     ;;
     (*)
-      usage
-       exit 1
+      error "Invalid argument"
+      exit 1
     ;;
   esac
   shift
 done
+
+# Check values
+if ! [[ $PRECISION =~ [0-8] ]] ; then
+  error "Invalid precision"
+fi
+if ! [[ $THREADS =~ [1-4] ]] ; then
+  error "Invalid threads"
+fi
+
+# Put values
+echo -n "$THREADS thread"
+if [ $THREADS -ne 1 ] ; then
+  echo -n "s"
+fi
+echo ", precision $PRECISION"
+
+export PRECISION="P${PRECISION}"
 
 echo Encode
 while read -r lat lon || [[ -n "$lat" ]]; do
