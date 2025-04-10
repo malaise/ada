@@ -80,7 +80,7 @@ done
 if [ \( $SCENARIO_ONLY -eq 1 \) -a \( $TEST -eq 1 \) ] ; then
   error "Options \"scenario_only\" and \"test\" are mutually exclusive"
 fi
-if ! [[ $PRECISION =~ [0-8] ]] ; then
+if [[ ! $PRECISION =~ ^[0-8]$ ]] ; then
   error "Invalid precision"
 fi
 

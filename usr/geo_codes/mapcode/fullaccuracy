@@ -54,10 +54,10 @@ while [ -n "$1" ] ; do
 done
 
 # Check values
-if ! [[ $PRECISION =~ [0-8] ]] ; then
+if [[ ! $PRECISION =~ ^[0-8]$ ]] ; then
   error "Invalid precision"
 fi
-if ! [[ $THREADS =~ [1-4] ]] ; then
+if [[ ! $THREADS =~ ^[1-4]$ ]] ; then
   error "Invalid threads"
 fi
 
