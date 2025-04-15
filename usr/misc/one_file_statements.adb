@@ -2,14 +2,6 @@ with Normal, Basic_Proc, Sys_Calls, Text_Line, Text_Char, My_Math, As.U;
 -- Count Ada statements
 package body One_File_Statements is
 
-  type Metrics is record
-    Statements : Natural := 0;
-    Comments : Natural := 0;
-    Lines : Positive := 1;
-  end record;
-
-  -- Total Nb of statements
-  Total : Metrics;
   File_Error : exception;
   function Count_Statements_Of_File (File_Name : String;
                                      Java_Syntax : Boolean) return Metrics is
@@ -173,6 +165,7 @@ package body One_File_Statements is
 
   exception
     when Text_Char.End_Error =>
+      -- Normal end of file
       Close;
       if Levels /= 0 then
         Basic_Proc.Put_Line_Error ("Warning: Ending file with parenthesis level"
@@ -279,10 +272,9 @@ package body One_File_Statements is
     Put_Delimiter (Width);
   end Put_Header;
 
-   -- Put and reset the total so far
-  --  if Summary, then put the formated total (3 values)
-  --  else put the unformated total of statements so far
-  procedure Put_Total (Summary : in Boolean;
+   -- Put the total
+  procedure Put_Total (Metric  : in Metrics;
+                       Summary : in Boolean;
                        Width   : in Positive := Default_Width) is
 
     Total_Str : constant String
@@ -303,50 +295,25 @@ package body One_File_Statements is
       else
         Title.Set_Null;
       end if;
-      Put_Line (Title.Image, ' ', Total, Width);
+      Put_Line (Title.Image, ' ', Metric, Width);
     else
       -- Just put number of statements
-      Text_Line.Put (File, Normal(Total.Statements, Max_Dig));
+      Text_Line.Put (File, Normal(Metric.Statements, Max_Dig));
     end if;
-    Total := (others => <>);
+    -- Close output file
     Text_Line.Close (File);
   end Put_Total;
 
-  -- If File_Name is empty, put total so far and reset it
-  procedure Statements_Of_File (
-             File_Name   : in String;
-             Java_Syntax : in Boolean := False;
-             Summary     : in Boolean := True;
-             Width       : in Positive := Default_Width) is
-    Current : Metrics;
-    Ok : Boolean;
+  -- Put metrics of a file
+  procedure Put_File (
+             File_Name : in String;
+             Metric    : in Metrics;
+             Width     : in Positive := Default_Width) is
   begin
-
-    -- Statements of file
-    begin
-      Ok := True;
-      Current := Count_Statements_Of_File (File_Name, Java_Syntax);
-    exception
-      when others =>
-        Ok := False;
-    end;
-
-    if Summary then
-      -- Put formatted output
-      Open_File;
-      if Ok then
-        Put_Line (File_Name, '.', Current, Width);
-      else
-        Text_Line.Put_Line (File, File_Name & " SKIPPED");
-      end if;
-    end if;
-
-    if Ok then
-      Total.Statements := Total.Statements + Current.Statements;
-      Total.Comments := Total.Comments + Current.Comments;
-      Total.Lines := Total.Lines + Current.Lines;
-    end if;
-  end Statements_Of_File;
+    -- Put formatted output
+    Open_File;
+    Put_Line (File_Name, '.', Metric, Width);
+  end Put_File;
 
 end One_File_Statements;
 

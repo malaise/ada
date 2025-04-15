@@ -8,6 +8,7 @@ procedure Statfile is
 
   First_File : Positive;
   Java_Syntax : Boolean := False;
+  Metric, Total : One_File_Statements.Metrics;
 
   procedure Stat_One_File (List_File_Name : in String) is
     List_File : Text_Line.File_Type;
@@ -27,9 +28,14 @@ procedure Statfile is
       begin
         exit when Name = "";
         if Name'Length /= 1 then
-          One_File_Statements.Statements_Of_File (Text_Line.Trim (Name),
-                                                  Java_Syntax);
+          Metric := One_File_Statements.Count_Statements_Of_File (
+              Text_Line.Trim (Name), Java_Syntax);
         end if;
+        One_File_Statements.Put_File (Text_Line.Trim (Name), Metric);
+        Total.Statements := Total.Statements + Metric.Statements;
+        Total.Comments := Total.Comments + Metric.Comments;
+        Total.Lines := Total.Lines + Metric.Lines;
+
       exception
         when others =>
           Basic_Proc.Put_Line_Error (
@@ -70,7 +76,7 @@ begin
     Stat_One_File (Argument.Get_Parameter (Arg));
   end loop;
 
-  One_File_Statements.Put_Total (True);
+  One_File_Statements.Put_Total (Total, True);
 
 end Statfile;
 

@@ -9,6 +9,7 @@ procedure Astat is
   First : Positive := 1;
   Java_Syntax : Boolean := False;
   Details : Boolean := True;
+  Metric, Total : One_File_Statements.Metrics;
   Max_Len : Positive;
 begin
   if Argument.Get_Nbre_Arg = 1
@@ -50,15 +51,25 @@ begin
     One_File_Statements.Put_Header (Max_Len);
   end if;
 
-  -- Store all files
+  -- Compute and put all files
   for Arg in First .. Argument.Get_Nbre_Arg loop
     -- One stat on each file
-    One_File_Statements.Statements_Of_File (Argument.Get_Parameter (Arg),
-                                            Java_Syntax, Details, Max_Len);
+    Metric := One_File_Statements.Count_Statements_Of_File (
+        Argument.Get_Parameter (Arg),
+        Java_Syntax);
+    if Details then
+      One_File_Statements.Put_File (
+          Argument.Get_Parameter (Arg),
+          Metric,
+          Max_Len);
+    end if;
+    Total.Statements := Total.Statements + Metric.Statements;
+    Total.Comments := Total.Comments + Metric.Comments;
+    Total.Lines := Total.Lines + Metric.Lines;
   end loop;
 
   -- Total
-  One_File_Statements.Put_Total (Details, Max_Len);
+  One_File_Statements.Put_Total (Total, Details, Max_Len);
 
 end Astat;
 
