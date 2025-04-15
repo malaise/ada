@@ -5,7 +5,7 @@ with Basic_Proc, Argument, Argument_Parser, Trace.Loggers, Lower_Str,
      As.U, Images, Unbounded_Arrays, Str_Util, Text_Line, Long_Longs,
      Afpx_Typ, Xml_Parser.Generator;
 procedure Afpx_Rnb is
-    -- Options
+  -- Options
   Keys : constant Argument_Parser.The_Keys_Type := (
     1 => (False, 'h', As.U.Tus ("help"),       False),
     2 => (True,  'D', As.U.Tus ("descriptor"), False, True, As.U.Tus ("descriptor_num")),
