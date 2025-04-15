@@ -2,7 +2,6 @@ with Normal, Basic_Proc, Sys_Calls, Text_Line, Text_Char, My_Math, As.U;
 -- Count Ada statements
 package body One_File_Statements is
 
-  File_Error : exception;
   function Count_Statements_Of_File (File_Name : String;
                                      Java_Syntax : Boolean) return Metrics is
 
@@ -77,6 +76,7 @@ package body One_File_Statements is
                                 & File_Name);
         raise File_Error;
     end;
+    Current.Lines := Current.Lines + 1;
     if Java_Syntax then
       Comment_Char := '/';
     else
@@ -122,7 +122,7 @@ package body One_File_Statements is
         else
           Basic_Proc.Put_Line_Error (
                   "Warning: Reaching negative parenthesis level"
-                & " at line" & Line_No'Img);
+                & " at line" & Line_No'Img & " of " & File_Name);
         end if;
       elsif not Java_Syntax and then (C = '"' or else C = '%') then
         -- Check for string brackets of either kind, " or %
@@ -163,15 +163,18 @@ package body One_File_Statements is
       end if;
     end loop;
 
+
   exception
     when Text_Char.End_Error =>
       -- Normal end of file
       Close;
       if Levels /= 0 then
-        Basic_Proc.Put_Line_Error ("Warning: Ending file with parenthesis level"
-                                 & Levels'Img & ".");
+        Basic_Proc.Put_Line_Error ("Warning: Ending file " & File_Name
+          & " with parenthesis level" & Levels'Img & ".");
       end if;
-      if Current.Lines >= 2 then
+      if Current.Lines >= 1 and then Current /= Empty then
+        -- Last Lf does not count for one line
+        -- But do not change Empty into Skip
         Current.Lines := Current.Lines - 1;
       end if;
       return Current;
@@ -182,7 +185,7 @@ package body One_File_Statements is
       Close;
       Basic_Proc.Put_Line_Error ("Exception when processing line "
           & Current.Lines'Img & " of file " & File_Name);
-      raise;
+      raise Process_Error;
   end Count_Statements_Of_File;
 
   File : Text_Line.File_Type;
@@ -240,7 +243,7 @@ package body One_File_Statements is
       Text_Line.Put (File, Dot & "");
     end loop;
     -- Gap Statmt Gap Cmts Gap Lines
-     Text_Line.Put_Line (File, Gap & Statmts & Gap & Cmts & Gap & Lines);
+    Text_Line.Put_Line (File, Gap & Statmts & Gap & Cmts & Gap & Lines);
   end Put_Line;
 
   -- Put a metric
@@ -252,17 +255,23 @@ package body One_File_Statements is
     Lines : Natural;
     use type My_Math.Real;
   begin
-    if Metric.Statements = 0 then
-      Percent := 0;
-      Lines := 0;
+    if Metric.Lines = 0 then
+      -- File was not processed
+      Put_Line (Name, Dot, "  Skipped", "", "", Width);
     else
-      Percent := Natural (My_Math.Round (
-            My_Math.Real (Metric.Comments) * 100.0
-          / My_Math.Real (Metric.Statements)));
-        Lines := Metric.Lines;
+      if Metric.Statements = 0 then
+        -- File has no statement
+        Percent := 0;
+        Lines := 0;
+      else
+        Percent := Natural (My_Math.Round (
+              My_Math.Real (Metric.Comments) * 100.0
+            / My_Math.Real (Metric.Statements)));
+          Lines := Metric.Lines;
+      end if;
+      Put_Line (Name, Dot, Normal (Metric.Statements, Max_Dig),
+                Normal (Percent, 4), Normal (Lines, Max_Dig), Width);
     end if;
-    Put_Line (Name, Dot, Normal (Metric.Statements, Max_Dig),
-              Normal (Percent, 4), Normal (Lines, Max_Dig), Width);
   end Put_Line;
 
   procedure Put_Header (Width : in Positive := Default_Width) is

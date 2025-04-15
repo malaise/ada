@@ -106,18 +106,24 @@ begin
   -- Store names and stats, and compute stats and longest file name
   Max_Len := 1;
   for Arg in 1 .. Args.Get_Nb_Occurences(Argument_Parser.No_Key_Index) loop
-    -- Appen current file
+    -- Append current file
     Cell.Name.Set (Args.Get_Option (Argument_Parser.No_Key_Index, Arg));
-    Cell.Metric := One_File_Statements.Count_Statements_Of_File (
-        Cell.Name.Image, Java_Syntax);
-    Cell_List.Insert (Cell);
-    -- Update totals
-    Total.Statements := Total.Statements + Cell.Metric.Statements;
-    Total.Comments := Total.Comments + Cell.Metric.Comments;
-    Total.Lines := Total.Lines + Cell.Metric.Lines;
     if Cell.Name.Length > Max_Len then
       Max_Len := Cell.Name.Length;
     end if;
+    begin
+      Cell.Metric := One_File_Statements.Count_Statements_Of_File (
+          Cell.Name.Image, Java_Syntax);
+      -- Update totals
+      Total.Statements := Total.Statements + Cell.Metric.Statements;
+      Total.Comments := Total.Comments + Cell.Metric.Comments;
+      Total.Lines := Total.Lines + Cell.Metric.Lines;
+    exception
+      when One_File_Statements.File_Error | One_File_Statements.Process_Error =>
+        -- Update of totals have been skipped. Entry with empty metrics
+        Cell.Metric := One_File_Statements.Skipped;
+    end;
+    Cell_List.Insert (Cell);
   end loop;
 
   -- Put header of list
@@ -148,6 +154,9 @@ begin
   end if;
 
   -- Total
+  if Total.Lines = 0 then
+    Total := One_File_Statements.Empty;
+  end if;
   One_File_Statements.Put_Total (Total, Details, Max_Len);
 
 exception

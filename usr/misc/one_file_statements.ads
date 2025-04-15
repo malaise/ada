@@ -6,14 +6,20 @@ package One_File_Statements is
   type Metrics is record
     Statements : Natural := 0;
     Comments : Natural := 0;
-    Lines : Positive := 1;
+    Lines : Natural := 0;
   end record;
+  Skipped : constant Metrics := (others => <>);
+  Empty : constant Metrics := (Lines => 1, others => <>);
 
   -- Computing operation
   ----------------------
   -- Compute the metrics of a file
   --  if Java then use java comments ("//" or /*.. */ instead of Ada "--")
   --    and handle java suote character ("\"")
+  -- May raise File_Error on error accessing file
+  -- May raise Process_Error on error processing file
+  File_Error : exception;
+  Process_Error : exception;
   function Count_Statements_Of_File (File_Name : String;
                                      Java_Syntax : Boolean) return Metrics;
   -- Putting operations
