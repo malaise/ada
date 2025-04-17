@@ -153,6 +153,25 @@ if [ \( -z "$1" \) -o \( "$1" = "compress" \) ] ; then
   echo ""
 fi
 
+# astat
+if [ \( -z "$1" \) -o \( "$1" = "astat" \) ] ; then
+  echo astat on a file with '*.adb'
+  ls *.adb >cmp
+  res=`astat -l cmp | tail -1 | awk '{print $4}'`
+  exp=`wc -l *.adb | tail -1 | awk '{print $1}'`
+  if [ $res != $exp ] ; then
+    error "astat find $res lines instead of $exp."
+  fi
+  echo astat on '*.*'
+  res=`astat *.ad* | tail -1 | awk '{print $4}'`
+  exp=`wc -l *.ad* | tail -1 | awk '{print $1}'`
+  if [ $res != $exp ] ; then
+    error "astat find $res lines instead of $exp."
+  fi
+  echo "OK"
+  echo ""
+fi
+
 # comp_vars
 if [ \( -z "$1" \) -o \( "$1" = "comp_vars" \) ] ; then
   # Comp_vars with SET_ME set
