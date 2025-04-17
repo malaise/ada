@@ -1,10 +1,14 @@
 -- For each file provided as argument format and put the number of Ada
 --   statements of this file, then put the formated total:
 --   statements, then % of comments then number of lines
+-- If -j (--java), process files as Java sources
 -- If -q (--quiet), only put the total number of statments, not formated
 -- If -s (--sort), sort by crescent number of statements
+-- If -r (--reverse), sort by decrescent number of statements
+-- If -l (--lists), files are lists of source files
 with Ada.Exceptions;
-with Argument, Argument_Parser, As.U, Basic_Proc, Long_Long_Limited_List;
+with Argument, Argument_Parser, As.U, Basic_Proc, Long_Long_Limited_List,
+     Text_Line;
 with One_File_Statements;
 procedure Astat is
   -- Arguments and options
@@ -13,6 +17,9 @@ procedure Astat is
   Details : Boolean := True;
   Crescent : Boolean := False;
   Decrescent : Boolean := False;
+  Lists : Boolean := False;
+  List_File : Text_Line.File_Type;
+  File_Ok : Boolean;
 
   -- What is stored for each file
   type Cell_Rec is record
@@ -20,6 +27,7 @@ procedure Astat is
     Metric : One_File_Statements.Metrics;
   end record;
   Cell : Cell_Rec;
+  Moved : Boolean;
   procedure Set (To : out Cell_Rec; Val : in Cell_Rec) is
   begin
     To := Val;
@@ -44,15 +52,25 @@ procedure Astat is
     2 => (False, 'q', As.U.Tus ("quiet"),   False),
     3 => (False, 'j', As.U.Tus ("java"),    False),
     4 => (False, 's', As.U.Tus ("sort"),    False),
-    5 => (False, 'r', As.U.Tus ("reverse"), False) );
+    5 => (False, 'r', As.U.Tus ("reverse"), False),
+    6 => (False, 'l', As.U.Tus ("lists"),   False) );
 
   procedure Usage is
   begin
     Basic_Proc.Put_Line_Output ("Usage: " & Argument.Get_Program_Name
       & " [ { <option> } ] { <file_name> }");
     Basic_Proc.Put_Line_Output (
-      "<option> ::= -q | --quiet | -j | --java | -s | --sort | - r | --reverse"
-      );
+     "<option> ::= <java> | <quiet> | <sort> | <reverse> | <lists>");
+    Basic_Proc.Put_Line_Output (
+     "<java>    ::= -j | --java      // Sources are Java sources i.o. Ada");
+    Basic_Proc.Put_Line_Output (
+     "<quiet>   ::= -q | --quiet     // Ouly output total statements");
+    Basic_Proc.Put_Line_Output (
+     "<sort>    ::= -s | --sort      // Sort by number of statements");
+    Basic_Proc.Put_Line_Output (
+     "<reverse> ::= -r | --reverse   // Sort by reverse numner of statements");
+    Basic_Proc.Put_Line_Output (
+     "<lists>   ::= -l | --lists     // Files are lists of files i.o. sources");
   end Usage;
 
  Abort_Error : exception;
@@ -96,6 +114,9 @@ begin
   if Args.Is_Set (5) then
     Decrescent := True;
   end if;
+  if Args.Is_Set (6) then
+    Lists := True;
+  end if;
   if Crescent and then Decrescent then
     Error ("Incompatible sorting options");
   end if;
@@ -103,14 +124,62 @@ begin
     Error ("Quiet is incompatible with sorting");
   end if;
 
-  -- Store names and stats, and compute stats and longest file name
+  -- Build list of files
+  if Lists then
+
+    -- Files are lists of source files
+    Lists_Loop:
+    for Arg in 1 .. Args.Get_Nb_Occurences(Argument_Parser.No_Key_Index) loop
+      -- Try to open list file
+      declare
+        File_Name : constant String
+                  := Args.Get_Option (Argument_Parser.No_Key_Index, Arg);
+      begin
+        List_File.Open_All (Text_Line.In_File, File_Name);
+        File_Ok := True;
+      exception
+        when others =>
+          File_Ok := False;
+          Basic_Proc.Put_Line_Error ("Exception when opening list file "
+                          & File_Name & " SKIPPING");
+      end;
+
+      -- Insert lines of list file
+      if File_Ok then
+        Files_Loop: loop
+          declare
+            Name : constant String := List_File.Get;
+          begin
+            exit Files_Loop when Name = "";
+            if Name'Length /= 1 then
+              -- Skip empty lines
+              Cell.Name.Set (Text_Line.Trim (Name));
+              Cell_List.Insert (Cell);
+            end if;
+          end;
+        end loop Files_Loop;
+        List_File.Close_All;
+      end if;
+    end loop Lists_Loop;
+
+  else
+    -- Files are source files
+    for Arg in 1 .. Args.Get_Nb_Occurences(Argument_Parser.No_Key_Index) loop
+      Cell.Name.Set (Args.Get_Option (Argument_Parser.No_Key_Index, Arg));
+      Cell_List.Insert (Cell);
+    end loop;
+  end if;
+
+  -- List shall not be empty (checked at level of arguments)
+  if Cell_List.Is_Empty then
+    return;
+  end if;
+
+  -- Compute stats and update totals and longest file name
+  Cell_List.Rewind;
   Max_Len := 1;
-  for Arg in 1 .. Args.Get_Nb_Occurences(Argument_Parser.No_Key_Index) loop
-    -- Append current file
-    Cell.Name.Set (Args.Get_Option (Argument_Parser.No_Key_Index, Arg));
-    if Cell.Name.Length > Max_Len then
-      Max_Len := Cell.Name.Length;
-    end if;
+  loop
+    Cell := Cell_List.Read (Cell_List_Mng.Current);
     begin
       Cell.Metric := One_File_Statements.Count_Statements_Of_File (
           Cell.Name.Image, Java_Syntax);
@@ -123,15 +192,17 @@ begin
         -- Update of totals have been skipped. Entry with empty metrics
         Cell.Metric := One_File_Statements.Skipped;
     end;
-    Cell_List.Insert (Cell);
+    Cell_List.Modify (Cell, Moved => Moved);
+    -- Update longest name length
+    if Cell.Name.Length > Max_Len then
+      Max_Len := Cell.Name.Length;
+    end if;
+    exit when not Moved;
   end loop;
 
   -- Put header of list
   if Details then
     One_File_Statements.Put_Header (Max_Len);
-  end if;
-  if  Cell_List.Is_Empty then
-    return;
   end if;
 
   -- Sort
