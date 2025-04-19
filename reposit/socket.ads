@@ -334,7 +334,7 @@ package Socket is
   function Id2Addr (Id : Host_Id) return Ip_Address;
   function Addr2Id (Addr : Ip_Address) return Host_Id;
 
-  -- Get the broadcast address for a given interface (designated by if_host)
+  -- Get the broadcast address for a given interface (designated by If_Id)
   function Bcast_Of (If_Id : Host_Id) return Host_Id;
 
   -- Get the id of local Host on a given LAN and netmask
