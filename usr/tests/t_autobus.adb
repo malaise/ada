@@ -34,13 +34,14 @@ procedure T_Autobus is
    5 => (False, 'M', As.U.Tus ("multicast"), False),
    6 => (True, 'b', As.U.Tus ("bus"), False, True, As.U.Tus ("bus_address")),
    7 => (False, 's', As.U.Tus ("send"), False),
-   8 => (False, 'n', As.U.Tus ("nolf"), False) );
+   8 => (False, 'n', As.U.Tus ("nolf"), False),
+   9 => (False, 'q', As.U.Tus ("quiet"), False) );
  Key_Dscr : Argument_Parser.Parsed_Dscr;
 
   procedure Usage is
   begin
     Plo ("Usage: " & Argument.Get_Program_Name
-       & " <mode> [ <bus> ] [ <auto_message> ]");
+       & " <mode> [ <bus> ] [ <quiet> ] [ <auto_message> ]");
     Plo ("   or: " & Argument.Get_Program_Name & " "
        & Argument_Parser.Image(Keys(1)));
     Plo (" <mode>      ::= <auto> | <manual>");
@@ -51,7 +52,8 @@ procedure T_Autobus is
     Plo (" <multicast> ::= " & Argument_Parser.Image(Keys(5)));
     Plo (" <send>      ::= " & Argument_Parser.Image(Keys(7)));
     Plo (" <nolf>      ::= " & Argument_Parser.Image(Keys(8)));
-    Plo (" <bus>    ::= " & Argument_Parser.Image(Keys(6)));
+    Plo (" <quiet>     ::= " & Argument_Parser.Image(Keys(9)));
+    Plo (" <bus>       ::= " & Argument_Parser.Image(Keys(6)));
     Plo ("Ex: " & Argument.Get_Program_Name
        & " --active -b " & Default_Address);
     Plo ("Send mode leads to detect ""sendto <addr> <text>"" and to send text to addr.");
@@ -75,12 +77,15 @@ procedure T_Autobus is
   end Signal_Cb;
 
   -- Supervision callback
+  Quiet : Boolean;
   procedure Sup_Cb (Report : in Autobus.Sup_Report) is
   begin
-    Ple ((case Report.State is
-            when Trilean.True  => "Insertion of: ",
-            when Trilean.False => "Death of: ",
-            when Trilean.Other => "Own address: ") & Report.Addr.Image);
+    if not Quiet then
+      Ple ((case Report.State is
+              when Trilean.True  => "Insertion of: ",
+              when Trilean.False => "Death of: ",
+              when Trilean.Other => "Own address: ") & Report.Addr.Image);
+    end if;
   end Sup_Cb;
 
   Send_Mode : Boolean;
@@ -219,6 +224,9 @@ begin
     return;
   end if;
 
+  -- Quiet (no supervision info)
+  Quiet := Key_Dscr.Is_Set (9);
+
   -- One mode required
   Nb_Opt := 0;
   if Key_Dscr.Is_Set (2) then
@@ -244,10 +252,16 @@ begin
   end if;
 
   -- No message in manual mode
-  if (Key_Dscr.Is_Set (3) or else Key_Dscr.Is_Set (4)
-      or else Key_Dscr.Is_Set (5))
+  if not Key_Dscr.Is_Set (2)
   and then Key_Dscr.Get_Nb_Occurences (Argument_Parser.No_Key_Index) /= 0 then
     Error ("No automatic message allowed in manual mode");
+    Usage;
+    return;
+  end if;
+
+  -- Quiet mode only for manual mode
+  if Key_Dscr.Is_Set (2) and then Quiet then
+    Error ("Quiet option is only for manual mode");
     Usage;
     return;
   end if;
