@@ -681,23 +681,23 @@ package body Socket is
   function L_Addr2Id is new Ada.Unchecked_Conversion (Ip_Address, Host_Id);
   function Addr2Id (Addr : Ip_Address) return Host_Id is (L_Addr2Id(Addr));
 
-   -- Broadcast address for an interface
-  function Bcast_Of (If_Id : Host_Id) return Host_Id is
+   -- Broadcast address for a given local interface
+  function Local_Bcast_Of (If_Id : Host_Id) return Host_Id is
     Ret_Id : Host_Id;
   begin
     Res := Soc_Get_Bcast (If_Id'Address, Ret_Id'Address);
     Check_Ok;
     return Ret_Id;
-  end Bcast_Of;
+  end Local_Bcast_Of;
 
   -- Local host address on a given LAN and netmask
-  function Host_Id_For (Lan, Netmask : Host_Id) return Host_Id is
+  function Local_Host_Id_For (Lan, Netmask : Host_Id) return Host_Id is
     Ret_Id : Host_Id;
   begin
     Res := Soc_Get_Host_Iface (Lan'Address, Netmask'Address, Ret_Id'Address);
     Check_Ok;
     return Ret_Id;
-  end Host_Id_For;
+  end Local_Host_Id_For;
 
   -- Send a message
   -- If Length is 0 then the full size of Message_Type is sent

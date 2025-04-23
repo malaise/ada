@@ -423,7 +423,7 @@ package body Config is
           for Lan of Lans loop
             -- See if current LAN/Netmask is one of current interfaces
             begin
-              Host_Id :=  Socket.Host_Id_For (
+              Host_Id :=  Socket.Local_Host_Id_For (
                   Lan     => Id_Of (Lan, "Address"),
                   Netmask => Id_Of (Lan, "Netmask"));
               Log_Cfg.Log_Debug ("Found LAN Address "

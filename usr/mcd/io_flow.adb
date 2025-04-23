@@ -676,7 +676,7 @@ package body Io_Flow is
     else
       -- No address => broadcast
       Host := (Kind => Socket_Util.Host_Id_Spec,
-               Id => Socket.Bcast_Of (Socket.Local_Host_Id));
+               Id => Socket.Local_Bcast_Of (Socket.Local_Host_Id));
       Is_Ipm := False;
     end if;
     Socket_Util.Set_Destination (Soc, True, Host, Port);

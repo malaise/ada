@@ -368,7 +368,7 @@ begin
       and then Remote_Host_Def.Name.Is_Null then
         -- Only a port => broadcast
         Remote_Host_Def := (Kind => Socket_Util.Host_Id_Spec,
-                            Id => Socket.Bcast_Of (Socket.Local_Host_Id));
+                            Id => Socket.Local_Bcast_Of (Socket.Local_Host_Id));
       end if;
       Send_Port_Def := (Socket_Util.Port_Num_Spec, 0);
       if Remote_Port_Def.Kind = Socket_Util.Port_Name_Spec then

@@ -113,7 +113,7 @@ begin
   if Host.Kind = Socket_Util.Host_Name_Spec and then Host.Name.Is_Null then
     -- Default host is broadcast on LAN
     begin
-      Lan_Id := Socket.Bcast_Of (Socket.Local_Host_Id);
+      Lan_Id := Socket.Local_Bcast_Of (Socket.Local_Host_Id);
     exception
       when Socket.Soc_Name_Not_Found =>
         Error ("Unknown local host, try specifying destination");

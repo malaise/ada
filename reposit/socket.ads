@@ -320,25 +320,25 @@ package Socket is
   function Local_Host_Name return String;
   function Local_Host_Id return Host_Id;
 
-  -- Get local LAN name (from local host) and corresponding id
-  function Local_Lan_Name return String;
-  function Local_Lan_Id return Host_Id;
-
   -- Host_Id <-> 4 bytes of Ip address
   subtype Byte is C_Types.Byte;
   type Ip_Address is record
     A, B, C, D : Byte; -- Network (natural) order
-  end record
-    with Size => 4 * System.Storage_Unit;
+  end record with Size => 4 * System.Storage_Unit;
 
   function Id2Addr (Id : Host_Id) return Ip_Address;
   function Addr2Id (Addr : Ip_Address) return Host_Id;
 
-  -- Get the broadcast address for a given interface (designated by If_Id)
-  function Bcast_Of (If_Id : Host_Id) return Host_Id;
+
+  -- Get local LAN name (from local host) and corresponding id
+  function Local_Lan_Name return String;
+  function Local_Lan_Id return Host_Id;
+
+  -- Get the broadcast address for a given local interface (designated by If_Id)
+  function Local_Bcast_Of (If_Id : Host_Id) return Host_Id;
 
   -- Get the id of local Host on a given LAN and netmask
-  function Host_Id_For (Lan, Netmask : Host_Id) return Host_Id;
+  function Local_Host_Id_For (Lan, Netmask : Host_Id) return Host_Id;
 private
 
   type Socket_Dscr is tagged record
