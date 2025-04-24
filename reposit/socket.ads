@@ -299,6 +299,8 @@ package Socket is
   -- UTILITIES --
   ---------------
 
+  -- Name <-> Num
+  ---------------
   -- Convert Port_Num to Port_Name and reverse (for a given protocol)
   -- May raise Soc_Name_Not_Found if Name/Num is not found
   function Port_Name_Of (Port : Port_Num; Protocol : Protocol_List)
@@ -316,10 +318,6 @@ package Socket is
   function Lan_Name_Of (Id : Host_Id) return String;
   function Lan_Id_Of   (Name : String) return Host_Id;
 
-  -- Get local Host name and corresponding id
-  function Local_Host_Name return String;
-  function Local_Host_Id return Host_Id;
-
   -- Host_Id <-> 4 bytes of Ip address
   subtype Byte is C_Types.Byte;
   type Ip_Address is record
@@ -329,6 +327,11 @@ package Socket is
   function Id2Addr (Id : Host_Id) return Ip_Address;
   function Addr2Id (Addr : Ip_Address) return Host_Id;
 
+  -- Local host interfaces
+  ------------------------
+  -- Get local Host name and corresponding id
+  function Local_Host_Name return String;
+  function Local_Host_Id return Host_Id;
 
   -- Get local LAN name (from local host) and corresponding id
   function Local_Lan_Name return String;
