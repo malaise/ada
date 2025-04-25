@@ -1,6 +1,6 @@
 with Ada.Calendar;
 with Event_Mng, Timers, Any_Def, As.U.Utils, Sys_Calls, Aski, Long_Longs,
-     Dynamic_List;
+     Long_Long_Dynamic_List;
 with Debug, Actions, Rules, Searcher;
 package body Executor is
 
@@ -12,7 +12,7 @@ package body Executor is
     Tid : Timers.Timer_Id;
     Rule : Long_Longs.Ll_Positive;
   end record;
-  package Timer_List_Mng is new Dynamic_List (Timer_Rec);
+  package Timer_List_Mng is new Long_Long_Dynamic_List (Timer_Rec);
   package Timer_Mng renames Timer_List_Mng.Dyn_List;
   Timers_List : Timer_Mng.List_Type;
 

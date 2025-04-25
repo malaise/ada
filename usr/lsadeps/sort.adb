@@ -1,4 +1,4 @@
-with Directory, Dynamic_List, Hashed_List.Unique;
+with Directory, Long_Long_Dynamic_List, Hashed_List.Unique;
 with Debug;
 package body Sort is
 
@@ -31,7 +31,7 @@ package body Sort is
   Prio_Ulist : Prio_Ulist_Mng.Unique_List_Type;
 
   function Less_Than (E1, E2 : Prio_Rec) return Boolean is (E1.Prio < E2.Prio);
-  package Prio_Dyn_List_Mng is new Dynamic_List (Prio_Rec);
+  package Prio_Dyn_List_Mng is new Long_Long_Dynamic_List (Prio_Rec);
   package Prio_List_Mng renames Prio_Dyn_List_Mng.Dyn_List;
   procedure Prio_Sort is new Prio_List_Mng.Sort (Less_Than);
 

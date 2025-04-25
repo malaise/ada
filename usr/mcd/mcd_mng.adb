@@ -1,26 +1,30 @@
-with Random, As.U.Utils;
+with Random, As.U.Utils, Long_Longs;
 with Debug, Input_Dispatcher, Mcd_Parser, Io_Flow;
 pragma Elaborate_All (Random);
 package body Mcd_Mng is
 
   -- Current version
-  Mcd_Version : constant String := "V22.0";
+  Mcd_Version : constant String := "V22.1";
 
   package Stack is
     -- What can we store in stack
     subtype Operand_Kind_List is Item_Kind_List range Arbi .. Regi;
-    -- On push : Invalid_Item;
 
+    -- Index in stack
+    subtype Ll_Positive is Long_Longs.Llu_Positive;
+    subtype Ll_Natural is Long_Longs.Llu_Natural;
+
+    -- On push : Invalid_Item;
     procedure Push (Item : in Item_Rec; Default_Stack : in Boolean := True);
 
     procedure Pop (Item : out Item_Rec; Default_Stack : in Boolean := True);
     procedure Read (Item : out Item_Rec; Default_Stack : in Boolean := True);
 
-    function Stack_Size (Default_Stack : Boolean := True) return Natural;
+    function Stack_Size (Default_Stack : Boolean := True) return Ll_Natural;
 
     -- Read / Get Nth item of main stack
-    procedure Readn (Item : out Item_Rec; N : in Positive);
-    procedure Getn (Item : out Item_Rec; N : in Positive);
+    procedure Readn (Item : out Item_Rec; N : in Ll_Positive);
+    procedure Getn (Item : out Item_Rec; N : in Ll_Positive);
 
     -- Dump last N elements popped or read, if debug history
     procedure Dump_History;
@@ -1398,6 +1402,7 @@ package body Mcd_Mng is
       Handle_Break;
   end New_Item;
 
+  use type Stack.Ll_Natural;
   function Check_Empty_Stack return Boolean is (Stack.Stack_Size = 0);
 
 begin

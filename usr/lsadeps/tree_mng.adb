@@ -1,5 +1,5 @@
-with As.U, Dynamic_List, Hashed_List.Unique, Str_Util, Basic_Proc, Parser,
-     Images, Mixed_Str;
+with As.U, Long_Long_Dynamic_List, Hashed_List.Unique, Str_Util, Basic_Proc,
+     Parser, Images, Mixed_Str;
 with Debug;
 package body Tree_Mng is
 
@@ -69,7 +69,7 @@ package body Tree_Mng is
           Sourcer.Restr_Separator & Name & Sourcer.Separator) /= 0);
 
   -- A list of descriptors
-  package Src_List_Mng is new Dynamic_List (Sourcer.Src_Dscr);
+  package Src_List_Mng is new Long_Long_Dynamic_List (Sourcer.Src_Dscr);
   package Src_Dyn_List_Mng renames Src_List_Mng.Dyn_List;
 
   -- Dump a loop (from current in rope up to top) then current

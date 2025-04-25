@@ -1,10 +1,13 @@
-with Arbitrary, Dynamic_List, Argument, Basic_Proc;
+with Arbitrary.Limited_List, Argument, Basic_Proc;
 -- Pascal triangle with arbitrary precision numbers
 procedure Arbipas is
 
   -- Prev/Current line
-  package Arbi_Dyn_List_Mng is new Dynamic_List (Arbitrary.Number);
-  package Arbi_List_Mng renames Arbi_Dyn_List_Mng.Dyn_List;
+  procedure Set (To : out Arbitrary.Number; Val : in Arbitrary.Number) is
+  begin
+    To := Val;
+  end Set;
+  package Arbi_List_Mng is new Arbitrary.Limited_List (Arbitrary.Number, Set);
   Arbi_List : Arbi_List_Mng.List_Type;
 
 

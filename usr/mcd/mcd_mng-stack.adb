@@ -1,17 +1,20 @@
-with Dynamic_List, Queues, Int_Img;
+with Long_Long_Dynamic_List, Queues, Images;
 separate (Mcd_Mng)
 
 package body Stack is
 
-  package Stack_Dyn_List is new Dynamic_List (Item_Rec);
+  package Stack_Dyn_List is new Long_Long_Dynamic_List (Item_Rec);
   package Stack_List renames Stack_Dyn_List.Dyn_List;
   List, Extra_List : Stack_List.List_Type;
 
-  -- Hitory of Last 3 popped items
+  function Int_Image is new Images.Mod_Image (Ll_Natural);
+
+  -- History of Last 3 popped items
   package History_Mng is new Queues.Circ (Item_Rec);
   History : History_Mng.Circ_Type(3);
 
   procedure Push (Item : in Item_Rec; Default_Stack : in Boolean := True) is
+    use type Ll_Natural;
   begin
     if Item.Kind not in Operand_Kind_List then
       Debug.Log (Debug.Stack, Item,
@@ -21,8 +24,14 @@ package body Stack is
     Debug.Log (Debug.Stack, Item,
             (if not Default_Stack then "Extra " else "") & "Pushing");
     if Default_Stack then
+      if List.List_Length = Ll_Natural (My_Math.Inte'Last) then
+        raise Stack_List.Full_List;
+      end if;
       List.Insert(Item);
     else
+      if Extra_List.List_Length = Ll_Natural (My_Math.Inte'Last) then
+        raise Stack_List.Full_List;
+      end if;
       Extra_List.Insert(Item);
     end if;
   end Push;
@@ -66,10 +75,10 @@ package body Stack is
   end Read;
 
 
-  procedure Readn (Item : out Item_Rec; N : in Positive) is
+  procedure Readn (Item : out Item_Rec; N : in Ll_Positive) is
     Litem : Item_Rec;
   begin
-    Debug.Log (Debug.Stack, "Reading " & Int_Img (N) & "th ");
+    Debug.Log (Debug.Stack, "Reading " & Int_Image (N) & "th ");
     List.Move_At (N, Stack_List.Prev);
     List.Read(Litem, Stack_List.Current);
     History.Push (Litem);
@@ -82,11 +91,11 @@ package body Stack is
       raise Empty_Stack;
   end Readn;
 
-  procedure Getn (Item : out Item_Rec; N : in Positive) is
+  procedure Getn (Item : out Item_Rec; N : in Ll_Positive) is
     Litem : Item_Rec;
     Moved : Boolean;
   begin
-    Debug.Log (Debug.Stack, "Getting " & Int_Img (N) & "th ");
+    Debug.Log (Debug.Stack, "Getting " & Int_Image (N) & "th ");
     List.Move_At (N, Stack_List.Prev);
     List.Get(Litem, Stack_List.Next, Moved);
     History.Push (Litem);
@@ -100,8 +109,8 @@ package body Stack is
   end Getn;
 
 
-  function Stack_Size (Default_Stack : Boolean := True) return Natural is
-    Size : Natural;
+  function Stack_Size (Default_Stack : Boolean := True) return Ll_Natural is
+    Size : Ll_Natural;
   begin
     if Default_Stack then
       Size := List.List_Length;
@@ -110,7 +119,7 @@ package body Stack is
     end if;
     Debug.Log (Debug.Stack,
           (if not Default_Stack then "Extra " else "")
-        & "Size " & Natural'Image(Size));
+        & "Size " & Int_Image (Size));
     return Size;
   end Stack_Size;
 

@@ -1,6 +1,6 @@
 with Ada.Exceptions;
 with Sys_Calls, Argument, As.U, Directory, Reg_Exp, Str_Util,
-     Dynamic_List;
+     Long_Long_Dynamic_List;
 procedure Lenv is
 
   procedure Usage is
@@ -43,7 +43,7 @@ procedure Lenv is
       Regex : Regex_Access;
       Strict : Boolean := False;
     end record;
-    package Crit_List_Mng is new Dynamic_List (Criteria_Rec);
+    package Crit_List_Mng is new Long_Long_Dynamic_List (Criteria_Rec);
     package Crit_Mng renames Crit_List_Mng.Dyn_List;
     List : Crit_Mng.List_Type;
 

@@ -40,12 +40,12 @@ package body Misc is
 
 
   procedure Do_Popn is
-    N : Natural;
+    N : Stack.Ll_Natural;
   begin
     Stack.Pop(A);
     -- Has to be Inte and val Natural
     begin
-      N := Natural(A.Val_Inte);
+      N := Stack.Ll_Natural(A.Val_Inte);
     exception
       when others => raise Invalid_Argument;
     end;
@@ -56,13 +56,13 @@ package body Misc is
   end Do_Popn;
 
   procedure Do_Readn is
-    N : Positive;
+    N : Stack.Ll_Positive;
     Rec : Item_Rec;
   begin
     Stack.Pop(A);
     -- Has to be Inte and val positive
     begin
-      N := Positive(A.Val_Inte);
+      N := Stack.Ll_Positive(A.Val_Inte);
     exception
       when others => raise Invalid_Argument;
     end;
@@ -72,13 +72,13 @@ package body Misc is
   end Do_Readn;
 
   procedure Do_Moven is
-    N : Positive;
+    N : Stack.Ll_Positive;
     Rec : Item_Rec;
   begin
     Stack.Pop(A);
     -- Has to be Inte and val positive
     begin
-      N := Positive(A.Val_Inte);
+      N := Stack.Ll_Positive(A.Val_Inte);
     exception
       when others => raise Invalid_Argument;
     end;
@@ -97,6 +97,7 @@ package body Misc is
 
   procedure Do_Rotate_Extra (First : in Boolean; Times : in Item_Rec) is
     Rec : Item_Rec;
+    use type Stack.Ll_Natural;
   begin
     if Times.Kind /= Inte or else Times.Val_Inte < 0 then
       raise Mcd_Mng.Invalid_Argument;
