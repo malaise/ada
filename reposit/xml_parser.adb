@@ -1,9 +1,10 @@
 with Ada.Exceptions, Ada.Unchecked_Deallocation;
-with Trace.Loggers, Exception_Messenger, Directory, Str_Util, Reg_Exp, As.U.Utils;
+with Trace.Loggers, Exception_Messenger, Directory, Str_Util, Reg_Exp,
+     As.U.Utils;
 package body Xml_Parser is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "0";
+  Minor_Version : constant String := "1";
   function Version return String is
     ("V" & Major_Version & "." & Minor_Version);
 
