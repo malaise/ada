@@ -1,7 +1,7 @@
 -- Set a list of regex expressions and success conditions
 -- Check a string versus the citeria one after the other
 private with Ada.Finalization;
-private with Dynamic_List, Reg_Exp;
+private with Long_Long_Dynamic_List, Reg_Exp;
 package Regex_Filters is
 
   type Regex_Filter is tagged limited private;
@@ -34,7 +34,7 @@ private
   end record;
 
   -- A filter is a dynamic list of cells
-  package Filter_Dyn_List_Mng is new Dynamic_List (Filter_Cell);
+  package Filter_Dyn_List_Mng is new Long_Long_Dynamic_List (Filter_Cell);
   package Filter_List_Mng renames Filter_Dyn_List_Mng.Dyn_List;
 
   type Regex_Filter is limited new Ada.Finalization.Limited_Controlled

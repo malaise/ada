@@ -1,5 +1,5 @@
 with Ada.Calendar;
-with As.U, Directory, Sys_Calls, Dynamic_List;
+with As.U, Directory, Sys_Calls, Long_Long_Dynamic_List;
 package Entities is
 
 
@@ -29,7 +29,7 @@ package Entities is
   end record;
 
   -- List of entities
-  package Entity_Dyn_List_Mng is new Dynamic_List (Entity);
+  package Entity_Dyn_List_Mng is new Long_Long_Dynamic_List (Entity);
   package Entity_List_Mng renames Entity_Dyn_List_Mng.Dyn_List;
   subtype Entity_List is Entity_List_Mng.List_Type;
 

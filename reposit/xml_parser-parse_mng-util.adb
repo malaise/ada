@@ -1,4 +1,4 @@
-with Environ, Utf_8, Utf_16, Sys_Calls, Str_Util.Regex, Dynamic_List;
+with Environ, Utf_8, Utf_16, Sys_Calls, Str_Util.Regex, Long_Long_Dynamic_List;
 separate (Xml_Parser.Parse_Mng)
 package body Util is
   -- Autodetect encoding family
@@ -754,7 +754,7 @@ package body Util is
   end Try;
 
   -- List of names of entities expanding to each other, to detect recursion
-  package Name_Dyn_List_Mng is new Dynamic_List (As.U.Asu_Us);
+  package Name_Dyn_List_Mng is new Long_Long_Dynamic_List (As.U.Asu_Us);
   package Name_List_Mng renames Name_Dyn_List_Mng.Dyn_List;
   function Search_Name is new Name_List_Mng.Search (As.U."=");
 

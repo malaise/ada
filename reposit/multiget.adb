@@ -24,7 +24,8 @@ package body Multiget is
   -- Still allows re-get to use recorded unget but new unget are impossible
   -- No effect if recording is already stopped
   procedure Stop_Recording (Getter : in out Multigetter) is
-    Pos : Positive;
+    Pos : Item_Dyn_List_Mng.Dyn_List.Ll_Positive;
+    use type Item_Dyn_List_Mng.Dyn_List.Ll_Natural;
   begin
     if not Getter.Item_List.Is_Empty then
       -- Clear the buffer up to current pos
@@ -53,6 +54,7 @@ package body Multiget is
   function Get (Getter : in out Multigetter; User_Data : in User_Data_Type)
                return Item_Type is
     Item : Item_Type;
+    use type Item_Dyn_List_Mng.Dyn_List.Ll_Positive;
   begin
     if Getter.Item_List.Is_Empty
     or else (Getter.Offset = 0
@@ -95,12 +97,16 @@ package body Multiget is
 
   -- Returns the number of Unget that can be done (0 when recording is not active)
   function Nb_Unget (Getter : Multigetter) return Unget_Range is
-    (if not Getter.Recording or else Getter.Item_List.Is_Empty then 0
-     else Getter.Item_List.Get_Position - Getter.Offset);
+    use type Item_Dyn_List_Mng.Dyn_List.Ll_Natural;
+  begin
+    return (if not Getter.Recording or else Getter.Item_List.Is_Empty then 0
+            else Getter.Item_List.Get_Position - Getter.Offset);
+  end Nb_Unget;
 
   -- Ungets one or several gets (0 for all, Nb_Unget)
   -- Raises Too_Many_Unget if Number > Nb_Unget (e.g. recording inactive)
-  procedure Unget (Getter : in out Multigetter; Number : in Natural := 1) is
+  procedure Unget (Getter : in out Multigetter; Number : in Unget_Range := 1) is
+    use type Item_Dyn_List_Mng.Dyn_List.Ll_Natural;
   begin
     if not Getter.Recording then
       raise Too_Many_Unget;

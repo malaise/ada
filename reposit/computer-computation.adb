@@ -1,4 +1,4 @@
-with Dynamic_List, Parser, Str_Util;
+with Long_Long_Dynamic_List, Parser, Str_Util;
 package body Computer.Computation is
 
   -- Fix expression
@@ -56,7 +56,7 @@ package body Computer.Computation is
         null;
     end case;
   end record;
-  package Members_List_Mng is new Dynamic_List (Member_Rec);
+  package Members_List_Mng is new Long_Long_Dynamic_List (Member_Rec);
   package Members_Mng renames Members_List_Mng.Dyn_List;
 
   -- Parse the expression into a list of members

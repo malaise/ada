@@ -1,5 +1,5 @@
 -- Homogeneous access to Stdout, Stderr (synchronous or not) or a file
-private with As.U, Dynamic_List, Smart_Alias;
+private with As.U, Long_Long_Dynamic_List, Smart_Alias;
 with Text_Line;
 package Output_Flows is
 
@@ -81,7 +81,7 @@ private
   end record;
 
   -- List of Flows with unique names (to allow reuse)
-  package Flow_List_Mng is new  Dynamic_List (Flow_Aliases.Handle);
+  package Flow_List_Mng is new Long_Long_Dynamic_List (Flow_Aliases.Handle);
   package Flows_Mng renames Flow_List_Mng.Dyn_List;
   Flows : Flows_Mng.List_Type;
 

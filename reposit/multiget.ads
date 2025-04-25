@@ -1,5 +1,6 @@
 -- Allows to get/unget/re-get items (from a input flow)
-private with Dynamic_List;
+with Long_Longs;
+private with Long_Long_Dynamic_List;
 generic
   -- The type of item got
   type Item_Type is private;
@@ -10,12 +11,12 @@ generic
   with function Get_Item (User_Data : User_Data_Type) return Item_Type;
   -- The size of buffer of Items that can be ungot
   -- 0 means unlimited
-  Unget_Length : Natural := 0;
+  Unget_Length : Long_Longs.Llu_Natural := 0;
 
 package Multiget is
 
   -- The number of possible unget
-  subtype Unget_Range is Natural;
+  subtype Unget_Range is Long_Longs.Llu_Natural;
 
   type Multigetter is tagged limited private;
 
@@ -48,7 +49,7 @@ package Multiget is
   -- Ungets one or several gets (0 for all, Nb_Unget)
   -- Raises Too_Many_Unget if Number > Nb_Unget (e.g. recording inactive)
   Too_Many_Unget : exception;
-  procedure Unget (Getter : in out Multigetter; Number : in Natural := 1);
+  procedure Unget (Getter : in out Multigetter; Number : in Unget_Range := 1);
 
   -- Resets the unget buffer
   procedure Reset (Getter : in out Multigetter);
@@ -69,13 +70,13 @@ private
   -- When recoding is inactive there cannot be any unget (previous items are
   --  removed from buffer) and getting consists in taking current item if
   --  possible, and otherwise getting from "outside".
-  package Item_Dyn_List_Mng is new Dynamic_List (Item_Type);
+  package Item_Dyn_List_Mng is new Long_Long_Dynamic_List (Item_Type);
   package Item_List_Mng renames Item_Dyn_List_Mng.Dyn_List;
 
  -- The virtual offset of current position vs first
   -- Because, when at pos 1 and ungetting, virtual position becomes 0
   -- Only significant when Item_List is not empy
-  subtype Offset_Range is Natural range 0 .. 1;
+  subtype Offset_Range is Item_List_Mng.Ll_Natural range 0 .. 1;
 
 
   -- The context of a mutiget

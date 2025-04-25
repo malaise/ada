@@ -532,6 +532,7 @@ package body Output is
                  Append_New_Line : in Boolean) is
     Moved : Boolean;
     Ent : Entities.Entity;
+    use type Entities.Entity_List_Mng.Ll_Natural;
   begin
     Output.In_Dir := In_Dir;
     if List.Is_Empty or else Quiet then
@@ -539,7 +540,9 @@ package body Output is
     end if;
     -- Sort (which rewinds) if less than a max, otherwise rewind
     if Sort_Kind = None
-    or else (Max_To_Sort /= 0 and then List.List_Length > Max_To_Sort) then
+    or else (Max_To_Sort /= 0
+             and then List.List_Length >
+               Entities.Entity_List_Mng.Ll_Natural(Max_To_Sort)) then
       List.Rewind;
     else
       Sort (List);
