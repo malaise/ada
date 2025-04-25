@@ -148,8 +148,9 @@ Data containers
 ~~~~~~~~~~~~~~~
 * 'Dyn_Data' allocates and frees data, relying on a free list to reuse memory.
 
-* 'Long_Long_Limited_List', 'Limited_List' and anchor:XDynamic_List[]
-'Dynamic_List' are linked lists of data, limited or simply private.
+* 'Long_Long_Limited_List', 'Limited_List', Long_Long_Dynamic_List and
+anchor:XDynamic_List[] 'Dynamic_List' are linked lists of data, limited or
+simply private.
 
 * 'Long_Long_Limited_Pool', 'Limited_Pool' and 'Unlimited_Pool' are simple
 dynamic lists with push/pop operations.
