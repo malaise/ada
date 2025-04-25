@@ -59,8 +59,23 @@ package body Environ is
        null;
   end Get_Us;
 
-  -- Getenv an Integer
-  function  Get_Int (Name : String; Default : Integer) return Integer is
+  -- Getenv a generic integer or modular (first variant)
+  function Get_Num (Name : String; Default : Num) return Num is
+    Str : String (1 .. Num'Width);
+    Env_Set   : Boolean;
+    Env_Trunc : Boolean;
+    Env_Len   : Natural;
+  begin
+    Sys_Calls.Getenv (Name, Env_Set, Env_Trunc, Str, Env_Len);
+    return (if Env_Set and then not Env_Trunc then
+              Num'Value (Str(1 .. Env_Len))
+            else Default);
+  exception
+    when Constraint_Error =>
+      return Default;
+  end Get_Num;
+
+  function Get_Mod (Name : String; Default : Modul) return Modul is
     Str : String (1 .. Integer'Width);
     Env_Set   : Boolean;
     Env_Trunc : Boolean;
@@ -68,12 +83,17 @@ package body Environ is
   begin
     Sys_Calls.Getenv (Name, Env_Set, Env_Trunc, Str, Env_Len);
     return (if Env_Set and then not Env_Trunc then
-              Integer'Value (Str(1 .. Env_Len))
+              Modul'Value (Str(1 .. Env_Len))
             else Default);
   exception
     when Constraint_Error =>
       return Default;
-  end Get_Int;
+  end Get_Mod;
+
+  -- Getenv an Integer
+  function Get_Integer is new Get_Num (Integer);
+  function Get_Int (Name : String; Default : Integer) return Integer is
+    (Get_Integer (Name, Default));
 
   procedure Get_Int (Name : in String; Result : in out Integer) is
   begin
@@ -102,6 +122,7 @@ package body Environ is
   begin
     Result := Get_Pos (Name, Result);
   end Get_Pos;
+
 
   -- Getenv a Duration (positive or null)
   function  Get_Dur (Name : String; Default : Pos_Duration)

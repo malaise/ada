@@ -33,6 +33,15 @@ package Environ is
   function  Get_Pos (Name : String; Default : Positive) return Positive;
   procedure Get_Pos (Name : in String; Result : in out Positive);
 
+  -- Getenv a generic integer or modular (first variant)
+  generic
+    type Num is range <>;
+  function Get_Num (Name : String; Default : Num) return Num;
+  generic
+    type Modul is mod <>;
+  function Get_Mod (Name : String; Default : Modul) return Modul;
+
+
   -- Getenv a Duration (positive or null)
   subtype Pos_Duration is Duration range 0.0 .. Duration'Last;
   function  Get_Dur (Name : String; Default : Pos_Duration) return Pos_Duration;
