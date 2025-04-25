@@ -5,7 +5,8 @@ package body Output is
 
   -- Max amount of entries to sort
   Env_Max_To_Sort : constant String := "ALS_MAX_TO_SORT";
-  Max_To_Sort : Natural := 5_000;
+  Max_To_Sort : Entities.Entity_List_Mng.Ll_Natural := 5_000;
+  function Get_Max is new Environ.Get_Mod (Entities.Entity_List_Mng.Ll_Natural);
 
   -- Images
   function Nat_Image is new Images.Int_Image (Natural);
@@ -49,7 +50,7 @@ package body Output is
     Output.Classify := Classify;
     Output.Date_Iso := Date_Iso;
     Output.Quiet := Quiet;
-    Environ.Get_Nat (Env_Max_To_Sort, Max_To_Sort);
+    Max_To_Sort := Get_Max (Env_Max_To_Sort, Max_To_Sort);
   end Set_Style;
 
   -- Get full path of a path
@@ -541,8 +542,7 @@ package body Output is
     -- Sort (which rewinds) if less than a max, otherwise rewind
     if Sort_Kind = None
     or else (Max_To_Sort /= 0
-             and then List.List_Length >
-               Entities.Entity_List_Mng.Ll_Natural(Max_To_Sort)) then
+             and then List.List_Length > Max_To_Sort) then
       List.Rewind;
     else
       Sort (List);
