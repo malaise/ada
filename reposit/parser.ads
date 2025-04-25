@@ -107,7 +107,7 @@ private
     -- Initialised by Set
     -- Current parsing state
     State : Iter_State_List := Unset;
-    -- The string, its lenght and first index, and sepration function
+    -- The string, its lenght and first index, and separation function
     Str : As.U.Asu_Us := As.U.Asu_Null;
     Len : Natural := 0;
     Start : Positive := 1;
