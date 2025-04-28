@@ -153,6 +153,18 @@ if [ \( -z "$1" \) -o \( "$1" = "compress" \) ] ; then
   echo ""
 fi
 
+# arbipas
+if [ \( -z "$1" \) -o \( "$1" = "arbipas" \) ] ; then
+  echo arbipas 10
+  res=`arbipas 10 | tail -1`
+  exp=" 10: 1 10 45 120 210 252 210 120 45 10 1 "
+  if [ "$res" != "$exp" ] ; then
+    error "arbipas 10 shows $res instead of $exp."
+  fi
+  echo "OK"
+  echo ""
+fi
+
 # astat
 if [ \( -z "$1" \) -o \( "$1" = "astat" \) ] ; then
   echo astat on a file with '*.adb'
