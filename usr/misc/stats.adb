@@ -1,3 +1,6 @@
+-- Scan stdin a data flow that consists of columns
+-- For some specified columns (that contains ints or floats), compute
+--  average and deviation
 with Basic_Proc, Argument,
      As.U.Utils, Str_Util.Regex, Images, Normalization,
      Unbounded_Arrays, My_Math, Long_Longs, Scanner,
@@ -170,8 +173,9 @@ begin
     Basic_Proc.Put_Line_Output ("Nb lines: " & Long_Longs.Image (Nbu));
     for I in 1 .. Nb_Columns loop
        Deviations(I) := Deviations(I) / Nbr;
-       Basic_Proc.Put_Line_Output ( "Col " & Images.Integer_Image (I)
-           & ", Avg: " & Normalization.Normal_Fixed (Averages(I), 13, 10)
+       Basic_Proc.Put_Line_Output (
+             "Col " & Images.Integer_Image (Columns(I))
+           & ", Avg: " & Normalization.Normal_Fixed (Averages(I), 12, 10)
            & ", Dev: " & Normalization.Normal_Digits (Deviations(I), 11, 3));
     end loop;
   end;
