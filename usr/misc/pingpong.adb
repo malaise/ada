@@ -1,6 +1,5 @@
 -- Send ping-pong between hosts
--- By default send a ping each period and replies to ping
--- On option only sends pings or only replies pong
+-- Either only sends pings or only replies pong
 with Ada.Exceptions, Ada.Calendar;
 with As.U,
      Argument, Argument_Parser,
