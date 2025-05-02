@@ -17,7 +17,7 @@ fi
 # Error message
 function error {
   echo
-  echo $* 2>&1
+  echo "$*" 2>&1
   exit 1
 }
 
@@ -150,7 +150,6 @@ if [ \( -z "$1" \) -o \( "$1" = "compress" \) ] ; then
   done
   echo ""
   echo "OK"
-  echo ""
 fi
 
 # arbipas
@@ -162,7 +161,6 @@ if [ \( -z "$1" \) -o \( "$1" = "arbipas" \) ] ; then
     error "arbipas 10 shows $res instead of $exp."
   fi
   echo "OK"
-  echo ""
 fi
 
 # astat
@@ -178,10 +176,9 @@ if [ \( -z "$1" \) -o \( "$1" = "astat" \) ] ; then
   res=`astat *.ad* | tail -1 | awk '{print $4}'`
   exp=`wc -l *.ad* | tail -1 | awk '{print $1}'`
   if [ $res != $exp ] ; then
-    error "astat find $res lines instead of $exp."
+    error "astat finds $res lines instead of $exp."
   fi
   echo "OK"
-  echo ""
 fi
 
 # comp_vars
@@ -217,7 +214,6 @@ Unknown variable while evaluating variable.
 EOF
   comp err experr
   echo "OK"
-  echo ""
 fi
 
 # copy_files
@@ -238,7 +234,183 @@ if [ \( -z "$1" \) -o \( "$1" = "copy_files" \) ] ; then
   echo -n "" >experr
   cmp err experr
   echo "OK"
-  echo ""
+fi
+
+# ddir
+if [ \( -z "$1" \) -o \( "$1" = "ddir" \) ] ; then
+  echo "ddir"
+  res=`ddir | tail -2 | head -1`
+  exp="lib"
+  if [ $res != $exp ] ; then
+    error "ddir finds $res instead of $exp."
+  fi
+  echo "OK"
+fi
+ 
+# e2f
+if [ \( -z "$1" \) -o \( "$1" = "e2f" \) ] ; then
+  echo "e2f 21f"
+  res=`e2f 21f`
+  exp="    21.0 f =      3.2 e"
+  if [ "$res" != "$exp" ] ; then
+    error "e2f finds $res instead of $exp."
+  fi
+  echo "OK"
+fi
+
+# full_path
+if [ \( -z "$1" \) -o \( "$1" = "full_path" \) ] ; then
+  echo "full_path ."
+  res=`full_path . | cut -d '/' -f 4-`
+  exp="ada/usr/misc"
+  if [ "$res" != "$exp" ] ; then
+    error "full_path finds $res instead of $exp."
+  fi
+  echo "OK"
+fi
+
+# hanoi
+if [ \( -z "$1" \) -o \( "$1" = "hanoi" \) ] ; then
+  echo "hanoi a c 4"
+  res=`hanoi a c 4 | tail -3 | head -1`
+  exp="Transfer from 4 disks from A to C."
+  if [ "$res" != "$exp" ] ; then
+    error "hanoi finds $res instead of $exp."
+  fi
+  echo "OK"
+fi
+
+# lenv
+if [ \( -z "$1" \) -o \( "$1" = "lenv" \) ] ; then
+  echo "lenv -v PWD"
+  res=`lenv -v PWD | cut -d '/' -f 4-`
+  exp="ada/usr/misc"
+  if [ "$res" != "$exp" ] ; then
+    error "lenv finds $res instead of $exp."
+  fi
+  echo "OK"
+fi
+
+# mlbx_overflow
+if [ \( -z "$1" \) -o \( "$1" = "mlbx_overflow" \) ] ; then
+  echo "mlbx_overflow"
+  res=`mlbx_overflow | tail -1`
+  exp="Try no: 11, this try delay: 122070310 us; Total delay: 152587860 us"
+  if [ "$res" != "$exp" ] ; then
+    error "mlbx_overflow finds $res instead of $exp."
+  fi
+  echo "OK"
+fi
+
+# one_of_arg
+if [ \( -z "$1" \) -o \( "$1" = "one_of_arg" \) ] ; then
+  echo "one_of_arg  toto titi tata"
+  res=`one_of_arg  toto titi tata`
+  if [ \( "$res" != "toto" \) -a \( "$res" != "titi" \)\
+    -a \( "$res" != "tata" \) ] ; then
+    error "one_of_arg finds $res instead of toto, titi or tata."
+  fi
+  echo "OK"
+fi
+
+# pascal
+if [ \( -z "$1" \) -o \( "$1" = "pascal" \) ] ; then
+  echo "pascal"
+  res=`pascal | tail -2 | head -1`
+  exp="-> 5456/528/33/1"
+  if [ "$res" != "$exp" ] ; then
+    error "pascal finds $res instead of $exp."
+  fi
+  echo "OK"
+fi
+
+# prime
+if [ \( -z "$1" \) -o \( "$1" = "prime" \) ] ; then
+  echo "prime list 500"
+  res=`prime list 500 | tail -1`
+  exp="499"
+  if [ "$res" != "$exp" ] ; then
+    error "prime finds $res instead of $exp."
+  fi
+  echo "OK"
+fi
+
+# second
+if [ \( -z "$1" \) -o \( "$1" = "second" \) ] ; then
+  echo "second 1 2 3"
+  res=`second 1 2 3 | tail -1 | sed 's/*/@/'`
+  exp="-1.00000000000000E+00 +/-1.41421356237310E+00 @ i"
+  if [ "$res" != "$exp" ] ; then
+    error "second finds $res instead of $exp."
+  fi
+  echo "OK"
+fi
+
+# stats
+if [ \( -z "$1" \) -o \( "$1" = "stats" \) ] ; then
+  echo "stats"
+  out=`stats "%l %w %r" "3" <<EOF
+1 toto 02.0
+3 toto 06.0
+5 toto 10.0
+EOF`
+  res=`echo "$out" | tail -1`
+  exp="Col 3, Avg:          6.0, Dev:  1.067E+001"
+  if [ "$res" != "$exp" ] ; then
+    error "stats finds " "$res" " instead of " "$exp."
+  fi
+  echo "OK"
+fi
+
+# status
+if [ \( -z "$1" \) -o \( "$1" = "status" \) ] ; then
+  echo "status status.adb status"
+  status status.adb status
+  res=$?
+  if [ "$res" != "0" ] ; then
+    error "status finds status not up to date."
+  fi
+  echo "status status status.adb"
+  status status status.adb
+  res=$?
+  if [ "$res" != "1" ] ; then
+    error "status finds status.adb up to date."
+  fi
+  echo "OK"
+fi
+
+# strcase
+if [ \( -z "$1" \) -o \( "$1" = "strcase" \) ] ; then
+  echo "strcase -u tOto"
+  res=`echo tOto | strcase -u`
+  exp="TOTO"
+  if [ "$res" != "$exp" ] ; then
+    error "strcase -u finds $res instead of $exp."
+  fi
+  echo "strcase -l TOtO"
+  res=`echo TOtO | strcase -l`
+  exp="toto"
+  if [ "$res" != "$exp" ] ; then
+    error "strcase -u finds $res instead of $exp."
+  fi
+  echo "strcase -l tOTO"
+  res=`echo tOTO | strcase -m`
+  exp="Toto"
+  if [ "$res" != "$exp" ] ; then
+    error "strcase -u finds $res instead of $exp."
+  fi
+  echo "OK"
+fi
+
+# wait
+if [ \( -z "$1" \) -o \( "$1" = "wait" \) ] ; then
+  echo "wait 0.5"
+  ./wait 0.5
+  res=$?
+  if [ "$res" != "0" ] ; then
+    error "wait has exited with code $res."
+  fi
+  echo "OK"
 fi
 
 echo clean
