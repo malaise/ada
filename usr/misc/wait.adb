@@ -35,5 +35,6 @@ exception
   when others =>
     Basic_Proc.Put_Line_Error (
        "Usage : ""wait [seconds]""     (1.0 by default).");
+    Basic_Proc.Set_Error_Exit_Code;
 end Wait;
 
