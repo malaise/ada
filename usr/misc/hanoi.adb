@@ -135,7 +135,7 @@ begin -- Hanoi
     when Arg_Error =>
       raise;
     when others =>
-      Error ("Invalid arguements");
+      Error ("Invalid arguments");
   end;
 
   -- Recursive moves
