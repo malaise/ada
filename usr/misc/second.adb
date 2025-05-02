@@ -64,7 +64,7 @@ begin
       Basic_Proc.Put_Output (Real_Image ((-B) / (2.0 * A) ));
       Basic_Proc.Put_Output (" +/-");
       Basic_Proc.Put_Output (Real_Image (My_Math.Sqrt(-D) / (2.0 * A) ));
-      Basic_Proc.Put_Output (" * i ");
+      Basic_Proc.Put_Output (" * i");
       Basic_Proc.New_Line_Output;
     end if;
   end if;
