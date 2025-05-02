@@ -18,8 +18,8 @@ package Rnd is
   Gen : constant not null access Simple_Generator;
 
   -- Initialisation of the sequence,
-  --   on Init if 0.0 <= Init < 1.0 (always)
-  --   otherwise randomly (by default, only the first time)
+  --   on Init if 0.0 <= Init < 1.0 (always at each call)
+  --   otherwise randomly (the default, only if not yet randomised by default)
   Randomly : constant Float := 1.0;
   procedure Randomize (Agen : in out Generator;
                        Init : in Float := Randomly;
@@ -27,6 +27,9 @@ package Rnd is
 
   -- A Generator is initially not randomized
   function Is_Randomized (Agen : in out Generator) return Boolean;
+
+  -- Run the generator a random amount of times, from 0 to Max
+  procedure Run (Agen : in out Generator; Max : Positive);
 
   -- Don't exceed Long_Long'First .. Long_Long'Last
   generic

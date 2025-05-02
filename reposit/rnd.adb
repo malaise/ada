@@ -90,6 +90,15 @@ package body Rnd is
       raise;
   end Is_Randomized;
 
+  -- Run the generator a random amount of times, from 0 to Max
+  procedure Run (Agen : in out Generator; Max : Positive) is
+    Dummy :  Integer;
+  begin
+    for I in 1 .. Rnd.Gen.Int_Random(1, Max) loop
+      Dummy :=  Int_Random (Agen);
+    end loop;
+  end Run;
+
   -- Next element in sequence
   function Random (Agen : in out Generator;
                    Mini : in Float := 0.0; Maxi : in Float := 1.0)
