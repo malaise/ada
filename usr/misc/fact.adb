@@ -15,21 +15,23 @@ procedure Fact is
 begin
   Put_Line_Output ("Computation of the factorial of a number:");
   New_Line_Output;
-  loop
+  All_Gets: loop
 
-    loop
+    One_Get: loop
       begin
         Put_Output ("Enter the number? ");
         N := Gets.Get_Int (Get_Line);
         Nombre := Inte(N);
-        exit;
+        exit One_Get;
       exception
+        when Basic_Proc.End_Error =>
+          exit All_Gets;
         when others =>
           Skip_Line;
           Put_Line_Output (
               "ERROR, a positive or null integer is required. Try again.");
       end;
-    end loop;
+    end loop One_Get;
 
     begin
 
@@ -44,6 +46,6 @@ begin
         Put_Line_Output ("ERROR, the number is too big. Try again.");
         New_Line_Output;
     end;
-  end loop;
+  end loop All_Gets;
 end Fact;
 
