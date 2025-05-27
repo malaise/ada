@@ -233,6 +233,7 @@ if [ \( -z "$1" \) -o \( "$1" = "copy_files" \) ] ; then
   # No error
   echo -n "" >experr
   cmp err experr
+  rm -rf tmp
   echo "OK"
 fi
 
