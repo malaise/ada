@@ -1,7 +1,7 @@
 with As.U, Basic_Proc, Argument, Argument_Parser, Str_Util, Trilean;
 with Entities, Output, Targets, Lister, Exit_Code;
 procedure Als is
-  Version : constant String  := "V24.1";
+  Version : constant String  := "V24.2";
 
   -- The keys and descriptor of parsed keys
   Nkc : constant Character := Argument_Parser.No_Key_Char;
@@ -75,7 +75,7 @@ procedure Als is
     Put_Line_Error ("  " & Key_Img(07) & "// Scan directories recursively");
     Put_Line_Error ("  " & Key_Img(24) & "// Scan only to given depth (needs ""-R"")");
     Put_Line_Error ("  " & Key_Img(31) & "// Skip directories from arguments");
-    Put_Line_Error ("  " & Key_Img(40) & "// Show only file with the given access for current user");
+    Put_Line_Error ("  " & Key_Img(40) & "// Show only entries with the given access for current user");
     Put_Line_Error ("                     //   ex: ""rw*"" read and write, exec or not");
     Put_Line_Error ("                     //       ""r-x"" read, not write, exec");
     Put_Line_Error ("  " & Key_Img(29) & "// Follow symbolic links that finally denote a directory");

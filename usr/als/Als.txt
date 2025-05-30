@@ -1,6 +1,6 @@
 Als
 ===
-V24.1
+V24.2
 
 Als lists files, directory contents... It supports several powerful options
 for the selection of entries, for the output format of each entry, and general
@@ -140,15 +140,14 @@ Providing these options together is reported as an error.
 Examples:
 
 * Sorting criteria are mutually exclusive.
-* -d and -n are mutually exclusive.
 * -S is not compatible with some other formatting options (-l, -1 and -c).
 
 .Some options are combined according to a specific logic
 
 * Matching applies to the target of the link (if '--follow-links').
-* Several matching criteria are usually combined with operator 'and', except
-that:
- - several kinds are combined with 'or',
+* Several matching criteria are usually combined with operator 'and' (in the
+sense "matching crit1 *and* crit2"), except that:
+ - several kinds (files, directories...) are combined with 'or',
  - several name matching patterns or regex are combined with 'or'.
 
 .Merge mode leads to specific outpout
