@@ -386,19 +386,19 @@ if [ \( -z "$1" \) -o \( "$1" = "strcase" \) ] ; then
   res=`echo tOto | strcase -u`
   exp="TOTO"
   if [ "$res" != "$exp" ] ; then
-    error "strcase -u finds $res instead of $exp."
+    error "strcase finds $res instead of $exp."
   fi
   echo "strcase -l TOtO"
   res=`echo TOtO | strcase -l`
   exp="toto"
   if [ "$res" != "$exp" ] ; then
-    error "strcase -u finds $res instead of $exp."
+    error "strcase finds $res instead of $exp."
   fi
-  echo "strcase -l tOTO"
+  echo "strcase -m tOTO"
   res=`echo tOTO | strcase -m`
   exp="Toto"
   if [ "$res" != "$exp" ] ; then
-    error "strcase -u finds $res instead of $exp."
+    error "strcase finds $res instead of $exp."
   fi
   echo "OK"
 fi
