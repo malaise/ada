@@ -474,7 +474,7 @@
 
     <!-- Tittle -->
     <Field Num="01" Kind="Put" Name="Title">
-      <Geometry Up="01" Left="30" Low="01" Right="49"/>
+      <Geometry Up="00" Left="30" Low="01" Right="49"/>
       <Colors Foreground="Blue" Background="Light_Grey"/>
       <Init Row="00" Col="00">xxxxxxxx of a record</Init>
     </Field>
@@ -488,33 +488,33 @@
 
     <!-- Person get tittle -->
     <Field Num="03" Kind="Put">
-      <Geometry Up="04" Left="05" Low="04" Right="10"/>
+      <Geometry Up="02" Left="05" Low="02" Right="10"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="00" Col="00">Person</Init>
     </Field>
 
     <!-- Person get -->
     <Field Num="04" Kind="Get" Name="Person">
-      <Geometry Up="04" Left="12" Low="04" Right="31"/>
+      <Geometry Up="02" Left="12" Low="02" Right="31"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Activity get tittle -->
     <Field Num="05" Kind="Put">
-      <Geometry Up="04" Left="34" Low="04" Right="41"/>
+      <Geometry Up="02" Left="34" Low="02" Right="41"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="00" Col="00">Activity</Init>
     </Field>
 
     <!-- Activity get -->
     <Field Num="06" Kind="Get" Name="Activity">
-      <Geometry Up="04" Left="43" Low="04" Right="52"/>
+      <Geometry Up="02" Left="43" Low="02" Right="52"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- TZ edit numbers -->
     <Field Num="07" Kind="Put">
-      <Geometry Up="06" Left="30" Low="06" Right="53"/>
+      <Geometry Up="04" Left="30" Low="04" Right="53"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="00" Col="01">50</Init>
       <Init Row="00" Col="05">60</Init>
@@ -526,901 +526,1041 @@
 
     <!-- TZ edit tittle -->
     <Field Num="08" Kind="Put" Name="Tz_Title">
-      <Geometry Up="07" Left="15" Low="07" Right="28"/>
+      <Geometry Up="05" Left="15" Low="05" Right="28"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="00" Col="00">Training Zones</Init>
     </Field>
 
     <!-- TZ1 get -->
     <Field Num="09" Kind="Get" Name="Tz1">
-      <Geometry Up="07" Left="30" Low="07" Right="32"/>
+      <Geometry Up="05" Left="30" Low="05" Right="32"/>
       <Get_Tuning Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- TZ2 get -->
     <Field Num="10" Kind="Get">
-      <Geometry Up="07" Left="34" Low="07" Right="36"/>
+      <Geometry Up="05" Left="34" Low="05" Right="36"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- TZ3 get -->
     <Field Num="11" Kind="Get">
-      <Geometry Up="07" Left="38" Low="07" Right="40"/>
+      <Geometry Up="05" Left="38" Low="05" Right="40"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- TZ4 get -->
     <Field Num="12" Kind="Get">
-      <Geometry Up="07" Left="42" Low="07" Right="44"/>
+      <Geometry Up="05" Left="42" Low="05" Right="44"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- TZ5 get -->
     <Field Num="13" Kind="Get">
-      <Geometry Up="07" Left="46" Low="07" Right="48"/>
+      <Geometry Up="05" Left="46" Low="05" Right="48"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- TZ6 get -->
     <Field Num="14" Kind="Get" Name="Tz6">
-      <Geometry Up="07" Left="50" Low="07" Right="52"/>
+      <Geometry Up="05" Left="50" Low="05" Right="52"/>
       <Get_Tuning Move_Prev="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Date tittle -->
     <Field Num="15" Kind="Put">
-      <Geometry Up="09" Left="05" Low="09" Right="08"/>
+      <Geometry Up="07" Left="05" Low="07" Right="08"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="00" Col="00">Date</Init>
     </Field>
 
     <!-- Date days -->
     <Field Num="16" Kind="Get" Name="Day">
-      <Geometry Up="09" Left="10" Low="09" Right="11"/>
+      <Geometry Up="07" Left="10" Low="07" Right="11"/>
       <Get_Tuning Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- / betweeen day and month -->
     <Field Num="17" Kind="Put">
-      <Geometry Up="09" Left="12" Low="09" Right="12"/>
+      <Geometry Up="07" Left="12" Low="07" Right="12"/>
        <Colors Foreground="Black" Background="Light_Grey"/>
        <Init Row="00" Col="00">/</Init>
     </Field>
 
     <!-- Date month -->
     <Field Num="18" Kind="Get" Name="Month">
-      <Geometry Up="09" Left="13" Low="09" Right="14"/>
+      <Geometry Up="07" Left="13" Low="07" Right="14"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- / betweeen month and year -->
     <Field Num="19" Kind="Put">
-      <Geometry Up="09" Left="15" Low="09" Right="15"/>
+      <Geometry Up="07" Left="15" Low="07" Right="15"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
        <Init Row="00" Col="00">/</Init>
     </Field>
 
     <!-- Date year -->
     <Field Num="20" Kind="Get" Name="Year">
-      <Geometry Up="09" Left="16" Low="09" Right="19"/>
+      <Geometry Up="07" Left="16" Low="07" Right="19"/>
       <Get_Tuning Move_Prev="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Comment tittle -->
     <Field Num="21" Kind="Put">
-      <Geometry Up="09" Left="22" Low="09" Right="28"/>
+      <Geometry Up="07" Left="22" Low="07" Right="28"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="00" Col="00">Comment</Init>
     </Field>
 
     <!-- Comment get -->
     <Field Num="22" Kind="Get" Name="Comment">
-      <Geometry Up="09" Left="30" Low="09" Right="49"/>
+      <Geometry Up="07" Left="30" Low="07" Right="49"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Sampling tittle -->
     <Field Num="23" Kind="Put">
-      <Geometry Up="09" Left="52" Low="09" Right="65"/>
+      <Geometry Up="07" Left="52" Low="07" Right="65"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="00" Col="00">Sampling delta</Init>
     </Field>
 
     <!-- Sampling get -->
     <Field Num="24" Kind="Get" Name="Sampling">
-      <Geometry Up="09" Left="67" Low="09" Right="69"/>
+      <Geometry Up="07" Left="67" Low="07" Right="69"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="25" Kind="Get" Name="Rate_001">
-      <Geometry Up="11" Left="01" Low="11" Right="03"/>
+      <Geometry Up="09" Left="01" Height="1" Right="03"/>
       <Get_Tuning Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="26" Kind="Get">
-      <Geometry Up="11" Left="05" Low="11" Right="07"/>
+      <Geometry Up="09" Left="05" Height="1" Right="07"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="27" Kind="Get">
-      <Geometry Up="11" Left="09" Low="11" Right="11"/>
+      <Geometry Up="09" Left="09" Height="1" Right="11"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="28" Kind="Get">
-      <Geometry Up="11" Left="13" Low="11" Right="15"/>
+      <Geometry Up="09" Left="13" Height="1" Right="15"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="29" Kind="Get">
-      <Geometry Up="11" Left="17" Low="11" Right="19"/>
+      <Geometry Up="09" Left="17" Height="1" Right="19"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="30" Kind="Get">
-      <Geometry Up="11" Left="21" Low="11" Right="23"/>
+      <Geometry Up="09" Left="21" Height="1" Right="23"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="31" Kind="Get">
-      <Geometry Up="11" Left="25" Low="11" Right="27"/>
+      <Geometry Up="09" Left="25" Height="1" Right="27"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="32" Kind="Get">
-      <Geometry Up="11" Left="29" Low="11" Right="31"/>
+      <Geometry Up="09" Left="29" Height="1" Right="31"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="33" Kind="Get">
-      <Geometry Up="11" Left="33" Low="11" Right="35"/>
+      <Geometry Up="09" Left="33" Height="1" Right="35"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="34" Kind="Get">
-      <Geometry Up="11" Left="37" Low="11" Right="39"/>
+      <Geometry Up="09" Left="37" Height="1" Right="39"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="35" Kind="Get">
-      <Geometry Up="11" Left="41" Low="11" Right="43"/>
+      <Geometry Up="09" Left="41" Height="1" Right="43"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="36" Kind="Get">
-      <Geometry Up="11" Left="45" Low="11" Right="47"/>
+      <Geometry Up="09" Left="45" Height="1" Right="47"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="37" Kind="Get">
-      <Geometry Up="11" Left="49" Low="11" Right="51"/>
+      <Geometry Up="09" Left="49" Height="1" Right="51"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="38" Kind="Get">
-      <Geometry Up="11" Left="53" Low="11" Right="55"/>
+      <Geometry Up="09" Left="53" Height="1" Right="55"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="39" Kind="Get">
-      <Geometry Up="11" Left="57" Low="11" Right="59"/>
+      <Geometry Up="09" Left="57" Height="1" Right="59"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="40" Kind="Get">
-      <Geometry Up="11" Left="61" Low="11" Right="63"/>
+      <Geometry Up="09" Left="61" Height="1" Right="63"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="41" Kind="Get">
-      <Geometry Up="11" Left="65" Low="11" Right="67"/>
+      <Geometry Up="09" Left="65" Height="1" Right="67"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="42" Kind="Get">
-      <Geometry Up="11" Left="69" Low="11" Right="71"/>
+      <Geometry Up="09" Left="69" Height="1" Right="71"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="43" Kind="Get">
-      <Geometry Up="11" Left="73" Low="11" Right="75"/>
+      <Geometry Up="09" Left="73" Height="1" Right="75"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="44" Kind="Get">
-      <Geometry Up="11" Left="77" Low="11" Right="79"/>
+      <Geometry Up="09" Left="77" Height="1" Right="79"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="45" Kind="Get">
-      <Geometry Up="13" Left="01" Low="13" Right="03"/>
+      <Geometry Up="11" Left="01" Height="1" Right="03"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="46" Kind="Get">
-      <Geometry Up="13" Left="05" Low="13" Right="07"/>
+      <Geometry Up="11" Left="05" Height="1" Right="07"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="47" Kind="Get">
-      <Geometry Up="13" Left="09" Low="13" Right="11"/>
+      <Geometry Up="11" Left="09" Height="1" Right="11"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="48" Kind="Get">
-      <Geometry Up="13" Left="13" Low="13" Right="15"/>
+      <Geometry Up="11" Left="13" Height="1" Right="15"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="49" Kind="Get">
-      <Geometry Up="13" Left="17" Low="13" Right="19"/>
+      <Geometry Up="11" Left="17" Height="1" Right="19"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="50" Kind="Get">
-      <Geometry Up="13" Left="21" Low="13" Right="23"/>
+      <Geometry Up="11" Left="21" Height="1" Right="23"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="51" Kind="Get">
-      <Geometry Up="13" Left="25" Low="13" Right="27"/>
+      <Geometry Up="11" Left="25" Height="1" Right="27"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="52" Kind="Get">
-      <Geometry Up="13" Left="29" Low="13" Right="31"/>
+      <Geometry Up="11" Left="29" Height="1" Right="31"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="53" Kind="Get">
-      <Geometry Up="13" Left="33" Low="13" Right="35"/>
+      <Geometry Up="11" Left="33" Height="1" Right="35"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="54" Kind="Get">
-      <Geometry Up="13" Left="37" Low="13" Right="39"/>
+      <Geometry Up="11" Left="37" Height="1" Right="39"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="55" Kind="Get">
-      <Geometry Up="13" Left="41" Low="13" Right="43"/>
+      <Geometry Up="11" Left="41" Height="1" Right="43"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="56" Kind="Get">
-      <Geometry Up="13" Left="45" Low="13" Right="47"/>
+      <Geometry Up="11" Left="45" Height="1" Right="47"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="57" Kind="Get">
-      <Geometry Up="13" Left="49" Low="13" Right="51"/>
+      <Geometry Up="11" Left="49" Height="1" Right="51"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="58" Kind="Get">
-      <Geometry Up="13" Left="53" Low="13" Right="55"/>
+      <Geometry Up="11" Left="53" Height="1" Right="55"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="59" Kind="Get">
-      <Geometry Up="13" Left="57" Low="13" Right="59"/>
+      <Geometry Up="11" Left="57" Height="1" Right="59"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="60" Kind="Get">
-      <Geometry Up="13" Left="61" Low="13" Right="63"/>
+      <Geometry Up="11" Left="61" Height="1" Right="63"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="61" Kind="Get">
-      <Geometry Up="13" Left="65" Low="13" Right="67"/>
+      <Geometry Up="11" Left="65" Height="1" Right="67"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="62" Kind="Get">
-      <Geometry Up="13" Left="69" Low="13" Right="71"/>
+      <Geometry Up="11" Left="69" Height="1" Right="71"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="63" Kind="Get">
-      <Geometry Up="13" Left="73" Low="13" Right="75"/>
+      <Geometry Up="11" Left="73" Height="1" Right="75"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="64" Kind="Get">
-      <Geometry Up="13" Left="77" Low="13" Right="79"/>
+      <Geometry Up="11" Left="77" Height="1" Right="79"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="65" Kind="Get">
-      <Geometry Up="15" Left="01" Low="15" Right="03"/>
+      <Geometry Up="13" Left="01" Height="1" Right="03"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="66" Kind="Get">
-      <Geometry Up="15" Left="05" Low="15" Right="07"/>
+      <Geometry Up="13" Left="05" Height="1" Right="07"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="67" Kind="Get">
-      <Geometry Up="15" Left="09" Low="15" Right="11"/>
+      <Geometry Up="13" Left="09" Height="1" Right="11"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="68" Kind="Get">
-      <Geometry Up="15" Left="13" Low="15" Right="15"/>
+      <Geometry Up="13" Left="13" Height="1" Right="15"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="69" Kind="Get">
-      <Geometry Up="15" Left="17" Low="15" Right="19"/>
+      <Geometry Up="13" Left="17" Height="1" Right="19"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="70" Kind="Get">
-      <Geometry Up="15" Left="21" Low="15" Right="23"/>
+      <Geometry Up="13" Left="21" Height="1" Right="23"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="71" Kind="Get">
-      <Geometry Up="15" Left="25" Low="15" Right="27"/>
+      <Geometry Up="13" Left="25" Height="1" Right="27"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="72" Kind="Get">
-      <Geometry Up="15" Left="29" Low="15" Right="31"/>
+      <Geometry Up="13" Left="29" Height="1" Right="31"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="73" Kind="Get">
-      <Geometry Up="15" Left="33" Low="15" Right="35"/>
+      <Geometry Up="13" Left="33" Height="1" Right="35"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="74" Kind="Get">
-      <Geometry Up="15" Left="37" Low="15" Right="39"/>
+      <Geometry Up="13" Left="37" Height="1" Right="39"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="75" Kind="Get">
-      <Geometry Up="15" Left="41" Low="15" Right="43"/>
+      <Geometry Up="13" Left="41" Height="1" Right="43"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="76" Kind="Get">
-      <Geometry Up="15" Left="45" Low="15" Right="47"/>
+      <Geometry Up="13" Left="45" Height="1" Right="47"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="77" Kind="Get">
-      <Geometry Up="15" Left="49" Low="15" Right="51"/>
+      <Geometry Up="13" Left="49" Height="1" Right="51"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="78" Kind="Get">
-      <Geometry Up="15" Left="53" Low="15" Right="55"/>
+      <Geometry Up="13" Left="53" Height="1" Right="55"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="79" Kind="Get">
-      <Geometry Up="15" Left="57" Low="15" Right="59"/>
+      <Geometry Up="13" Left="57" Height="1" Right="59"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="80" Kind="Get">
-      <Geometry Up="15" Left="61" Low="15" Right="63"/>
+      <Geometry Up="13" Left="61" Height="1" Right="63"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="81" Kind="Get">
-      <Geometry Up="15" Left="65" Low="15" Right="67"/>
+      <Geometry Up="13" Left="65" Height="1" Right="67"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="82" Kind="Get">
-      <Geometry Up="15" Left="69" Low="15" Right="71"/>
+      <Geometry Up="13" Left="69" Height="1" Right="71"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="83" Kind="Get">
-      <Geometry Up="15" Left="73" Low="15" Right="75"/>
+      <Geometry Up="13" Left="73" Height="1" Right="75"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="84" Kind="Get">
-      <Geometry Up="15" Left="77" Low="15" Right="79"/>
+      <Geometry Up="13" Left="77" Height="1" Right="79"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="85" Kind="Get">
-      <Geometry Up="17" Left="01" Low="17" Right="03"/>
+      <Geometry Up="15" Left="01" Height="1" Right="03"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="86" Kind="Get">
-      <Geometry Up="17" Left="05" Low="17" Right="07"/>
+      <Geometry Up="15" Left="05" Height="1" Right="07"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="87" Kind="Get">
-      <Geometry Up="17" Left="09" Low="17" Right="11"/>
+      <Geometry Up="15" Left="09" Height="1" Right="11"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="88" Kind="Get">
-      <Geometry Up="17" Left="13" Low="17" Right="15"/>
+      <Geometry Up="15" Left="13" Height="1" Right="15"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="89" Kind="Get">
-      <Geometry Up="17" Left="17" Low="17" Right="19"/>
+      <Geometry Up="15" Left="17" Height="1" Right="19"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="90" Kind="Get">
-      <Geometry Up="17" Left="21" Low="17" Right="23"/>
+      <Geometry Up="15" Left="21" Height="1" Right="23"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="91" Kind="Get">
-      <Geometry Up="17" Left="25" Low="17" Right="27"/>
+      <Geometry Up="15" Left="25" Height="1" Right="27"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="92" Kind="Get">
-      <Geometry Up="17" Left="29" Low="17" Right="31"/>
+      <Geometry Up="15" Left="29" Height="1" Right="31"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="93" Kind="Get">
-      <Geometry Up="17" Left="33" Low="17" Right="35"/>
+      <Geometry Up="15" Left="33" Height="1" Right="35"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="94" Kind="Get">
-      <Geometry Up="17" Left="37" Low="17" Right="39"/>
+      <Geometry Up="15" Left="37" Height="1" Right="39"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="95" Kind="Get">
-      <Geometry Up="17" Left="41" Low="17" Right="43"/>
+      <Geometry Up="15" Left="41" Height="1" Right="43"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="96" Kind="Get">
-      <Geometry Up="17" Left="45" Low="17" Right="47"/>
+      <Geometry Up="15" Left="45" Height="1" Right="47"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="97" Kind="Get">
-      <Geometry Up="17" Left="49" Low="17" Right="51"/>
+      <Geometry Up="15" Left="49" Height="1" Right="51"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="98" Kind="Get">
-      <Geometry Up="17" Left="53" Low="17" Right="55"/>
+      <Geometry Up="15" Left="53" Height="1" Right="55"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="99" Kind="Get">
-      <Geometry Up="17" Left="57" Low="17" Right="59"/>
+      <Geometry Up="15" Left="57" Height="1" Right="59"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="100" Kind="Get">
-      <Geometry Up="17" Left="61" Low="17" Right="63"/>
+      <Geometry Up="15" Left="61" Height="1" Right="63"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="101" Kind="Get">
-      <Geometry Up="17" Left="65" Low="17" Right="67"/>
+      <Geometry Up="15" Left="65" Height="1" Right="67"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="102" Kind="Get">
-      <Geometry Up="17" Left="69" Low="17" Right="71"/>
+      <Geometry Up="15" Left="69" Height="1" Right="71"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="103" Kind="Get">
-      <Geometry Up="17" Left="73" Low="17" Right="75"/>
+      <Geometry Up="15" Left="73" Height="1" Right="75"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="104" Kind="Get">
-      <Geometry Up="17" Left="77" Low="17" Right="79"/>
+      <Geometry Up="15" Left="77" Height="1" Right="79"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="105" Kind="Get">
-      <Geometry Up="19" Left="01" Low="19" Right="03"/>
+      <Geometry Up="17" Left="01" Height="1" Right="03"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="106" Kind="Get">
-      <Geometry Up="19" Left="05" Low="19" Right="07"/>
+      <Geometry Up="17" Left="05" Height="1" Right="07"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="107" Kind="Get">
-      <Geometry Up="19" Left="09" Low="19" Right="11"/>
+      <Geometry Up="17" Left="09" Height="1" Right="11"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="108" Kind="Get">
-      <Geometry Up="19" Left="13" Low="19" Right="15"/>
+      <Geometry Up="17" Left="13" Height="1" Right="15"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="109" Kind="Get">
-      <Geometry Up="19" Left="17" Low="19" Right="19"/>
+      <Geometry Up="17" Left="17" Height="1" Right="19"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="110" Kind="Get">
-      <Geometry Up="19" Left="21" Low="19" Right="23"/>
+      <Geometry Up="17" Left="21" Height="1" Right="23"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="111" Kind="Get">
-      <Geometry Up="19" Left="25" Low="19" Right="27"/>
+      <Geometry Up="17" Left="25" Height="1" Right="27"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="112" Kind="Get">
-      <Geometry Up="19" Left="29" Low="19" Right="31"/>
+      <Geometry Up="17" Left="29" Height="1" Right="31"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="113" Kind="Get">
-      <Geometry Up="19" Left="33" Low="19" Right="35"/>
+      <Geometry Up="17" Left="33" Height="1" Right="35"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="114" Kind="Get">
-      <Geometry Up="19" Left="37" Low="19" Right="39"/>
+      <Geometry Up="17" Left="37" Height="1" Right="39"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="115" Kind="Get">
-      <Geometry Up="19" Left="41" Low="19" Right="43"/>
+      <Geometry Up="17" Left="41" Height="1" Right="43"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="116" Kind="Get">
-      <Geometry Up="19" Left="45" Low="19" Right="47"/>
+      <Geometry Up="17" Left="45" Height="1" Right="47"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="117" Kind="Get">
-      <Geometry Up="19" Left="49" Low="19" Right="51"/>
+      <Geometry Up="17" Left="49" Height="1" Right="51"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="118" Kind="Get">
-      <Geometry Up="19" Left="53" Low="19" Right="55"/>
+      <Geometry Up="17" Left="53" Height="1" Right="55"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="119" Kind="Get">
-      <Geometry Up="19" Left="57" Low="19" Right="59"/>
+      <Geometry Up="17" Left="57" Height="1" Right="59"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="120" Kind="Get">
-      <Geometry Up="19" Left="61" Low="19" Right="63"/>
+      <Geometry Up="17" Left="61" Height="1" Right="63"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="121" Kind="Get">
-      <Geometry Up="19" Left="65" Low="19" Right="67"/>
+      <Geometry Up="17" Left="65" Height="1" Right="67"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="122" Kind="Get">
-      <Geometry Up="19" Left="69" Low="19" Right="71"/>
+      <Geometry Up="17" Left="69" Height="1" Right="71"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="123" Kind="Get">
-      <Geometry Up="19" Left="73" Low="19" Right="75"/>
+      <Geometry Up="17" Left="73" Height="1" Right="75"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Rates get -->
-    <Field Num="124" Kind="Get" Name="Rate_100">
-      <Geometry Up="19" Left="77" Low="19" Right="79"/>
+    <Field Num="124" Kind="Get">
+      <Geometry Up="17" Left="77" Height="1" Right="79"/>
+      <Get_Tuning Move_Prev="True"/>
+      <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
+    </Field>
+
+    <!-- Rates get -->
+    <Field Num="125" Kind="Get">
+      <Geometry Up="19" Left="01" Height="1" Right="03"/>
+      <Get_Tuning Move_Prev="True" Move_Next="True"/>
+      <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
+    </Field>
+
+    <!-- Rates get -->
+    <Field Num="126" Kind="Get">
+      <Geometry Up="19" Left="05" Height="1" Right="07"/>
+      <Get_Tuning Move_Prev="True" Move_Next="True"/>
+      <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
+    </Field>
+
+    <!-- Rates get -->
+    <Field Num="127" Kind="Get">
+      <Geometry Up="19" Left="09" Height="1" Right="11"/>
+      <Get_Tuning Move_Prev="True" Move_Next="True"/>
+      <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
+    </Field>
+
+    <!-- Rates get -->
+    <Field Num="128" Kind="Get">
+      <Geometry Up="19" Left="13" Height="1" Right="15"/>
+      <Get_Tuning Move_Prev="True" Move_Next="True"/>
+      <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
+    </Field>
+
+    <!-- Rates get -->
+    <Field Num="129" Kind="Get">
+      <Geometry Up="19" Left="17" Height="1" Right="19"/>
+      <Get_Tuning Move_Prev="True" Move_Next="True"/>
+      <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
+    </Field>
+
+    <!-- Rates get -->
+    <Field Num="130" Kind="Get">
+      <Geometry Up="19" Left="21" Height="1" Right="23"/>
+      <Get_Tuning Move_Prev="True" Move_Next="True"/>
+      <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
+    </Field>
+
+    <!-- Rates get -->
+    <Field Num="131" Kind="Get">
+      <Geometry Up="19" Left="25" Height="1" Right="27"/>
+      <Get_Tuning Move_Prev="True" Move_Next="True"/>
+      <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
+    </Field>
+
+    <!-- Rates get -->
+    <Field Num="132" Kind="Get">
+      <Geometry Up="19" Left="29" Height="1" Right="31"/>
+      <Get_Tuning Move_Prev="True" Move_Next="True"/>
+      <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
+    </Field>
+
+    <!-- Rates get -->
+    <Field Num="133" Kind="Get">
+      <Geometry Up="19" Left="33" Height="1" Right="35"/>
+      <Get_Tuning Move_Prev="True" Move_Next="True"/>
+      <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
+    </Field>
+
+    <!-- Rates get -->
+    <Field Num="134" Kind="Get">
+      <Geometry Up="19" Left="37" Height="1" Right="39"/>
+      <Get_Tuning Move_Prev="True" Move_Next="True"/>
+      <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
+    </Field>
+
+    <!-- Rates get -->
+    <Field Num="135" Kind="Get">
+      <Geometry Up="19" Left="41" Height="1" Right="43"/>
+      <Get_Tuning Move_Prev="True" Move_Next="True"/>
+      <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
+    </Field>
+
+    <!-- Rates get -->
+    <Field Num="136" Kind="Get">
+      <Geometry Up="19" Left="45" Height="1" Right="47"/>
+      <Get_Tuning Move_Prev="True" Move_Next="True"/>
+      <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
+    </Field>
+
+    <!-- Rates get -->
+    <Field Num="137" Kind="Get">
+      <Geometry Up="19" Left="49" Height="1" Right="51"/>
+      <Get_Tuning Move_Prev="True" Move_Next="True"/>
+      <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
+    </Field>
+
+    <!-- Rates get -->
+    <Field Num="138" Kind="Get">
+      <Geometry Up="19" Left="53" Height="1" Right="55"/>
+      <Get_Tuning Move_Prev="True" Move_Next="True"/>
+      <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
+    </Field>
+
+    <!-- Rates get -->
+    <Field Num="139" Kind="Get">
+      <Geometry Up="19" Left="57" Height="1" Right="59"/>
+      <Get_Tuning Move_Prev="True" Move_Next="True"/>
+      <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
+    </Field>
+
+    <!-- Rates get -->
+    <Field Num="140" Kind="Get">
+      <Geometry Up="19" Left="61" Height="1" Right="63"/>
+      <Get_Tuning Move_Prev="True" Move_Next="True"/>
+      <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
+    </Field>
+
+    <!-- Rates get -->
+    <Field Num="141" Kind="Get">
+      <Geometry Up="19" Left="65" Height="1" Right="67"/>
+      <Get_Tuning Move_Prev="True" Move_Next="True"/>
+      <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
+    </Field>
+
+    <!-- Rates get -->
+    <Field Num="142" Kind="Get">
+      <Geometry Up="19" Left="69" Height="1" Right="71"/>
+      <Get_Tuning Move_Prev="True" Move_Next="True"/>
+      <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
+    </Field>
+
+    <!-- Rates get -->
+    <Field Num="143" Kind="Get">
+      <Geometry Up="19" Left="73" Height="1" Right="75"/>
+      <Get_Tuning Move_Prev="True" Move_Next="True"/>
+      <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
+    </Field>
+
+    <!-- Rates get -->
+    <Field Num="144" Kind="Get" Name="Rate_120">
+      <Geometry Up="19" Left="77" Height="1" Right="79"/>
       <Get_Tuning Move_Prev="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Duration -->
-    <Field Num="125" Kind="Put" Name="Dur_Title">
+    <Field Num="145" Kind="Put" Name="Dur_Title">
       <Geometry Up="21" Left="1" Height="1" Width="9"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="00" Col="00">Duration:</Init>
     </Field>
 
-    <Field Num="126" Kind="Put" Name="Dur_Hour">
-      <Geometry Up="${Field_125.Up}" Left="${Field_125.Right}+2" Height="1"
+    <Field Num="146" Kind="Put" Name="Dur_Hour">
+      <Geometry Up="${Field_145.Up}" Left="${Field_145.Right}+2" Height="1"
                 Width="2"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
-    <Field Num="127" Kind="Put" Name="Dur_Sep1">
-      <Geometry Up="${Field_126.Up}" Left="${Field_126.Right}+1" Height="1"
+    <Field Num="147" Kind="Put" Name="Dur_Sep1">
+      <Geometry Up="${Field_146.Up}" Left="${Field_146.Right}+1" Height="1"
                 Width="1"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="00" Col="00">:</Init>
     </Field>
-    <Field Num="128" Kind="Put" Name="Dur_Min">
-      <Geometry Up="${Field_127.Up}" Left="${Field_127.Right}+1" Height="1"
+    <Field Num="148" Kind="Put" Name="Dur_Min">
+      <Geometry Up="${Field_147.Up}" Left="${Field_147.Right}+1" Height="1"
                 Width="2"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
-    <Field Num="129" Kind="Put" Name="Dur_Sep2">
-      <Geometry Up="${Field_128.Up}" Left="${Field_128.Right}+1" Height="1"
+    <Field Num="149" Kind="Put" Name="Dur_Sep2">
+      <Geometry Up="${Field_148.Up}" Left="${Field_148.Right}+1" Height="1"
                 Width="1"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="00" Col="00">:</Init>
     </Field>
-    <Field Num="130" Kind="Put" Name="Dur_Sec">
-      <Geometry Up="${Field_129.Up}" Left="${Field_129.Right}+1" Height="1"
+    <Field Num="150" Kind="Put" Name="Dur_Sec">
+      <Geometry Up="${Field_149.Up}" Left="${Field_149.Right}+1" Height="1"
                 Width="2"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
 
     <!-- Valid button -->
-    <Field Num="131" Kind="Button" Name="Valid">
+    <Field Num="151" Kind="Button" Name="Valid">
       <Geometry Up="23" Left="59" Low="25" Right="67"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="01" Col="02">Valid</Init>
     </Field>
 
     <!-- Cancel button -->
-    <Field Num="132" Kind="Button" Name="Cancel">
+    <Field Num="152" Kind="Button" Name="Cancel">
       <Geometry Up="23" Left="70" Low="25" Right="79"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="01" Col="02">Cancel</Init>
     </Field>
 
     <!-- Import button -->
-    <Field Num="133" Kind="Button" Name="Import">
+    <Field Num="153" Kind="Button" Name="Import">
       <Geometry Up="23" Left="31" Low="25" Right="38"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="01" Col="01">Import</Init>
     </Field>
 
     <!-- Insert button -->
-    <Field Num="134" Kind="Button" Name="Ins">
+    <Field Num="154" Kind="Button" Name="Ins">
       <Geometry Up="23" Left="1" Low="25" Right="7"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="01" Col="02">Ins</Init>
     </Field>
 
     <!-- Suppr button -->
-    <Field Num="135" Kind="Button" Name="Del">
+    <Field Num="155" Kind="Button" Name="Del">
       <Geometry Up="23" Left="9" Low="25" Right="15"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="01" Col="01">Suppr</Init>
     </Field>
 
     <!-- Clear_all button -->
-    <Field Num="136" Kind="Button" Name="Clear">
+    <Field Num="156" Kind="Button" Name="Clear">
       <Geometry Up="23" Left="19" Low="25" Right="29"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="01" Col="01">Clear all</Init>
     </Field>
 
     <!-- Reset TZs button -->
-    <Field Num="137" Kind="Button" Name="Reset">
-      <Geometry Up="7" Left="57" Low="7" Right="63"/>
+    <Field Num="157" Kind="Button" Name="Reset">
+      <Geometry Up="05" Left="57" Low="05" Right="63"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="00" Col="01">Reset</Init>
     </Field>

@@ -275,7 +275,7 @@ package body Mesu_Edi is
             Current_Field := Afpx_Xref.Records.Rate_001;
           end if;
 
-        when Afpx_Xref.Records.Rate_001 .. Afpx_Xref.Records.Rate_100 =>
+        when Afpx_Xref.Records.Rate_001 .. Afpx_Xref.Records.Rate_120 =>
           -- In a sample
           Bpm_S := Afpx.Decode_Field (Current_Field, 0);
           Str_Mng.Parse (Bpm_S);
@@ -294,7 +294,7 @@ package body Mesu_Edi is
           -- No empty
           if Locok then
             -- "Next" field
-            if Current_Field /= Afpx_Xref.Records.Rate_100 then
+            if Current_Field /= Afpx_Xref.Records.Rate_120 then
               Current_Field := Current_Field + 1;
             else
               Current_Field := Afpx_Xref.Records.Person;
@@ -510,11 +510,11 @@ package body Mesu_Edi is
 
           elsif Ptg_Result.Field_No = Afpx_Xref.Records.Ins
                 and then Get_Handle.Cursor_Field >= Afpx_Xref.Records.Rate_001
-                and then Get_Handle.Cursor_Field <= Afpx_Xref.Records.Rate_100
+                and then Get_Handle.Cursor_Field <= Afpx_Xref.Records.Rate_120
           then
             -- Insert a sample
             for I in reverse Get_Handle.Cursor_Field + 1
-                          .. Afpx_Xref.Records.Rate_100 loop
+                          .. Afpx_Xref.Records.Rate_120 loop
               Afpx.Encode_Field (I, (0, 0),
                  Afpx.Unicode_Sequence'(Afpx.Decode_Field(I - 1, 0)));
             end loop;
@@ -523,21 +523,21 @@ package body Mesu_Edi is
 
           elsif Ptg_Result.Field_No = Afpx_Xref.Records.Del
                 and then Get_Handle.Cursor_Field >= Afpx_Xref.Records.Rate_001
-                and then Get_Handle.Cursor_Field <= Afpx_Xref.Records.Rate_100
+                and then Get_Handle.Cursor_Field <= Afpx_Xref.Records.Rate_120
           then
             -- Suppress a sample
             for I in Get_Handle.Cursor_Field
-                  .. Afpx_Xref.Records.Rate_100 - 1 loop
+                  .. Afpx_Xref.Records.Rate_120 - 1 loop
               Afpx.Encode_Field (I, (0, 0),
                  Afpx.Unicode_Sequence'(Afpx.Decode_Field(I + 1, 0)));
             end loop;
-            Afpx.Clear_Field(Afpx_Xref.Records.Rate_100);
+            Afpx.Clear_Field(Afpx_Xref.Records.Rate_120);
             Encode_Duration (Person.Sampling_Delta);
 
           elsif Ptg_Result.Field_No = Afpx_Xref.Records.Clear then
             -- Clear all the samples
             for I in Afpx_Xref.Records.Rate_001
-                  .. Afpx_Xref.Records.Rate_100 - 1 loop
+                  .. Afpx_Xref.Records.Rate_120 loop
               Afpx.Clear_Field(I);
             end loop;
             Get_Handle.Cursor_Field := Afpx_Xref.Records.Rate_001;

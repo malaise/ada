@@ -8,7 +8,7 @@ package Mesu_Def is
   subtype Comment_Str is String (1 .. 20);
 
   -- Number of samplings
-  subtype Sample_Nb_Range is Positive range 1 .. 100;
+  subtype Sample_Nb_Range is Positive range 1 .. 120;
 
   -- Values
   type Sample_Array is array (Sample_Nb_Range range <>) of

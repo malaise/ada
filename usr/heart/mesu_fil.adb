@@ -1,10 +1,10 @@
 with Ada.Direct_Io, Ada.Exceptions;
-with Normal, Str_Util, Text_Line, Basic_Proc, Sys_Calls;
+with Normal, Str_Util, Text_Line, Basic_Proc, Sys_Calls, As.U;
 with Pers_Def, Str_Mng;
 package body Mesu_Fil is
 
   -- A mesure in file - initial binary format
-  --  (same as in definition but without pid)
+  --  (same as in definition but without pid nor date)
   type File_Rec is record
     Sampling_Delta : Pers_Def.Sampling_Delta_Range
                    := Pers_Def.Default_Sampling_Delta;
@@ -16,7 +16,11 @@ package body Mesu_Fil is
   end record;
 
   -- 3 for Sampling delta, 20 for comment, 6x3 Bmps, 100x3 Mesures => 341
-  subtype File_Txt is String (1 .. 341);
+  subtype Old_File_Txt is String (1 .. 341);
+
+  -- 3 for Sampling delta, 20 for comment, 6x3 Bmps, 120x3 Mesures => 401
+  subtype File_Txt is String (1 .. 401);
+
 
   -- Direct_Io of mesure (initial binary format)
   package Mesure_Io is new Ada.Direct_Io (Element_Type => File_Rec);
@@ -52,7 +56,8 @@ package body Mesu_Fil is
       declare
         Str : constant String := Text_Line.Trim (Txt_File.Get);
       begin
-        if Str'Length = File_Txt'Length
+        if (Str'Length = File_Txt'Length
+            or else Str'Length = Old_File_Txt'Length)
         and then (Str(1) = ' ' or else Str(1) = '1') then
           -- Looks as the start of a sampling rate
           Txt_File.Close_All;
@@ -98,7 +103,7 @@ package body Mesu_Fil is
   function Load (File_Name : Mesu_Nam.File_Name_Str)
                 return Mesu_Def.Mesure_Rec is
     Tmp_Rec : File_Rec;
-    Tmp_Txt : File_Txt;
+    Tmp_Txt : As.U.Asu_Us;
     Mesure : Mesu_Def.Mesure_Rec;
     Date : Mesu_Nam.File_Date_Str;
     No   : Mesu_Nam.File_No_Str;
@@ -127,27 +132,34 @@ package body Mesu_Fil is
                  Samples => Tmp_Rec.Samples);
     else
       -- New text format
-      Tmp_Txt := Text_Line.Trim (Txt_File.Get);
+      Tmp_Txt := As.U.Tus (Text_Line.Trim (Txt_File.Get));
       Close;
       Mesure.Pid := Pers_Def.Pid_Range'Value(Pid);
       Mesure.Date :=  Date;
       -- Sampling delta
-      Sampling := Tmp_Txt(1 .. 3);
+      Sampling := Tmp_Txt.Slice (1, 3);
       Mesure.Sampling_Delta := Str_Mng.To_Sampling (Sampling);
       -- Comment
-      Mesure.Comment := Tmp_Txt(4 .. 23);
+      Mesure.Comment := Tmp_Txt.Slice (4, 23);
       -- 6 Bmps
       Start := 24;
       for I in Pers_Def.Person_Tz_Array'Range loop
-        Bmp := Tmp_Txt(Start .. Start + 2);
+        Bmp := Tmp_Txt.Slice (Start, Start + 2);
         Mesure.Tz(I) := Str_Mng.To_Bpm (Bmp);
         Start := Start + 3;
       end loop;
-      -- 100 measures
+      -- Up to 120 measures
       for I in Mesu_Def.Max_Sample_Array'Range loop
-        Bmp := Tmp_Txt(Start .. Start + 2);
+        Bmp := Tmp_Txt.Slice (Start, Start + 2);
         Mesure.Samples(I) := Str_Mng.To_Bpm (Bmp);
         Start := Start + 3;
+        if Start = Tmp_Txt.Length + 1 then
+          -- No more sample
+          exit;
+        elsif Start > Tmp_Txt.Length then
+          -- Abnormal length
+          raise Constraint_Error;
+        end if;
       end loop;
     end if;
 
@@ -183,7 +195,7 @@ package body Mesu_Fil is
       Tmp_Txt(Start .. Start + 2) := Str_Mng.To_Str (Mesure.Tz(I));
       Start := Start + 3;
     end loop;
-    -- 100 measures
+    -- 120 measures
     for I in Mesu_Def.Max_Sample_Array'Range loop
       Tmp_Txt(Start .. Start + 2) := Str_Mng.To_Str (Mesure.Samples(I));
       Start := Start + 3;
