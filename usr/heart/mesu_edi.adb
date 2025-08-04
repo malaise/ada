@@ -1,4 +1,4 @@
-with Con_Io, Afpx;
+with Con_Io, Afpx, Day_Mng, Normal;
 with Pers_Def, Pers_Mng, Mesu_Def, Mesu_Fil, Mesu_Imp, Str_Mng, Afpx_Xref;
 -- with Mesu_Nam;
 -- Edition, Creation, deletion of mesure
@@ -12,6 +12,49 @@ package body Mesu_Edi is
     Afpx.Encode_Field (Afpx_Xref.Records.Month, (00, 00), Date_R.Month);
     Afpx.Encode_Field (Afpx_Xref.Records.Year, (00, 00), Date_R.Year);
   end Encode_Date;
+
+  -- Encode the Duration line
+  procedure Encode_Duration (Sampling_Delta: in Pers_Def.Sampling_Delta_Range)
+  is
+    Nb_Samples : Natural := 0;
+    Seconds : Natural;
+    H : Day_Mng.T_Hours;
+    M : Day_Mng.T_Minutes;
+    S : Day_Mng.T_Seconds;
+    L : Day_Mng.T_Millisecs;
+    use type Afpx.Absolute_Field_Range, Pers_Def.Bpm_Range;
+  begin
+    -- Count empty slots from last
+    for Sample in reverse
+             Afpx_Xref.Records.Rate_001
+          .. Afpx_Xref.Records.Rate_001
+           + Afpx.Field_Range (Mesu_Def.Sample_Nb_Range'Last) - 1
+    loop
+      exit when Str_Mng.To_Bpm (Afpx.Decode_Field (Sample, 0))
+             /= Pers_Def.Bpm_Range'First;
+      Nb_Samples := Nb_Samples + 1;
+    end loop;
+    -- Nb samples
+    Nb_Samples := Mesu_Def.Sample_Nb_Range'Last - Nb_Samples;
+    -- Clear if less than 2 samples
+    for Fld in Afpx_Xref.Records.Dur_Title
+            .. Afpx_Xref.Records.Dur_Sec loop
+      Afpx.Set_Field_Activation (Fld, Nb_Samples >= 2);
+    end loop;
+    if Nb_Samples < 2 then
+      return;
+    end if;
+    -- Compute duration in seconds, split and encode
+    Seconds := Nb_Samples * Natural (Sampling_Delta);
+    Day_Mng.Split (Duration (Seconds), H, M, S, L);
+    Afpx.Encode_Field (Afpx_Xref.Records.Dur_Hour, (0, 0),
+        Normal (H, 2, Gap => '0'));
+    Afpx.Encode_Field (Afpx_Xref.Records.Dur_Min, (0, 0),
+        Normal (M, 2, Gap => '0'));
+    Afpx.Encode_Field (Afpx_Xref.Records.Dur_Sec, (0, 0),
+        Normal (S, 2, Gap => '0'));
+
+  end Encode_Duration;
 
   procedure Encode (Person : in Pers_Def.Person_Rec;
                     Mesure : in Mesu_Def.Mesure_Rec) is
@@ -38,6 +81,7 @@ package body Mesu_Edi is
                          (00, 00),
                          Str_Mng.To_Str(Mesure.Samples(I)) );
     end loop;
+    Encode_Duration (Person.Sampling_Delta);
   end Encode;
 
   procedure Protect (Field_No : in Afpx.Field_Range) is
@@ -281,6 +325,7 @@ package body Mesu_Edi is
       Afpx.Set_Field_Activation (Afpx_Xref.Records.Reset,
                    Cursor_Field >= Afpx_Xref.Records.Tz1
           and then Cursor_Field <= Afpx_Xref.Records.Tz6);
+      Encode_Duration (Person.Sampling_Delta);
       return Afpx.Default_Cursor_Col (Cursor_Field,
                                       Pointer_Col,
                                       Enter_Field_Cause);
@@ -474,6 +519,7 @@ package body Mesu_Edi is
                  Afpx.Unicode_Sequence'(Afpx.Decode_Field(I - 1, 0)));
             end loop;
             Afpx.Clear_Field(Get_Handle.Cursor_Field);
+            Encode_Duration (Person.Sampling_Delta);
 
           elsif Ptg_Result.Field_No = Afpx_Xref.Records.Del
                 and then Get_Handle.Cursor_Field >= Afpx_Xref.Records.Rate_001
@@ -486,14 +532,16 @@ package body Mesu_Edi is
                  Afpx.Unicode_Sequence'(Afpx.Decode_Field(I + 1, 0)));
             end loop;
             Afpx.Clear_Field(Afpx_Xref.Records.Rate_100);
+            Encode_Duration (Person.Sampling_Delta);
 
           elsif Ptg_Result.Field_No = Afpx_Xref.Records.Clear then
             -- Clear all the samples
             for I in Afpx_Xref.Records.Rate_001
                   .. Afpx_Xref.Records.Rate_100 - 1 loop
               Afpx.Clear_Field(I);
-             end loop;
-             Get_Handle.Cursor_Field := Afpx_Xref.Records.Rate_001;
+            end loop;
+            Get_Handle.Cursor_Field := Afpx_Xref.Records.Rate_001;
+            Encode_Duration (Person.Sampling_Delta);
 
           elsif Ptg_Result.Field_No = Afpx_Xref.Records.Reset
                 and then Get_Handle.Cursor_Field >=  Afpx_Xref.Records.Tz1

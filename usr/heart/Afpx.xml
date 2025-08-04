@@ -1341,50 +1341,85 @@
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
+    <!-- Duration -->
+    <Field Num="125" Kind="Put" Name="Dur_Title">
+      <Geometry Up="21" Left="1" Height="1" Width="9"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
+      <Init Row="00" Col="00">Duration:</Init>
+    </Field>
+
+    <Field Num="126" Kind="Put" Name="Dur_Hour">
+      <Geometry Up="${Field_125.Up}" Left="${Field_125.Right}+2" Height="1"
+                Width="2"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
+    </Field>
+    <Field Num="127" Kind="Put" Name="Dur_Sep1">
+      <Geometry Up="${Field_126.Up}" Left="${Field_126.Right}+1" Height="1"
+                Width="1"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
+      <Init Row="00" Col="00">:</Init>
+    </Field>
+    <Field Num="128" Kind="Put" Name="Dur_Min">
+      <Geometry Up="${Field_127.Up}" Left="${Field_127.Right}+1" Height="1"
+                Width="2"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
+    </Field>
+    <Field Num="129" Kind="Put" Name="Dur_Sep2">
+      <Geometry Up="${Field_128.Up}" Left="${Field_128.Right}+1" Height="1"
+                Width="1"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
+      <Init Row="00" Col="00">:</Init>
+    </Field>
+    <Field Num="130" Kind="Put" Name="Dur_Sec">
+      <Geometry Up="${Field_129.Up}" Left="${Field_129.Right}+1" Height="1"
+                Width="2"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
+    </Field>
+
     <!-- Valid button -->
-    <Field Num="125" Kind="Button" Name="Valid">
+    <Field Num="131" Kind="Button" Name="Valid">
       <Geometry Up="23" Left="59" Low="25" Right="67"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="01" Col="02">Valid</Init>
     </Field>
 
     <!-- Cancel button -->
-    <Field Num="126" Kind="Button" Name="Cancel">
+    <Field Num="132" Kind="Button" Name="Cancel">
       <Geometry Up="23" Left="70" Low="25" Right="79"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="01" Col="02">Cancel</Init>
     </Field>
 
     <!-- Import button -->
-    <Field Num="127" Kind="Button" Name="Import">
+    <Field Num="133" Kind="Button" Name="Import">
       <Geometry Up="23" Left="31" Low="25" Right="38"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="01" Col="01">Import</Init>
     </Field>
 
     <!-- Insert button -->
-    <Field Num="128" Kind="Button" Name="Ins">
+    <Field Num="134" Kind="Button" Name="Ins">
       <Geometry Up="23" Left="1" Low="25" Right="7"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="01" Col="02">Ins</Init>
     </Field>
 
     <!-- Suppr button -->
-    <Field Num="129" Kind="Button" Name="Del">
+    <Field Num="135" Kind="Button" Name="Del">
       <Geometry Up="23" Left="9" Low="25" Right="15"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="01" Col="01">Suppr</Init>
     </Field>
 
     <!-- Clear_all button -->
-    <Field Num="130" Kind="Button" Name="Clear">
+    <Field Num="136" Kind="Button" Name="Clear">
       <Geometry Up="23" Left="19" Low="25" Right="29"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="01" Col="01">Clear all</Init>
     </Field>
 
     <!-- Reset TZs button -->
-    <Field Num="131" Kind="Button" Name="Reset">
+    <Field Num="137" Kind="Button" Name="Reset">
       <Geometry Up="7" Left="57" Low="7" Right="63"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="00" Col="01">Reset</Init>

@@ -81,7 +81,7 @@ package body Pers_Lis is
       Delta_S : Str_Mng.Sampling_Str;
       Tz_S  : Str_Mng.Bpm_Str;
       Tz    : Pers_Def.Bpm_Range;
-      use type Pers_Def.Bpm_Range;
+      use type Pers_Def.Bpm_Range, Pers_Def.Sampling_Delta_Range;
     begin
       case Current_Field is
 
@@ -147,6 +147,9 @@ package body Pers_Lis is
           Delta_S := Afpx.Decode_Field(Afpx_Xref.Activity.Sampling, 00);
           begin
             Person.Sampling_Delta := Str_Mng.To_Sampling (Delta_S);
+            if Person.Sampling_Delta = 0 then
+              raise Constraint_Error;
+            end if;
           exception
             when others =>
               Locok := False;
