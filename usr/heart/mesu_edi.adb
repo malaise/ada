@@ -538,7 +538,7 @@ package body Mesu_Edi is
               loop
                 Check_Field (Get_Handle.Cursor_Field, True, True, Ok);
                 exit when not Ok
-                or else Get_Handle.Cursor_Field = Afpx_Xref.Records.Sampling;
+                or else Get_Handle.Cursor_Field = Afpx_Xref.Records.Person;
               end loop;
               if Ok then
                 Import_Samples (Mesure, Ok, Date_Set);
