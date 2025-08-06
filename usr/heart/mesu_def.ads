@@ -16,7 +16,7 @@ package Mesu_Def is
 
   -- A mesure
   type Mesure_Rec is record
-    Pid : Pers_Def.Pid_Range;
+    Pid : Pers_Def.Pid_Range := Pers_Def.Pid_Range'First;
     -- YYYYMMDD
     Date : Date_Str := (others => ' ');
     Sampling_Delta : Pers_Def.Sampling_Delta_Range
