@@ -63,14 +63,13 @@ package body Mesu_Imp is
     package Point_List_Mng is new Dynamic_List (Point_Rec);
     Points : Point_List_Mng.Dyn_List.List_Type;
     Point : Point_Rec;
-    Res_Index : Mesu_Def.Sample_Nb_Range;
     use type Ada.Calendar.Time, Pers_Def.Bpm_Range;
   begin
     Logger.Init ("Import");
     -- Init result
     Ok := False;
     Res := Mesure;
-    Res.Samples := (others => Pers_Def.Bpm_Range'First);
+    Res.Samples.Set_Null;
     -- Parse
     Logger.Log_Debug ("Parsing file " & File_Name
                       & " with delta" & Mesure.Sampling_Delta'Img);
@@ -170,19 +169,16 @@ package body Mesu_Imp is
     -- Copy a sample at each delta
     Points.Rewind;
     Point := Points.Get;
-    Res.Samples(1) := Point.Bmp;
+    Res.Samples.Append (Point.Bmp);
     Logger.Log_Debug ("  Keeping point "
              & Images.Date_Image (Point.Time) & Point.Bmp'Img);
     Init_Time := Point.Time + Duration (Mesure.Sampling_Delta);
-    Res_Index := 2;
     while not Points.Is_Empty loop
       Point := Points.Get;
       if Point.Time >= Init_Time then
-         Res.Samples(Res_Index) := Point.Bmp;
+         Res.Samples.Append (Point.Bmp);
          Logger.Log_Debug ("  Keeping point "
              & Images.Date_Image (Point.Time) & Point.Bmp'Img);
-         exit when Res_Index = Mesu_Def.Sample_Nb_Range'Last;
-         Res_Index := Res_Index + 1;
          Init_Time := Init_Time + Duration (Mesure.Sampling_Delta);
       end if;
     end loop;
@@ -201,14 +197,15 @@ package body Mesu_Imp is
                         Ok : out Boolean) is
 
     package Get_Sample is new Get_Line (Comment => "#");
-    Samples : Mesu_Def.Max_Sample_Array
-            := (others => Pers_Def.Bpm_Range'First);
-    Samples_Index : Mesu_Def.Sample_Nb_Range := Mesu_Def.Sample_Nb_Range'First;
     Sample_Line : As.U.Utils.Asu_Ua.Unbounded_Array;
 
+    -- Tempo result
+    Res : Mesu_Def.Mesure_Rec;
   begin
     -- Open file
     Get_Sample.Open(File_Name);
+    Res := Mesure;
+    Res.Samples.Set_Null;
 
     -- Read, decode, store in Samples
     loop
@@ -217,9 +214,8 @@ package body Mesu_Imp is
       -- Not empty nor a comment
       for I in 1 .. Get_Sample.Get_Word_Number loop
         -- Decode a Bpm
-        Samples(Samples_Index) := Pers_Def.Bpm_Range'Value (
-                                     Sample_Line.Element(I).Image);
-        Samples_Index := Samples_Index + 1;
+        Res.Samples.Append (Pers_Def.Bpm_Range'Value (
+            Sample_Line.Element(I).Image));
       end loop;
 
       -- Read next line and exit when end of file
@@ -234,10 +230,8 @@ package body Mesu_Imp is
     -- Close file
     Get_Sample.Close;
 
-    -- So far so good... Copy Samples in mesure
-    Mesure.Samples := Samples;
-
     -- Done
+    Mesure := Res;
     Ok := True;
   exception
     when others =>

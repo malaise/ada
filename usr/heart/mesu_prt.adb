@@ -8,7 +8,6 @@ package body Mesu_Prt is
   procedure Print_Rec (Person : in Pers_Def.Person_Rec;
                        Mesure : in Mesu_Def.Mesure_Rec) is
     Last_Of_Line : Boolean;
-    use type Pers_Def.Bpm_Range;
   begin
     Printer.Put_Line ("Person: " & Person.Name & "    " & Person.Activity
                       & "    Date: " & Str_Mng.To_Printed_Str(Mesure.Date));
@@ -20,9 +19,8 @@ package body Mesu_Prt is
     end loop;
     Printer.New_Line;
     Last_Of_Line := False;
-    for I in Mesu_Def.Sample_Nb_Range loop
-      exit when Mesure.Samples(I) = Pers_Def.Bpm_Range'First;
-      Printer.Put (Str_Mng.To_Str(Mesure.Samples(I)));
+    for I in 1 .. Mesure.Samples.Length loop
+      Printer.Put (Str_Mng.To_Str(Mesure.Samples.Element (I)));
       Last_Of_Line := I mod 20 = 0;
       if Last_Of_Line then
         -- After last of row

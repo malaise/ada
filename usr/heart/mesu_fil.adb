@@ -5,22 +5,18 @@ package body Mesu_Fil is
 
   -- A mesure in file - initial binary format
   --  (same as in definition but without pid nor date)
+  subtype Hundred_Samples is Mesu_Def.Sample_Array (1 .. 100);
   type File_Rec is record
     Sampling_Delta : Pers_Def.Sampling_Delta_Range
                    := Pers_Def.Default_Sampling_Delta;
     Comment : Mesu_Def.Comment_Str := (others => ' ');
     -- Time zones for the mesure
     Tz : Pers_Def.Person_Tz_Array := (others => Pers_Def.Bpm_Range'First);
-    Samples : Mesu_Def.Max_Sample_Array
-            := (others => Pers_Def.Bpm_Range'First);
+    Samples : Hundred_Samples;
   end record;
 
-  -- 3 for Sampling delta, 20 for comment, 6x3 Bmps, 100x3 Mesures => 341
-  subtype Old_File_Txt is String (1 .. 341);
-
-  -- 3 for Sampling delta, 20 for comment, 6x3 Bmps, 120x3 Mesures => 401
-  subtype File_Txt is String (1 .. 401);
-
+  -- 3 for Sampling delta, 20 for comment, 6x3 Bmps, Nx3 Mesures
+  subtype File_Txt is String (1 .. 41);
 
   -- Direct_Io of mesure (initial binary format)
   package Mesure_Io is new Ada.Direct_Io (Element_Type => File_Rec);
@@ -54,15 +50,21 @@ package body Mesu_Fil is
       Txt_File.Open_All (Text_Line.In_File, File_Name);
       -- Try to read Txt content
       declare
-        Str : constant String := Text_Line.Trim (Txt_File.Get);
+        Str : constant As.U.Asu_Us := As.U.Tus (Text_Line.Trim (Txt_File.Get));
+        Sampling : Pers_Def.Sampling_Delta_Range;
+        use type Pers_Def.Sampling_Delta_Range;
       begin
-        if (Str'Length = File_Txt'Length
-            or else Str'Length = Old_File_Txt'Length)
-        and then (Str(1) = ' ' or else Str(1) = '1') then
-          -- Looks as the start of a sampling rate
-          Txt_File.Close_All;
-          Txt_File.Open_All (Text_Line.In_File, File_Name);
-          return;
+        -- Len must be File_Txt'Length + N*3
+        if Str.Length >= File_Txt'Length
+        and then (Str.Length - File_Txt'Length) rem 3 = 0 then
+          Sampling :=
+               Str_Mng.To_Sampling (Str.Slice (1, Str_Mng.Sampling_Str'Last));
+          if Sampling /= Pers_Def.No_Sampling_Delta then
+            -- Looks as the start of a sampling rate: Rewind
+            Txt_File.Close_All;
+            Txt_File.Open_All (Text_Line.In_File, File_Name);
+            return;
+          end if;
         end if;
         Txt_File.Close_All;
       exception
@@ -109,8 +111,10 @@ package body Mesu_Fil is
     No   : Mesu_Nam.File_No_Str;
     Pid  : Mesu_Nam.File_Pid_Str;
     Sampling : Str_Mng.Sampling_Str;
-    Bmp : Str_Mng.Bpm_Str;
+    Bpm : Pers_Def.Bpm_Range;
     Start : Positive;
+    Trail : Natural;
+    use type Pers_Def.Bpm_Range;
   begin
     Mesu_Nam.Split_File_Name (File_Name, Date, No, Pid);
     if      Date = Mesu_Nam.Wild_Date_Str
@@ -129,7 +133,16 @@ package body Mesu_Fil is
                  Sampling_Delta => Tmp_Rec.Sampling_Delta,
                  Comment => Tmp_Rec.Comment,
                  Tz => Tmp_Rec.Tz,
-                 Samples => Tmp_Rec.Samples);
+                 Samples => Mesu_Def.Sample_Array_Mng.To_Unb_Array (
+                     Tmp_Rec.Samples));
+      -- Purge trailing empty samples
+      Trail := 0;
+      for I in reverse 1 .. Mesure.Samples.Length loop
+        if Mesure.Samples.Element (I) = Pers_Def.No_Bpm then
+          Trail := Trail + 1;
+        end if;
+      end loop;
+      Mesure.Samples.Trail (Trail);
     else
       -- New text format
       Tmp_Txt := As.U.Tus (Text_Line.Trim (Txt_File.Get));
@@ -144,22 +157,18 @@ package body Mesu_Fil is
       -- 6 Bmps
       Start := 24;
       for I in Pers_Def.Person_Tz_Array'Range loop
-        Bmp := Tmp_Txt.Slice (Start, Start + 2);
-        Mesure.Tz(I) := Str_Mng.To_Bpm (Bmp);
+        Mesure.Tz(I) := Str_Mng.To_Bpm (Tmp_Txt.Slice (Start, Start + 2));
         Start := Start + 3;
       end loop;
-      -- Up to 120 measures
-      for I in Mesu_Def.Max_Sample_Array'Range loop
-        Bmp := Tmp_Txt.Slice (Start, Start + 2);
-        Mesure.Samples(I) := Str_Mng.To_Bpm (Bmp);
+      -- N samples of 3 chars
+      -- No more sample? (end or file)
+      while Start /= Tmp_Txt.Length + 1 loop
+        exit when Start = Tmp_Txt.Length + 1;
+        Bpm := Str_Mng.To_Bpm (Tmp_Txt.Slice (Start, Start + 2));
+        -- No more sample? (padding)
+        exit when Bpm = Pers_Def.No_Bpm;
+        Mesure.Samples.Append (Bpm);
         Start := Start + 3;
-        if Start = Tmp_Txt.Length + 1 then
-          -- No more sample
-          exit;
-        elsif Start > Tmp_Txt.Length then
-          -- Abnormal length
-          raise Constraint_Error;
-        end if;
       end loop;
     end if;
 
@@ -177,8 +186,7 @@ package body Mesu_Fil is
   procedure Save (File_No : in Mesu_Nam.File_No_Str;
                   Mesure  : in Mesu_Def.Mesure_Rec) is
     File_Name : Mesu_Nam.File_Name_Str;
-    Tmp_Txt : File_Txt := (others => ' ');
-    Start : Positive;
+    Tmp_Txt : As.U.Asu_Us;
   begin
     if File_No = Mesu_Nam.Wild_No_Str then
       raise File_Name_Error;
@@ -186,24 +194,21 @@ package body Mesu_Fil is
     File_Name := Mesu_Nam.Build_File_Name (Mesure.Date, File_No,
                           Normal(Integer(Mesure.Pid), 3, Gap => '0'));
     -- Sampling delta
-    Tmp_Txt(1 .. 3) := Str_Mng.To_Str (Mesure.Sampling_Delta);
+    Tmp_Txt.Append (Str_Mng.To_Str (Mesure.Sampling_Delta));
     -- Comment
-    Tmp_Txt(4 .. 23) := Mesure.Comment;
+    Tmp_Txt.Append (Mesure.Comment);
     -- 6 Bmps
-    Start := 24;
     for I in Pers_Def.Person_Tz_Array'Range loop
-      Tmp_Txt(Start .. Start + 2) := Str_Mng.To_Str (Mesure.Tz(I));
-      Start := Start + 3;
+      Tmp_Txt.Append (Str_Mng.To_Str (Mesure.Tz(I)));
     end loop;
-    -- 120 measures
-    for I in Mesu_Def.Max_Sample_Array'Range loop
-      Tmp_Txt(Start .. Start + 2) := Str_Mng.To_Str (Mesure.Samples(I));
-      Start := Start + 3;
+    -- N measures
+    for I in 1 .. Mesure.Samples.Length loop
+      Tmp_Txt.Append (Str_Mng.To_Str (Mesure.Samples.Element(I)));
     end loop;
 
     Sys_Calls.Unlink (File_Name);
     Open (File_Name, True);
-    Txt_File.Put_Line (Tmp_Txt);
+    Txt_File.Put_Line (Tmp_Txt.Image);
     Close;
   exception
     when Error:others =>

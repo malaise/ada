@@ -268,8 +268,7 @@ package body Mesu_Gra is
     Screen.Set_Foreground (Colors(No));
     -- Person and date
     Screen.Move (No-1, 10);
-    if Mesure.Samples(1) = Pers_Def.Bpm_Range'First or else
-       Mesure.Samples(2) = Pers_Def.Bpm_Range'First then
+    if Mesure.Samples.Length < 2 then
       -- 0 or only 1 sample. Cannot draw this one
       Title_Txt.Set ("(*)");
     else
@@ -283,20 +282,17 @@ package body Mesu_Gra is
          & Mesure.Comment);
     Screen.Put (Title_Txt.Image);
 
-    if Mesure.Samples(2) = Pers_Def.Bpm_Range'First then
+    if Mesure.Samples.Length < 2 then
       return;
     end if;
 
-
     Sec1 := 0;
-    Bpm1 := Mesure.Samples(1);
+    Bpm1 := Mesure.Samples.Element (1);
 
     Pixel (X_To_Screen_Secure (Sec1), Y_To_Screen_Secure (Bpm1), True);
-    for I in Mesu_Def.Sample_Nb_Range
-    range 2 .. Mesu_Def.Sample_Nb_Range'Last loop
-      exit when Mesure.Samples(I) = Pers_Def.Bpm_Range'First;
+    for I in 2 .. Mesure.Samples.Length loop
       Sec2 := Sec1 + Integer(Mesure.Sampling_Delta);
-      Bpm2 := Mesure.Samples(I);
+      Bpm2 := Mesure.Samples.Element (I);
       -- Check in screen
       Draw_Line (X_To_Screen_Secure (Sec1), Y_To_Screen_Secure (Bpm1),
                  X_To_Screen_Secure (Sec2), Y_To_Screen_Secure (Bpm2),
@@ -418,18 +414,14 @@ package body Mesu_Gra is
     Y_Last := Pers_Def.Bpm_Range'First;
     for I in 1 .. Nb_Mesure loop
       -- Scan samples
-      for J in Mesu_Def.Sample_Nb_Range loop
-        if Mesure_Array(I).Mesure.Samples(J) = Pers_Def.Bpm_Range'First then
-          -- No more sample for this record
-          exit;
-        end if;
-        if Y_First > Mesure_Array(I).Mesure.Samples(J) then
+      for J in 1 .. Mesure_Array(I).Mesure.Samples.Length loop
+        if Y_First > Mesure_Array(I).Mesure.Samples.Element (J) then
           -- Smallest Y so far
-          Y_First := Mesure_Array(I).Mesure.Samples(J);
+          Y_First := Mesure_Array(I).Mesure.Samples.Element (J);
         end if;
-        if Y_Last < Mesure_Array(I).Mesure.Samples(J) then
+        if Y_Last < Mesure_Array(I).Mesure.Samples.Element (J) then
           -- Biggest Y so far
-          Y_Last := Mesure_Array(I).Mesure.Samples(J);
+          Y_Last := Mesure_Array(I).Mesure.Samples.Element (J);
         end if;
       end loop;
       -- Scan Tz
@@ -462,19 +454,14 @@ package body Mesu_Gra is
 
     -- Compute last X
     X_Last := 0;
-    The_Records:
     for I in 1 .. Nb_Mesure loop
-      This_Record:
-      for J in Mesu_Def.Sample_Nb_Range loop
-        if Mesure_Array(I).Mesure.Samples(J) = Pers_Def.Bpm_Range'First then
-          -- No more sample for this record
-          exit This_Record;
-        elsif J * Integer(Mesure_Array(I).Mesure.Sampling_Delta) > X_Last then
+      if Mesure_Array(I).Mesure.Samples.Length
+       * Integer(Mesure_Array(I).Mesure.Sampling_Delta) > X_Last then
           -- Greatest X so far
-          X_Last := J * Integer(Mesure_Array(I).Mesure.Sampling_Delta);
-        end if;
-      end loop This_Record;
-    end loop The_Records;
+          X_Last := Mesure_Array(I).Mesure.Samples.Length
+                  * Integer(Mesure_Array(I).Mesure.Sampling_Delta);
+      end if;
+    end loop;
 
     -- Compute X Factor
     X_Factor := Float(Xs_First - Xs_Last) / Float(X_First - X_Last);

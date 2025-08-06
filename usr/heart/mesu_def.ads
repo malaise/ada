@@ -1,3 +1,4 @@
+with Unbounded_Arrays;
 with Pers_Def;
 package Mesu_Def is
 
@@ -7,13 +8,11 @@ package Mesu_Def is
   -- Comment for a mesure
   subtype Comment_Str is String (1 .. 20);
 
-  -- Number of samplings
-  subtype Sample_Nb_Range is Positive range 1 .. 120;
-
-  -- Values
-  type Sample_Array is array (Sample_Nb_Range range <>) of
-   Pers_Def.Bpm_Range;
-  subtype Max_Sample_Array is Sample_Array (Sample_Nb_Range);
+  -- Array of samples
+  type Sample_Array is array (Positive range <>) of Pers_Def.Bpm_Range;
+  package Sample_Array_Mng is new Unbounded_Arrays (Pers_Def.Bpm_Range,
+                                                    Sample_Array);
+  subtype Unb_Sample_Array is Sample_Array_Mng.Unb_Array;
 
   -- A mesure
   type Mesure_Rec is record
@@ -25,7 +24,8 @@ package Mesu_Def is
     Comment : Comment_Str := (others => ' ');
     -- Time zones for the mesure
     Tz : Pers_Def.Person_Tz_Array := (others => Pers_Def.Bpm_Range'First);
-    Samples : Max_Sample_Array := (others => Pers_Def.Bpm_Range'First);
+    Samples : Unb_Sample_Array;
   end record;
 
 end Mesu_Def;
+

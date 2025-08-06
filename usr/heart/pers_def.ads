@@ -12,10 +12,12 @@ package Pers_Def is
   type Bpm_Range is new Natural range 0 .. 250;
   subtype Set_Bpm_Range is Bpm_Range range
    Bpm_Range'Succ(Bpm_Range'First) .. Bpm_Range'Last;
+  No_Bpm : constant Bpm_Range := 0;
 
   -- Delta in seconds between 2 samplings
   type Sampling_Delta_Range is new Natural range 0 .. 120;
   Default_Sampling_Delta : constant Sampling_Delta_Range := 120;
+  No_Sampling_Delta : constant Sampling_Delta_Range := 0;
 
   -- 6 time zones for a person
   type Person_Tz_Array is array (1 .. 6) of Bpm_Range;
