@@ -129,6 +129,8 @@
 <!--  Field_2.Low, Field_21.Width). When all geometry is parsed for a list -->
 <!--  or field, the two missing constants (e.g. List.Width, -->
 <!--  Field_21.Up) are also defined. -->
+<!-- Note that the field nums in these have no leading zero (e.g. -->
+<!--  Field_01.Up is defined but not Field_01.Up). -->
 
 <!-- A Get field can be customized with: -->
 <!--  - Data_Len: the length of string to input, by default and at least the -->
