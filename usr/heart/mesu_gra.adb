@@ -169,8 +169,36 @@ package body Mesu_Gra is
     Help_Color  : constant Con_Io.Effective_Colors := Con_Io.Color_Of ("Black");
     Scale_Color : constant Con_Io.Effective_Colors := Con_Io.Color_Of ("Black");
     -- Scale step on X in seconds
-    Secs_Scale_Step : constant := 600;
     Secs : Natural;
+    -- Horizontal scales, depending on longest record
+    subtype Unit_Str is String (1 .. 2);
+    type Scale_Rec is record
+       -- If Duration < Less_Than in hours
+       Less_Than : Natural;
+       -- Unit is
+       Unit : Unit_Str;
+       -- Unit factor in minutes
+       Factor : Positive;
+       -- Draw a line each in minutes
+       Lines : Positive;
+       -- Put value each Vals line drawn
+       Vals : Positive;
+     end record;
+     type Scale_Array is array (Integer range <>) of Scale_Rec;
+     Scales : constant Scale_Array := (
+         -- Less that 3h => 10min & 30min
+         (      3, "mn",       1,      10,  3),
+         -- Less that 10h => 30min & 1h
+         (     10, "h ",      60,      30,  2),
+         -- Less that 1d => 1h & 6h
+         (     24, "h ",      60,      60,  6),
+         -- Less that 3d => 1/2d & 1d
+         ( 3 * 24, "d ", 24 * 60, 12 * 60,  2),
+         -- Less that 10d => 1d & 1d
+         (10 * 24, "d ", 24 * 60, 24 * 60,  1),
+         -- More that 10d => 1d & 10d
+         (      0, "d ", 24 * 60, 24 * 60, 10));
+    Scale : Scale_Rec;
     -- Scale step on Y in Bpm
     Bpm : Pers_Def.Bpm_Range;
     X : Con_Io.X_Range;
@@ -186,20 +214,35 @@ package body Mesu_Gra is
     Screen.Set_Foreground (Scale_Color);
     Console.Draw_Line (Xs_First, Ys_First, Xs_Last, Ys_First);
     Console.Draw_Line (Xs_First, Ys_First, Xs_First, Ys_Last);
+    -- Horizontal scale, find appropriate scale for X legend
+    for S of Scales loop
+       if S.Less_Than = 0
+       or else X_Last < S.Less_Than * 60 * 60 then
+         -- Set Scale Factor and Lines in seconds
+         Scale := S;
+         Scale.Factor := Scale.Factor * 60;
+         Scale.Lines := Scale.Lines * 60;
+         exit;
+      end if;
+    end loop;
     -- Horizontal scale : one + each 10 mn (600 seconds)
     --                    Time in mn each 3 +
-    for I in 0 .. X_Last / Secs_Scale_Step loop
-      Secs := I * Secs_Scale_Step;
+    for I in 0 .. X_Last / Scale.Lines loop
+      Secs := I * Scale.Lines;
       X := X_To_Screen (Secs);
       Console.Draw_Line (X, Ys_First - 2, X, Ys_First + 2);
-      if I rem 3 = 0 or else I = X_Last / Secs_Scale_Step then
+      if I rem Scale.Vals = 0 or else I = X_Last / Scale.Lines then
         if X / Console.Font_Width - 1 <= Con_Io.Col_Range'Last - 1 then
           Screen.Move (Console.Row_Range_Last - 1,
-                       X / Console.Font_Width - 2);
+                       X / Console.Font_Width - 1);
         else
           Screen.Move (Console.Row_Range_Last - 1, Console.Col_Range_Last - 3);
         end if;
-        Screen.Put (Normal (Secs / 60, 3));
+        if I = 0 then
+          Screen.Put ("0" & Scale.Unit);
+        else
+          Screen.Put (Normal (Secs / Scale.Factor, 3));
+        end if;
       end if;
     end loop;
     -- Vertical scale : one + each 25 Bpm
@@ -384,7 +427,7 @@ package body Mesu_Gra is
     -- List is not empty
     Bkp_Ctx.Backup;
     Nb_Mesure := 0;
-    -- for each in list : store in array
+    -- For each in list : store in array
     Afpx.Line_List.Rewind;
     loop
       -- Get line, file_name, split
