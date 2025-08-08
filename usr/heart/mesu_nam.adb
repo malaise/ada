@@ -4,7 +4,7 @@ with Pers_Def;
 package body Mesu_Nam is
 
   -- The result. File name (or file template)
-  -- subtype File_Name_Str is String (1 .. 12);
+  -- subtype File_Name_Str is String (1 .. 14);
 
 
   -- "YYyyMmDd" or "        "
@@ -15,22 +15,6 @@ package body Mesu_Nam is
 
   -- from "000" to "999" or "   "
   -- subtype File_Pid_Str is String (1 .. 3);
-
-  -- Date in file name : no hundredth of years
-  subtype Date_For_File_Str is String (1 .. 6);
-  -- If a xx is less than Discr then it is 20xx, else 19xx
-  Discriminant_For_Dates : constant String (1 .. 2) := "90";
-
-  function Trunc (Date_Str : File_Date_Str) return Date_For_File_Str is
-    S : constant String(1 .. 6) := Date_Str (3 .. 8);
-  begin
-    return S;
-  end Trunc;
-
-  function Round (Date_For_File : Date_For_File_Str) return File_Date_Str is
-    (if Date_For_File (1 .. 2) < Discriminant_For_Dates then
-       "20" & Date_For_File
-     else "19" & Date_For_File);
 
   function Valid_Date (Date : File_Date_Str) return Boolean is
     Year  : Ada.Calendar.Year_Number;
@@ -98,35 +82,29 @@ package body Mesu_Nam is
     if not Valid_File_Def (Date, No, Pid) then
       raise File_Name_Error;
     end if;
-    if Date = Wild_Date_Str then
-      return Date(1..6) & No & "." & Pid;
-    else
-      return Trunc(Date) & No & "." & Pid;
-    end if;
+    return Date & No & "." & Pid;
   end Build_File_Name;
 
   -- Check wether fields are valid
   function Valid_File_Name (File_Name : File_Name_Str) return Boolean is
     Date : File_Date_Str;
   begin
-    if File_Name(9) /= '.' then
+    if File_Name(11) /= '.' then
       return False;
     end if;
 
-    if File_Name(1 .. 6) = "??????" then
-      Date := "??" & File_Name(1 .. 6);
-    else
-      Date := Round (File_Name(1 .. 6));
+    Date := File_Name (1 .. 8);
+    if Date /= "????????" then
       if not Valid_Date (Date) then
         return False;
       end if;
     end if;
-    if File_Name(7 .. 8) /= Wild_No_Str
-    and then not Valid_No (File_Name(7 .. 8)) then
+    if File_Name(9 .. 10) /= Wild_No_Str
+    and then not Valid_No (File_Name(9 .. 10)) then
        return False;
     end if;
-    if File_Name(10 .. 12) /= Wild_Pid_Str
-    and then not Valid_Pid (File_Name(10 .. 12)) then
+    if File_Name(12 .. 14) /= Wild_Pid_Str
+    and then not Valid_Pid (File_Name(12 .. 14)) then
       return False;
     end if;
     return True;
@@ -147,14 +125,9 @@ package body Mesu_Nam is
     if not Valid_File_Name (File_Name => File_Name) then
       raise File_Name_Error;
     end if;
-    if File_Name(1 .. 6) = "??????" then
-      Date := "??" & File_Name(1 .. 6);
-    else
-      Date := Round (File_Name(1 .. 6));
-    end if;
-
-    No := File_Name(7 .. 8);
-    Pid := File_Name(10 .. 12);
+    Date := File_Name(1 .. 8);
+    No := File_Name(9 .. 10);
+    Pid := File_Name(12 .. 14);
   end Split_File_Name;
 
   -- Find first file_no_str available for given date and pid

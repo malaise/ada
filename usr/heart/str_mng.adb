@@ -174,7 +174,7 @@ package body Str_Mng is
       end if;
     else
       -- Year is set
-      Years := 2000 + Ada.Calendar.Year_Number'Value(Input.Year);
+      Years := Ada.Calendar.Year_Number'Value(Input.Year);
       if Is_Spaces (Input.Month) then
         -- dd ss yyyy forbidden
         if not Is_Spaces (Input.Day) then
@@ -218,15 +218,14 @@ package body Str_Mng is
   procedure To_Rec (Date : in Mesu_Def.Date_Str;
                     Rec  : out Date_Str_Rec) is
   begin
-    Rec.Year  := Date(3 .. 4);
+    Rec.Year  := Date(1 .. 4);
     Rec.Month := Date(5 .. 6);
     Rec.Day   := Date(7 .. 8);
   end To_Rec;
 
   -- A printed date is Dd/Mm/YYyy
   function To_Printed_Str (Date : Mesu_Def.Date_Str) return Printed_Date_Str is
-    S : constant String(1 .. 10) := Date(7 .. 8) & '/' & Date(5 .. 6)
-                            & '/' & Date(1 .. 4);
+    S : constant String(1 .. 10) := Date(7 .. 8) & '/' & Date(5 .. 6) & '/' & Date(1 .. 4);
   begin
     return S;
   end To_Printed_Str;
@@ -267,7 +266,7 @@ package body Str_Mng is
                               Offset : in Offset_Range := 0) is
     Date : constant Mesu_Def.Date_Str := Current_Date (Offset);
   begin
-    Date_Rec.Year  := Date(3 .. 4);
+    Date_Rec.Year  := Date(1 .. 4);
     Date_Rec.Month := Date(5 .. 6);
     Date_Rec.Day   := Date(7 .. 8);
   end Current_Date_Rec;

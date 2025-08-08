@@ -45,9 +45,9 @@
 
     <!-- / between month and year of date after -->
     <Field Num="04" Kind="Put" Name="Slash2_Da">
-      <Geometry Up="01" Left="40" Low="01" Right="42"/>
+      <Geometry Up="01" Left="40" Low="01" Right="40"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
-      <Init Row="00" Col="00">/20</Init>
+      <Init Row="00" Col="00">/</Init>
     </Field>
 
     <!-- / between day and month of date before -->
@@ -59,9 +59,9 @@
 
     <!-- / between month and year of date before -->
     <Field Num="06" Kind="Put" Name="Slash2_Db">
-      <Geometry Up="01" Left="56" Low="01" Right="58"/>
+      <Geometry Up="01" Left="56" Low="01" Right="56"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
-      <Init Row="00" Col="00">/20</Init>
+      <Init Row="00" Col="00">/</Init>
     </Field>
 
     <!-- Person -->
@@ -93,7 +93,7 @@
 
     <!-- Year after -->
     <Field Num="11" Kind="Get" Name="Year_After">
-      <Geometry Up="01" Left="43" Low="01" Right="44"/>
+      <Geometry Up="01" Left="41" Low="01" Right="44"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
@@ -114,7 +114,7 @@
 
     <!-- Year before -->
     <Field Num="14" Kind="Get" Name="Year_Before">
-      <Geometry Up="01" Left="59" Low="01" Right="60"/>
+      <Geometry Up="01" Left="57" Low="01" Right="60"/>
       <Get_Tuning Move_Prev="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
@@ -710,16 +710,16 @@
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
-    <!-- /20 betweeen month and year -->
+    <!-- / betweeen month and year -->
     <Field Num="36" Kind="Put">
-      <Geometry Up="07" Left="11" Low="07" Right="13"/>
+      <Geometry Up="07" Left="11" Low="07" Right="11"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
-       <Init Row="00" Col="00">/20</Init>
+       <Init Row="00" Col="00">/</Init>
     </Field>
 
     <!-- Date year -->
     <Field Num="37" Kind="Get" Name="Year">
-      <Geometry Up="07" Left="14" Low="07" Right="15"/>
+      <Geometry Up="07" Left="12" Low="07" Right="15"/>
       <Get_Tuning Move_Prev="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>

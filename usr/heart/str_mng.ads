@@ -45,7 +45,7 @@ package Str_Mng is
   type Date_Str_Rec is record
     Day   : Str2 := (others => ' ');
     Month : Str2 := (others => ' ');
-    Year  : Str2 := (others => ' ');
+    Year  : Str4 := (others => ' ');
   end record;
 
   -- An input date can be before or after

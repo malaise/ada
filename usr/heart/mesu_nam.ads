@@ -2,7 +2,7 @@ with Mesu_Def;
 package Mesu_Nam is
 
   -- The result. File name (or file template)
-  subtype File_Name_Str is String (1 .. 12);
+  subtype File_Name_Str is String (1 .. 14);
 
   Wild_Char : constant Character := '?';
 
