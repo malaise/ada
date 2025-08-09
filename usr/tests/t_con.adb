@@ -1,7 +1,8 @@
 -- Test Con_Io (2 consoles in parallel)
 -- Offset and width of the Get string can be overwritten by arguments
 with Ada.Exceptions, Ada.Calendar;
-with Protected_Put, Normal, Argument, Timers, Language, Trace.Loggers;
+with Protected_Put, Normal, Argument, Timers, Language, Trace.Loggers, Images,
+     Basic_Proc;
 with Con_Io;
 procedure T_Con is
 
@@ -14,6 +15,9 @@ procedure T_Con is
 
   Nb_Tasks : constant := 2;
   T : array (1 .. Nb_Tasks) of Task_T;
+
+  Screen_Width  : Con_Io.X_Range;
+  Screen_Height : Con_Io.Y_Range;
 
   task body Task_T is
 
@@ -227,6 +231,10 @@ begin
   Logger.Log_Debug ("Starting");
   Con_Io.Initialise;
   Logger.Log_Debug ("Con_Io initialized, starting tasks");
+  Con_Io.X_Get_Screen_Geometry (Screen_Width, Screen_Height);
+  Basic_Proc.Put_Line_Output ("Screen is "
+                            & Images.Integer_Image (Screen_Width)
+                            & "x" & Images.Integer_Image (Screen_Height));
   for I in T'Range loop
     T(I).Start(I);
     delay 1.0;

@@ -193,6 +193,23 @@ extern int x_get_font_geometry (int font_no, boolean bold,
     return (WAIT_OK);
 }
 
+/* Get the geometry of a given screen */
+extern int x_get_screen_geometry (int screen_id,
+                                  int *p_x, int *p_y) {
+    /* Check that display is init */
+    if (local_server.x_server == NULL) {
+        return (WAIT_ERR);
+    }
+
+    if (screen_id < 0) {
+        screen_id = DefaultScreen (local_server.x_server);
+    }
+
+   *p_x = DisplayWidth(local_server.x_server, screen_id);
+   *p_y = DisplayHeight(local_server.x_server, screen_id);
+   return (WAIT_OK);
+
+}
 /* Opens a line */
 extern int x_open_line (int screen_id, int row, int column,
   int height, int width,

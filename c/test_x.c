@@ -135,8 +135,14 @@ boolean read;
     exit(1);
   }
 
-  /* Open */
+  /* Screen geometry */
+  if (x_get_screen_geometry (0, &i , &j) != 0) {
+    printf ("ERROR GET SCREEN GEOMETRY\n");
+    exit (1);
+  }
+  printf ("Screen geometry %dx%d\n", i, j);
 
+  /* Open */
   if (font == 0) {
     i = x_open_line (0, 10, 20, 50, 80, back, bord, font, &line);
   } else {

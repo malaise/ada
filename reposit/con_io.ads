@@ -499,7 +499,15 @@ package Con_Io is
   -- Angles in minutes of degrees
   subtype Minutes is Integer range -360 * 60 .. 360 * 60;
 
-  -- The screen must be open (console.init)
+  -- Size of the screen
+  -- Initialise Con_Io if necessary
+  -- Can be called before opening consoles
+  procedure X_Get_Screen_Geometry (X : out X_Range;
+                                   Y : out Y_Range);
+
+  -- From here, the Console  must be open
+
+  -- Console geometry
   function X_Max (Con : Console) return X_Range;
   function Y_Max (Con : Console) return Y_Range;
 

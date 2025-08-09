@@ -1724,6 +1724,13 @@ package body Con_Io is
   ------------------------
   -- Graphic operations --
   ------------------------
+  procedure X_Get_Screen_Geometry (X : out X_Range;
+                                   Y : out Y_Range) is
+  begin
+    Initialise;
+    X_Mng.X_Get_Screen_Geometry (Line_Def.Screen_Id, X, Y);
+  end X_Get_Screen_Geometry;
+
   procedure Set_Y_Mode (Con : in Console; Y_Mode : in Y_Modes) is
   begin
     Check_Con (Con);

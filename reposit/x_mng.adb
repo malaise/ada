@@ -66,6 +66,15 @@ package body X_Mng is
     with Import => True, Convention => C, External_Name => "x_resume";
 
   ------------------------------------------------------------------
+  -- Get screen geometry
+  -- xtern int x_get_screen_geometry (int screen_id, int *p_x, int *p_y);
+  ------------------------------------------------------------------
+  function X_Get_Screen_Geometry (Screen_Id : C_Types.Int;
+                                  P_X, P_Y : System.Address) return Result
+    with Import => True, Convention => C,
+         External_Name => "x_get_screen_geometry";
+
+  ------------------------------------------------------------------
   -- Opens a line
   -- int x_open_line (int screen_id, int row, int column,
   --                  int height, int width,
@@ -993,6 +1002,21 @@ package body X_Mng is
       raise X_Failure;
     end if;
   end X_Draw_Area;
+
+  ------------------------------------------------------------------
+  procedure X_Get_Screen_Geometry (Screen_Id : in Integer;
+                                   X, Y      : out Natural) is
+    X_For_C, Y_For_C : C_Types.Int;
+    Res : Boolean;
+  begin
+    Res := X_Get_Screen_Geometry (C_Types.Int (Screen_Id),
+                                  X_For_C'Address, Y_For_C'Address) = Ok;
+    if not Res then
+      raise X_Failure;
+    end if;
+    X := Natural (X_For_C);
+    Y := Natural (Y_For_C);
+  end X_Get_Screen_Geometry;
 
   ------------------------------------------------------------------
   procedure X_Put_Char_Pixels(Line_Id : in Line;

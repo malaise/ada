@@ -1,7 +1,7 @@
 -- Test X_Mng. Fixed Line and dump of input events
 with Ada.Calendar;
 with C_Types, X_Mng, Event_Mng, Timers, Argument, As.B, Null_Procedure,
-     Language;
+     Language, Basic_Proc, Images;
 procedure T_X is
 
   Line_Def : constant X_Mng.Line_Definition_Rec := (
@@ -16,6 +16,7 @@ procedure T_X is
 
   Id : X_Mng.Line;
   Font_Width, Font_Height, Font_Offset : Natural;
+  Screen_Width, Screen_Height : Natural;
 
   Timeout : Duration;
   Exp : Timers.Delay_Rec;
@@ -60,6 +61,11 @@ begin
       Font_Width, Font_Height, Font_Offset);
   Font.Set ("Font:" & Font_Width'Img  & " x" & Font_Height'Img
            & " offset" & Font_Offset'Img);
+
+  X_Mng.X_Get_Screen_Geometry (Line_Def.Screen_Id, Screen_Width, Screen_Height);
+  Basic_Proc.Put_Line_Output ("Screen is "
+                            & Images.Integer_Image (Screen_Width)
+                            & "x" & Images.Integer_Image (Screen_Height));
 
   Timeout := 1.0;
   X_Mng.X_Open_Line (Line_Def, Id);

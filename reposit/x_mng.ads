@@ -188,6 +188,9 @@ package X_Mng is
                         Row, Column : in Natural);
 
   ----- GRAPHIC MANAGEMENT -----
+  -- Get the geometry of a given screen
+  procedure X_Get_Screen_Geometry (Screen_Id : in Integer;
+                                   X, Y      : out Natural);
 
   -- Write a char on a line with current characteristics
   --  attributes and xor mode

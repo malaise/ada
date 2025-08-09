@@ -44,6 +44,9 @@ extern int x_modified (void);
 extern int x_get_font_geometry (int font_no, boolean bold,
                         int *p_f_width, int *p_f_height, int *p_f_offset);
 
+extern int x_get_screen_geometry (int screen_id,
+                                  int *p_x, int *p_y);
+
 extern int x_open_line (int screen_id,
                         int row, int column,
                         int height, int width,
