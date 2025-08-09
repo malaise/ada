@@ -432,7 +432,7 @@ package body Mesu_Mng is
             Str_Mng.Format_List_To_Mesure (Line, File_Name);
             Mesu_Edi.Clone (File_Name);
             Init (False);
-            if not Str_Mng.Is_Spaces (File_Name) then
+            if File_Name /= Mesu_Edi.Empty_File_Name then
               Mesu_Sel.Add_Selection (File_Name);
             end if;
           elsif Ptg_Result.Field_No = 0
@@ -444,7 +444,7 @@ package body Mesu_Mng is
             Prev_Name := File_Name;
             Mesu_Edi.Edit (File_Name);
             Init (False);
-            if not Str_Mng.Is_Spaces (File_Name) then
+            if File_Name /= Mesu_Edi.Empty_File_Name then
               Mesu_Sel.Rem_Selection (Line);
               if File_Name /= Prev_Name then
                 -- File has been renamed
@@ -460,7 +460,7 @@ package body Mesu_Mng is
             -- Screen to validate the deletion
             Mesu_Edi.Delete (File_Name);
             Init (False);
-            if not Str_Mng.Is_Spaces (File_Name) then
+            if File_Name /= Mesu_Edi.Empty_File_Name then
               -- Validated: Unselect then remove mesu file
               Mesu_Sel.Rem_Selection (Line);
               Mesu_Fil.Delete (File_Name);

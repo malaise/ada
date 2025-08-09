@@ -120,9 +120,11 @@ package body Mesu_Imp is
           + Duration (Sys_Calls.Gmt_Offset (Sys_Calls.Time_To_Tm (Init_Time)));
         Date := Date_Text.Split (Time_Local);
       end if;
-      -- And put date (skip hours, minutes, secs)
+      -- And store date and time (skip secs)
       Res.Date := Date_Text.Put (Date, "%Y%m%d");
-      Logger.Log_Debug ("Setting date to " & Res.Date);
+      Res.Time := Date_Text.Put (Date, "%H%M");
+      Logger.Log_Debug ("Setting date and time to "
+                      & Res.Date & " " & Res.Time);
     exception
       when others =>
         Basic_Proc.Put_Line_Error ("Invalid date in Id " & Txt.Image);

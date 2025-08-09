@@ -1,4 +1,4 @@
-with Perpet, Normal, Language;
+with Perpet, Day_Mng, Normal, Language;
 package body Str_Mng is
 
   -- Is the str only spaces
@@ -121,11 +121,29 @@ package body Str_Mng is
   function Pid_Str (Pid : Pers_Def.Pid_Range) return Mesu_Nam.File_Pid_Str is
     (Normal (Integer(Pid), 3, Gap => '0'));
 
---  type Date_Str_Rec is record
---    Day : Str2;
---    Month : Str2;
---    Year : Str4;
---  end record;
+
+  procedure Check_Time (Input : in Str4;
+                        Output : out Str4;
+                        Valid : out Boolean) is
+    Hours : Day_Mng.T_Hours;
+    Minutes : Day_Mng.T_Minutes;
+  begin
+    if Is_Spaces(Input) then
+      Output := "0000";
+    elsif Has_Spaces(Input) then
+      Valid := False;
+      return;
+    end if;
+    Hours := Day_Mng.T_Hours'Value (Input(1..2));
+    Minutes := Day_Mng.T_Minutes'Value (Input(3..4));
+    Output := Normal (Hours,   2, Gap => '0')
+            & Normal (Minutes, 2, Gap => '0');
+    Valid := True;
+  exception
+    when others =>
+      Valid := False;
+  end Check_Time;
+
   -- An input date can be before or after
   -- Check its validity and build date YYyyNnDd
   procedure Check_Date (Input  : in Date_Str_Rec;
@@ -224,11 +242,12 @@ package body Str_Mng is
   end To_Rec;
 
   -- A printed date is Dd/Mm/YYyy
-  function To_Printed_Str (Date : Mesu_Def.Date_Str) return Printed_Date_Str is
-    S : constant String(1 .. 10) := Date(7 .. 8) & '/' & Date(5 .. 6) & '/' & Date(1 .. 4);
+  function To_Printed_Date_Str (Date : Mesu_Def.Date_Str)
+  return Printed_Date_Str is
+    S : constant Printed_Date_Str := Date(7 .. 8) & '/' & Date(5 .. 6) & '/' & Date(1 .. 4);
   begin
     return S;
-  end To_Printed_Str;
+  end To_Printed_Date_Str;
 
   function To_Date_Str (Printed_Date : Printed_Date_Str)
                         return Mesu_Def.Date_Str is
@@ -237,6 +256,21 @@ package body Str_Mng is
   begin
     return S;
   end To_Date_Str;
+
+  -- A printed time is Hh:Mm/Mm/YYyy
+  function To_Printed_Time_Str (Time : Mesu_Def.Time_Str)
+  return Printed_Time_Str is
+    S : constant Printed_Time_Str := Time(1 .. 2) & ':' & Time(3 .. 4);
+  begin
+    return S;
+  end To_Printed_Time_Str;
+
+  function To_Time_Str (Printed_Time : Printed_Time_Str)
+           return Mesu_Def.Time_Str is
+    S : constant Mesu_Def.Time_Str := Printed_Time(1 .. 2) & Printed_Time (4 .. 5);
+  begin
+    return S;
+  end To_Time_Str;
 
   function Current_Date (Offset : Offset_Range := 0)
                         return Mesu_Def.Date_Str is
@@ -259,7 +293,7 @@ package body Str_Mng is
   function Current_Date_Printed (Offset : Offset_Range := 0)
                                 return Printed_Date_Str is
   begin
-    return To_Printed_Str (Current_Date(Offset));
+    return To_Printed_Date_Str (Current_Date(Offset));
   end Current_Date_Printed;
 
   procedure Current_Date_Rec (Date_Rec : out Date_Str_Rec;
@@ -276,7 +310,7 @@ package body Str_Mng is
                                    List_Pers : out Afpx.Line_Rec) is
   begin
     List_Pers.Str := (others => Language.Char_To_Unicode (' '));
-    List_Pers.Len := 32;
+    List_Pers.Len := 31;
     List_Pers.Str (01 .. 20) := Language.Copy (Person.Name);
     List_Pers.Str (22 .. 31) := Language.Copy (Person.Activity);
   end Format_Person_To_List;
@@ -292,31 +326,30 @@ package body Str_Mng is
   -- From a mesure rec to mesure in list
   procedure Format_Mesure_To_List (Person    : in Pers_Def.Person_Rec;
                                    Mesure    : in Mesu_Def.Mesure_Rec;
-                                   Mesu_No   : in Mesu_Nam.File_No_Str;
                                    List_Mesu : out Afpx.Line_Rec) is
   begin
     Format_Person_To_List (Person, List_Mesu);
-    List_Mesu.Len := 71;
-    List_Mesu.Str(35 .. 44) := Language.Copy (To_Printed_Str (Mesure.Date));
+    List_Mesu.Len := 73;
+    List_Mesu.Str(35 .. 44) := Language.Copy (To_Printed_Date_Str
+                                              (Mesure.Date));
     List_Mesu.Str(46 .. 65) := Language.Copy (Mesure.Comment);
     List_Mesu.Str(67 .. 69) := Language.Copy (Pid_Str(Person.Pid));
-    List_Mesu.Str(70 .. 71) := Language.Copy (Mesu_No);
+    List_Mesu.Str(70 .. 73) := Language.Copy (Mesure.Time);
   end Format_Mesure_To_List;
 
   procedure Format_List_To_Mesure (List_Mesu : in Afpx.Line_Rec;
                                    File_Name : out Mesu_Nam.File_Name_Str) is
     Date : constant Printed_Date_Str
          := Language.Copy (List_Mesu.Str(35 .. 44));
-    No   : constant Mesu_Nam.File_No_Str
-         := Language.Copy (List_Mesu.Str(70 .. 71));
+    Time : constant Mesu_Nam.File_Time_Str
+         := Language.Copy (List_Mesu.Str(70 .. 73));
     Pid  : constant Mesu_Nam.File_Pid_Str
          := Language.Copy (List_Mesu.Str(67 .. 69));
 
   begin
-    File_Name :=
-     Mesu_Nam.Build_File_Name (Date => To_Date_Str (Date),
-                               No   => No,
-                               Pid  => Pid);
+    File_Name := Mesu_Nam.Build_File_Name (Date => To_Date_Str (Date),
+                                           Time => Time,
+                                           Pid  => Pid);
   end Format_List_To_Mesure;
 
 

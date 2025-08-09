@@ -1,11 +1,6 @@
 with Ada.Calendar;
-
 with Afpx;
-
-with Pers_Def;
-with Mesu_Def;
-with Mesu_Nam;
-
+with Pers_Def, Mesu_Def, Mesu_Nam;
 package Str_Mng is
 
   -- Parse spaces from a string
@@ -39,6 +34,7 @@ package Str_Mng is
 
   function Pid_Str (Pid : Pers_Def.Pid_Range) return Mesu_Nam.File_Pid_Str;
 
+  -- Times and dates
   subtype Str2 is String (1 .. 2);
   subtype Str4 is String (1 .. 4);
 
@@ -47,6 +43,12 @@ package Str_Mng is
     Month : Str2 := (others => ' ');
     Year  : Str4 := (others => ' ');
   end record;
+
+  -- Time is from 0000 to 2359
+  -- Set to "0000" by default
+  procedure Check_Time (Input : in Str4;
+                        Output : out Str4;
+                        Valid : out Boolean);
 
   -- An input date can be before or after
   -- Check its validity and build date YYyyNnDd
@@ -61,9 +63,17 @@ package Str_Mng is
 
   -- A printed date is Dd/Mm/YYyy
   subtype Printed_Date_Str is String (1 .. 10);
-  function To_Printed_Str (Date : Mesu_Def.Date_Str) return Printed_Date_Str;
+  function To_Printed_Date_Str (Date : Mesu_Def.Date_Str)
+           return Printed_Date_Str;
   function To_Date_Str (Printed_Date : Printed_Date_Str)
            return Mesu_Def.Date_Str;
+
+  -- A printed time is Hh:Mm/Mm/YYyy
+  subtype Printed_Time_Str is String (1 .. 5);
+  function To_Printed_Time_Str (Time : Mesu_Def.Time_Str)
+           return Printed_Time_Str;
+  function To_Time_Str (Printed_Time : Printed_Time_Str)
+           return Mesu_Def.Time_Str;
 
   -- Current_date - nb month
   subtype Offset_Range is Natural range 0 .. Ada.Calendar.Month_Number'Last;
@@ -84,7 +94,6 @@ package Str_Mng is
   -- From a mesure rec to person in list
   procedure Format_Mesure_To_List (Person    : in Pers_Def.Person_Rec;
                                    Mesure    : in Mesu_Def.Mesure_Rec;
-                                   Mesu_No   : in Mesu_Nam.File_No_Str;
                                    List_Mesu : out Afpx.Line_Rec);
   procedure Format_List_To_Mesure (List_Mesu : in Afpx.Line_Rec;
                                    File_Name : out Mesu_Nam.File_Name_Str);

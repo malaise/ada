@@ -485,7 +485,7 @@
       <Init Row="00" Col="00">xxxxxxxx of a record</Init>
     </Field>
 
-    <!-- Date -->
+    <!-- Current date -->
     <Field Num="02" Kind="Put" Name="Date">
       <Geometry Up="00" Left="60" Low="00" Right="69"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
@@ -724,57 +724,74 @@
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
+    <!-- Time -->
+    <Field Num="38" Kind="Get" Name="Hours">
+      <Geometry Up="07" Left="17" Low="07" Right="18"/>
+      <Get_Tuning Move_Next="True"/>
+      <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
+    </Field>
+    <Field Num="39" Kind="Put">
+      <Geometry Up="07" Left="19" Height="1" Width="1"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
+       <Init Row="00" Col="00">:</Init>
+    </Field>
+    <Field Num="40" Kind="Get" Name="Minutes">
+      <Geometry Up="07" Left="20" Low="07" Right="21"/>
+      <Get_Tuning Move_Prev="True"/>
+      <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
+    </Field>
+
     <!-- Comment tittle -->
-    <Field Num="38" Kind="Put">
-      <Geometry Up="07" Left="18" Low="07" Right="24"/>
+    <Field Num="41" Kind="Put">
+      <Geometry Up="07" Left="25" Low="07" Right="31"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="00" Col="00">Comment</Init>
     </Field>
 
     <!-- Comment get -->
-    <Field Num="39" Kind="Get" Name="Comment">
-      <Geometry Up="07" Left="26" Low="07" Width="20"/>
+    <Field Num="42" Kind="Get" Name="Comment">
+      <Geometry Up="07" Left="33" Low="07" Width="20"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- Sampling tittle -->
-    <Field Num="40" Kind="Put">
-      <Geometry Up="07" Left="48" Low="07" Right="61"/>
+    <Field Num="43" Kind="Put">
+      <Geometry Up="07" Left="55" Low="07" Right="68"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="00" Col="00">Sampling delta</Init>
     </Field>
 
     <!-- Sampling get -->
-    <Field Num="41" Kind="Get" Name="Sampling">
-      <Geometry Up="07" Left="63" Low="07" Right="65"/>
+    <Field Num="44" Kind="Get" Name="Sampling">
+      <Geometry Up="07" Left="70" Low="07" Right="72"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- List status xxx%  Sel: yyyyy -->
-    <Field Num="42" Kind="Put" Name="Percent">
+    <Field Num="45" Kind="Put" Name="Percent">
       <Geometry Up="${List.Up}" Left="57" Height="1" Width="3"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
-    <Field Num="43" Kind="Put" Name="Tpercent">
-      <Geometry Up="${Field_42.Up}" Left="${Field_42.Right}+1" Height="1"
+    <Field Num="46" Kind="Put" Name="Tpercent">
+      <Geometry Up="${Field_45.Up}" Left="${Field_45.Right}+1" Height="1"
                 Width="1"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">%</Init>
     </Field>
-    <Field Num="44" Kind="Put" Name="Tsel">
-      <Geometry Up="${Field_42.Up}" Left="${Field_43.Right}+3" Height="1"
+    <Field Num="47" Kind="Put" Name="Tsel">
+      <Geometry Up="${Field_45.Up}" Left="${Field_46.Right}+3" Height="1"
                 Width="4"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">Sel:</Init>
     </Field>
-    <Field Num="45" Kind="Put" Name="Sel">
-      <Geometry Up="${Field_42.Up}" Left="${Field_44.Right}+1" Height="1"
+    <Field Num="48" Kind="Put" Name="Sel">
+      <Geometry Up="${Field_45.Up}" Left="${Field_47.Right}+1" Height="1"
                 Width="7"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
 
     <!-- List scroll bar -->
-    <Field Num="46" Kind="Button" Name="Scroll">
+    <Field Num="49" Kind="Button" Name="Scroll">
       <Geometry Up="${List.Up}" Right="${List.Left}-1" Width="1"
                 Low="${List.Low}"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
@@ -786,99 +803,99 @@
     <Var Name="LmWidth" Value="8"/>
     <Var Name="LmSta" Value="1"/>
 
-    <Field Num="47" Kind="Button" Name="Top">
+    <Field Num="50" Kind="Button" Name="Top">
       <Geometry Up="${LmTop}" Left="${LmLeft}" Height="1" Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="${LmSta}+1" Half_Col_Offset="True">Top</Init>
     </Field>
-    <Field Num="48" Kind="Button">
-      <Geometry Up="${Field_47.Low}+2" Left="${LmLeft}" Height="3"
+    <Field Num="51" Kind="Button">
+      <Geometry Up="${Field_50.Low}+2" Left="${LmLeft}" Height="3"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="${LmSta}+1">PgUp </Init>
     </Field>
-    <Field Num="49" Kind="Button">
-      <Geometry Up="${Field_48.Low}+2" Left="${LmLeft}" Height="1"
+    <Field Num="52" Kind="Button">
+      <Geometry Up="${Field_51.Low}+2" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="${LmSta}+2">Up </Init>
     </Field>
-    <Field Num="50" Kind="Button">
-      <Geometry Up="${Field_49.Low}+2" Left="${LmLeft}" Height="1"
+    <Field Num="53" Kind="Button">
+      <Geometry Up="${Field_52.Low}+2" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="${LmSta}">Center</Init>
     </Field>
-    <Field Num="51" Kind="Button">
-      <Geometry Up="${Field_50.Low}+2" Left="${LmLeft}" Height="1"
+    <Field Num="54" Kind="Button">
+      <Geometry Up="${Field_53.Low}+2" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="${LmSta}+1">Down</Init>
     </Field>
-    <Field Num="52" Kind="Button">
-      <Geometry Up="${Field_51.Low}+2" Left="${LmLeft}" Height="3"
+    <Field Num="55" Kind="Button">
+      <Geometry Up="${Field_54.Low}+2" Left="${LmLeft}" Height="3"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="${LmSta}">PgDown</Init>
     </Field>
-    <Field Num="53" Kind="Button" Name="Bottom">
-      <Geometry Up="${Field_52.Low}+2" Left="${LmLeft}" Height="1"
+    <Field Num="56" Kind="Button" Name="Bottom">
+      <Geometry Up="${Field_55.Low}+2" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="${LmSta}">Bottom</Init>
     </Field>
 
     <!-- Insert before and after, and suppress buttons -->
-    <Field Num="54" Kind="Button" Name="Ins_Bef">
+    <Field Num="57" Kind="Button" Name="Ins_Bef">
       <Geometry Up="13" Left="1" Height="3" Width="8"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="01" Col="01">InsBef</Init>
     </Field>
 
-    <Field Num="55" Kind="Get" Name="Ins">
-      <Geometry Up="${Field_54.Up}+1" Left="${Field_54.Right}+2" Height="1"
+    <Field Num="58" Kind="Get" Name="Ins">
+      <Geometry Up="${Field_57.Up}+1" Left="${Field_57.Right}+2" Height="1"
                 Width="3"/>
       <Get_Tuning Move_Prev="False" Move_Next="False"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
-    <Field Num="56" Kind="Button" Name="Ins_Aft">
-      <Geometry Up="${Field_54.Up}" Left="${Field_55.Right}+2" Height="3"
+    <Field Num="59" Kind="Button" Name="Ins_Aft">
+      <Geometry Up="${Field_57.Up}" Left="${Field_58.Right}+2" Height="3"
                 Width="8"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="01" Col="01">InsAft</Init>
     </Field>
 
-    <Field Num="57" Kind="Button" Name="Suppr">
-      <Geometry Up="${Field_56.Up}" Left="${Field_56.Right}+5" Height="3"
+    <Field Num="60" Kind="Button" Name="Suppr">
+      <Geometry Up="${Field_59.Up}" Left="${Field_59.Right}+5" Height="3"
                 Width="7"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="01" Col="01">Suppr</Init>
     </Field>
 
     <!-- Import and Clear_all buttons -->
-    <Field Num="58" Kind="Button" Name="Import">
+    <Field Num="61" Kind="Button" Name="Import">
       <Geometry Up="17" Left="1" Height="3" Width="8"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="01" Col="01">Import</Init>
     </Field>
 
-    <Field Num="59" Kind="Button" Name="Clear_All">
-      <Geometry Up="${Field_58.Up}" Right="${Field_57.Right}" Height="3"
+    <Field Num="62" Kind="Button" Name="Clear_All">
+      <Geometry Up="${Field_61.Up}" Right="${Field_60.Right}" Height="3"
                 Width="10"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="01" Col="01">ClearAll</Init>
     </Field>
 
     <!-- Valid and Cancel buttons -->
-    <Field Num="60" Kind="Button" Name="Valid">
+    <Field Num="63" Kind="Button" Name="Valid">
       <Geometry Up="23" Left="01" Height="3" Width="9"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="01" Col="02">Valid</Init>
     </Field>
 
-    <Field Num="61" Kind="Button" Name="Cancel">
-      <Geometry Up="${Field_60.Up}" Right="${Field_59.Right}" Height="3"
+    <Field Num="64" Kind="Button" Name="Cancel">
+      <Geometry Up="${Field_63.Up}" Right="${Field_62.Right}" Height="3"
                 Width="10"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="01" Col="02">Cancel</Init>

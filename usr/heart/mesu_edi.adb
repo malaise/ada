@@ -103,8 +103,10 @@ package body Mesu_Edi is
                          Str_Mng.To_Str(Mesure.Tz(I)));
     end loop;
 
-    -- Date, comment and sampling delta
+    -- Date, Time, comment and sampling delta
     Encode_Date (Mesure.Date);
+    Afpx.Encode_Field (Afpx_Xref.Records.Hours, (00, 00), Mesure.Time(1..2));
+    Afpx.Encode_Field (Afpx_Xref.Records.Minutes, (00, 00), Mesure.Time(3..4));
     Afpx.Encode_Field (Afpx_Xref.Records.Comment, (00, 00), Mesure.Comment);
     Afpx.Encode_Field (Afpx_Xref.Records.Sampling, (00, 00),
                        Str_Mng.To_Str (Mesure.Sampling_Delta));
@@ -146,7 +148,7 @@ package body Mesu_Edi is
     Person : Pers_Def.Person_Rec;
     Pos_Pers : Integer;
     Date_S : Mesu_Nam.File_Date_Str;
-    No_S   : Mesu_Nam.File_No_Str;
+    Time_S : Mesu_Nam.File_Time_Str;
     Pid_S  : Mesu_Nam.File_Pid_Str;
     Bpm_S  : Str_Mng.Bpm_Str;
     Bpm : Pers_Def.Bpm_Range;
@@ -179,6 +181,7 @@ package body Mesu_Edi is
                            Move_Ok : in Boolean;
                            Ok : out Boolean) is
       Date_R : Str_Mng.Date_Str_Rec;
+      Time : Str_Mng.Str4;
       Delta_Str : String (1 .. 3);
       Locok : Boolean;
       use type Afpx.Absolute_Field_Range;
@@ -288,6 +291,34 @@ package body Mesu_Edi is
               Current_Field := Afpx_Xref.Records.Day;
             end if;
             Str_Mng.Check_Date (Date_R, True, Mesure.Date, Locok);
+          end if;
+          if Locok then
+            if Move_Ok then
+              Current_Field := Afpx_Xref.Records.Hours;
+            end if;
+          end if;
+
+        when Afpx_Xref.Records.Hours
+           | Afpx_Xref.Records.Minutes =>
+          -- In Time
+          -- Check date : no space
+          Current_Field := Afpx_Xref.Records.Hours;
+          Time(1..2) := Afpx.Decode_Field (Afpx_Xref.Records.Hours, 00);
+          Locok := not Str_Mng.Has_Spaces (Time(1..2));
+          if Locok then
+            if Move_Ok then
+              Current_Field := Afpx_Xref.Records.Minutes;
+            end if;
+            Time(3..4) := Afpx.Decode_Field (Afpx_Xref.Records.Minutes, 00);
+            Locok := not Str_Mng.Has_Spaces(Time(3..4));
+          end if;
+
+          -- Check Time : valid
+          if Locok then
+            if Move_Ok then
+              Current_Field := Afpx_Xref.Records.Hours;
+            end if;
+            Str_Mng.Check_Time (Time, Mesure.Time, Locok);
           end if;
           if Locok then
             if Move_Ok then
@@ -466,7 +497,7 @@ package body Mesu_Edi is
           Mesure.Date := Str_Mng.Current_Date;
         else
           -- Load person
-          Mesu_Nam.Split_File_Name (File_Name, Date_S, No_S, Pid_S);
+          Mesu_Nam.Split_File_Name (File_Name, Date_S, Time_S, Pid_S);
           Person.Pid := Pers_Def.Pid_Range'Value(Pid_S);
           Pers_Mng.Search (Pers_Def.The_Persons, Person.Pid, Pos_Pers);
           Pers_Def.The_Persons.Read (Person, Pers_Def.Person_List_Mng.Current);
@@ -586,24 +617,27 @@ package body Mesu_Edi is
                 -- Check if file to be deleted
                 if      In_Create
                 or else Mesure.Date /= Date_S
+                or else Mesure.Time /= Time_S
                 or else Pid_S /= Str_Mng.Pid_Str(Mesure.Pid) then
                   -- Necessity to create a new file_name.
                   -- Build new file name (find_slot) -> set No_S
                   Pid_S := Str_Mng.Pid_Str(Mesure.Pid);
-                  No_S := Mesu_Nam.Find_Slot (Date => Mesure.Date,
-                                              Pid  => Pid_S);
+                  Time_S := Mesu_Nam.Find_Slot (Date => Mesure.Date,
+                                                Time => Mesure.Time,
+                                                Pid  => Pid_S);
                   -- Ok if an empty slot is found. Build file name
-                  Ok := No_S /= Mesu_Nam.Wild_No_Str;
+                  Ok := Time_S /= Mesu_Nam.Wild_Time_Str;
                   if Ok then
+                    Mesure.Time := Time_S;
                     File_Name :=
-                      Mesu_Nam.Build_File_Name (Mesure.Date, No_S, Pid_S);
+                      Mesu_Nam.Build_File_Name (Mesure.Date, Time_S, Pid_S);
                   end if;
                 end if;
               end if;
 
               if Ok then
                 -- Save
-                Mesu_Fil.Save (No_S, Mesure);
+                Mesu_Fil.Save (Mesure);
                 exit;
               end if;
 
@@ -674,27 +708,34 @@ package body Mesu_Edi is
   -- Clone a mesure: create a new file name an edit it
   procedure Clone (File_Name : in out Mesu_Nam.File_Name_Str) is
     Mesure : Mesu_Def.Mesure_Rec;
-    No_S   : Mesu_Nam.File_No_Str;
+    Time_S : Mesu_Nam.File_Time_Str;
     Pid_S  : Mesu_Nam.File_Pid_Str;
-
+    Init_File_Name : Mesu_Nam.File_Name_Str;
   begin
     -- Fill data from origin
     Mesure := Mesu_Fil.Load (File_Name);
-    -- Set date and reset samples
+    -- Set date to current, time to 0 and reset samples
     Mesure.Date := Str_Mng.Current_Date;
+    Mesure.Time := (others => '0');
     Mesure.Samples.Set_Null;
     -- Create new file
     Pid_S := Str_Mng.Pid_Str(Mesure.Pid);
-    No_S := Mesu_Nam.Find_Slot (Mesure.Date, Pid_S);
+    Time_S := Mesu_Nam.Find_Slot (Mesure.Date, Mesure.Time, Pid_S);
     -- Ok if an empty slot is found. Build file name
-    if No_S = Mesu_Nam.Wild_No_Str then
-      File_Name := (others => ' ');
+    if Time_S = Mesu_Nam.Wild_Time_Str then
+      File_Name := Empty_File_Name;
       return;
     end if;
-    File_Name := Mesu_Nam.Build_File_Name (Mesure.Date, No_S, Pid_S);
-    -- Save and edit
-    Mesu_Fil.Save (No_S, Mesure);
+    Mesure.Time := Time_S;
+    Init_File_Name := Mesu_Nam.Build_File_Name (Mesure);
+    Mesu_Fil.Save (Mesure);
+    -- Edit
+    File_Name := Init_File_Name;
     Edit (File_Name);
+    -- If edition is canceled or leads to a new file
+    if File_Name /= Init_File_Name then
+      Mesu_Fil.Delete (Init_File_Name);
+    end if;
   end Clone;
 
   -- Delete a mesure
@@ -703,7 +744,7 @@ package body Mesu_Edi is
     Person : Pers_Def.Person_Rec;
     Pos_Pers : Integer;
     Date_S : Mesu_Nam.File_Date_Str;
-    No_S   : Mesu_Nam.File_No_Str;
+    Time_S   : Mesu_Nam.File_Time_Str;
     Pid_S  : Mesu_Nam.File_Pid_Str;
     Mesure : Mesu_Def.Mesure_Rec;
 
@@ -776,7 +817,7 @@ package body Mesu_Edi is
   begin
 
     -- Load person
-    Mesu_Nam.Split_File_Name (File_Name, Date_S, No_S, Pid_S);
+    Mesu_Nam.Split_File_Name (File_Name, Date_S, Time_S, Pid_S);
     Person.Pid := Pers_Def.Pid_Range'Value(Pid_S);
     Pers_Mng.Search (Pers_Def.The_Persons, Person.Pid, Pos_Pers);
     Pers_Def.The_Persons.Read (Person, Pers_Def.Person_List_Mng.Current);

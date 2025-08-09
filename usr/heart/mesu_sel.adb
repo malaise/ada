@@ -38,18 +38,17 @@ package body Mesu_Sel is
   function Less_Than (L1, L2 : Line_Rec) return Boolean is
     F1, F2 : Mesu_Nam.File_Name_Str;
     D1, D2 : Mesu_Nam.File_Date_Str;
-    N1, N2 : Mesu_Nam.File_No_Str;
+    T1, T2 : Mesu_Nam.File_Time_Str;
     P1, P2 : Mesu_Nam.File_Pid_Str;
   begin
     -- Do not sort on file_name cause 2000 (=>00) < 1999 (=>99)
     Str_Mng.Format_List_To_Mesure (L1, F1);
-    Mesu_Nam.Split_File_Name (F1, D1, N1, P1);
+    Mesu_Nam.Split_File_Name (F1, D1, T1, P1);
     Str_Mng.Format_List_To_Mesure (L2, F2);
-    Mesu_Nam.Split_File_Name (F2, D2, N2, P2);
-    --  Splitting file name gives full year number
-    return D1 & N1 & P1 < D2 & N2 & P2;
+    Mesu_Nam.Split_File_Name (F2, D2, T2, P2);
+    --  Splitting file name gives full date and time
+    return D1 & T1 & P1 < D2 & T2 & P2;
   end Less_Than;
-
 
   function File_Search is new Line_List_Mng.Search (Same_File);
   procedure File_Sort   is new Line_List_Mng.Sort   (Less_Than);
@@ -65,7 +64,7 @@ package body Mesu_Sel is
     Person : Pers_Def.Person_Rec;
     File_Name : Mesu_Nam.File_Name_Str;
     Date_S : Mesu_Nam.File_Date_Str;
-    No_S   : Mesu_Nam.File_No_Str;
+    Time_S : Mesu_Nam.File_Time_Str;
     Pid_S  : Mesu_Nam.File_Pid_Str;
     Ok     : Boolean;
     Mesure : Mesu_Def.Mesure_Rec;
@@ -101,8 +100,9 @@ package body Mesu_Sel is
     for I in First_Pers .. Last_Pers loop
       -- Get person's pid
       Pers_Def.The_Persons.Read (Person, Pers_Def.Person_List_Mng.Current);
-      -- Build ????????.<pid>
-      File_Name := Mesu_Nam.Build_File_Name (Pid => Str_Mng.Pid_Str (Person.Pid));
+      -- Build ????????????.<pid>
+      File_Name := Mesu_Nam.Build_File_Name (
+          Pid => Str_Mng.Pid_Str (Person.Pid));
       -- Add to file list
       Dir_Mng.List_Dir (The_Files, "", File_Name);
 
@@ -122,18 +122,18 @@ package body Mesu_Sel is
     loop
       The_Files.Read (File, Dir_Mng.File_List_Mng.Current);
       File_Name := File.Name.Image;
-      Mesu_Nam.Split_File_Name (File_Name, Date_S, No_S, Pid_S);
-      -- check date
+      Mesu_Nam.Split_File_Name (File_Name, Date_S, Time_S, Pid_S);
+      -- Check date
       Ok := Date_Match (Date_S, Criteria.Date_Aft, Criteria.Date_Bef);
 
       if Ok then
-        -- check pairs
+        -- Check if it is already in the selection
         -- Get person & mesure to build afpx line rec
         Pers_Mng.Search (Pers_Def.The_Persons,
                          Pers_Def.Pid_Range'Value(Pid_S), First_Pers);
         Pers_Def.The_Persons.Read (Person, Pers_Def.Person_List_Mng.Current);
         Mesure := Mesu_Fil.Load (File_Name);
-        Str_Mng.Format_Mesure_To_List (Person, Mesure, No_S, Line);
+        Str_Mng.Format_Mesure_To_List (Person, Mesure, Line);
 
         if not Line_List.Is_Empty then
           Ok := not File_Search (Line_List, Line, Line_List_Mng.Next, 1,
@@ -151,7 +151,7 @@ package body Mesu_Sel is
       The_Files.Move_To;
     end loop;
 
-    -- Sort by name activity date
+    -- Sort by name activity date time
     File_Sort (Line_List);
 
     -- Restore / set pos
@@ -167,7 +167,7 @@ package body Mesu_Sel is
     Ok : Boolean;
     File_Name : Mesu_Nam.File_Name_Str;
     Date_S : Mesu_Nam.File_Date_Str;
-    No_S   : Mesu_Nam.File_No_Str;
+    Time_S : Mesu_Nam.File_Time_Str;
     Pid_S  : Mesu_Nam.File_Pid_Str;
     Pos_Pers : Positive;
     Person : Pers_Def.Person_Rec;
@@ -183,7 +183,7 @@ package body Mesu_Sel is
       -- Get line, file_name, split
       Line_List.Read (Line, Line_List_Mng.Current);
       Str_Mng.Format_List_To_Mesure (Line, File_Name);
-      Mesu_Nam.Split_File_Name (File_Name, Date_S, No_S, Pid_S);
+      Mesu_Nam.Split_File_Name (File_Name, Date_S, Time_S, Pid_S);
 
       Ok := True;
       if not Str_Mng.Is_Spaces (Criteria.Name) then
@@ -234,14 +234,14 @@ package body Mesu_Sel is
   procedure Add_Selection (Name : in Mesu_Nam.File_Name_Str) is
     Line   : Afpx.Line_Rec;
     Date_S : Mesu_Nam.File_Date_Str;
-    No_S   : Mesu_Nam.File_No_Str;
+    Time_S : Mesu_Nam.File_Time_Str;
     Pid_S  : Mesu_Nam.File_Pid_Str;
     Pos_Pers : Positive;
     Person : Pers_Def.Person_Rec;
     Mesure : Mesu_Def.Mesure_Rec;
   begin
 
-    Mesu_Nam.Split_File_Name (Name, Date_S, No_S, Pid_S);
+    Mesu_Nam.Split_File_Name (Name, Date_S, Time_S, Pid_S);
 
     -- Get person and mesure
     Pers_Mng.Search (Pers_Def.The_Persons,
@@ -250,13 +250,13 @@ package body Mesu_Sel is
     Mesure := Mesu_Fil.Load (Name);
 
     -- Build line
-    Str_Mng.Format_Mesure_To_List (Person, Mesure, No_S, Line);
+    Str_Mng.Format_Mesure_To_List (Person, Mesure, Line);
 
     -- Insert
     Line_List.Insert (Line);
     Bkp_Ctx.Backup;
 
-    -- Sort by name activity date
+    -- Sort by name activity date time
     File_Sort (Line_List);
 
     -- Current set to inserted
@@ -267,7 +267,7 @@ package body Mesu_Sel is
   procedure Rem_Selection (Name : in Mesu_Nam.File_Name_Str) is
     Line   : Afpx.Line_Rec;
     Date_S : Mesu_Nam.File_Date_Str;
-    No_S   : Mesu_Nam.File_No_Str;
+    Time_S : Mesu_Nam.File_Time_Str;
     Pid_S  : Mesu_Nam.File_Pid_Str;
     Pos_Pers : Positive;
     Person : Pers_Def.Person_Rec;
@@ -281,7 +281,7 @@ package body Mesu_Sel is
     Save_List;
 
     -- Split file name
-    Mesu_Nam.Split_File_Name (Name, Date_S, No_S, Pid_S);
+    Mesu_Nam.Split_File_Name (Name, Date_S, Time_S, Pid_S);
 
     -- Get person and mesure
     Pers_Mng.Search (Pers_Def.The_Persons,
@@ -290,7 +290,7 @@ package body Mesu_Sel is
     Mesure := Mesu_Fil.Load (Name);
 
     -- Build line
-    Str_Mng.Format_Mesure_To_List (Person, Mesure, No_S, Line);
+    Str_Mng.Format_Mesure_To_List (Person, Mesure, Line);
 
     -- Search record
     if not File_Search (Line_List, Line, Line_List_Mng.Next, 1,

@@ -5,6 +5,9 @@ package Mesu_Def is
   -- Date in string YyyyMmDd
   subtype Date_Str is String (1 .. 8);
 
+  -- Time in string HhMm
+  subtype Time_Str is String (1 .. 4);
+
   -- Comment for a mesure
   subtype Comment_Str is String (1 .. 20);
 
@@ -19,6 +22,8 @@ package Mesu_Def is
     Pid : Pers_Def.Pid_Range := Pers_Def.Pid_Range'First;
     -- YYYYMMDD
     Date : Date_Str := (others => ' ');
+    -- HHMM
+    Time : Time_Str := (others => '0');
     Sampling_Delta : Pers_Def.Sampling_Delta_Range
                    := Pers_Def.Default_Sampling_Delta;
     Comment : Comment_Str := (others => ' ');

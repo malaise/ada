@@ -321,7 +321,8 @@ package body Mesu_Gra is
            Normal(No, 1) & ":"
          & Mesure_Array(No).Person.Name & " "
          & Mesure_Array(No).Person.Activity & " "
-         & Str_Mng.To_Printed_Str(Mesure.Date) & " "
+         & Str_Mng.To_Printed_Date_Str(Mesure.Date) & " "
+         & Str_Mng.To_Printed_Time_Str(Mesure.Time) & " "
          & Mesure.Comment);
     Screen.Put (Title_Txt.Image);
 
@@ -368,7 +369,7 @@ package body Mesu_Gra is
     Line      : Afpx.Line_Rec;
     File_Name : Mesu_Nam.File_Name_Str;
     Date_S    : Mesu_Nam.File_Date_Str;
-    No_S      : Mesu_Nam.File_No_Str;
+    Time_S    : Mesu_Nam.File_Time_Str;
     Pid_S     : Mesu_Nam.File_Pid_Str;
     Pos_Pers  : Natural;
     Person    : Pers_Def.Person_Rec;
@@ -433,7 +434,7 @@ package body Mesu_Gra is
       -- Get line, file_name, split
       Afpx.Line_List.Read (Line, Afpx.Line_List_Mng.Current);
       Str_Mng.Format_List_To_Mesure (Line, File_Name);
-      Mesu_Nam.Split_File_Name (File_Name, Date_S, No_S, Pid_S);
+      Mesu_Nam.Split_File_Name (File_Name, Date_S, Time_S, Pid_S);
       -- Get person
       Pers_Mng.Search (Pers_Def.The_Persons, Pers_Def.Pid_Range'Value(Pid_S),
                        Pos_Pers);

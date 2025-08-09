@@ -13,9 +13,8 @@ package Mesu_Fil is
   return Mesu_Def.Mesure_Rec;
 
   -- Save a mesure in a file (Text format)
-  -- Pid and date of the mesure are used to build the file name
-  procedure Save (File_No : in Mesu_Nam.File_No_Str;
-                  Mesure  : in Mesu_Def.Mesure_Rec);
+  -- Pid date ansd time of the mesure are used to build the file name
+  procedure Save (Mesure  : in Mesu_Def.Mesure_Rec);
 
   -- Delete a mesure file
   -- Pid and date of the mesure are used to build the file name

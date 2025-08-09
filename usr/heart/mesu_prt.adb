@@ -10,7 +10,8 @@ package body Mesu_Prt is
     Last_Of_Line : Boolean;
   begin
     Printer.Put_Line ("Person: " & Person.Name & "    " & Person.Activity
-                      & "    Date: " & Str_Mng.To_Printed_Str(Mesure.Date));
+                      & "    Date: " & Str_Mng.To_Printed_Date_Str(Mesure.Date)
+                      & "  Time: " & Str_Mng.To_Printed_Time_Str(Mesure.Time));
     Printer.Put ("Comment: " & Mesure.Comment
                 & "   Delta: " & Normal(Integer(Mesure.Sampling_Delta), 3)
                 & "    TZ: ");
@@ -52,7 +53,7 @@ package body Mesu_Prt is
     Line      : Afpx.Line_Rec;
     File_Name : Mesu_Nam.File_Name_Str;
     Date_S    : Mesu_Nam.File_Date_Str;
-    No_S      : Mesu_Nam.File_No_Str;
+    Time_S    : Mesu_Nam.File_Time_Str;
     Pid_S     : Mesu_Nam.File_Pid_Str;
     Pos_Pers  : Natural;
     Person    : Pers_Def.Person_Rec;
@@ -76,7 +77,7 @@ package body Mesu_Prt is
       -- Get line, file_name, split
       Afpx.Line_List.Read (Line, Afpx.Line_List_Mng.Current);
       Str_Mng.Format_List_To_Mesure (Line, File_Name);
-      Mesu_Nam.Split_File_Name (File_Name, Date_S, No_S, Pid_S);
+      Mesu_Nam.Split_File_Name (File_Name, Date_S, Time_S, Pid_S);
       -- Get person
       Pers_Mng.Search (Pers_Def.The_Persons, Pers_Def.Pid_Range'Value(Pid_S),
                        Pos_Pers);
