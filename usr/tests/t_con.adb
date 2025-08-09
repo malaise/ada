@@ -231,7 +231,7 @@ begin
   Logger.Log_Debug ("Starting");
   Con_Io.Initialise;
   Logger.Log_Debug ("Con_Io initialized, starting tasks");
-  Con_Io.X_Get_Screen_Geometry (Screen_Width, Screen_Height);
+  Con_Io.Get_Screen_Geometry (Screen_Width, Screen_Height);
   Basic_Proc.Put_Line_Output ("Screen is "
                             & Images.Integer_Image (Screen_Width)
                             & "x" & Images.Integer_Image (Screen_Height));

@@ -502,8 +502,8 @@ package Con_Io is
   -- Size of the screen
   -- Initialise Con_Io if necessary
   -- Can be called before opening consoles
-  procedure X_Get_Screen_Geometry (X : out X_Range;
-                                   Y : out Y_Range);
+  procedure Get_Screen_Geometry (X : out X_Range;
+                                 Y : out Y_Range);
 
   -- From here, the Console  must be open
 
