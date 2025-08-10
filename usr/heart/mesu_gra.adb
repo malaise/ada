@@ -455,10 +455,10 @@ package body Mesu_Gra is
                   Row_Last => Rows - 1,
                   Col_Last => Cols - 1,
                   Def_Back => Afpx.Get_Descriptor_Background);
+    Console.Set_Name ("Heart draw");
     Screen.Set_To_Screen (Console'Access);
     Console.Set_Y_Mode (Con_Io.Con_Io_Mode);
     Screen.Set_Background (Con_Io.Color_Of ("Dark_Grey"));
-Basic_Proc.Put_Line_Output ("Console opened");
 
     -- Screen scale
     Xs_First := 4 * Font_Width;
@@ -644,8 +644,8 @@ Basic_Proc.Put_Line_Output ("Console opened");
     Close;
   exception
     when Pers_Def.Exit_Requested =>
+      -- Close this console
       Close;
-      raise;
     when Error:others =>
       Basic_Proc.Put_Line_Error ("Exception "
        & Ada.Exceptions.Exception_Name (Error) & " raised.");
