@@ -367,12 +367,11 @@ package body Mesu_Gra is
   procedure Graphic is
     Bkp_Ctx   : Afpx.Utils.Backup_Context;
     Line      : Afpx.Line_Rec;
+    Screen_Id : Con_Io.Screen_Id_Range;
     Font_No : constant Con_Io.Font_No_Range := 1;
     Screen_Width  : Con_Io.X_Range;
     Screen_Height : Con_Io.Y_Range;
-    Env_Geo_Name : constant String := "HEART_GRAPH_SIZE";
-    Env_Width  : Con_Io.X_Range;
-    Env_Height : Con_Io.Y_Range;
+    Env_Geo_Name : constant String := "HEART_GRAPH";
     Font_Width  : Natural;
     Font_Height : Natural;
     Font_Offset : Natural;
@@ -439,20 +438,39 @@ package body Mesu_Gra is
     -- Compute console size
     -- Get screen geometry
     Con_Io.Get_Screen_Geometry (Screen_Width, Screen_Height);
-    -- Get ENV console size
+    -- Get ENV console screen and size
+    -- <id>-<width>x<height>
     declare
       Env_Geo : constant String := Environ.Getenv (Env_Geo_Name);
-      X : Positive;
+      Env_Width  : Con_Io.X_Range;
+      Env_Height : Con_Io.Y_Range;
+      Sep1, Sep2 : Natural;
     begin
-      X := Str_Util.Locate (Env_Geo, "x");
-      Env_Width  := Con_Io.X_Range'Value (Env_Geo (1 .. X - 1));
-      Env_Height := Con_Io.X_Range'Value (Env_Geo (X + 1 .. Env_Geo'Last));
+      Sep1 := Str_Util.Locate (Env_Geo, "-");
+      Sep2 := Str_Util.Locate (Env_Geo, "x");
+      if Sep1 = 0 then
+        if Sep2 = 0 then
+          -- Only the screen Id
+          Screen_Id :=
+              Con_Io.Screen_Id_Range'Value (Env_Geo(1 .. Env_Geo'Last));
+        else
+          -- Only the size
+          Screen_Id := Con_Io.Default_Screen_Id;
+        end if;
+      else
+        -- Both screen Id and size
+        Screen_Id := Con_Io.Screen_Id_Range'Value (Env_Geo(1..Sep1 - 1));
+      end if;
+      -- Sep1 is 0 or index of '-'
+      Env_Width  := Con_Io.X_Range'Value (Env_Geo (Sep1 + 1 .. Sep2 - 1));
+      Env_Height := Con_Io.X_Range'Value (Env_Geo (Sep2 + 1 .. Env_Geo'Last));
       -- Everything went well
       Screen_Width  := Env_Width;
       Screen_Height := Env_Height;
     exception
       when others =>
-        -- Default if we cannot get geometry from env
+        -- Default if we cannot get screen and geometry from env
+        Screen_Id := Con_Io.Default_Screen_Id;
         -- Apply margin in percent and remain within Con_Io Row and Col ranges
         Screen_Width  := Screen_Width  - (Screen_Width  * Width_Margin  / 100);
         Screen_Height := Screen_Height - (Screen_Height * Height_Margin / 100);
@@ -472,7 +490,8 @@ package body Mesu_Gra is
 
     -- Create a new console
     Afpx.Suspend;
-    Console.Open (Font_No  => Font_No,
+    Console.Open (Screen_Id => Screen_Id,
+                  Font_No  => Font_No,
                   Row_Last => Rows - 1,
                   Col_Last => Cols - 1,
                   Def_Back => Afpx.Get_Descriptor_Background);
