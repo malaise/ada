@@ -376,7 +376,7 @@ package body Mesu_Gra is
     Font_Height : Natural;
     Font_Offset : Natural;
     Width_Margin : constant Con_Io.X_Range := 5;
-    Height_Margin : constant Con_Io.Y_Range := 5;
+    Height_Margin : constant Con_Io.Y_Range := 10;
     Rows : Con_Io.Row_Range;
     Cols : Con_Io.Col_Range;
     File_Name : Mesu_Nam.File_Name_Str;
