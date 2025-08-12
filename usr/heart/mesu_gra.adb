@@ -1,6 +1,6 @@
 with Ada.Exceptions;
 with Afpx.Utils, Con_Io, Normal, My_Math, As.B, Language, Basic_Proc,
-     Upper_Char;
+     Upper_Char, Environ, Str_Util;
 with Mesu_Def, Str_Mng, Mesu_Nam, Pers_Mng, Pers_Def, Mesu_Fil;
 package body Mesu_Gra is
   use type My_Math.Real;
@@ -370,11 +370,14 @@ package body Mesu_Gra is
     Font_No : constant Con_Io.Font_No_Range := 1;
     Screen_Width  : Con_Io.X_Range;
     Screen_Height : Con_Io.Y_Range;
+    Env_Geo_Name : constant String := "HEART_GRAPH_SIZE";
+    Env_Width  : Con_Io.X_Range;
+    Env_Height : Con_Io.Y_Range;
     Font_Width  : Natural;
     Font_Height : Natural;
     Font_Offset : Natural;
-    Width_Margin : constant Con_Io.X_Range := 10;
-    Height_Margin : constant Con_Io.Y_Range := 10;
+    Width_Margin : constant Con_Io.X_Range := 5;
+    Height_Margin : constant Con_Io.Y_Range := 5;
     Rows : Con_Io.Row_Range;
     Cols : Con_Io.Col_Range;
     File_Name : Mesu_Nam.File_Name_Str;
@@ -434,10 +437,27 @@ package body Mesu_Gra is
     use type Con_Io.Curs_Mvt;
   begin
     -- Compute console size
+    -- Get screen geometry
     Con_Io.Get_Screen_Geometry (Screen_Width, Screen_Height);
-    -- Apply margin in percent a,d remaine within Con_Io Row and Col ranges
-    Screen_Width  := Screen_Width  - (Screen_Width  * Width_Margin  / 100);
-    Screen_Height := Screen_Height - (Screen_Height * Height_Margin / 100);
+    -- Get ENV console size
+    declare
+      Env_Geo : constant String := Environ.Getenv (Env_Geo_Name);
+      X : Positive;
+    begin
+      X := Str_Util.Locate (Env_Geo, "x");
+      Env_Width  := Con_Io.X_Range'Value (Env_Geo (1 .. X - 1));
+      Env_Height := Con_Io.X_Range'Value (Env_Geo (X + 1 .. Env_Geo'Last));
+      -- Everything went well
+      Screen_Width  := Env_Width;
+      Screen_Height := Env_Height;
+    exception
+      when others =>
+        -- Default if we cannot get geometry from env
+        -- Apply margin in percent and remain within Con_Io Row and Col ranges
+        Screen_Width  := Screen_Width  - (Screen_Width  * Width_Margin  / 100);
+        Screen_Height := Screen_Height - (Screen_Height * Height_Margin / 100);
+    end;
+    -- Convert size into row/col
     Con_Io.Get_Font_Geometry (Font_No, Font_Width, Font_Height, Font_Offset);
     if Screen_Height / Font_Height < Con_Io.Row_Range'Last then
       Rows := Screen_Height / Font_Height;
@@ -449,6 +469,7 @@ package body Mesu_Gra is
     else
       Cols := Con_Io.Col_Range'Last;
     end if;
+
     -- Create a new console
     Afpx.Suspend;
     Console.Open (Font_No  => Font_No,
