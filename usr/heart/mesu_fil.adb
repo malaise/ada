@@ -84,7 +84,6 @@ package body Mesu_Fil is
 
   function Load (File_Name : Mesu_Nam.File_Name_Str)
   return Mesu_Def.Mesure_Rec is
-    Tmp_Rec : File_Rec;
     Tmp_Txt : As.U.Asu_Us;
     Mesure : Mesu_Def.Mesure_Rec;
     Date : Mesu_Nam.File_Date_Str;
