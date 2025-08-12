@@ -199,12 +199,13 @@ package body Con_Io is
   end Set_Attributes;
 
   procedure Open (Con : in out Console;
-                  Font_No  : in Font_No_Range := 1;
-                  Row_Last : in Row_Range := Def_Row_Last;
-                  Col_Last : in Col_Range := Def_Col_Last;
-                  Def_Fore : in Effective_Colors := Default_Foreground;
-                  Def_Back : in Effective_Colors := Default_Background;
-                  Def_Xor  : in Effective_Xor_Modes := Default_Xor_Mode) is
+                  Screen_Id : in Screen_Id_Range := Default_Screen_Id;
+                  Font_No   : in Font_No_Range := 1;
+                  Row_Last  : in Row_Range := Def_Row_Last;
+                  Col_Last  : in Col_Range := Def_Col_Last;
+                  Def_Fore  : in Effective_Colors := Default_Foreground;
+                  Def_Back  : in Effective_Colors := Default_Background;
+                  Def_Xor   : in Effective_Xor_Modes := Default_Xor_Mode) is
     Line : X_Mng.Line_Definition_Rec := Line_Def;
     Con_Data : Console_Data;
     Screen : Window;
@@ -219,6 +220,7 @@ package body Con_Io is
     Con_Data.Def_Background := Def_Back;
     Con_Data.Def_Xor_Mode := Def_Xor;
 
+    Line.Screen_Id := Screen_Id;
     if Con_Data.Font_No + Font_No_Offset in Font_No_Range then
       Line.No_Font := Con_Data.Font_No + Font_No_Offset;
     end if;
@@ -1724,11 +1726,13 @@ package body Con_Io is
   ------------------------
   -- Graphic operations --
   ------------------------
-  procedure Get_Screen_Geometry (X : out X_Range;
-                                 Y : out Y_Range) is
+  procedure Get_Screen_Geometry (
+      X : out X_Range;
+      Y : out Y_Range;
+      Screen_Id : in Screen_Id_Range := Default_Screen_Id) is
   begin
     Initialise;
-    X_Mng.X_Get_Screen_Geometry (Line_Def.Screen_Id, X, Y);
+    X_Mng.X_Get_Screen_Geometry (Screen_Id, X, Y);
   end Get_Screen_Geometry;
 
   procedure Set_Y_Mode (Con : in Console; Y_Mode : in Y_Modes) is

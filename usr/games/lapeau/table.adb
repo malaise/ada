@@ -152,7 +152,10 @@ package body Table is
       Con_Io.Get_Font_Geometry (Font_No, Font_Width, Font_Height, Font_Offset);
       Last_Col := ((Deck.Width + X_Gap) * Cards.Stack_Range'Last + X_Gap)
                   / Font_Width;
-      Console.Open (Font_No, Last_Row, Last_Col, Def_Back => Background);
+      Console.Open (Font_No => Font_No,
+                    Row_Last => Last_Row,
+                    Col_Last => Last_Col,
+                    Def_Back => Background);
       Logger.Log_Debug ("Last col:" & Last_Col'Img);
     end;
     Console.Set_Y_Mode (Con_Io.X_Mng_Mode);

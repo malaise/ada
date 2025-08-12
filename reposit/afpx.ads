@@ -21,6 +21,9 @@ package Afpx is
   subtype Unicode_Sequence is Unicode.Unicode_Sequence;
   use type Unicode_Sequence;
 
+  -- Num of the X11 screen
+  function Get_Screen_Id return Con_Io.Screen_Id_Range;
+
   -- Width and height of the screen
   procedure Get_Screen_Size (Height : out Height_Range;
                              Width  : out Width_Range);

@@ -28,6 +28,16 @@ package body Af_Dscr is
   -- Load Afpx files if needed
   procedure Load_Files;
 
+  -- Num of the X11 screen
+  function Get_Screen_Id return Con_Io.Screen_Id_Range is
+  begin
+    -- Load Afpx files if needed
+    Load_Files;
+
+    -- Even when not used, each dscr has the screen size
+    return Dscrs(1).Screen_Id;
+  end Get_Screen_Id;
+
   -- Load the screen size, raise No_Descriptor if failure of version check
   function Get_Size return Con_Io.Square is
   begin

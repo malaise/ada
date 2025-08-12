@@ -202,8 +202,9 @@ procedure Afpx_Bld is
 
   -- Check and return size of screen
   Root_Name : constant String := "Afpx_Descriptors";
-  function Load_Size (Root : in Xp.Node_Type) return Con_Io.Square is
-    Size : Con_Io.Square;
+  procedure Load_Screen_And_Size (Root : in Xp.Node_Type;
+                                  Screen_Id : out Con_Io.Screen_Id_Range;
+                                  Size : out Con_Io.Square) is
     Height, Width : Boolean;
   begin
     if Root.Kind /= Xp.Element
@@ -213,22 +214,9 @@ procedure Afpx_Bld is
     -- Add constant persistent of up left
     Add_Variable (Root, "Screen.Up", Geo_Image (0), False, True);
     Add_Variable (Root, "Screen.Left", Geo_Image (0), False, True);
-    if Ctx.Get_Nb_Attributes (Root) = 0 then
-      -- No attribute : default size
-      Size := (Con_Io.Def_Row_Last, Con_Io.Def_Col_Last);
-      -- Add constant persistent
-      Add_Variable (Root, "Screen.Low", Geo_Image (Size.Row), False, True);
-      Add_Variable (Root, "Screen.Right", Geo_Image (Size.Col), False, True);
-      Add_Variable (Root, "Screen.Height", Geo_Image (Size.Row + 1),
-                    False, True);
-      Add_Variable (Root, "Screen.Width", Geo_Image (Size.Col + 1),
-                    False, True);
-      -- Add
-      return Size;
-    elsif Ctx.Get_Nb_Attributes (Root) /= 2 then
-      File_Error (Root,
-     "Afpx_Descriptors expects either no attribute or both Height and Width");
-    end if;
+
+    -- Parse
+    Screen_Id := Con_Io.Default_Screen_Id;
     declare
       Attrs : constant Xp.Attributes_Array := Ctx.Get_Attributes (Root);
       Err_Val : Asu_Us;
@@ -237,8 +225,11 @@ procedure Afpx_Bld is
     begin
       for Attr of Attrs loop
         Err_Val := Attr.Value;
-        -- Load upper left then lower right
-        if Match (Attr.Name, "Height") then
+        -- Load Num, upper left and lower right
+        if Match (Attr.Name, "Screen") then
+          N := Memory.Compute (Attr.Value.Image);
+          Screen_Id := Con_Io.Screen_Id_Range'Value (N.Image);
+        elsif Match (Attr.Name, "Height") then
           Height := True;
           N := Memory.Compute (Attr.Value.Image);
           P := Positive'Value (N.Image);
@@ -264,22 +255,31 @@ procedure Afpx_Bld is
                         & Err_Val.Image);
       when others =>
         File_Error (Root, "Invalid size");
-        raise File_Syntax_Error;
     end;
-    if not (Height and then Width) then
-      File_Error (Root, "Invalid size. Missing some coordinate");
-      raise File_Syntax_Error;
+
+    -- Checks
+    if Height /= Width then
+      File_Error (Root, "Invalid size. Missing some dimension");
+    end if;
+
+    if not Height then
+      -- No size : default size
+      Size := (Con_Io.Def_Row_Last, Con_Io.Def_Col_Last);
+      -- Add constant persistent
+      Add_Variable (Root, "Screen.Height", Geo_Image (Size.Row + 1),
+                    False, True);
+      Add_Variable (Root, "Screen.Width", Geo_Image (Size.Col + 1),
+                    False, True);
     end if;
     Add_Variable (Root, "Screen.Low", Geo_Image (Size.Row), False, True);
     Add_Variable (Root, "Screen.Right", Geo_Image (Size.Col), False, True);
-    return Size;
+
   exception
     when File_Syntax_Error =>
       raise;
     when others =>
-      File_Error (Root, "Invalid size definition");
-      raise File_Syntax_Error;
-  end Load_Size;
+      File_Error (Root, "Invalid screen or size definition");
+  end Load_Screen_And_Size;
 
   -- Load a user defined variable
   procedure Load_Variable (Node : in Xp.Node_Type;
@@ -1056,6 +1056,7 @@ procedure Afpx_Bld is
 
   procedure Load_Dscrs (Root : in Xp.Element_Type;
                         Check_Only : in Boolean) is
+    Screen_Id : Con_Io.Screen_Id_Range;
     Screen_Size : Con_Io.Square;
     Dscr_Index : Afpx_Typ.Descriptor_Range;
     Child : Xp.Node_Type;
@@ -1095,15 +1096,16 @@ procedure Afpx_Bld is
                       Afpx_Typ.Dest_Path.Image & Afpx_Typ.Init_File_Name);
     end if;
 
-    -- Parse size
-    Screen_Size := Load_Size (Root);
+    -- Parse screen num  and size
+    Load_Screen_And_Size (Root, Screen_Id, Screen_Size);
     -- Init colors with default
     Color_Defs := Con_Io.Default_Colors;
     Default_Background := Con_Io.Effective_Colors'First;
 
-    -- Initialize the descriptors array as not used
+    -- Initialize the descriptors array, as not used
     for I in Afpx_Typ.Descriptor_Range loop
-      Descriptors(I).Version  := Afpx_Typ.Afpx_Version;
+      Descriptors(I).Version := Afpx_Typ.Afpx_Version;
+      Descriptors(I).Screen_Id := Screen_Id;
       Descriptors(I).Size  := Screen_Size;
       Descriptors(I).Modified := False;
       Descriptors(I).Dscr_Index := Afpx_Typ.Descriptor_Range'First;

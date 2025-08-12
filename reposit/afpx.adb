@@ -26,6 +26,9 @@ package body Afpx is
     -- Characters of the fields
     Chars : Afpx_Typ.Char_Str;
 
+    -- Get the screen Id
+    function Get_Screen_Id return Con_Io.Screen_Id_Range;
+
     -- Get the screen size
     function Get_Size return Con_Io.Square;
 
@@ -254,6 +257,10 @@ package body Afpx is
     end if;
   end Check_Ptg;
 
+  -- Num of the X11 screen
+  function Get_Screen_Id return Con_Io.Screen_Id_Range is
+  (Af_Dscr.Get_Screen_Id);
+
   -- Width and height of the screen
   procedure Get_Screen_Size (Height : out Height_Range;
                              Width  : out Width_Range) is
@@ -301,6 +308,7 @@ package body Afpx is
       end if;
       -- Create console and screen
       Console.Open (
+              Screen_Id => Af_Dscr.Get_Screen_Id,
               Font_No => 1,
               Row_Last => Size.Row,
               Col_Last => Size.Col,

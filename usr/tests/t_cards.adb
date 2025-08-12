@@ -150,7 +150,10 @@ procedure T_Cards is
   begin
     Con_Io.Get_Font_Geometry (Font_No, Font_Width, Font_Height, Font_Offset);
     Last_Col := ((Deck.Width + X_Gap) * Stack_Range'Last + X_Gap) / Font_Width;
-    Console.Open (Font_No, Last_Row, Last_Col, Def_Back => Background);
+    Console.Open (Font_No => Font_No,
+                  Row_Last => Last_Row,
+                  Col_Last => Last_Col,
+                  Def_Back => Background);
     Basic_Proc.Put_Line_Output ("Last col" & Last_Col'Img
         & "  font: " & Console.Font_Name
         & " size: " & Font_Width'Img & " x" & Font_Height'Img);

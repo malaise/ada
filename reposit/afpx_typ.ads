@@ -31,7 +31,8 @@ package Afpx_Typ is
   type Dscr_Rec is record
     -- To be checked prior to loading
     Version    : Float;
-    -- Screen size
+    -- Screen id and size
+    Screen_Id : Con_Io.Screen_Id_Range;
     Size : Con_Io.Square;
     -- To generate refresh. True if Dscr is defined
     Modified   : Boolean;

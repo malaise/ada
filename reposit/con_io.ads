@@ -13,10 +13,14 @@ package Con_Io is
   Space : Unicode_Number renames Aski.Unicode.Spc_U;
   Htab  : Unicode_Number renames Aski.Unicode.Ht_U;
 
+  -- A physical screen ID
+  subtype Screen_Id_Range is Integer range -1 .. 254;
+  Default_Screen_Id : constant Screen_Id_Range := -1;
+
   -- The Font identifier
   subtype Font_No_Range is Natural range 0 .. 3;
 
-  -- Possible screen size
+  -- Possible console size
   -- The xxx_range_last are Console dependent (functions are defined below)
   Row_Range_First : constant Natural := 0;
   Last_Row : constant := 255;
@@ -25,11 +29,11 @@ package Con_Io is
   subtype Row_Range is Natural range Row_Range_First .. Last_Row;
   subtype Col_Range is Natural range Col_Range_First .. Last_Col;
 
-  -- Default screen size (80 x 25)
+  -- Default console size (80 x 25)
   Def_Row_Last : constant Row_Range := 24;
   Def_Col_Last : constant Row_Range := 79;
 
-  -- A position in screen
+  -- A position, in a window or console
   type Square is record
     Row : Row_Range;
     Col : Col_Range;
@@ -109,14 +113,15 @@ package Con_Io is
   -- Open a console, which appears on screen
   -- Initialise Con_Io if necessary
   -- Shall be called prior any action on the console
-  -- Screen window is open with the attributes of the Console and cleared
+  -- A Screen window is open with the attributes of the Console and cleared
   procedure Open (Con : in out Console;
-                  Font_No  : in Font_No_Range := 1;
-                  Row_Last : in Row_Range := Def_Row_Last;
-                  Col_Last : in Col_Range := Def_Col_Last;
-                  Def_Fore : in Effective_Colors := Default_Foreground;
-                  Def_Back : in Effective_Colors := Default_Background;
-                  Def_Xor  : in Effective_Xor_Modes := Default_Xor_Mode);
+                  Screen_Id : in Screen_Id_Range := Default_Screen_Id;
+                  Font_No   : in Font_No_Range := 1;
+                  Row_Last  : in Row_Range := Def_Row_Last;
+                  Col_Last  : in Col_Range := Def_Col_Last;
+                  Def_Fore  : in Effective_Colors := Default_Foreground;
+                  Def_Back  : in Effective_Colors := Default_Background;
+                  Def_Xor   : in Effective_Xor_Modes := Default_Xor_Mode);
 
   -- To be called to close the console
   procedure Close (Con : in out Console);
@@ -502,8 +507,10 @@ package Con_Io is
   -- Size of the screen
   -- Initialise Con_Io if necessary
   -- Can be called before opening consoles
-  procedure Get_Screen_Geometry (X : out X_Range;
-                                 Y : out Y_Range);
+  procedure Get_Screen_Geometry (
+      X : out X_Range;
+      Y : out Y_Range;
+      Screen_Id : in Screen_Id_Range := Default_Screen_Id);
 
   -- From here, the Console  must be open
 

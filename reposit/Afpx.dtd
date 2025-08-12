@@ -18,11 +18,13 @@
 <!-- ========================================== -->
 <!-- Afpx_Descriptors allows defining the screen size for all descriptors -->
 <!--  Default are a Height of 25 and a Width of 80. -->
+<!-- The screen (-1 by default for the default) is the physical screen -->
 <!-- The constants Screen.Width and Screen.Height are automatically created -->
 <!--  as soon as the attribute is parsed (so it can be used for defining -->
 <!--  the other attribute. The constants Screen.Up, Low, Left and Right -->
 <!--  are also created. They are valid for all the descriptors. -->
-<!ATTLIST Afpx_Descriptors Width CDATA #IMPLIED
+<!ATTLIST Afpx_Descriptors Screen CDATA #IMPLIED
+                           Width CDATA #IMPLIED
                            Height CDATA #IMPLIED>
 <!-- The Afpx_Descriptors is made of several descriptors. -->
 <!-- Before descriptors it is possible to re-define any of the 14 colors. -->
@@ -77,8 +79,9 @@
 <!--    scope the following descriptors. -->
 <!-- A descriptor leads to the definition of a sub-package (named <Name>) -->
 <!--  of the cross-reference package, with a constant Dscr_Num set to <Num>. -->
-<!ATTLIST Descriptor Num NMTOKEN #REQUIRED Background CDATA #IMPLIED
-                                           Name CDATA #IMPLIED>
+<!ATTLIST Descriptor Num NMTOKEN #REQUIRED
+                     Background CDATA #IMPLIED
+                     Name CDATA #IMPLIED>
 <!-- A descriptor allows defining one optional list, then fields. -->
 <!-- Before and between them, it is possible to (re)define variables that -->
 <!--  are valid in the descriptor only. -->
