@@ -1,6 +1,6 @@
 with Ada.Exceptions;
 with Afpx.Utils, Con_Io, Normal, My_Math, As.B, Language, Basic_Proc,
-     Upper_Char;
+     Upper_Char, Environ, Str_Util;
 with Mesu_Def, Str_Mng, Mesu_Nam, Pers_Mng, Pers_Def, Mesu_Fil;
 package body Mesu_Gra is
   use type My_Math.Real;
@@ -186,12 +186,18 @@ package body Mesu_Gra is
      end record;
      type Scale_Array is array (Integer range <>) of Scale_Rec;
      Scales : constant Scale_Array := (
+         -- Less that 3h => 10min & 30min
          (      3, "mn",       1,      10,  3),
-         (     10, "h ",      60,      60,  1),
+         -- Less that 10h => 30min & 1h
+         (     10, "h ",      60,      30,  2),
+         -- Less that 1d => 1h & 6h
          (     24, "h ",      60,      60,  6),
-         ( 3 * 24, "d ", 24 * 60,  6 * 60,  4),
-         (10 * 24, "d ", 24 * 60, 24 * 60,  3),
-         (      0, "d ", 24 * 50, 24 * 60, 10));
+         -- Less that 3d => 1/2d & 1d
+         ( 3 * 24, "d ", 24 * 60, 12 * 60,  2),
+         -- Less that 10d => 1d & 1d
+         (10 * 24, "d ", 24 * 60, 24 * 60,  1),
+         -- More that 10d => 1d & 10d
+         (      0, "d ", 24 * 60, 24 * 60, 10));
     Scale : Scale_Rec;
     -- Scale step on Y in Bpm
     Bpm : Pers_Def.Bpm_Range;
@@ -225,7 +231,7 @@ package body Mesu_Gra is
       Secs := I * Scale.Lines;
       X := X_To_Screen (Secs);
       Console.Draw_Line (X, Ys_First - 2, X, Ys_First + 2);
-      if I * Scale.Lines rem Scale.Vals = 0 or else I = X_Last / Scale.Lines then
+      if I rem Scale.Vals = 0 or else I = X_Last / Scale.Lines then
         if X / Console.Font_Width - 1 <= Con_Io.Col_Range'Last - 1 then
           Screen.Move (Console.Row_Range_Last - 1,
                        X / Console.Font_Width - 1);
@@ -235,7 +241,7 @@ package body Mesu_Gra is
         if I = 0 then
           Screen.Put ("0" & Scale.Unit);
         else
-          Screen.Put (Normal (Secs / Scale.Factor, 2));
+          Screen.Put (Normal (Secs / Scale.Factor, 3));
         end if;
       end if;
     end loop;
@@ -315,7 +321,8 @@ package body Mesu_Gra is
            Normal(No, 1) & ":"
          & Mesure_Array(No).Person.Name & " "
          & Mesure_Array(No).Person.Activity & " "
-         & Str_Mng.To_Printed_Str(Mesure.Date) & " "
+         & Str_Mng.To_Printed_Date_Str(Mesure.Date) & " "
+         & Str_Mng.To_Printed_Time_Str(Mesure.Time) & " "
          & Mesure.Comment);
     Screen.Put (Title_Txt.Image);
 
@@ -360,9 +367,22 @@ package body Mesu_Gra is
   procedure Graphic is
     Bkp_Ctx   : Afpx.Utils.Backup_Context;
     Line      : Afpx.Line_Rec;
+    Font_No : constant Con_Io.Font_No_Range := 1;
+    Screen_Width  : Con_Io.X_Range;
+    Screen_Height : Con_Io.Y_Range;
+    Env_Geo_Name : constant String := "HEART_GRAPH_SIZE";
+    Env_Width  : Con_Io.X_Range;
+    Env_Height : Con_Io.Y_Range;
+    Font_Width  : Natural;
+    Font_Height : Natural;
+    Font_Offset : Natural;
+    Width_Margin : constant Con_Io.X_Range := 5;
+    Height_Margin : constant Con_Io.Y_Range := 5;
+    Rows : Con_Io.Row_Range;
+    Cols : Con_Io.Col_Range;
     File_Name : Mesu_Nam.File_Name_Str;
     Date_S    : Mesu_Nam.File_Date_Str;
-    No_S      : Mesu_Nam.File_No_Str;
+    Time_S    : Mesu_Nam.File_Time_Str;
     Pid_S     : Mesu_Nam.File_Pid_Str;
     Pos_Pers  : Natural;
     Person    : Pers_Def.Person_Rec;
@@ -402,16 +422,67 @@ package body Mesu_Gra is
     end Check_Same_Tz;
 
 
+    procedure Close is
+    begin
+      -- Back to Afpx
+      if Console.Is_Open then
+        Console.Close;
+      end if;
+      if Afpx.Is_Suspended then
+        Afpx.Resume;
+      end if;
+      Afpx.Redisplay;
+    end Close;
+
     use type Con_Io.Curs_Mvt;
   begin
-    -- Re-use Afpx console
-    Console := Afpx.Get_Console;
+    -- Compute console size
+    -- Get screen geometry
+    Con_Io.Get_Screen_Geometry (Screen_Width, Screen_Height);
+    -- Get ENV console size
+    declare
+      Env_Geo : constant String := Environ.Getenv (Env_Geo_Name);
+      X : Positive;
+    begin
+      X := Str_Util.Locate (Env_Geo, "x");
+      Env_Width  := Con_Io.X_Range'Value (Env_Geo (1 .. X - 1));
+      Env_Height := Con_Io.X_Range'Value (Env_Geo (X + 1 .. Env_Geo'Last));
+      -- Everything went well
+      Screen_Width  := Env_Width;
+      Screen_Height := Env_Height;
+    exception
+      when others =>
+        -- Default if we cannot get geometry from env
+        -- Apply margin in percent and remain within Con_Io Row and Col ranges
+        Screen_Width  := Screen_Width  - (Screen_Width  * Width_Margin  / 100);
+        Screen_Height := Screen_Height - (Screen_Height * Height_Margin / 100);
+    end;
+    -- Convert size into row/col
+    Con_Io.Get_Font_Geometry (Font_No, Font_Width, Font_Height, Font_Offset);
+    if Screen_Height / Font_Height < Con_Io.Row_Range'Last then
+      Rows := Screen_Height / Font_Height;
+    else
+      Rows := Con_Io.Row_Range'Last;
+    end if;
+    if Screen_Width / Font_Width < Con_Io.Col_Range'Last then
+      Cols := Screen_Width / Font_Width;
+    else
+      Cols := Con_Io.Col_Range'Last;
+    end if;
+
+    -- Create a new console
+    Afpx.Suspend;
+    Console.Open (Font_No  => Font_No,
+                  Row_Last => Rows - 1,
+                  Col_Last => Cols - 1,
+                  Def_Back => Afpx.Get_Descriptor_Background);
+    Console.Set_Name ("Heart draw");
     Screen.Set_To_Screen (Console'Access);
     Console.Set_Y_Mode (Con_Io.Con_Io_Mode);
     Screen.Set_Background (Con_Io.Color_Of ("Dark_Grey"));
 
     -- Screen scale
-    Xs_First := 4 * Console.Font_Width;
+    Xs_First := 4 * Font_Width;
     Xs_Last  := Console.X_Max;
     Ys_First := Console.Font_Height * 2;
     Ys_Last := Console.Y_Max
@@ -427,7 +498,7 @@ package body Mesu_Gra is
       -- Get line, file_name, split
       Afpx.Line_List.Read (Line, Afpx.Line_List_Mng.Current);
       Str_Mng.Format_List_To_Mesure (Line, File_Name);
-      Mesu_Nam.Split_File_Name (File_Name, Date_S, No_S, Pid_S);
+      Mesu_Nam.Split_File_Name (File_Name, Date_S, Time_S, Pid_S);
       -- Get person
       Pers_Mng.Search (Pers_Def.The_Persons, Pers_Def.Pid_Range'Value(Pid_S),
                        Pos_Pers);
@@ -591,15 +662,15 @@ package body Mesu_Gra is
     end loop Main_Loop;
 
     -- Back to Afpx
-    Screen.Clear;
-    Afpx.Redisplay;
+    Close;
   exception
     when Pers_Def.Exit_Requested =>
-      raise;
+      -- Close this console
+      Close;
     when Error:others =>
       Basic_Proc.Put_Line_Error ("Exception "
        & Ada.Exceptions.Exception_Name (Error) & " raised.");
-      Screen.Clear;
+      Close;
   end Graphic;
 
 end Mesu_Gra;
