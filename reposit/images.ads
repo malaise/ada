@@ -51,10 +51,12 @@ package Images is
                       return String;
 
   -- Image of a Day_Duration (without leading space)
-  -- Returns String image "Hh:Mm:Ss.mmm" (12 Characters) of a day duration
+  -- Returns String image "hh:mm:ss.mmm" (12 Characters) of a day duration
+  -- On option, uses "hhHmmMssSmmm" (12 Characters as well) instead
   -- On option, separates milliseconds by a comma instead of dot
-  --  (ISO 8601 recommends to use comma and tolerates dot)
+  --  (ISO 8601 recommends to use comma and tolerates dot), useless if Hms
   function Dur_Image (Dur   : Ada.Calendar.Day_Duration;
+                      Hms   : Boolean:= False;
                       Comma : Boolean := False) return String;
 
   -- Image of a Time

@@ -116,10 +116,13 @@ package body Images is
     return Str.Image;
   end Dur_Image;
 
-  -- Return String image "Hh:Mm:Ss.mmm" (12 Characters) of a day duration
-  -- On option, separate milliseconds by a comma instead of dot
-  --  (ISO 8601 recommends to use comma and tolerates dot)
+  -- Image of a Day_Duration (without leading space)
+  -- Returns String image "hh:mm:ss.mmm" (12 Characters) of a day duration
+  -- On option, uses "hhHmmMssSmmm" (12 Characters as well) instead
+  -- On option, separates milliseconds by a comma instead of dot
+  --  (ISO 8601 recommends to use comma and tolerates dot), useless if Hms
   function Dur_Image (Dur   : Ada.Calendar.Day_Duration;
+                      Hms   : Boolean:= False;
                       Comma : Boolean := False) return String is
     Hours  : Day_Mng.T_Hours;
     Mins   : Day_Mng.T_Minutes;
@@ -127,9 +130,10 @@ package body Images is
     Millis : Day_Mng.T_Millisecs;
   begin
     Day_Mng.Split (Dur, Hours, Mins, Secs, Millis);
-    return Normal (Hours,  2, Gap => '0') & ':'
-         & Normal (Mins,   2, Gap => '0') & ':'
-         & Normal (Secs,   2, Gap => '0') & (if Comma then ',' else '.')
+    return Normal (Hours,  2, Gap => '0') & (if Hms then 'H' else ':')
+         & Normal (Mins,   2, Gap => '0') & (if Hms then 'M' else ':')
+         & Normal (Secs,   2, Gap => '0')
+         & (if Hms then 'S' elsif Comma then ',' else '.')
          & Normal (Millis, 3, Gap => '0');
   end Dur_Image;
 

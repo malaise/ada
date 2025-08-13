@@ -3,18 +3,6 @@ with Str_Util, Text_Line, Basic_Proc, Sys_Calls, As.U;
 with Pers_Def, Str_Mng;
 package body Mesu_Fil is
 
-  -- A mesure in file - initial binary format
-  --  (same as in definition but without pid nor date)
-  subtype Hundred_Samples is Mesu_Def.Sample_Array (1 .. 100);
-  type File_Rec is record
-    Sampling_Delta : Pers_Def.Sampling_Delta_Range
-                   := Pers_Def.Default_Sampling_Delta;
-    Comment : Mesu_Def.Comment_Str := (others => ' ');
-    -- Time zones for the mesure
-    Tz : Pers_Def.Person_Tz_Array := (others => Pers_Def.Bpm_Range'First);
-    Samples : Hundred_Samples;
-  end record;
-
   -- 3 for Sampling delta, 20 for comment, 6x3 Bmps, Nx3 Mesures
   subtype File_Txt is String (1 .. 41);
 
