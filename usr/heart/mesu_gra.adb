@@ -1,6 +1,6 @@
-with Ada.Exceptions;
+with Ada.Exceptions, Ada.Calendar;
 with Afpx.Utils, Con_Io, Normal, My_Math, As.B, Language, Basic_Proc,
-     Upper_Char, Environ, Str_Util;
+     Upper_Char, Environ, Str_Util, Images;
 with Mesu_Def, Str_Mng, Mesu_Nam, Pers_Mng, Pers_Def, Mesu_Fil;
 package body Mesu_Gra is
   use type My_Math.Real;
@@ -60,6 +60,26 @@ package body Mesu_Gra is
 
   function Y_To_Screen_Secure (Bpm : in Pers_Def.Bpm_Range) return Integer is
     (Integer(Float(Bpm - Y_First) * Y_Factor) + Ys_First);
+
+  -- From screen to reality
+  function Screen_To_Reality (X : Con_Io.X_Range) return Natural is
+  ( if X < Xs_First then
+      X_First
+    elsif X > Xs_Last then
+      X_Last
+    else
+      Natural (Float (X - Xs_First) / X_Factor) + X_First
+  );
+
+  function Screen_To_Reality (Y : Con_Io.Y_Range) return Pers_Def.Bpm_Range is
+  ( if Y < Ys_First then
+      Y_First
+    elsif Y > Ys_Last then
+      Y_Last
+    else
+      Pers_Def.Bpm_Range (Float (Y - Ys_First) / Y_Factor) + Y_First
+  );
+
 
   procedure Pixel (X : in Integer; Y : in Integer; In_Graphic : in Boolean) is
   begin
@@ -232,11 +252,11 @@ package body Mesu_Gra is
       X := X_To_Screen (Secs);
       Console.Draw_Line (X, Ys_First - 2, X, Ys_First + 2);
       if I rem Scale.Vals = 0 or else I = X_Last / Scale.Lines then
-        if X / Console.Font_Width - 1 <= Con_Io.Col_Range'Last - 1 then
+        if X / Console.Font_Width + 2 <= Console.Col_Range_Last then
           Screen.Move (Console.Row_Range_Last - 1,
                        X / Console.Font_Width - 1);
         else
-          Screen.Move (Console.Row_Range_Last - 1, Console.Col_Range_Last - 3);
+          Screen.Move (Console.Row_Range_Last - 1, Console.Col_Range_Last - 2);
         end if;
         if I = 0 then
           Screen.Put ("0" & Scale.Unit);
@@ -347,10 +367,40 @@ package body Mesu_Gra is
 
   end Draw_Mesure;
 
+  procedure Draw_Position (X : in Con_Io.X_Range;
+                           Y : in Con_Io.Y_Range;
+                           Show : in Boolean := True) is
+    -- "dddDhhHmmMssS - xxxBpm" 22 characters
+    Slot : String (1 .. 22) := (others => ' ');
+    Pos_Row : constant Con_Io.Row_Range := Console.Row_Range_Last - 3;
+    Pos_Col : constant Con_Io.Col_Range
+            := Console.Col_Range_Last - Slot'Length;
+    Pos_Color : constant Con_Io.Effective_Colors := Con_Io.Color_Of ("Black");
+    Time, Days : Natural;
+    Dur : Ada.Calendar.Day_Duration;
+    Bpm : Pers_Def.Bpm_Range;
+  begin
+    Screen.Move (Pos_Row, Pos_Col);
+    if Show then
+      Screen.Set_Foreground (Pos_Color);
+      Bpm := Screen_To_Reality (Y);
+      Time := Screen_To_Reality (X);
+      Days := Time / (24 * 3600);
+      Dur := Ada.Calendar.Day_Duration (Time - Days * 24 * 3600);
+      if Days /= 0 then
+        Slot (1 .. 4 ) := Normal (Days, 3) & "D";
+      end if;
+      Slot ( 5 .. 13) := Images.Dur_Image (Dur, Hms => True)(1 .. 9);
+      Slot (14 .. 22) := " - " & Normal (Integer (Bpm), 3) & "Bpm";
+    end if;
+    Screen.Put (Slot);
+  end Draw_Position;
+
   procedure Refresh (Tz : in Boolean) is
   begin
     Screen.Clear;
     Draw_Layout;
+    Draw_Position (0, 0, False);
     -- Redraw mesures
     for I in 1 .. Nb_Mesure loop
       if Mesure_Array(I).Drown then
@@ -388,6 +438,7 @@ package body Mesu_Gra is
     Same_Tz   : Boolean;
     Tz_Drown  : Boolean;
     Get_Res   : Con_Io.Get_Result;
+    Mouse_Evt : Con_Io.Mouse_Event_Rec(Con_Io.X_Y);
     Char      : Character;
     No_Mesure : Mesure_Range;
     Nb_Drown  : Mesure_Range;
@@ -472,8 +523,8 @@ package body Mesu_Gra is
         -- Default if we cannot get screen and geometry from env
         Screen_Id := Con_Io.Default_Screen_Id;
         -- Apply margin in percent and remain within Con_Io Row and Col ranges
-        Screen_Width  := Screen_Width  - (Screen_Width  * Width_Margin  / 100);
-        Screen_Height := Screen_Height - (Screen_Height * Height_Margin / 100);
+        Screen_Width  := Screen_Width  - Screen_Width  * Width_Margin  / 100;
+        Screen_Height := Screen_Height - Screen_Height * Height_Margin / 100;
     end;
     -- Convert size into row/col
     Con_Io.Get_Font_Geometry (Font_No, Font_Width, Font_Height, Font_Offset);
@@ -606,6 +657,10 @@ package body Mesu_Gra is
     end loop;
     Nb_Drown := Nb_Mesure;
 
+    -- Enable mouse motion events
+    Console.Enable_Motion_Events (True);
+    Console.Set_Pointer_Shape (Con_Io.Cross);
+
     Main_Loop:
     loop
       -- Get key
@@ -674,6 +729,9 @@ package body Mesu_Gra is
           Mesure_Array(I).Drown := Char = 'S';
         end loop;
         Refresh (Tz_Drown);
+      elsif Get_Res.Mvt = Con_Io.Mouse_Button then
+        Console.Get_Mouse_Event (Mouse_Evt, Con_Io.X_Y);
+        Draw_Position (Mouse_Evt.X, Mouse_Evt.Y);
       elsif Get_Res.Mvt = Con_Io.Refresh then
         -- Refresh
         Refresh (Tz_Drown);
