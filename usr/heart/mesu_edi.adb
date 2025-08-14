@@ -386,7 +386,7 @@ package body Mesu_Edi is
         Dummy_Offset : Con_Io.Col_Range;
         Enter_Field_Cause : Afpx.Enter_Field_Cause_List;
         Dummy_Str : Afpx.Unicode_Sequence) return Con_Io.Col_Range is
-      use type Afpx.Absolute_Field_Range;
+      use type Afpx.Enter_Field_Cause_List, Afpx.Absolute_Field_Range;
     begin
       -- Reset is available only when in TZs
       Afpx.Set_Field_Activation (Afpx_Xref.Records.Reset,
@@ -395,9 +395,17 @@ package body Mesu_Edi is
       -- Check previous field but no move if OK
       Check_Field (Prev_Fld, False, False, Ok);
       Prev_Fld := Cursor_Field;
-      return Afpx.Default_Cursor_Col (Cursor_Field,
-                                      Pointer_Col,
-                                      Enter_Field_Cause);
+      -- In the year, move after the 2 first digits
+      if Cursor_Field = Afpx_Xref.Records.Year
+      and then Enter_Field_Cause /= Afpx.Mouse
+      and then not Str_Mng.Is_Spaces (
+          Afpx.Decode_Field (Afpx_Xref.Records.Year, 0)) then
+        return 2;
+      else
+        return Afpx.Default_Cursor_Col (Cursor_Field,
+                                        Pointer_Col,
+                                        Enter_Field_Cause);
+      end if;
     end Cursor_Set_Col_Cb;
 
     -- Normalize Afpx list index

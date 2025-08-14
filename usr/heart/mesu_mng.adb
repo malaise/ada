@@ -1,4 +1,4 @@
-with Afpx, Normal, Dir_Mng;
+with Con_Io, Afpx, Normal, Dir_Mng;
 with Mesu_Edi, Pers_Mng, Mesu_Def, Mesu_Sel, Mesu_Nam, Pers_Lis, Mesu_Fil,
      Mesu_Prt, Mesu_Gra, Afpx_Xref;
 package body Mesu_Mng is
@@ -250,6 +250,29 @@ package body Mesu_Mng is
       end if;
     end Init;
 
+    -- Cursor in Get fied
+    function Cursor_Set_Col_Cb (
+        Cursor_Field : Afpx.Field_Range;
+        Dummy_New_Field : Boolean;
+        Pointer_Col : Con_Io.Col_Range;
+        Dummy_Offset : Con_Io.Col_Range;
+        Enter_Field_Cause : Afpx.Enter_Field_Cause_List;
+        Dummy_Str : Afpx.Unicode_Sequence) return Con_Io.Col_Range is
+      use type Afpx.Enter_Field_Cause_List, Afpx.Absolute_Field_Range;
+    begin
+      if (Cursor_Field = Afpx_Xref.Main.Year_After
+          or else Cursor_Field = Afpx_Xref.Main.Year_Before)
+      and then Enter_Field_Cause /= Afpx.Mouse
+      and then not Str_Mng.Is_Spaces (Afpx.Decode_Field (Cursor_Field, 0)) then
+        -- In a year not empty, move to 3rd pos (after "20")
+        return 2;
+      else
+        return Afpx.Default_Cursor_Col (Cursor_Field,
+                                        Pointer_Col,
+                                        Enter_Field_Cause);
+      end if;
+    end Cursor_Set_Col_Cb;
+
     use type Afpx.Absolute_Field_Range;
   begin
     Init (True);
@@ -300,7 +323,8 @@ package body Mesu_Mng is
 
       Afpx.Encode_Field (Afpx_Xref.Main.Date, (00, 00),
                          Str_Mng.Current_Date_Printed);
-      Afpx.Put_Then_Get (Get_Handle, Ptg_Result);
+      Afpx.Put_Then_Get (Get_Handle, Ptg_Result,
+                         Cursor_Col_Cb => Cursor_Set_Col_Cb'Access);
 
       case Ptg_Result.Event is
         when Afpx.Fd_Event | Afpx.Timer_Event | Afpx.Signal_Event
