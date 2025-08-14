@@ -181,9 +181,9 @@ package body Str_Mng is
         else
           -- ss mm ssss => begin/end of month of current year
           if After then
-            Days := Perpet.Nb_Days_Month (Years, Months);
-          else
             Days := Ada.Calendar.Day_Number'First;
+          else
+            Days := Perpet.Nb_Days_Month (Years, Months);
           end if;
         end if;
       else
@@ -201,9 +201,9 @@ package body Str_Mng is
         end if;
         -- Year and no month => first/last month
         if After then
-          Months := Ada.Calendar.Month_Number'Last;
-        else
           Months := Ada.Calendar.Month_Number'First;
+        else
+          Months := Ada.Calendar.Month_Number'Last;
         end if;
       else
         -- Month set
@@ -212,9 +212,9 @@ package body Str_Mng is
       if Is_Spaces (Input.Day) then
         -- First/last of date
         if After then
-          Days := Perpet.Nb_Days_Month (Years, Months);
-        else
           Days := Ada.Calendar.Day_Number'First;
+        else
+          Days := Perpet.Nb_Days_Month (Years, Months);
         end if;
       else
         -- dd ss ssss  or  dd mm ssss

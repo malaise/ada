@@ -163,7 +163,7 @@ package body Mesu_Mng is
             Locok := True;
           else
             Current_Field := Afpx_Xref.Main.Day_Before;
-            Str_Mng.Check_Date (Date_Bef_R, True, Date_Bef, Locok);
+            Str_Mng.Check_Date (Date_Bef_R, False, Date_Bef, Locok);
             if Locok then
               Current_Field := Afpx_Xref.Main.Person;
               Str_Mng.To_Rec (Date_Bef, Date_Bef_R);
