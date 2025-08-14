@@ -1,5 +1,5 @@
 with Ada.Calendar, Ada.Exceptions;
-with As.U.Utils, Directory, Upper_Str, Basic_Proc, Sys_Calls, Select_File,
+with As.U.Utils, Directory, Upper_Str, Sys_Calls, Select_File,
      Environ,
      Trace.Loggers, Images, Dynamic_List, Xml_Parser, Date_Text, Get_Line;
 with Afpx_Xref, Pers_Def;
@@ -65,18 +65,17 @@ package body Mesu_Imp is
     Point : Point_Rec;
     use type Ada.Calendar.Time, Pers_Def.Bpm_Range;
   begin
-    Logger.Init ("Import");
     -- Init result
     Ok := False;
     Res := Mesure;
     Res.Samples.Set_Null;
     -- Parse
-    Logger.Log_Debug ("Parsing file " & File_Name
+    Logger.Log_Debug ("Parsing tcx file " & File_Name
                       & " with delta" & Mesure.Sampling_Delta'Img);
     Ctx.Parse (File_Name, Ok);
     if not Ok then
-      Basic_Proc.Put_Line_Error ("Parse error in Tcx: "
-                                   & Ctx.Get_Parse_Error_Message);
+      Logger.Log_Error ("Parse error in Tcx: "
+                      & Ctx.Get_Parse_Error_Message);
       return;
     end if;
     Root := Ctx.Get_Root_Element;
@@ -89,17 +88,17 @@ package body Mesu_Imp is
     end loop;
     if not Xml_Parser.Is_Valid (Node) then
       -- No Activities
-      Basic_Proc.Put_Line_Error ("No Activities Tcx");
+      Logger.Log_Error ("No Activities Tcx");
       return;
     end if;
     -- Activities must have first child Activity
     if Ctx.Get_Nb_Children (Node) = 0 then
-      Basic_Proc.Put_Line_Error ("Activities has no child");
+      Logger.Log_Error ("Activities has no child");
       return;
     end if;
     Root := Ctx.Get_Child (Node, 1);
     if Ctx.Get_Name (Root) /= "Activity" then
-      Basic_Proc.Put_Line_Error ("Activities has invalid first child "
+      Logger.Log_Error ("Activities has invalid first child "
           & Ctx.Get_Name (Root));
       return;
     end if;
@@ -127,7 +126,7 @@ package body Mesu_Imp is
                       & Res.Date & " " & Res.Time);
     exception
       when others =>
-        Basic_Proc.Put_Line_Error ("Invalid date in Id " & Txt.Image);
+        Logger.Log_Error ("Invalid date in Id " & Txt.Image);
         return;
     end;
 
@@ -186,11 +185,13 @@ package body Mesu_Imp is
     end loop;
 
     -- All is OK
+    Logger.Log_Debug ("File parsed");
     Ok := True;
     Mesure := Res;
   exception
     when Error:others =>
-      Logger.Log_Debug ("Exception " & Ada.Exceptions.Exception_Name (Error));
+      Logger.Log_Error ("Exception " & Ada.Exceptions.Exception_Name (Error)
+          & " while importing");
   end Import_Tcx;
 
   -- Import all Samples from .txt file
@@ -205,7 +206,8 @@ package body Mesu_Imp is
     Res : Mesu_Def.Mesure_Rec;
   begin
     -- Open file
-    Get_Sample.Open(File_Name);
+    Logger.Log_Debug ("Parsing txt file " & File_Name);
+    Get_Sample.Open (File_Name);
     Res := Mesure;
     Res.Samples.Set_Null;
 
@@ -218,6 +220,7 @@ package body Mesu_Imp is
         -- Decode a Bpm
         Res.Samples.Append (Pers_Def.Bpm_Range'Value (
             Sample_Line.Element(I).Image));
+        Logger.Log_Debug ("  Got bpm  " & Sample_Line.Element(I).Image);
       end loop;
 
       -- Read next line and exit when end of file
@@ -233,6 +236,7 @@ package body Mesu_Imp is
     Get_Sample.Close;
 
     -- Done
+    Logger.Log_Debug ("File parsed");
     Mesure := Res;
     Ok := True;
   exception
@@ -246,7 +250,6 @@ package body Mesu_Imp is
       end;
   end Import_Txt;
 
-
   -- Select file name, then:
   -- Import Date, and Samples according to Sampling_Delta, from .tcx file
   -- Import all Samples from .txt file
@@ -258,12 +261,13 @@ package body Mesu_Imp is
     -- Selected file name
     File_Name : As.U.Asu_Us;
   begin
+    Logger.Init ("HeartImport");
     Ok := False;
     -- Goto Default or previous dir
     Directory.Change_Current (Get_Import_Dir);
     -- Select file name
     File_Name := As.U.Tus (My_Select_File.Get_File  ("", True, False));
-    -- Save import  dir for next time
+    -- Save import dir for next time
     Import_Dir.Set (Directory.Get_Current);
     -- Import this file if set
     if File_Name.Is_Null then
@@ -272,14 +276,17 @@ package body Mesu_Imp is
       return;
     end if;
     if Upper_Str (Directory.File_Suffix (File_Name.Image)) = ".TCX" then
+      Logger.Log_Debug ("Importing tcx file " & File_Name.Image);
       Import_Tcx (File_Name.Image, Mesure, Ok);
       Ok := True;
       Date_Set := True;
     elsif Upper_Str (Directory.File_Suffix (File_Name.Image)) = ".TXT" then
+      Logger.Log_Debug ("Importing txt file " & File_Name.Image);
       Import_Txt (File_Name.Image, Mesure, Ok);
       Ok := True;
       Date_Set := False;
     end if;
+    Logger.Log_Debug ("File imported");
     Directory.Change_Current (Curdir);
   exception
     when My_Select_File.Exit_Requested =>
