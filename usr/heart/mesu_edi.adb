@@ -368,8 +368,11 @@ package body Mesu_Edi is
             end if;
           end if;
 
+        when Afpx_Xref.Records.Ins =>
+          -- Will be checked by insertion
+          Locok := True;
         when others =>
-          null;
+          Locok := False;
 
       end case;
 
@@ -474,6 +477,22 @@ package body Mesu_Edi is
       Saved_Position.Restore (Force_Position => True);
     end Move_At_Scroll;
 
+    -- Insert a sample after current
+    procedure Insert_After is
+    begin
+      Bpm := Str_Mng.To_Bpm (Afpx.Decode_Field (Afpx_Xref.Records.Ins, 0));
+      if Bpm /= Pers_Def.No_Bpm then
+        if Mesure.Samples.Is_Null then
+          Mesure.Samples.Append (Bpm);
+        else
+          Mesure.Samples.Insert (Positive (Afpx.Line_List.Get_Position) + 1,
+                                 Bpm);
+        end if;
+        Afpx.Line_List.Insert (Bpm_Line (Bpm), Afpx.Line_List_Mng.Next);
+        Encode_Duration (Mesure);
+      end if;
+    end Insert_After;
+
     -- Init screen
     procedure Init (Reset : in Boolean) is
     begin
@@ -539,6 +558,11 @@ package body Mesu_Edi is
             when Afpx.Return_Key =>
               -- Check field and go to next if Ok
               Check_Field (Get_Handle.Cursor_Field, False, True, Ok);
+              if Ok
+              and then Get_Handle.Cursor_Field = Afpx_Xref.Records.Ins then
+                -- Insert a Bpm after current
+                Insert_After;
+              end if;
 
             when Afpx.Escape_Key =>
               -- Clear current field
@@ -653,7 +677,7 @@ package body Mesu_Edi is
               Move_At_Scroll (Ptg_Result.Release_Pos.Row);
 
             when Afpx_Xref.Records.Ins_Bef =>
-              -- Insert a sample
+              -- Insert a sample before
               Bpm := Str_Mng.To_Bpm (Afpx.Decode_Field (
                   Afpx_Xref.Records.Ins, 0));
               if Bpm /= Pers_Def.No_Bpm then
@@ -668,20 +692,8 @@ package body Mesu_Edi is
               end if;
 
             when Afpx_Xref.Records.Ins_Aft =>
-              -- Insert a sample
-              Bpm := Str_Mng.To_Bpm (Afpx.Decode_Field (
-                  Afpx_Xref.Records.Ins, 0));
-              if Bpm /= Pers_Def.No_Bpm then
-                if Mesure.Samples.Is_Null then
-                  Mesure.Samples.Append (Bpm);
-                else
-                  Mesure.Samples.Insert (
-                      Positive (Afpx.Line_List.Get_Position) + 1,
-                      Bpm);
-                end if;
-                Afpx.Line_List.Insert (Bpm_Line (Bpm), Afpx.Line_List_Mng.Next);
-                Encode_Duration (Mesure);
-              end if;
+              -- Insert a sample after
+              Insert_After;
 
             when Afpx_Xref.Records.Suppr =>
               -- Suppress a sample
