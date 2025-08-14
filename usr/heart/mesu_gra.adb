@@ -370,7 +370,7 @@ package body Mesu_Gra is
   procedure Draw_Position (X : in Con_Io.X_Range;
                            Y : in Con_Io.Y_Range;
                            Show : in Boolean := True) is
-    -- "dddDhhHmmMssS - xxxBpm" 22 characters
+    -- "DDDd hh:mm:ss - xxxBpm" 22 characters
     Slot : String (1 .. 22) := (others => ' ');
     Pos_Row : constant Con_Io.Row_Range := Console.Row_Range_Last - 3;
     Pos_Col : constant Con_Io.Col_Range
@@ -388,9 +388,9 @@ package body Mesu_Gra is
       Days := Time / (24 * 3600);
       Dur := Ada.Calendar.Day_Duration (Time - Days * 24 * 3600);
       if Days /= 0 then
-        Slot (1 .. 4 ) := Normal (Days, 3) & "D";
+        Slot (1 .. 4) := Normal (Days, 3) & "d";
       end if;
-      Slot ( 5 .. 13) := Images.Dur_Image (Dur, Hms => True)(1 .. 9);
+      Slot ( 6 .. 13) := Images.Dur_Image (Dur)(1 .. 8);
       Slot (14 .. 22) := " - " & Normal (Integer (Bpm), 3) & "Bpm";
     end if;
     Screen.Put (Slot);
