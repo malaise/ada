@@ -1,5 +1,5 @@
 with Ada.Exceptions;
-with Str_Util, Text_Line, Basic_Proc, Sys_Calls, As.U, Trace.Loggers;
+with Str_Util, Text_Line, Sys_Calls, As.U, Trace.Loggers;
 with Pers_Def, Str_Mng;
 package body Mesu_Fil is
 
@@ -28,10 +28,8 @@ package body Mesu_Fil is
         Logger.Log_Debug ("Created file " & File_Name);
       exception
         when Error:others =>
-          Logger.Log_Debug ("Exception "
+          Logger.Log_Error ("Exception on Create "
                           & Ada.Exceptions.Exception_Name (Error));
-          Basic_Proc.Put_Line_Error ("Exception on Create "
-              & Ada.Exceptions.Exception_Name (Error) & " " & File_Name);
           raise Io_Error;
       end;
       return;
@@ -67,8 +65,6 @@ package body Mesu_Fil is
       when Io_Error =>
         raise;
       when Error:others =>
-        Logger.Log_Debug ("Exception "
-                        & Ada.Exceptions.Exception_Name (Error));
         Logger.Log_Error ("Exception on Open "
             & Ada.Exceptions.Exception_Name (Error) & " " & File_Name);
         Txt_File.Close_All;
@@ -193,9 +189,7 @@ package body Mesu_Fil is
     Logger.Log_Debug ("File saved");
   exception
     when Error:others =>
-      Basic_Proc.Put_Line_Error ("Exception on save "
-          & Ada.Exceptions.Exception_Name (Error) & " " & File_Name);
-      Logger.Log_Debug ("Exception "
+      Logger.Log_Error ("Exception on Save "
                       & Ada.Exceptions.Exception_Name (Error));
       raise Io_Error;
   end Save;
@@ -215,7 +209,7 @@ package body Mesu_Fil is
     Logger.Log_Debug ("Deleted file");
   exception
     when Error:others =>
-      Logger.Log_Error ("Exception "
+      Logger.Log_Error ("Exception on Delete "
                       & Ada.Exceptions.Exception_Name (Error));
       raise Io_Error;
   end Delete;
