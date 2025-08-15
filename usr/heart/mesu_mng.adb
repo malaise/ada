@@ -16,7 +16,9 @@ package body Mesu_Mng is
     File_Name    : Mesu_Nam.File_Name_Str;
     Prev_Name    : Mesu_Nam.File_Name_Str;
     Current_Date : Str_Mng.Date_Str_Rec;
-    Person : Pers_Def.Person_Rec;
+    Sel_Pid      : Pers_Def.Pid_Range;
+    Person       : Pers_Def.Person_Rec;
+    Pers_Pos     : Natural;
     Date_Aft, Date_Bef : Mesu_Def.Date_Str;
 
     -- Encode person namle and activity
@@ -421,8 +423,16 @@ package body Mesu_Mng is
           elsif Ptg_Result.Field_No = Afpx_Xref.Main.Db then
             -- Activiy Db
             Save;
-            Pers_Lis.List;
+            Pers_Lis.List (Ok, Sel_Pid);
             Init (False);
+            if Ok then
+              -- An Activity was selected, read it
+              Pers_Mng.Search (Pers_Def.The_Persons, Sel_Pid, Pers_Pos);
+              Pers_Def.The_Persons.Read (Person,
+                                         Pers_Def.Person_List_Mng.Current);
+              -- Fill fields
+              Encode_Person;
+            end if;
           elsif Ptg_Result.Field_No = Afpx_Xref.Main.Unselect then
             -- Unselect
             Afpx.Line_List.Read (Line, Afpx.Line_List_Mng.Current);

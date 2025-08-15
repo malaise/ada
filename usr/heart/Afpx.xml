@@ -296,38 +296,37 @@
       <Init Row="01" Col="01">Records DB</Init>
     </Field>
 
-
-    <!-- Exit button -->
-    <Field Num="05" Kind="Button" Name="Quit">
-      <Geometry Up="25" Left="70" Low="25" Right="77"/>
+    <!-- Select button -->
+    <Field Num="05" Kind="Button" Name="Sel">
+      <Geometry Up="05" Left="50" Low="07" Right="57"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="00" Col="02">EXIT</Init>
+      <Init Row="01" Col="01">Select</Init>
     </Field>
 
     <!-- Create button -->
     <Field Num="06" Kind="Button" Name="Create">
-      <Geometry Up="07" Left="50" Low="09" Right="57"/>
+      <Geometry Up="09" Left="50" Low="11" Right="57"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="01" Col="01">Create</Init>
     </Field>
 
     <!-- Clone button -->
     <Field Num="07" Kind="Button" Name="Clone">
-      <Geometry Up="11" Left="50" Low="13" Right="57"/>
+      <Geometry Up="13" Left="50" Low="15" Right="57"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="01" Col="01" Half_Col_Offset="True">Clone</Init>
     </Field>
 
     <!-- Edit button -->
     <Field Num="8" Kind="Button" Name="Edit">
-      <Geometry Up="15" Left="50" Low="17" Right="57"/>
+      <Geometry Up="17" Left="50" Low="19" Right="57"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="01" Col="02">Edit</Init>
     </Field>
 
     <!-- Delete button -->
     <Field Num="9" Kind="Button" Name="Delete">
-      <Geometry Up="19" Left="50" Low="19" Right="57"/>
+      <Geometry Up="21" Left="50" Low="21" Right="57"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="00" Col="01">Delete</Init>
     </Field>
@@ -454,16 +453,23 @@
 
     <!-- Valid button -->
     <Field Num="27" Kind="Button" Name="Valid">
-      <Geometry Up="21" Left="56" Low="23" Right="63"/>
+      <Geometry Up="21" Left="58" Low="23" Right="65"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="01" Col="01" Half_Col_Offset="True">Valid</Init>
     </Field>
 
     <!-- Cancel button -->
     <Field Num="28" Kind="Button" Name="Cancel">
-      <Geometry Up="21" Left="67" Low="23" Right="74"/>
+      <Geometry Up="21" Left="69" Low="23" Right="76"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="01" Col="01">Cancel</Init>
+    </Field>
+
+    <!-- Exit button -->
+    <Field Num="29" Kind="Button" Name="Quit">
+      <Geometry Up="25" Left="70" Low="25" Right="77"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="00" Col="02">EXIT</Init>
     </Field>
 
   </Descriptor>

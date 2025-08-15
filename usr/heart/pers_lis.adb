@@ -1,5 +1,5 @@
 with Afpx, Con_Io, Upper_Str;
-with Pers_Def, Str_Mng, Mesu_Mng, Pers_Mng, Pers_Fil, Afpx_Xref;
+with Str_Mng, Mesu_Mng, Pers_Mng, Pers_Fil, Afpx_Xref;
 package body Pers_Lis is
 
   procedure Build_List is
@@ -36,7 +36,8 @@ package body Pers_Lis is
     end if;
   end Set_Protection;
 
-  procedure List is
+  procedure List (Selected : out Boolean;
+                  Pid : out Pers_Def.Pid_Range) is
 
     First_Field : Afpx.Field_Range;
 
@@ -274,8 +275,9 @@ package body Pers_Lis is
       Afpx.Set_Field_Activation (Afpx_Xref.Activity.Records, Act);
       Afpx.Set_Field_Activation (Afpx_Xref.Activity.Create, Act);
       Afpx.Set_Field_Activation (Afpx_Xref.Activity.Quit, Act);
-      -- Delete/clone/edit if not empty and in list
+      -- Select/Delete/clone/edit if not empty and in list
       Act := Act and then not List_Empty;
+      Afpx.Set_Field_Activation (Afpx_Xref.Activity.Sel, Act);
       Afpx.Set_Field_Activation (Afpx_Xref.Activity.Delete, Act);
       Afpx.Set_Field_Activation (Afpx_Xref.Activity.Clone, Act);
       Afpx.Set_Field_Activation (Afpx_Xref.Activity.Edit, Act);
@@ -342,6 +344,14 @@ package body Pers_Lis is
           case Ptg_Result.Field_No is
             when Afpx_Xref.Activity.Records =>
               -- Back to records
+              Selected := False;
+              exit;
+            when Afpx_Xref.Activity.Sel =>
+              -- Back to records with current selected
+              Read (Pers_Def.The_Persons, Person,
+                    Pers_Def.Person_List_Mng.Current);
+              Pid := Person.Pid;
+              Selected := True;
               exit;
             when Afpx_Xref.Activity.Quit =>
               -- Exit
