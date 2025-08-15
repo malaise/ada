@@ -1,9 +1,62 @@
 #!/bin/bash
 export HEART_DIR=${HOME}/ada/usr/heart
 export AFPX_DATA_DIR=${HEART_DIR}
-cd ${HEART_DIR}/data
-if [ \( "$1" = "-t" \) -o \( "$1" = "--tmp" \) ] ; then
-  export HEART_IMPORT_DIR=${HOME}/tmp
-  shift
+export HEART_DATA_DIR=${HEART_DIR}/data
+export RSYNC_FLAGS="-t -r -u --include='data/????????????.???' --exclude='data/*'"
+export LAUNCH=1
+
+# Parse options
+export HOSTNAME=`hostname`
+while [ -n "$1" ] ; do
+  if [ \( "$1" = "-t" \) -o \( "$1" = "--tmp" \) ] ; then
+    # Option to set import dir
+    export HEART_IMPORT_DIR=${HOME}/tmp
+    shift
+  elif [ \( "$1" = "-S" \) -o \( "$1" = "--no-sync" \) ] ; then
+    # Option for no sync
+    HOSTNAME=""
+    shift
+  elif [ \( "$1" = "-d" \) -o \( "$1" = "--dry-run" \) ] ; then
+    # Option for dry run
+    RSYNC_FLAGS="{RSYNC_FLAGS} -n"
+    shift
+  elif [ \( "$1" = "-H" \) -o \( "$1" = "--no-heart" \) ] ; then
+    # Option for not launch
+    LAUNCH=0
+    shift
+  fi
+done
+
+# See if synchronize telemaque <-> ulysse
+if [ -z "$HOSTNAME" ] ; then
+  export REMOTE_HOST=""
+elif [ $HOSTNAME = ulysse ] ; then
+  export REMOTE_HOST=telemaque
+elif [ $HOSTNAME = telemaque ] ; then
+  export REMOTE_HOST=ulysse
+else
+  export REMOTE_HOST=""
 fi
-${HEART_DIR}/heart $*
+if [ -n "$REMOTE_HOST" ] ; then
+  tcping -s $REMOTE_HOST:ssh
+  res=$?
+  if [ $res -eq 1 ] ; then
+    # Unreachable
+    REMOTE_HOST=""
+  fi
+fi
+
+# Synchronize telemaque <-> ulysse
+if [ -n "$REMOTE_HOST" ] ; then
+  # Pull
+  rsync ${RSYNC_FLAGS} $REMOTE_HOST:${HEART_DATA_DIR} ${HEART_DIR} 
+  # Push
+  rsync ${RSYNC_FLAGS} ${HEART_DATA_DIR} $REMOTE_HOST:${HEART_DIR} 
+fi
+
+# Launch
+if [ $LAUNCH -eq 1 ] ; then
+  cd ${HEART_DATA_DIR}
+  ${HEART_DIR}/heart $*
+fi
+
