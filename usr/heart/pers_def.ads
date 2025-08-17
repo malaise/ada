@@ -27,7 +27,8 @@ package Pers_Def is
     Name : Person_Name_Str := (others => ' ');
     Activity : Person_Activity_Str := (others => ' ');
     Pid : Pid_Range := Pid_Range'First;
-    Tz : Person_Tz_Array := (others => Bpm_Range'First);
+    Rest : Bpm_Range := No_Bpm;
+    Tz : Person_Tz_Array := (others => No_Bpm);
     Sampling_Delta : Sampling_Delta_Range := Default_Sampling_Delta;
   end record;
 

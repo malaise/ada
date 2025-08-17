@@ -191,7 +191,6 @@ package body Pers_Mng is
     end if;
   end Expand;
 
-
   function Order_Name (Left, Right : Pers_Def.Person_Rec) return Boolean is
     (Left.Name < Right.Name);
   procedure Sort_Name is new Pers_Def.Person_List_Mng.Sort (Order_Name);

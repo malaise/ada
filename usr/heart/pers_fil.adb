@@ -8,8 +8,8 @@ package body Pers_Fil is
   Person_File : Person_Io.File_Type;
   Person_File_Name : constant String := "PERSONS.LST";
 
-  -- 20 for name, 10 for activity, 3 for Pid, 6x3 for Bmps, 3 for Sampling
-  subtype File_Txt is String (1 .. 54);
+  -- 20 for name, 10 for activity, 3 for Pid, 7x3 for Bmps, 3 for Sampling
+  subtype File_Txt is String (1 .. 57);
   Txt_File : Text_Line.File_Type;
 
   procedure Open (Create : in Boolean) is
@@ -94,7 +94,8 @@ package body Pers_Fil is
         Person.Name := Txt (1 .. 20);
         Person.Activity := Txt (21 .. 30);
         Person.Pid := Pers_Def.Pid_Range'Value (Txt (31 .. 33));
-        Start := 34;
+        Person.Rest := Str_Mng.To_Bpm (Txt(34 .. 36));
+        Start := 37;
         for I in Pers_Def.Person_Tz_Array'Range loop
           Person.Tz(I) := Str_Mng.To_Bpm (Txt(Start .. Start + 2));
           Start := Start + 3;
@@ -148,10 +149,11 @@ package body Pers_Fil is
           The_Persons.Read (Person, Pers_Def.Person_List_Mng.Current);
         end if;
 
-        Txt (1 .. 20) := Person.Name;
-        Txt (21 .. 30) := Person.Activity;
-        Txt (31 .. 33) := Str_Mng.Pid_Str (Person.Pid);
-        Start := 34;
+        Txt(1 .. 20) := Person.Name;
+        Txt(21 .. 30) := Person.Activity;
+        Txt(31 .. 33) := Str_Mng.Pid_Str (Person.Pid);
+        Txt(34 .. 36) := Str_Mng.To_Str (Person.Rest);
+        Start := 37;
         for I in Pers_Def.Person_Tz_Array'Range loop
           Txt(Start .. Start + 2) := Str_Mng.To_Str (Person.Tz(I));
           Start := Start + 3;

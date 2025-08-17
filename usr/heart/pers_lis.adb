@@ -22,7 +22,6 @@ package body Pers_Lis is
     end if;
   end Build_List;
 
-
   procedure Set_Protection (Field : in Afpx.Field_Range;
                             Protect : in Boolean) is
   begin
@@ -67,6 +66,8 @@ package body Pers_Lis is
       Afpx.Encode_Field (Afpx_Xref.Activity.Sampling, (00, 00),
                          Str_Mng.To_Str (Person.Sampling_Delta));
 
+      Afpx.Encode_Field (Afpx_Xref.Activity.Rest, (00, 00),
+                         Str_Mng.To_Str (Person.Rest));
       for I in Afpx.Absolute_Field_Range'(0) .. 5 loop
         Afpx.Encode_Field (Afpx.Field_Range (Afpx_Xref.Activity.Tz1 + I),
                            (00, 00),
@@ -158,6 +159,21 @@ package body Pers_Lis is
           if Locok then
             Afpx.Encode_Field (Afpx_Xref.Activity.Sampling, (00, 00),
                                Str_Mng.To_Str (Person.Sampling_Delta));
+            Current_Field := Afpx_Xref.Activity.Rest;
+          end if;
+
+        when Afpx_Xref.Activity.Rest =>
+          Locok := True;
+          Tz_S := Afpx.Decode_Field (Current_Field, 00);
+          begin
+            Tz := Str_Mng.To_Bpm(Tz_S);
+          exception
+            when others =>
+              Locok := False;
+          end;
+          if Locok then
+            Person.Rest := Tz;
+            Afpx.Encode_Field (Current_Field, (00, 00), Str_Mng.To_Str(Tz) );
             Current_Field := Afpx_Xref.Activity.Tz1;
           end if;
 
@@ -171,7 +187,8 @@ package body Pers_Lis is
               Locok := False;
           end;
           if Locok then
-            Person.Tz(Integer(Current_Field - Afpx_Xref.Activity.Tz1 + 1)) := Tz;
+            Person.Tz(Integer(Current_Field
+                            - Afpx_Xref.Activity.Tz1 + 1)) := Tz;
           end if;
           if Locok then
             Locok := Tz /= Pers_Def.Bpm_Range'First;
@@ -428,9 +445,7 @@ package body Pers_Lis is
               Get_Handle.Cursor_Field := First_Field;
               Get_Handle.Cursor_Col := 0;
               Get_Handle.Insert := False;
-              Person.Name := (others => ' ');
-              Person.Activity := (others => ' ');
-              Person.Tz := (others => Pers_Def.Bpm_Range'First);
+              Person := (others => <>);
               Encode_Person;
             when Afpx_Xref.Activity.Clone =>
               -- Clone
