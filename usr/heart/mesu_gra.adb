@@ -281,7 +281,7 @@ package body Mesu_Gra is
   procedure Draw_Tz (Show : in Boolean) is
     Tz_Color    : constant Con_Io.Effective_Colors := Con_Io.Color_Of ("Black");
     Y : Con_Io.Y_Range;
-    Mesure_Index : Mesure_Range;
+    Tz_Index : Mesure_Range;
   begin
     if not Show then
       Screen.Clear;
@@ -289,17 +289,18 @@ package body Mesu_Gra is
       return;
     end if;
     Screen.Set_Foreground (Tz_Color);
-    -- First drawn mesure if any (else first mesure)
-    Mesure_Index := 1;
-    for Mesu in 1 .. Nb_Mesure loop
-      if Mesure_Array(Mesu).Drown then
-        Mesure_Index := Mesu;
+    -- The selected Tz are the ones of the last mesure drawn, if any
+    -- Else the last mesure
+    Tz_Index := Nb_Mesure;
+    for I in reverse 1 .. Nb_Mesure loop
+      if Mesure_Array(I).Drown then
+        Tz_Index := I;
         exit;
       end if;
     end loop;
 
-    -- Then drawn Tz
-    for Bpm of Mesure_Array(Mesure_Index).Mesure.Tz loop
+    -- Drawn Tz
+    for Bpm of Mesure_Array(Tz_Index).Mesure.Tz loop
       if Bpm >= Y_First then
         Y := Y_To_Screen(Bpm);
         Draw_Line (Xs_First, Y, Xs_Last - 4 * Console.Font_Width, Y);
@@ -409,7 +410,7 @@ package body Mesu_Gra is
     end loop;
     -- Tz_Drown is already up to date
     if Tz then
-      Draw_Tz(True);
+      Draw_Tz (True);
     end if;
   end Refresh;
 
@@ -435,42 +436,12 @@ package body Mesu_Gra is
     Pid_S     : Mesu_Nam.File_Pid_Str;
     Pos_Pers  : Natural;
     Person    : Pers_Def.Person_Rec;
-    Same_Tz   : Boolean;
     Tz_Drown  : Boolean;
     Get_Res   : Con_Io.Get_Result;
     Mouse_Evt : Con_Io.Mouse_Event_Rec(Con_Io.X_Y);
     Char      : Character;
     No_Mesure : Mesure_Range;
     Nb_Drown  : Mesure_Range;
-
-    -- Check if same Tz
-    procedure Check_Same_Tz is
-      First_Drown_Mesure : Mesure_Range := 0;
-    begin
-      Same_Tz := True;
-      for Mesu in 1 .. Nb_Mesure loop
-        if Mesure_Array(Mesu).Drown then
-          if First_Drown_Mesure = 0 then
-            -- This one is the first drown mesure
-            First_Drown_Mesure := Mesu;
-          else
-            -- Compare this Tz to the ones of first drown mesure
-            for I in Pers_Def.Person_Tz_Array'Range loop
-              if Mesure_Array(Mesu).Mesure.Tz(I) /=
-                 Mesure_Array(First_Drown_Mesure).Mesure.Tz(I) then
-                Same_Tz := False;
-                return;
-              end if;
-            end loop;
-          end if;
-        end if;
-      end loop;
-      if First_Drown_Mesure = 0 then
-        -- No mesure drown
-        Same_Tz := False;
-      end if;
-    end Check_Same_Tz;
-
 
     procedure Close is
     begin
@@ -680,15 +651,12 @@ package body Mesu_Gra is
       elsif Char = 'T' then
         if Tz_Drown then
           -- Hide Tzs
-          Draw_Tz(False);
+          Draw_Tz (False);
           Tz_Drown := False;
         else
-          Check_Same_Tz;
-          if Same_Tz then
-            -- Draw Tzs
-            Draw_Tz(True);
-            Tz_Drown := True;
-          end if;
+          -- Draw Tzs
+          Draw_Tz (True);
+          Tz_Drown := True;
         end if;
       elsif Char >= '1' and then Char <= '9' then
         -- Draw if key in 1 .. 9 then
@@ -696,16 +664,6 @@ package body Mesu_Gra is
         if No_Mesure <= Nb_Mesure then
           if not Mesure_Array(No_Mesure).Drown then
             Mesure_Array(No_Mesure).Drown := True;
-            -- Drawing a new record : check if Tz to be hidden
-            if Tz_Drown then
-              Check_Same_Tz;
-              if not Same_Tz then
-                -- This mesure has a Tz incompatible with the drown Tzs
-                -- Hide Tz
-                Draw_Tz(False);
-                Tz_Drown := False;
-              end if;
-            end if;
             Nb_Drown := Nb_Drown + 1;
             -- Draw this mesure
             Draw_Mesure (No_Mesure);
@@ -721,6 +679,11 @@ package body Mesu_Gra is
           elsif not Mesure_Array(No_Mesure).Drown then
             -- Hide this mesure
             Refresh (Tz_Drown);
+          else
+            -- Redraw Tz
+            if Tz_Drown then
+              Refresh (True);
+            end if;
           end if;
         end if;
       elsif Char = 'S' or else Char = 'H' then
