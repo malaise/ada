@@ -1,5 +1,6 @@
 with Ada.Direct_Io, Ada.Exceptions;
-with Pers_Def, Str_Mng, Basic_Proc, Text_Line, Sys_Calls;
+with Str_Mng, Basic_Proc, Text_Line, Sys_Calls;
+with Pers_Def, Pers_Mng;
 use Pers_Def;
 package body Pers_Fil is
 
@@ -124,7 +125,7 @@ package body Pers_Fil is
   procedure Save is
     Person : Pers_Def.Person_Rec;
     List_Length : constant Natural := The_Persons.List_Length;
-    Init_Pos    : Natural;
+    Init_Pers : Pers_Def.Person_Rec;
     Txt : File_Txt;
     Start : Positive;
   begin
@@ -136,7 +137,10 @@ package body Pers_Fil is
     -- Scan list only if not empty
     if List_Length /= 0 then
       -- Save current position
-      Init_Pos := The_Persons.Get_Position;
+      Init_Pers := The_Persons.Read (Pers_Def.Person_List_Mng.Current);
+      -- Sort by Pid
+      Pers_Mng.Sort (The_Persons);
+
       -- Move to beginning of list
       The_Persons.Rewind;
 
@@ -162,8 +166,9 @@ package body Pers_Fil is
         Txt_File.Put_Line (Txt);
       end loop;
 
-      -- Move to initial position in list
-      The_Persons.Move_At (Init_Pos);
+      -- Move to initial person
+      Pers_Mng.Search (The_Persons, Init_Pers.Name, Init_Pers.Activity, Start);
+      The_Persons.Move_At (Start);
     end if;
 
     -- Close file

@@ -55,6 +55,10 @@ package Pers_Mng is
   procedure Insert (List : in out Pers_Def.Person_List;
                     Person : in out Pers_Def.Person_Rec);
 
+  -- Sort list by default (Pid)
+  procedure Sort (List : in out Pers_Def.Person_List);
+
+
   Not_Sole_Error : exception;
   List_Full_Error : exception;
 

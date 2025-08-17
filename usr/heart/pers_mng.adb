@@ -299,5 +299,17 @@ package body Pers_Mng is
     List.Insert (Person);
   end Insert;
 
+  -- Sort list by default (Pid)
+  function Order_Pid (Left, Right : Pers_Def.Person_Rec) return Boolean is
+    use type Pers_Def.Pid_Range;
+  begin
+    return Left.Pid < Right.Pid;
+  end Order_Pid;
+  procedure Sort_Pid is new Pers_Def.Person_List_Mng.Sort (Order_Pid);
+  procedure Sort (List : in out Pers_Def.Person_List) is
+  begin
+    Sort_Pid (List);
+  end Sort;
+
 end Pers_Mng;
 

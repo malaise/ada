@@ -506,7 +506,6 @@ package body Pers_Lis is
                   Encode_Person;
                   begin
                     Pers_Mng.Insert (Pers_Def.The_Persons, Person);
-                    Build_List;
                   exception
                     when others =>
                       Get_Handle.Cursor_Field := First_Field;
@@ -516,18 +515,15 @@ package body Pers_Lis is
                   -- In edit : update person in list
                   Modify (Pers_Def.The_Persons, Person,
                           Pers_Def.Person_List_Mng.Current);
-
                 else
                   -- In delete : delete records, delete person
                   Mesu_Mng.Delete_All (Person);
                   -- Delete all has changed persons list
                   Pers_Mng.Search (Pers_Def.The_Persons, Person.Pid, Pos);
                   Pers_Def.The_Persons.Delete (Moved => Moved);
-                  Build_List;
                 end if;
-              end if;
-              if Ok then
                 Pers_Fil.Save;
+                Build_List;
                 State := In_List;
               end if;
             when Afpx_Xref.Activity.Cancel =>
