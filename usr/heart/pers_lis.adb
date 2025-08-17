@@ -207,6 +207,10 @@ package body Pers_Lis is
     procedure Encode_Compute is
       Compute : Boolean;
     begin
+      if State /= In_Create and then State /= In_Edit then
+        Afpx.Set_Field_Activation (Afpx_Xref.Activity.Compute, False);
+        return;
+      end if;
       -- No action possible if Tz6 is empty
       if Str_Mng.Is_Spaces (Afpx.Decode_Field (Afpx_Xref.Activity.Tz6, 0)) then
         Afpx.Set_Field_Activation (Afpx_Xref.Activity.Compute, False);
@@ -356,8 +360,6 @@ package body Pers_Lis is
       for I in Afpx_Xref.Activity.Tz1 .. Afpx_Xref.Activity.Tz6 loop
         Set_Protection (I, not Act);
       end loop;
-      -- Compute if in edit or create
-      Afpx.Set_Field_Activation (Afpx_Xref.Activity.Compute, Act);
       -- Confirm if Valid
       Afpx.Set_Field_Activation (Afpx_Xref.Activity.Confirm, State = In_Delete);
 
