@@ -73,7 +73,6 @@ package body Pers_Mng is
       end if;
     end loop;
 
-
   end Search;
 
   -- The Expand call affects the current position in list

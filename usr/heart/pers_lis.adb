@@ -203,11 +203,55 @@ package body Pers_Lis is
 
     end Check_Field;
 
-    function Compute return Boolean is
+    -- Activate and encode "Compute" button depending on Tz
+    procedure Encode_Compute is
+      Compute : Boolean;
+    begin
+      -- No action possible if Tz6 is empty
+      if Str_Mng.Is_Spaces (Afpx.Decode_Field (Afpx_Xref.Activity.Tz6, 0)) then
+        Afpx.Set_Field_Activation (Afpx_Xref.Activity.Compute, False);
+        return;
+      end if;
+      -- Compute if none of Tz1..Tz5 is set
+      Afpx.Set_Field_Activation (Afpx_Xref.Activity.Compute, True);
+      Compute := True;
+      for Fld in Afpx_Xref.Activity.Tz1 .. Afpx_Xref.Activity.Tz5 loop
+        if not Str_Mng.Is_Spaces (Afpx.Decode_Field (Fld, 0)) then
+          Compute := False;
+          exit;
+        end if;
+      end loop;
+      if Compute then
+        Afpx.Reset_Field (Afpx_Xref.Activity.Compute);
+      else
+        Afpx.Clear_Field (Afpx_Xref.Activity.Compute);
+        Afpx.Encode_Field (Afpx_Xref.Activity.Compute, (0, 2), "Clear");
+      end if;
+    end Encode_Compute;
+
+    -- Clear all Tz
+    procedure Clear_Tz is
+    begin
+      for I in 1 .. 6 loop
+        Person.Tz(I) := Pers_Def.No_Bpm;
+      end loop;
+    end Clear_Tz;
+
+    --- Compute Tz
+    procedure Compute_Tz is
       Tzr_S, Tzm_S  : Str_Mng.Bpm_Str;
       Tzr, Tzd : Pers_Def.Bpm_Range;
       use type Pers_Def.Bpm_Range;
     begin
+      Encode_Compute;
+      if not Afpx.Get_Field_Activation (Afpx_Xref.Activity.Compute) then
+        return;
+      end if;
+      if Afpx.Decode_Field (Afpx_Xref.Activity.Compute, 0) /= " Compute " then
+        Clear_Tz;
+        Encode_Compute;
+        return;
+      end if;
       -- Last field must not be empty and valid
       -- Other fields can be filled
       Get_Handle.Cursor_Field := Afpx_Xref.Activity.Tz6;
@@ -216,29 +260,43 @@ package body Pers_Lis is
       Tzm_S := Afpx.Decode_Field (Afpx_Xref.Activity.Tz6, 00);
       Person.Tz(6) := Str_Mng.To_Bpm(Tzm_S);
       if Person.Tz(6) = Pers_Def.Bpm_Range'First then
-        -- TZ6 is empty
-        return False;
+        -- TZ6 is invalid
+        return;
       end if;
       Tzr_S := Afpx.Decode_Field (Afpx_Xref.Activity.Rest, 00);
       Tzr := Str_Mng.To_Bpm(Tzr_S);
       if Tzr = Pers_Def.Bpm_Range'First then
-        -- Rest rate is empty: 50% .. 90% of Max rate (Tz(6))
+        -- Rest rate is empty or invalid: 50% .. 90% of Max rate (Tz(6))
         for I in 1 .. 5 loop
           Person.Tz(I) := Person.Tz(6) * (Pers_Def.Bpm_Range(I) + 4) / 10;
         end loop;
       else
         -- Rest rate is set: Karvonen:
-        -- Max rate + 50% .. 90% of (Max rate - Rest rate)
+        -- Rest rate + 50% .. 90% of (Max rate - Rest rate)
         Tzd := Person.Tz(6) - Tzr;
         for I in 1 .. 5 loop
           Person.Tz(I) := Tzr + Tzd * (Pers_Def.Bpm_Range(I) + 4) / 10;
         end loop;
       end if;
       Afpx.Clear_Field (Afpx_Xref.Activity.Rest);
-      return True;
     exception
-      when others => return False;
-    end Compute;
+      when others => Clear_Tz;
+    end Compute_Tz;
+
+    -- Change field Cb
+    function Cursor_Set_Col_Cb (
+        Cursor_Field : Afpx.Field_Range;
+        Dummy_New_Field : Boolean;
+        Pointer_Col : Con_Io.Col_Range;
+        Dummy_Offset : Con_Io.Col_Range;
+        Enter_Field_Cause : Afpx.Enter_Field_Cause_List;
+        Dummy_Str : Afpx.Unicode_Sequence) return Con_Io.Col_Range is
+    begin
+      Encode_Compute;
+      return Afpx.Default_Cursor_Col (Cursor_Field,
+                                      Pointer_Col,
+                                      Enter_Field_Cause);
+    end Cursor_Set_Col_Cb;
 
    begin
 
@@ -303,10 +361,15 @@ package body Pers_Lis is
       -- Confirm if Valid
       Afpx.Set_Field_Activation (Afpx_Xref.Activity.Confirm, State = In_Delete);
 
+      -- Current Date
       Afpx.Encode_Field (Afpx_Xref.Activity.Date, (00, 00),
                          Str_Mng.Current_Date_Printed);
 
-      Afpx.Put_Then_Get (Get_Handle, Ptg_Result);
+      -- Set compute button
+      Encode_Compute;
+
+      Afpx.Put_Then_Get (Get_Handle, Ptg_Result,
+                         Cursor_Col_Cb => Cursor_Set_Col_Cb'Access);
 
       -- Move in persons list according to Afpx selection
       if not List_Empty then
@@ -394,21 +457,19 @@ package body Pers_Lis is
                     Pers_Def.Person_List_Mng.Current);
               Encode_Person;
             when Afpx_Xref.Activity.Compute =>
-              -- Compute
-              Ok := Compute;
-              if Ok then
-                -- Decode name, activity & sampling delta, then rencode all
-                Get_Handle.Cursor_Field := Afpx_Xref.Activity.Person;
-                Check_Field (Get_Handle.Cursor_Field, Ok, False);
-                Get_Handle.Cursor_Field := Afpx_Xref.Activity.Activity;
-                Check_Field (Get_Handle.Cursor_Field, Ok, False);
-                Get_Handle.Cursor_Field := Afpx_Xref.Activity.Sampling;
-                Check_Field (Get_Handle.Cursor_Field, Ok, False);
-                Encode_Person;
-                Get_Handle.Cursor_Field := Afpx_Xref.Activity.Tz1;
-                Get_Handle.Cursor_Col := 0;
-                Get_Handle.Insert := False;
-              end if;
+              -- Compute or clear Tz
+              Compute_Tz;
+              -- Decode name, activity & sampling delta, then rencode all
+              Get_Handle.Cursor_Field := Afpx_Xref.Activity.Person;
+              Check_Field (Get_Handle.Cursor_Field, Ok, False);
+              Get_Handle.Cursor_Field := Afpx_Xref.Activity.Activity;
+              Check_Field (Get_Handle.Cursor_Field, Ok, False);
+              Get_Handle.Cursor_Field := Afpx_Xref.Activity.Sampling;
+              Check_Field (Get_Handle.Cursor_Field, Ok, False);
+              Encode_Person;
+              Get_Handle.Cursor_Field := Afpx_Xref.Activity.Tz1;
+              Get_Handle.Cursor_Col := 0;
+              Get_Handle.Insert := False;
             when Afpx_Xref.Activity.Valid =>
               -- Valid
               if State /= In_Delete then

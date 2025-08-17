@@ -410,28 +410,28 @@
     </Field>
 
     <!-- TZ2 get -->
-    <Field Num="21" Kind="Get">
+    <Field Num="21" Kind="Get" Name="Tz2">
       <Geometry Up="25" Left="24" Low="25" Right="26"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- TZ3 get -->
-    <Field Num="22" Kind="Get">
+    <Field Num="22" Kind="Get" Name="Tz3">
       <Geometry Up="25" Left="28" Low="25" Right="30"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- TZ4 get -->
-    <Field Num="23" Kind="Get">
+    <Field Num="23" Kind="Get" Name="Tz4">
       <Geometry Up="25" Left="32" Low="25" Right="34"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
     <!-- TZ5 get -->
-    <Field Num="24" Kind="Get">
+    <Field Num="24" Kind="Get" Name="Tz5">
       <Geometry Up="25" Left="36" Low="25" Right="38"/>
       <Get_Tuning Move_Prev="True" Move_Next="True"/>
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
@@ -681,11 +681,11 @@
       <Colors Foreground="Black" Background="Light_Blue" Selected="White"/>
     </Field>
 
-    <!-- Reset TZs button -->
-    <Field Num="31" Kind="Button" Name="Reset">
+    <!-- Load/Clear TZs button -->
+    <Field Num="31" Kind="Button" Name="Ldcltz">
       <Geometry Up="05" Left="43" Low="05" Right="49"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="00" Col="01">Reset</Init>
+      <Init Row="00" Col="01">Clear</Init>
     </Field>
 
     <!-- Date tittle -->

@@ -137,7 +137,6 @@ package body Mesu_Edi is
     Mesu_Imp.Import (Mesure, Ok, Date_Set);
   end Import_Samples;
 
-
   -- Edit a mesure.
   -- If date or person changes, then the file name may be affected.
   -- New file may be created but previous file is not deleted
@@ -163,17 +162,57 @@ package body Mesu_Edi is
 
     use type Pers_Def.Bpm_Range;
 
+    -- Is Tz empty
+    function Is_Tz_Empty return Boolean is
+    begin
+      -- See if Clear or Load
+      for Fld in Afpx_Xref.Records.Tz1 .. Afpx_Xref.Records.Tz6 loop
+        if not Str_Mng.Is_Spaces (Afpx.Decode_Field (Fld, 0)) then
+          return False;
+        end if;
+      end loop;
+      return True;
+    end Is_Tz_Empty;
+
+    -- Encode Ldcltz, Load or Clear
+    procedure Encode_Ldcltz is
+    begin
+      if Is_Tz_Empty then
+        -- Load
+        Afpx.Clear_Field (Afpx_Xref.Records.Ldcltz);
+        Afpx.Set_Half_Col_Offset (Afpx_Xref.Records.Ldcltz, 0, True);
+        Afpx.Encode_Field (Afpx_Xref.Records.Ldcltz, (0, 1), "Load");
+      else
+        -- Clear
+        Afpx.Reset_Field (Afpx_Xref.Records.Ldcltz);
+      end if;
+    end Encode_Ldcltz;
+
     -- Encode TZ afpx fields from Person
     procedure Encode_Tz is
       use type Afpx.Absolute_Field_Range;
     begin
-      -- Encode Tz
+      if not Is_Tz_Empty then
+        return;
+      end if;
+      -- Load Tz from person
       for I in Pers_Def.Person_Tz_Array'Range loop
         Afpx.Encode_Field (Afpx_Xref.Records.Tz1 + Afpx.Field_Range(I) - 1,
                           (00,00),
                            Str_Mng.To_Str(Person.Tz(I)));
       end loop;
+      Encode_Ldcltz;
     end Encode_Tz;
+
+    procedure Clear_Tz is
+      use type Afpx.Absolute_Field_Range;
+    begin
+      -- Clear Tz
+      for I in Pers_Def.Person_Tz_Array'Range loop
+        Afpx.Clear_Field (Afpx_Xref.Records.Tz1 + Afpx.Field_Range(I) - 1);
+      end loop;
+      Encode_Ldcltz;
+    end Clear_Tz;
 
     -- Check a field
     procedure Check_Field (Current_Field : in out Afpx.Absolute_Field_Range;
@@ -392,9 +431,13 @@ package body Mesu_Edi is
       use type Afpx.Enter_Field_Cause_List, Afpx.Absolute_Field_Range;
     begin
       -- Reset is available only when in TZs
-      Afpx.Set_Field_Activation (Afpx_Xref.Records.Reset,
-                   Cursor_Field >= Afpx_Xref.Records.Tz1
-          and then Cursor_Field <= Afpx_Xref.Records.Tz6);
+      if Cursor_Field >= Afpx_Xref.Records.Tz1
+      and then Cursor_Field <= Afpx_Xref.Records.Tz6 then
+        Afpx.Set_Field_Activation (Afpx_Xref.Records.Ldcltz, True);
+        Encode_Ldcltz;
+      else
+        Afpx.Set_Field_Activation (Afpx_Xref.Records.Ldcltz, False);
+      end if;
       -- Check previous field but no move if OK
       Check_Field (Prev_Fld, False, False, Ok);
       Prev_Fld := Cursor_Field;
@@ -509,7 +552,7 @@ package body Mesu_Edi is
         -- Date
         Get_Handle.Cursor_Field := Afpx_Xref.Records.Day;
       end if;
-      Afpx.Set_Field_Activation (Afpx_Xref.Records.Reset, False);
+      Afpx.Set_Field_Activation (Afpx_Xref.Records.Ldcltz, False);
       Get_Handle.Cursor_Col := 0;
       Get_Handle.Insert := False;
       Prev_Fld := Afpx.Next_Cursor_Field (0);
@@ -708,11 +751,15 @@ package body Mesu_Edi is
               Afpx.Line_List.Delete_List;
               Encode_Duration (Mesure);
 
-            when Afpx_Xref.Records.Reset =>
+            when Afpx_Xref.Records.Ldcltz =>
               if Get_Handle.Cursor_Field >=  Afpx_Xref.Records.Tz1
               and then Get_Handle.Cursor_Field <= Afpx_Xref.Records.Tz6 then
-                -- Reset of Tz from Person (if any, if not => clear)
-                Encode_Tz;
+                -- Load of clear
+                if Is_Tz_Empty then
+                  Encode_Tz;
+                else
+                  Clear_Tz;
+                end if;
               end if;
 
             when others =>
@@ -881,7 +928,7 @@ package body Mesu_Edi is
     Afpx.Set_Field_Activation (Afpx_Xref.Records.Ins_Aft, False);
     Afpx.Set_Field_Activation (Afpx_Xref.Records.Suppr, False);
     Afpx.Set_Field_Activation (Afpx_Xref.Records.Clear_All, False);
-    Afpx.Set_Field_Activation (Afpx_Xref.Records.Reset, False);
+    Afpx.Set_Field_Activation (Afpx_Xref.Records.Ldcltz, False);
     Afpx.Set_Field_Activation (Afpx_Xref.Records.Ins, False);
 
     -- Loop of ptgs
