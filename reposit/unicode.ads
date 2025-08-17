@@ -7,6 +7,7 @@ package Unicode is
 
   -- An array of Unicode numbers
   type Unicode_Sequence is array (Positive range <>) of Unicode_Number;
+  Empty_Sequence : constant Unicode_Sequence (1 .. 0) := (others => <>);
 
   -- An unbounded array of Unicode numbers
   package Unbounded_Unicode is new Unbounded_Arrays (Unicode_Number,
