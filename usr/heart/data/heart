@@ -2,7 +2,8 @@
 export HEART_DIR=${HOME}/ada/usr/heart
 export AFPX_DATA_DIR=${HEART_DIR}
 export HEART_DATA_DIR=${HEART_DIR}/data
-export RSYNC_FLAGS="-t -r -u --include='data/????????????.???' --exclude='data/*'"
+export RSYNC_FLAGS="-t -r -u --include='data/????????????.???' \
+ --include='data/PERSONS.LST' --exclude='data/*'"
 export LAUNCH=1
 
 # Parse options
