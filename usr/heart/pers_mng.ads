@@ -36,19 +36,13 @@ package Pers_Mng is
                     Activity : in out Pers_Def.Person_Activity_Str;
                     Pos      : out Integer);
 
-  -- The Select calls affect the order and current position in list
-  --  (position set to first if found)
-  -- They return 0, if no person found
-
   -- Get first and last index (in list) of persons with the provided name
+  -- This affect the order and current position in list
+  --  (position set to first if found)
+  -- First and Last are set to 0 if not found
   procedure Select_By_Name (List : in out Pers_Def.Person_List;
                             Name : in Pers_Def.Person_Name_Str;
                             First, Last : out Natural);
-
-  -- Get first and last index (in list) of persons with the provided activity
-  procedure Select_By_Activity (List : in out Pers_Def.Person_List;
-                                Activity : in Pers_Def.Person_Activity_Str;
-                                First, Last : out Natural);
 
   -- The Insert call affects the order and current position in list
   -- Current pos in list becomes this person's one

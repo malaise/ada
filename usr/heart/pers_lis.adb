@@ -354,9 +354,10 @@ package body Pers_Lis is
       Afpx.Set_Field_Activation (Afpx_Xref.Activity.Records, Act);
       Afpx.Set_Field_Activation (Afpx_Xref.Activity.Create, Act);
       Afpx.Set_Field_Activation (Afpx_Xref.Activity.Quit, Act);
-      -- Select/Delete/clone/edit if not empty and in list
+      -- Select/apply/delete/clone/edit if not empty and in list
       Act := Act and then not List_Empty;
       Afpx.Set_Field_Activation (Afpx_Xref.Activity.Sel, Act);
+      Afpx.Set_Field_Activation (Afpx_Xref.Activity.Apply, Act);
       Afpx.Set_Field_Activation (Afpx_Xref.Activity.Delete, Act);
       Afpx.Set_Field_Activation (Afpx_Xref.Activity.Clone, Act);
       Afpx.Set_Field_Activation (Afpx_Xref.Activity.Edit, Act);
@@ -532,6 +533,31 @@ package body Pers_Lis is
             when Afpx_Xref.Activity.Cancel =>
               -- Cancel
               State := In_List;
+            when Afpx_Xref.Activity.Apply =>
+              -- Apply the Tz of currently selected activity
+              --  to all the activities of this person
+              Read (Pers_Def.The_Persons, Person,
+                    Pers_Def.Person_List_Mng.Current);
+              declare
+                First, Last : Natural;
+                Tmp_Pers : Pers_Def.Person_Rec;
+                Moved : Boolean;
+              begin
+                Pers_Mng.Select_By_Name (Pers_Def.The_Persons,
+                                         Person.Name, First, Last);
+                -- At least one entry was found
+                loop
+                  Pers_Def.The_Persons.Read (Tmp_Pers,
+                                             Pers_Def.Person_List_Mng.Current);
+                  Tmp_Pers.Rest := Person.Rest;
+                  Tmp_Pers.Tz := Person.Tz;
+                  Pers_Def.The_Persons.Modify (Tmp_Pers,
+                      Pers_Def.Person_List_Mng.Next,
+                      Moved);
+                  exit when not Moved
+                  or else Pers_Def.The_Persons.Get_Position > Last;
+                end loop;
+              end;
             when others =>
               null;
           end case;
