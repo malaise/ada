@@ -55,7 +55,9 @@ package Pers_Mng is
   procedure Insert (List : in out Pers_Def.Person_List;
                     Person : in out Pers_Def.Person_Rec);
 
-  -- Sort list by default (Pid)
+  -- Sort list by name
+  procedure Sort_By_Name (List : in out Pers_Def.Person_List);
+  -- Sort list by default (Pid) e.g. for saving
   procedure Sort (List : in out Pers_Def.Person_List);
 
 

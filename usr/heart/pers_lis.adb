@@ -1,14 +1,16 @@
 with Afpx, Con_Io, Upper_Str;
-with Str_Mng, Mesu_Mng, Pers_Mng, Pers_Fil, Afpx_Xref;
+with Long_Longs, Str_Mng, Mesu_Mng, Pers_Mng, Pers_Fil, Afpx_Xref;
 package body Pers_Lis is
 
   procedure Build_List is
     Person : Pers_Def.Person_Rec;
     Line   : Afpx.Line_Rec;
+    Pos : Positive;
   begin
     -- Encode list of persons
     Afpx.Line_List.Delete_List;
     if not Pers_Def.The_Persons.Is_Empty then
+      Pos := Pers_Def.The_Persons.Get_Position;
       Pers_Def.The_Persons.Rewind;
       loop
         Pers_Def.The_Persons.Read (Person, Pers_Def.Person_List_Mng.Current);
@@ -18,7 +20,8 @@ package body Pers_Lis is
         Pers_Def.The_Persons.Move_To;
       end loop;
       -- End of list
-      Afpx.Line_List.Rewind (Afpx.Line_List_Mng.Prev);
+      Afpx.Line_List.Move_At (Long_Longs.Llu_Natural (Pos));
+      Pers_Def.The_Persons.Move_At (Pos);
     end if;
   end Build_List;
 
@@ -35,6 +38,10 @@ package body Pers_Lis is
     end if;
   end Set_Protection;
 
+  -- Remanent between calls to List
+  Sorted : Boolean := False;
+
+  -- Management of Persons+Activity
   procedure List (Selected : out Boolean;
                   Pid : out Pers_Def.Pid_Range) is
 
@@ -53,7 +60,6 @@ package body Pers_Lis is
     Ok : Boolean;
     Moved : Boolean;
     use type Afpx.Field_Range;
-    use Pers_Def.Person_List_Mng;
 
     procedure Encode_Person is
       Dummy_Pos : Integer;
@@ -322,11 +328,8 @@ package body Pers_Lis is
    begin
 
     Afpx.Use_Descriptor(Afpx_Xref.Activity.Dscr_Num);
-
     State := In_List;
-
     Get_Handle := (others => <>);
-
     Build_List;
 
     loop
@@ -354,13 +357,18 @@ package body Pers_Lis is
       Afpx.Set_Field_Activation (Afpx_Xref.Activity.Records, Act);
       Afpx.Set_Field_Activation (Afpx_Xref.Activity.Create, Act);
       Afpx.Set_Field_Activation (Afpx_Xref.Activity.Quit, Act);
-      -- Select/apply/delete/clone/edit if not empty and in list
+      -- Select/apply/sort/delete/clone/edit if not empty and in list
       Act := Act and then not List_Empty;
       Afpx.Set_Field_Activation (Afpx_Xref.Activity.Sel, Act);
       Afpx.Set_Field_Activation (Afpx_Xref.Activity.Apply, Act);
+      Afpx.Set_Field_Activation (Afpx_Xref.Activity.Sort, Act);
       Afpx.Set_Field_Activation (Afpx_Xref.Activity.Delete, Act);
       Afpx.Set_Field_Activation (Afpx_Xref.Activity.Clone, Act);
       Afpx.Set_Field_Activation (Afpx_Xref.Activity.Edit, Act);
+      -- Sort by name or pid
+      Afpx.Encode_Field (Afpx_Xref.Activity.Sort, (0, 6),
+          (if Sorted then "Pid" else "Nam"));
+
       -- Edit if edit
       Act := State /= In_List;
       for I in Afpx_Xref.Activity.Person_Title
@@ -431,8 +439,8 @@ package body Pers_Lis is
               exit;
             when Afpx_Xref.Activity.Sel =>
               -- Back to records with current selected
-              Read (Pers_Def.The_Persons, Person,
-                    Pers_Def.Person_List_Mng.Current);
+              Pers_Def.The_Persons.Read (Person,
+                                         Pers_Def.Person_List_Mng.Current);
               Pid := Person.Pid;
               Selected := True;
               exit;
@@ -455,8 +463,8 @@ package body Pers_Lis is
               Get_Handle.Cursor_Field := First_Field;
               Get_Handle.Cursor_Col := 0;
               Get_Handle.Insert := False;
-              Read (Pers_Def.The_Persons, Person,
-                    Pers_Def.Person_List_Mng.Current);
+              Pers_Def.The_Persons.Read (Person,
+                                         Pers_Def.Person_List_Mng.Current);
               Encode_Person;
             when Afpx.List_Field_No | Afpx_Xref.Activity.Edit =>
               -- Edit
@@ -465,14 +473,14 @@ package body Pers_Lis is
               Get_Handle.Cursor_Field := First_Field;
               Get_Handle.Cursor_Col := 0;
               Get_Handle.Insert := False;
-              Read (Pers_Def.The_Persons, Person,
-                    Pers_Def.Person_List_Mng.Current);
+              Pers_Def.The_Persons.Read (Person,
+                                         Pers_Def.Person_List_Mng.Current);
               Encode_Person;
             when Afpx_Xref.Activity.Delete =>
               -- Delete
               State := In_Delete;
-              Read (Pers_Def.The_Persons, Person,
-                    Pers_Def.Person_List_Mng.Current);
+              Pers_Def.The_Persons.Read (Person,
+                                         Pers_Def.Person_List_Mng.Current);
               Encode_Person;
             when Afpx_Xref.Activity.Compute =>
               -- Compute or clear Tz
@@ -513,8 +521,8 @@ package body Pers_Lis is
                   end;
                 elsif State = In_Edit then
                   -- In edit : update person in list
-                  Modify (Pers_Def.The_Persons, Person,
-                          Pers_Def.Person_List_Mng.Current);
+                  Pers_Def.The_Persons.Modify (Person,
+                      Pers_Def.Person_List_Mng.Current);
                 else
                   -- In delete : delete records, delete person
                   Mesu_Mng.Delete_All (Person);
@@ -522,7 +530,14 @@ package body Pers_Lis is
                   Pers_Mng.Search (Pers_Def.The_Persons, Person.Pid, Pos);
                   Pers_Def.The_Persons.Delete (Moved => Moved);
                 end if;
+                -- Save, resort if needed, move back to person
                 Pers_Fil.Save;
+                if Sorted then
+                  Pers_Mng.Sort_By_Name (Pers_Def.The_Persons);
+                end if;
+                if State = In_Delete then
+                  Pers_Mng.Search (Pers_Def.The_Persons, Person.Pid, Pos);
+                end if;
                 Build_List;
                 State := In_List;
               end if;
@@ -532,8 +547,8 @@ package body Pers_Lis is
             when Afpx_Xref.Activity.Apply =>
               -- Apply the Tz of currently selected activity
               --  to all the activities of this person
-              Read (Pers_Def.The_Persons, Person,
-                    Pers_Def.Person_List_Mng.Current);
+              Pers_Def.The_Persons.Read (Person,
+                                         Pers_Def.Person_List_Mng.Current);
               declare
                 First, Last : Natural;
                 Tmp_Pers : Pers_Def.Person_Rec;
@@ -554,6 +569,22 @@ package body Pers_Lis is
                   or else Pers_Def.The_Persons.Get_Position > Last;
                 end loop;
               end;
+              Pers_Fil.Save;
+              if Sorted then
+                Pers_Mng.Sort_By_Name (Pers_Def.The_Persons);
+              end if;
+            when Afpx_Xref.Activity.Sort =>
+              -- Sort by name or Pid, keep current
+              Pers_Def.The_Persons.Read (Person,
+                                         Pers_Def.Person_List_Mng.Current);
+              if not Sorted then
+                Pers_Mng.Sort_By_Name (Pers_Def.The_Persons);
+              else
+                Pers_Mng.Sort (Pers_Def.The_Persons);
+              end if;
+              Pers_Mng.Search (Pers_Def.The_Persons, Person.Pid, Pos);
+              Build_List;
+              Sorted  := not Sorted;
             when others =>
               null;
           end case;

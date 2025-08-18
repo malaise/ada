@@ -191,9 +191,15 @@ package body Pers_Mng is
     end if;
   end Expand;
 
+  -- Sort by name
   function Order_Name (Left, Right : Pers_Def.Person_Rec) return Boolean is
-    (Left.Name < Right.Name);
+    (Left.Name < Right.Name
+     or else (Left.Name = Right.Name and then Left.Activity < Right.Activity));
   procedure Sort_Name is new Pers_Def.Person_List_Mng.Sort (Order_Name);
+  procedure Sort_By_Name (List : in out Pers_Def.Person_List) is
+  begin
+    Sort_Name (List);
+  end Sort_By_Name;
 
   -- Get first and last index (in list) of persons with the provided name
   procedure Select_By_Name (List : in out Pers_Def.Person_List;
