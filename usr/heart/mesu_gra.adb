@@ -7,6 +7,7 @@ package body Mesu_Gra is
 
   Console : aliased Con_Io.Console;
   Screen : Con_Io.Window;
+  Title_Win, Position_Win : Con_Io.Window;
 
   -- X and Y first and last, in screen and reality
   X_First : constant Natural := 0;
@@ -37,13 +38,15 @@ package body Mesu_Gra is
   type Mesure_Cell is record
     Person : Pers_Def.Person_Rec;
     Mesure : Mesu_Def.Mesure_Rec;
-    Drown  : Boolean;
+    Drawn  : Boolean;
   end record;
 
   -- The info stored about records
   subtype Mesure_Range is Natural range 0 .. Max_Nb_Mesure;
   Mesure_Array : array (1 .. Max_Nb_Mesure) of Mesure_Cell;
   Nb_Mesure : Mesure_Range;
+  No_Mesure : constant Mesure_Range := 0;
+  Tz_Drawn : Mesure_Range;
 
   use type Pers_Def.Bpm_Range;
 
@@ -182,7 +185,7 @@ package body Mesu_Gra is
   end Draw_Line;
 
   -- General refresh
-  procedure Refresh (Tz : in Boolean);
+  procedure Refresh;
 
   -- Graphic layout (help, scales, Tz)
   procedure Draw_Layout is
@@ -228,8 +231,9 @@ package body Mesu_Gra is
     -- Help
     Screen.Move (Screen.Row_Range_Last, 5);
     Screen.Set_Foreground (Help_Color);
-    Screen.Put ("'1' - '" & Normal(Nb_Mesure,1) & "', 'S', 'H': Show/hide  "
-              & "/  T: Training zones  /  Esc: Quit");
+    Screen.Put ("'1'-'" & Normal(Nb_Mesure, 1) & ": Show/hide"
+              & ",   'S'/'H': Show/hide all"
+              & ",   Esc: Quit");
     -- Axes of scale
     Screen.Set_Foreground (Scale_Color);
     Console.Draw_Line (Xs_First, Ys_First, Xs_Last, Ys_First);
@@ -278,79 +282,66 @@ package body Mesu_Gra is
 
   end Draw_Layout;
 
-  procedure Draw_Tz (Show : in Boolean) is
-    Tz_Color    : constant Con_Io.Effective_Colors := Con_Io.Color_Of ("Black");
-    Y : Con_Io.Y_Range;
-    Tz_Index : Mesure_Range;
+
+  -- Draw mesure and its title
+  -- "Tz (!)i: <name> <activity> <date> <time> <comment>"
+  -- 9+21+11+11+6+20
+  Title_Length : constant Con_Io.Col_Range := 78;
+  -- These are the colors in use for the samples names and graphs
+  -- They will be set once the console is created
+  Colors : array (1 .. Max_Nb_Mesure) of Con_Io.Effective_Colors;
+
+  procedure Write_Tz (No   : in Mesure_Range;
+                      Show : in Boolean) is
   begin
-    if not Show then
-      Screen.Clear;
-      Refresh (False);
-      return;
+    if Mesure_Array(No).Drawn then
+      Title_Win.Set_Foreground (Colors(No));
+    else
+      Title_Win.Set_Foreground (Con_Io.Color_Of ("Black"));
     end if;
-    Screen.Set_Foreground (Tz_Color);
-    -- The selected Tz are the ones of the last mesure drawn, if any
-    -- Else the last mesure
-    Tz_Index := Nb_Mesure;
-    for I in reverse 1 .. Nb_Mesure loop
-      if Mesure_Array(I).Drown then
-        Tz_Index := I;
-        exit;
-      end if;
-    end loop;
+    Title_Win.Move (No - 1, 0);
+    Title_Win.Put ( (if Show then "Tz" else "--") );
+  end Write_Tz;
 
-    -- Drawn Tz
-    for Bpm of Mesure_Array(Tz_Index).Mesure.Tz loop
-      if Bpm >= Y_First then
-        Y := Y_To_Screen(Bpm);
-        Draw_Line (Xs_First, Y, Xs_Last - 4 * Console.Font_Width, Y);
-        Console.Put (Normal(Integer(Bpm), 3),
-                     Console.X_Max - 3 * Console.Font_Width,
-                     Y + Font_Offset_Height);
-      end if;
-    end loop;
-  end Draw_Tz;
-
-  -- Draw one record
+  -- Draw a mesure and its title
   procedure Draw_Mesure (No : in Mesure_Range) is
-    -- These are the colors in use for the samples names and graphs
-    Colors : constant array (1 .. Max_Nb_Mesure) of Con_Io.Effective_Colors
-           := (1 => Con_Io.Color_Of ("Blue"),
-               2 => Con_Io.Color_Of ("Cyan"),
-               3 => Con_Io.Color_Of ("White"),
-               4 => Con_Io.Color_Of ("Brown"),
-               5 => Con_Io.Color_Of ("Tomato"),
-               6 => Con_Io.Color_Of ("Red"),
-               7 => Con_Io.Color_Of ("Magenta"),
-               8 => Con_Io.Color_Of ("Dark_Green"),
-               9 => Con_Io.Color_Of ("Medium_Spring_Green"));
     Sec1, Sec2 : Natural;
     Bpm1, Bpm2 : Pers_Def.Bpm_Range;
     Mesure : Mesu_Def.Mesure_Rec renames Mesure_Array(No).Mesure;
-    Title_Txt : As.B.Asb_Bs(Con_Io.Col_Range'Last);
+    Title_Txt : As.B.Asb_Bs(Title_Length);
   begin
-    Screen.Set_Foreground (Colors(No));
-    -- Person and date
-    Screen.Move (No-1, 10);
+    if Mesure_Array(No).Drawn then
+      Title_Win.Set_Foreground (Colors(No));
+    else
+      Title_Win.Set_Foreground (Con_Io.Color_Of ("Black"));
+    end if;
+    -- Title: Person, date, comment
+    Title_Win.Move (No - 1, 0);
+    Title_Txt.Set ("--");
     if Mesure.Samples.Length < 2 then
       -- 0 or only 1 sample. Cannot draw this one
-      Title_Txt.Set ("(*)");
+      Title_Txt.Append ("(!)");
     else
-      Title_Txt.Set ("   ");
+      Title_Txt.Append ("   ");
     end if;
     Title_Txt.Append (
-           Normal(No, 1) & ":"
+           Normal(No, 1) & ": "
          & Mesure_Array(No).Person.Name & " "
          & Mesure_Array(No).Person.Activity & " "
          & Str_Mng.To_Printed_Date_Str(Mesure.Date) & " "
          & Str_Mng.To_Printed_Time_Str(Mesure.Time) & " "
          & Mesure.Comment);
-    Screen.Put (Title_Txt.Image);
+    Title_Win.Put (Title_Txt.Image);
+    if No = Tz_Drawn then
+      Write_Tz (No, True);
+    end if;
 
-    if Mesure.Samples.Length < 2 then
+    -- Draw mesure
+    if not Mesure_Array(No).Drawn or else Mesure.Samples.Length < 2 then
       return;
     end if;
 
+    Screen.Set_Foreground (Colors(No));
     Sec1 := 0;
     Bpm1 := Mesure.Samples.Element (1);
 
@@ -368,22 +359,74 @@ package body Mesu_Gra is
 
   end Draw_Mesure;
 
+
+  -- Show/hide/redraw TZ for a mesure
+  procedure Hide_Tz is
+  begin
+    if Tz_Drawn /= No_Mesure then
+      Write_Tz (Tz_Drawn, False);
+      Tz_Drawn := No_Mesure;
+      Screen.Clear;
+      Refresh;
+    end if;
+  end Hide_Tz;
+
+  procedure Draw_Tz (No : in Mesure_Range := No_Mesure) is
+    Tz_Color    : constant Con_Io.Effective_Colors := Con_Io.Color_Of ("Black");
+    Y : Con_Io.Y_Range;
+    Tz_Index : Mesure_Range;
+  begin
+    if No = No_Mesure then
+      -- Redraw current Tz (refresh)
+      Tz_Index := Tz_Drawn;
+    elsif No = Tz_Drawn then
+      -- Hide current Tz
+      Tz_Index := No_Mesure;
+      Hide_Tz;
+    else
+      -- Switch to a new Tz
+      if Tz_Drawn /= No_Mesure then
+        Hide_Tz;
+      end if;
+      Tz_Index := No;
+    end if;
+
+    if Tz_Index = No_Mesure then
+      -- Nothing to draw
+      return;
+    end if;
+
+    -- Drawn Tz
+    Screen.Set_Foreground (Tz_Color);
+    for Bpm of Mesure_Array(Tz_Index).Mesure.Tz loop
+      if Bpm >= Y_First then
+        Y := Y_To_Screen(Bpm);
+        Draw_Line (Xs_First, Y, Xs_Last - 4 * Console.Font_Width, Y);
+        Console.Put (Normal(Integer(Bpm), 3),
+                     Console.X_Max - 3 * Console.Font_Width,
+                     Y + Font_Offset_Height);
+      end if;
+    end loop;
+    Tz_Drawn := Tz_Index;
+    Write_Tz (Tz_Drawn, True);
+  end Draw_Tz;
+
+
+  -- Put current pointer mouse position
+    -- "DDDd hh:mm:ss - xxxBpm" 22 characters
+  Pos_Length : constant Con_Io.Col_Range := 22;
+  Pos_Color : constant Con_Io.Effective_Colors := Con_Io.Color_Of ("Black");
   procedure Draw_Position (X : in Con_Io.X_Range;
                            Y : in Con_Io.Y_Range;
                            Show : in Boolean := True) is
-    -- "DDDd hh:mm:ss - xxxBpm" 22 characters
-    Slot : String (1 .. 22) := (others => ' ');
-    Pos_Row : constant Con_Io.Row_Range := Console.Row_Range_Last - 3;
-    Pos_Col : constant Con_Io.Col_Range
-            := Console.Col_Range_Last - Slot'Length;
-    Pos_Color : constant Con_Io.Effective_Colors := Con_Io.Color_Of ("Black");
+    Slot : String (1 .. Pos_Length) := (others => ' ');
     Time, Days : Natural;
     Dur : Ada.Calendar.Day_Duration;
     Bpm : Pers_Def.Bpm_Range;
   begin
-    Screen.Move (Pos_Row, Pos_Col);
+    Position_Win.Move;
     if Show then
-      Screen.Set_Foreground (Pos_Color);
+      Position_Win.Set_Foreground (Pos_Color);
       Bpm := Screen_To_Reality (Y);
       Time := Screen_To_Reality (X);
       Days := Time / (24 * 3600);
@@ -394,25 +437,46 @@ package body Mesu_Gra is
       Slot ( 6 .. 13) := Images.Dur_Image (Dur)(1 .. 8);
       Slot (14 .. 22) := " - " & Normal (Integer (Bpm), 3) & "Bpm";
     end if;
-    Screen.Put (Slot);
+    Position_Win.Put (Slot);
   end Draw_Position;
 
-  procedure Refresh (Tz : in Boolean) is
+  procedure Refresh is
   begin
     Screen.Clear;
     Draw_Layout;
     Draw_Position (0, 0, False);
     -- Redraw mesures
     for I in 1 .. Nb_Mesure loop
-      if Mesure_Array(I).Drown then
-        Draw_Mesure (I);
-      end if;
+      Draw_Mesure (I);
     end loop;
-    -- Tz_Drown is already up to date
-    if Tz then
-      Draw_Tz (True);
-    end if;
+    Draw_Tz;
   end Refresh;
+
+  -- Handle mouse click
+  procedure Handle_Click (Mouse_Evt : in Con_Io.Mouse_Event_Rec) is
+    Event : Con_Io.Row_Col_Event;
+    Pos : Con_Io.Square;
+    Mesure_No : Mesure_Range;
+  begin
+    Event := Console.To_Row_Col (Mouse_Evt);
+    if not Title_Win.In_Window ( (Event.Row, Event.Col)) then
+      return;
+    end if;
+    Pos := Title_Win.To_Relative ((Event.Row, Event.Col));
+    Mesure_No := Pos.Row + 1;
+
+    if Pos.Col > 1 then
+      -- Click in Title (space <name>...): Flip-flop of mesure
+      Mesure_Array(Mesure_No).Drawn := not Mesure_Array(Mesure_No).Drawn;
+      Draw_Mesure (Mesure_No);
+      if not Mesure_Array(Mesure_No).Drawn then
+        Refresh;
+      end if;
+    else
+      -- Click in header (Tz, num ':'): Flip-flop of Tz
+      Draw_Tz (Mesure_No);
+    end if;
+  end Handle_Click;
 
   -- The main
   procedure Graphic is
@@ -436,12 +500,10 @@ package body Mesu_Gra is
     Pid_S     : Mesu_Nam.File_Pid_Str;
     Pos_Pers  : Natural;
     Person    : Pers_Def.Person_Rec;
-    Tz_Drown  : Boolean;
     Get_Res   : Con_Io.Get_Result;
-    Mouse_Evt : Con_Io.Mouse_Event_Rec(Con_Io.X_Y);
+    Mouse_Evt : Con_Io.Mouse_Event_Rec;
     Char      : Character;
-    No_Mesure : Mesure_Range;
-    Nb_Drown  : Mesure_Range;
+    Mesure_No : Mesure_Range;
 
     procedure Close is
     begin
@@ -455,7 +517,8 @@ package body Mesu_Gra is
       Afpx.Redisplay;
     end Close;
 
-    use type Con_Io.Curs_Mvt;
+    use type Con_Io.Curs_Mvt,
+             Con_Io.Mouse_Button_List, Con_Io.Mouse_Button_Status_List;
   begin
     -- Compute console size
     -- Get screen geometry
@@ -518,9 +581,30 @@ package body Mesu_Gra is
                   Col_Last => Cols - 1,
                   Def_Back => Afpx.Get_Descriptor_Background);
     Console.Set_Name ("Heart draw");
-    Screen.Set_To_Screen (Console'Access);
+    -- Screen.Set_To_Screen (Console'Access);
+    Screen := Con_Io.Get_Screen (Console'Access);
     Console.Set_Y_Mode (Con_Io.Con_Io_Mode);
+    Colors := (1 => Con_Io.Color_Of ("Blue"),
+               2 => Con_Io.Color_Of ("Cyan"),
+               3 => Con_Io.Color_Of ("White"),
+               4 => Con_Io.Color_Of ("Brown"),
+               5 => Con_Io.Color_Of ("Tomato"),
+               6 => Con_Io.Color_Of ("Red"),
+               7 => Con_Io.Color_Of ("Magenta"),
+               8 => Con_Io.Color_Of ("Dark_Green"),
+               9 => Con_Io.Color_Of ("Medium_Spring_Green"));
+
+    Screen.Set_Foreground (Con_Io.Color_Of ("Black"));
     Screen.Set_Background (Con_Io.Color_Of ("Dark_Grey"));
+
+    -- Open windows for titles and position
+    Title_Win.Open (Console'Access, (0, 10), (8, 10 + Title_Length - 1) );
+    Title_Win.Set_Background (Screen.Get_Background);
+    Position_Win.Open (Console'Access,
+      (Console.Row_Range_Last - 3, Console.Col_Range_Last - Pos_Length),
+      (Console.Row_Range_Last - 3, Console.Col_Range_Last - 1));
+    Position_Win.Set_Background (Screen.Get_Background);
+    Position_Win.Set_Foreground (Pos_Color);
 
     -- Screen scale
     Xs_First := 4 * Font_Width;
@@ -548,7 +632,8 @@ package body Mesu_Gra is
       Nb_Mesure := Nb_Mesure + 1;
       Mesure_Array(Nb_Mesure).Person := Person;
       Mesure_Array(Nb_Mesure).Mesure := Mesu_Fil.Load (File_Name);
-      Mesure_Array(Nb_Mesure).Drown  := False;
+      Mesure_Array(Nb_Mesure).Drawn  := False;
+      Tz_Drawn := No_Mesure;
 
       -- Next line except if list empty or end of list
       exit when Afpx.Line_List.Is_Empty
@@ -619,14 +704,12 @@ package body Mesu_Gra is
     Screen.Clear;
 
     Draw_Layout;
-    Tz_Drown := False;
 
     -- Draw all mesures
     for I in 1 .. Nb_Mesure loop
-      Mesure_Array(I).Drown := True;
+      Mesure_Array(I).Drawn := True;
       Draw_Mesure (I);
     end loop;
-    Nb_Drown := Nb_Mesure;
 
     -- Enable mouse motion events
     Console.Enable_Motion_Events (True);
@@ -648,56 +731,43 @@ package body Mesu_Gra is
       elsif Get_Res.Mvt = Con_Io.Break then
         -- Break
         raise Pers_Def.Exit_Requested;
-      elsif Char = 'T' then
-        if Tz_Drown then
-          -- Hide Tzs
-          Draw_Tz (False);
-          Tz_Drown := False;
-        else
-          -- Draw Tzs
-          Draw_Tz (True);
-          Tz_Drown := True;
-        end if;
       elsif Char >= '1' and then Char <= '9' then
         -- Draw if key in 1 .. 9 then
-        No_Mesure := Character'Pos(Char) - Character'Pos('1') + 1;
-        if No_Mesure <= Nb_Mesure then
-          if not Mesure_Array(No_Mesure).Drown then
-            Mesure_Array(No_Mesure).Drown := True;
-            Nb_Drown := Nb_Drown + 1;
+        Mesure_No := Character'Pos(Char) - Character'Pos('1') + 1;
+        if Mesure_No <= Nb_Mesure then
+          if not Mesure_Array(Mesure_No).Drawn then
+            Mesure_Array(Mesure_No).Drawn := True;
             -- Draw this mesure
-            Draw_Mesure (No_Mesure);
+            Draw_Mesure (Mesure_No);
           else
-            -- Hidding a record
-            Mesure_Array(No_Mesure).Drown := False;
-            Nb_Drown := Nb_Drown - 1;
-          end if;
-          if Nb_Drown = 0 and then Tz_Drown then
-            -- Hide Tz if no mesure
-            Draw_Tz (False);
-            Tz_Drown := False;
-          elsif not Mesure_Array(No_Mesure).Drown then
-            -- Hide this mesure
-            Refresh (Tz_Drown);
-          else
-            -- Redraw Tz
-            if Tz_Drown then
-              Refresh (True);
-            end if;
+            -- Hidding a mesure
+            Mesure_Array(Mesure_No).Drawn := False;
+            Draw_Mesure (Mesure_No);
+            Refresh;
           end if;
         end if;
       elsif Char = 'S' or else Char = 'H' then
         -- Show or hide all mesures
         for I in 1 .. Nb_Mesure loop
-          Mesure_Array(I).Drown := Char = 'S';
+          Mesure_Array(I).Drawn := Char = 'S';
         end loop;
-        Refresh (Tz_Drown);
+        Refresh;
       elsif Get_Res.Mvt = Con_Io.Mouse_Button then
         Console.Get_Mouse_Event (Mouse_Evt, Con_Io.X_Y);
-        Draw_Position (Mouse_Evt.X, Mouse_Evt.Y);
+        if Mouse_Evt.Valid then
+          if Mouse_Evt.Button = Con_Io.Motion then
+            -- Mouse motion
+            Draw_Position (Mouse_Evt.X, Mouse_Evt.Y);
+          elsif Mouse_Evt.Button = Con_Io.Left
+          and then Mouse_Evt.Status = Con_Io.Pressed then
+            -- Mouse left clic
+            Handle_Click (Mouse_Evt);
+          end if;
+        end if;
+
       elsif Get_Res.Mvt = Con_Io.Refresh then
         -- Refresh
-        Refresh (Tz_Drown);
+        Refresh;
       end if;
     end loop Main_Loop;
 
