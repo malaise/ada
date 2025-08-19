@@ -6,7 +6,7 @@ package body Mesu_Mng is
   procedure List_Mesures (Nb_Month : in Str_Mng.Offset_Range) is
     Pers_Empty   : Boolean;
     List_Empty   : Boolean;
-    Allow_Undo   : Boolean;
+    Allow_Undo   : Boolean := False;
     Allow_Draw   : Boolean;
     Get_Handle   : Afpx.Get_Handle_Rec;
     Ptg_Result   : Afpx.Result_Rec;
@@ -230,7 +230,7 @@ package body Mesu_Mng is
       Get_Handle.Cursor_Field := Afpx_Xref.Main.Person;
       Get_Handle.Cursor_Col := 0;
       Get_Handle.Insert := False;
-      Allow_Undo := False;
+      Allow_Undo := Allow_Undo and then not Reset;
       if Reset then
         Mesu_Sel.Load;
         Afpx.Update_List (Afpx.Center_Selected);
