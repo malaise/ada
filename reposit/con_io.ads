@@ -710,6 +710,12 @@ package Con_Io is
       Con             : Console;
       Coordinate_Mode : Coordinate_Mode_List := Row_Col) return Mouse_Event_Rec;
 
+  -- Convert an event in X_Y into the same in Row_Col
+  subtype X_Y_Event is Mouse_Event_Rec (X_Y);
+  subtype Row_Col_Event is Mouse_Event_Rec (Row_Col);
+  function To_Row_Col (Con   : in Console;
+                       Event : X_Y_Event) return Row_Col_Event;
+
   ----------------
   -- Exceptions --
   ----------------

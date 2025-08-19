@@ -2337,5 +2337,25 @@ package body Con_Io is
     return Mouse_Event;
   end Get_Mouse_Event;
 
+  -- Convert an event in X_Y into the same in Row_Col
+  function To_Row_Col (Con   : in Console;
+                       Event : X_Y_Event) return Row_Col_Event is
+    Sq : Square;
+    Res : Row_Col_Event;
+  begin
+    Res.Valid := Event.Valid;
+    Res.Button := Event.Button;
+    Res.Status := Event.Status;
+    Res.Double_Click := Event.Double_Click;
+    Res.Xref := Event.Xref;
+    Sq := To_Square (Con, Event.X, Event.Y);
+    Res.Row := Sq.Row;
+    Res.Col := Sq.Col;
+    Sq := To_Square (Con, Event.Sub_X, Event.Sub_Y);
+    Res.Sub_Row := Sq.Row;
+    Res.Sub_Col := Sq.Col;
+    return Res;
+  end To_Row_Col;
+
 end Con_Io;
 
