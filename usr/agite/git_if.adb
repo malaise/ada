@@ -513,8 +513,10 @@ package body Git_If is
     end if;
   end Assert;
 
-  -- Flow format of log is:
+  -- Flow format of log [ -g ] is:
   -- commit <hash> [ (from <hash>) ]
+  -- Reflog: ...               // If -g
+  -- Reflog message: ...       // If -g
   -- Author: ...
   -- Date:   YYYY-MM-DD HH:MM:SS ...
   --
@@ -536,16 +538,19 @@ package body Git_If is
                         Merge : out Boolean;
                         Date : out Iso_Date;
                         Comments : out Comment_Array;
+                        Reflog : out Comment_Array;
                         Files : access Commit_List;
                         Done : out Boolean) is
     Line : As.U.Asu_Us;
     Ind : Natural;
+    N_Comment : Natural;
     Tab1 : Positive;
     Tab2 : Natural;
     Moved : Boolean;
     File : Commit_Entry_Rec;
   begin
     Logger.Log (Debug1, "  Block length: " & Integer'Image (Flow.List_Length));
+    Comments := (others => As.U.Asu_Null);
     -- commit <hash> [ (from <hash>) ]
     Flow.Read (Line);
     Assert (Line.Length = 47 or else Line.Length = 95);
@@ -558,9 +563,20 @@ package body Git_If is
       Line.Delete (Ind, Line.Length);
     end if;
     Hash := Line;
+    Flow.Read (Line);
+
+    -- Possible Reflog and Reflog comment
+    if Line.Slice (1, 8) = "Reflog: " then
+      Logger.Log (Debug1, "  Block reflog " & Line.Image);
+      Reflog(1) := Line.Uslice (9, Line.Length);
+      Flow.Read (Line);
+      Assert (Line.Slice (1, 16) = "Reflog message: ");
+      Logger.Log (Debug1, "  Block reflog comment " & Line.Image);
+      Reflog(2) := Line.Uslice (17, Line.Length);
+      Flow.Read (Line);
+    end if;
 
     -- Possible "Merge:... ..." then Author: ...
-    Flow.Read (Line);
     if Line.Slice (1, 7) = "Merge: " then
       Logger.Log (Debug1, "  Block skip " & Line.Image);
       Merge := True;
@@ -589,12 +605,11 @@ package body Git_If is
     Assert (Line.Length = 0);
 
     -- Several comments until empty line or end of flow
-    Ind := 0;
-    Comments := (others => As.U.Asu_Null);
+    N_Comment := 0;
     loop
       Flow.Read (Line, Moved => Moved);
       exit when Line.Length = 0;
-      if Ind = 0 and then Line.Length >= 2
+      if N_Comment = 0 and then Line.Length >= 2
       and then Line.Slice (1, 2) /= "  " then
         -- No Comment at all in short mode (=> notes or next commit)
         -- No Comment at all in detailed mode (=> notes or modified files)
@@ -610,10 +625,11 @@ package body Git_If is
       Assert (Line.Slice (1, 4) = "    ");
       Line.Delete_Nb (1, 4);
       -- Copy first non empty lines of comment
-      if Ind < Comments'Last and then not Line.Is_Null then
-        Ind := Ind + 1;
-        Comments(Ind) := Line;
-        Logger.Log (Debug1, "  Block got comment: " & Comments(Ind).Image);
+      if N_Comment < Comments'Last and then not Line.Is_Null then
+        N_Comment := N_Comment + 1;
+        Comments(N_Comment) := Line;
+        Logger.Log (Debug1, "  Block got comment: "
+                  & Comments(N_Comment).Image);
       else
         Logger.Log (Debug1, "  Block skip comment: " & Line.Image);
       end if;
@@ -728,6 +744,7 @@ package body Git_If is
     Cmd : Many_Strings.Many_String;
     Done : Boolean;
     Log_Entry : Log_Entry_Rec;
+    Ref : Comment_2;
     N_Read : Log_Mng.Ll_Natural;
     Files : aliased Commit_List;
     use type Log_Mng.Ll_Natural;
@@ -776,7 +793,7 @@ package body Git_If is
     N_Read := 0;
     loop
       Read_Block (Out_Flow_1.List, Status, Log_Entry.Hash, Log_Entry.Merged,
-                  Log_Entry.Date, Log_Entry.Comment, Files'Access, Done);
+                  Log_Entry.Date, Log_Entry.Comment, Ref, Files'Access, Done);
       if Status and then not Files.Is_Empty then
         Log_Entry.Extra.Set (Files.Access_Current.Status);
       end if;
@@ -911,6 +928,7 @@ package body Git_If is
   -- Get info on a commit: fill Date and Comment
   procedure Info_Commit (Commit : in out Log_Entry_Rec) is
     Cmd : Many_Strings.Many_String;
+    Ref : Comment_2;
     Dummy_Done : Boolean;
   begin
     -- Git log
@@ -936,7 +954,7 @@ package body Git_If is
     else
       Out_Flow_1.List.Rewind;
       Read_Block (Out_Flow_1.List, False, Commit.Hash, Commit.Merged,
-                  Commit.Date, Commit.Comment, null, Dummy_Done);
+                  Commit.Date, Commit.Comment, Ref, null, Dummy_Done);
     end if;
   end Info_Commit;
 
@@ -953,6 +971,7 @@ package body Git_If is
                          Comment : out Comment_Array;
                          Commit : in out Commit_List) is
     Cmd : Many_Strings.Many_String;
+    Ref : Comment_2;
     Dummy_Done : Boolean;
   begin
     -- Default values
@@ -983,7 +1002,7 @@ package body Git_If is
     if not Out_Flow_1.List.Is_Empty then
       Out_Flow_1.List.Rewind;
       Read_Block (Out_Flow_1.List, True, Hash, Merged, Date,
-                  Comment, Commit'Access, Dummy_Done);
+                  Comment, Ref, Commit'Access, Dummy_Done);
     end if;
     if not Commit.Is_Empty then
       Commit.Rewind;
@@ -2110,18 +2129,18 @@ package body Git_If is
 
   procedure List_Reflog (Branch : in String; Reflog : in out Reflog_List) is
     Cmd : Many_Strings.Many_String;
-    Line : As.U.Asu_Us;
-    Ref : Reflog_Entry_Rec;
-    Moved : Boolean;
-    I1, I2 : Natural;
-    Num : Natural;
-    Sub : String (1 .. 2);
+    Log_Entry : Log_Entry_Rec;
+    Ref_Data : Comment_2;
+    Ref_Entry : Reflog_Entry_Rec;
+    Nb_Read : Natural;
+    Done : Boolean;
     use type As.U.Asu_Us;
   begin
     Reflog.Delete_List;
-    -- Git reflog --no-abbrev-commit
+    -- Git log -g --no-abbrev-commit
     Cmd.Set ("git");
-    Cmd.Cat ("reflog");
+    Cmd.Cat ("log");
+    Cmd.Cat ("-g");
     Cmd.Cat ("--no-abbrev-commit");
     Cmd.Cat ("--date=iso");
     Cmd.Cat (Branch);
@@ -2135,74 +2154,84 @@ package body Git_If is
     if Out_Flow_1.List.Is_Empty then
       return;
     end if;
+
+    -- Encode entries
     Out_Flow_1.List.Rewind;
-    Num := 0;
+    Nb_Read := 0;
     loop
-      Out_Flow_1.List.Read (Line, Moved => Moved);
+      Ref_Data := (others => As.U.Asu_Null);
+      Read_Block (Out_Flow_1.List, False, Ref_Entry.Hash, Log_Entry.Merged,
+                  Ref_Entry.Date, Log_Entry.Comment, Ref_Data, null, Done);
       -- Parse "<Hash> <branch>@{<date time zone>}: <Comment>"
+      declare
+        I : Natural;
+        Use_Log : Boolean;
+        Line : As.U.Asu_Us;
+        Sub : String (1 .. 2);
       begin
-        I1 := Str_Util.Locate (Line.Image, " ");
-        Ref.Hash := Line.Uslice (1, I1 - 1);
+        Line := Ref_Data(1);
         -- "<branch>@{" <date time zone> "}:"
-        if Str_Util.Locate (Line.Image, "@{") = 0 then
+        I := Str_Util.Locate (Line.Image, "@{");
+        if I = 0 then
           raise Constraint_Error;
         end if;
-        I2 := Str_Util.Locate (Line.Image, "}:");
-        -- Keep head
-        Ref.Id := Line.Uslice (I1 + 1, I2 - 26)
-                & Images.Integer_Image (Num) & "}";
-        -- Keep date until " zone"
-        Ref.Date := Line.Slice (I2 - 25, I2 - 7);
-        -- Store Comment
-        if I2 + 3 <= Line.Length then
-          Ref.Comment := Line.Uslice (I2 + 3, Line.Length);
-        else
-          Ref.Comment.Set_Null;
-        end if;
+        -- Keep head and build num
+        Ref_Entry.Id := Line.Uslice (1, I + 1)
+                & Images.Integer_Image (Nb_Read) & "}";
+        Logger.Log (Debug1, "  Reflog Id " & Ref_Entry.Id.Image);
+
         -- Replace first word of comment by 2 letters
         -- Co, Ch, Cp, Re, Me, Pu
-        I1 := Ref.Comment.Locate (":");
-        if I1 = 0 and then Ref.Comment.Image = "update by push" then
-          I1 := Ref.Comment.Length;
+        Ref_Entry.Comment := Ref_Data(2);
+        Use_Log := False;
+        I := Ref_Entry.Comment.Locate (":");
+        if I = 0 and then (Ref_Entry.Comment.Image = "update by push"
+                           or else Ref_Entry.Comment.Image = "push") then
+          I := Ref_Entry.Comment.Length;
           Sub := "Pu";
-        elsif Ref.Comment.Slice (1, I1) = "commit:" then
-          I1 := I1 + 1;
+          Use_Log := True;
+        elsif Ref_Entry.Comment.Slice (1, I) = "commit:" then
+          I := I + 1;
           Sub := "Co";
-        elsif Ref.Comment.Slice (1, I1) = "checkout:" then
-          I1 := I1 + 1;
+        elsif Ref_Entry.Comment.Slice (1, I) = "checkout:" then
+          I := I + 1;
           Sub := "Ck";
-        elsif Ref.Comment.Slice (1, I1) = "cherry-pick:" then
-          I1 := I1 + 1;
+        elsif Ref_Entry.Comment.Slice (1, I) = "cherry-pick:" then
+          I := I + 1;
           Sub := "Cp";
-        elsif Ref.Comment.Slice (1, I1) = "reset:" then
-          I1 := I1 + 1;
+        elsif Ref_Entry.Comment.Slice (1, I) = "reset:" then
+          I := I + 1;
           Sub := "Re";
-        elsif Ref.Comment.Slice (1, I1) = "merge:" then
-          I1 := I1 + 1;
+        elsif Ref_Entry.Comment.Slice (1, I) = "merge:" then
+          I := I + 1;
           Sub := "Me";
-        elsif I1 > 9 and then Ref.Comment.Slice (1, 7) = "commit " then
-          I1 := 7;
+        elsif I > 9 and then Ref_Entry.Comment.Slice (1, 7) = "commit " then
+          I := 7;
           Sub := "Co";
-        elsif I1 > 8 and then Ref.Comment.Slice (1, 6) = "merge " then
-          I1 := 6;
+        elsif I > 8 and then Ref_Entry.Comment.Slice (1, 6) = "merge " then
+          I := 6;
           Sub := "Me";
         else
-           I1 := 0;
+           I := 0;
         end if;
-        if I1 /= 0 then
-          Ref.Comment.Replace (1, I1, Sub & ": ");
+        if I /= 0 then
+          Ref_Entry.Comment.Replace (1, I, Sub & ": ");
         end if;
+        if Use_Log then
+          Ref_Entry.Comment.Append (Log_Entry.Comment(1));
+        end if;
+
+        -- Done
+        Reflog.Insert (Ref_Entry);
+        Nb_Read := Nb_Read + 1;
       exception
         when others =>
+          -- We stop here
           Basic_Proc.Put_Line_Error ("git reflog invalid output: "
                                  & Line.Image);
-          Reflog.Delete_List;
-          return;
+          exit;
       end;
-      -- Done
-      Reflog.Insert (Ref);
-      exit when not Moved;
-      Num := Num + 1;
+      exit when Done;
     end loop;
     if not Reflog.Is_Empty then
       Reflog.Rewind;
