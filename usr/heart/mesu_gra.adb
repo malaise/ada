@@ -7,7 +7,7 @@ package body Mesu_Gra is
 
   Console : aliased Con_Io.Console;
   Screen : Con_Io.Window;
-  Title_Win, Position_Win : Con_Io.Window;
+  Title_Win, Position_Win, Tz_Win : Con_Io.Window;
 
   -- X and Y first and last, in screen and reality
   X_First : constant Natural := 0;
@@ -284,9 +284,9 @@ package body Mesu_Gra is
 
 
   -- Draw mesure and its title
-  -- "Tz (!)i: <name> <activity> <date> <time> <comment>"
+  -- "(!)i: <name> <activity> <date> <time> <comment>"
   -- 9+21+11+11+6+20
-  Title_Length : constant Con_Io.Col_Range := 78;
+  Title_Length : constant Con_Io.Col_Range := 75;
   -- These are the colors in use for the samples names and graphs
   -- They will be set once the console is created
   Colors : array (1 .. Max_Nb_Mesure) of Con_Io.Effective_Colors;
@@ -294,14 +294,22 @@ package body Mesu_Gra is
   procedure Write_Tz (No   : in Mesure_Range;
                       Show : in Boolean) is
   begin
-    if Mesure_Array(No).Drawn then
-      Title_Win.Set_Foreground (Colors(No));
+    Tz_Win.Move (No - 1, 0);
+    if Show then
+      Tz_Win.Set_Background (Screen.Get_Background);
+      if Mesure_Array(No).Drawn then
+        Tz_Win.Set_Foreground (Colors(No));
+      else
+        Tz_Win.Set_Foreground (Screen.Get_Foreground);
+      end if;
+      Tz_Win.Put ("Tz");
     else
-      Title_Win.Set_Foreground (Con_Io.Color_Of ("Black"));
+      Tz_Win.Set_Background (Colors(No));
+      Tz_Win.Set_Foreground (Screen.Get_Foreground);
+      Tz_Win.Put ("  ");
     end if;
-    Title_Win.Move (No - 1, 0);
-    Title_Win.Put ( (if Show then "Tz" else "--") );
   end Write_Tz;
+
 
   -- Draw a mesure and its title
   procedure Draw_Mesure (No : in Mesure_Range) is
@@ -317,12 +325,11 @@ package body Mesu_Gra is
     end if;
     -- Title: Person, date, comment
     Title_Win.Move (No - 1, 0);
-    Title_Txt.Set ("--");
     if Mesure.Samples.Length < 2 then
       -- 0 or only 1 sample. Cannot draw this one
-      Title_Txt.Append ("(!)");
+      Title_Txt.Set ("(!)");
     else
-      Title_Txt.Append ("   ");
+      Title_Txt.Set ("   ");
     end if;
     Title_Txt.Append (
            Normal(No, 1) & ": "
@@ -332,9 +339,6 @@ package body Mesu_Gra is
          & Str_Mng.To_Printed_Time_Str(Mesure.Time) & " "
          & Mesure.Comment);
     Title_Win.Put (Title_Txt.Image);
-    if No = Tz_Drawn then
-      Write_Tz (No, True);
-    end if;
 
     -- Draw mesure
     if not Mesure_Array(No).Drawn or else Mesure.Samples.Length < 2 then
@@ -356,7 +360,7 @@ package body Mesu_Gra is
       Sec1 := Sec2;
       Bpm1 := Bpm2;
     end loop;
-
+    Write_Tz (No, Tz_Drawn = No);
   end Draw_Mesure;
 
 
@@ -448,6 +452,7 @@ package body Mesu_Gra is
     -- Redraw mesures
     for I in 1 .. Nb_Mesure loop
       Draw_Mesure (I);
+      Write_Tz (I, False);
     end loop;
     Draw_Tz;
   end Refresh;
@@ -459,22 +464,31 @@ package body Mesu_Gra is
     Mesure_No : Mesure_Range;
   begin
     Event := Console.To_Row_Col (Mouse_Evt);
-    if not Title_Win.In_Window ( (Event.Row, Event.Col)) then
+    if Tz_Win.In_Window ( (Event.Row, Event.Col)) then
+      -- Flip-flop Tz
+      Pos := Tz_Win.To_Relative ((Event.Row, Event.Col));
+      Mesure_No := Pos.Row + 1;
+      if Mesure_No <= Nb_Mesure then
+        Draw_Tz (Mesure_No);
+      end if;
+      return;
+    elsif not Title_Win.In_Window ( (Event.Row, Event.Col)) then
       return;
     end if;
+
+    -- Flip-flop of mesure
     Pos := Title_Win.To_Relative ((Event.Row, Event.Col));
     Mesure_No := Pos.Row + 1;
+    if Mesure_No > Nb_Mesure then
+      return;
+    end if;
 
-    if Pos.Col > 1 then
-      -- Click in Title (space <name>...): Flip-flop of mesure
-      Mesure_Array(Mesure_No).Drawn := not Mesure_Array(Mesure_No).Drawn;
-      Draw_Mesure (Mesure_No);
-      if not Mesure_Array(Mesure_No).Drawn then
-        Refresh;
-      end if;
-    else
-      -- Click in header (Tz, num ':'): Flip-flop of Tz
-      Draw_Tz (Mesure_No);
+    -- Click in Title (space <name>...): Flip-flop of mesure
+    Mesure_Array(Mesure_No).Drawn := not Mesure_Array(Mesure_No).Drawn;
+    Draw_Mesure (Mesure_No);
+    if not Mesure_Array(Mesure_No).Drawn then
+      -- Mesure has been hidden
+      Refresh;
     end if;
   end Handle_Click;
 
@@ -597,8 +611,10 @@ package body Mesu_Gra is
     Screen.Set_Foreground (Con_Io.Color_Of ("Black"));
     Screen.Set_Background (Con_Io.Color_Of ("Dark_Grey"));
 
-    -- Open windows for titles and position
-    Title_Win.Open (Console'Access, (0, 10), (8, 10 + Title_Length - 1) );
+    -- Open windows for Tz, titles and position
+    Tz_Win.Open (Console'Access, (0, 10), (8, 11) );
+    Tz_Win.Set_Foreground (Screen.Get_Foreground);
+    Title_Win.Open (Console'Access, (0, 13), (8, 13 + Title_Length - 1) );
     Title_Win.Set_Background (Screen.Get_Background);
     Position_Win.Open (Console'Access,
       (Console.Row_Range_Last - 3, Console.Col_Range_Last - Pos_Length),
