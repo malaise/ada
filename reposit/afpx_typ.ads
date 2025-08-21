@@ -4,7 +4,7 @@ with As.U, Unicode, Con_Io;
 package Afpx_Typ is
 
   -- Version of Afpx
-  Afpx_Version : constant Float := 11.0;
+  Afpx_Version : constant Float := 12.0;
 
   -- Files path
   Dest_Path : As.U.Asu_Us;
