@@ -231,8 +231,9 @@ package body Mesu_Gra is
     -- Help
     Screen.Move (Screen.Row_Range_Last, 5);
     Screen.Set_Foreground (Help_Color);
-    Screen.Put ("'1'-'" & Normal(Nb_Mesure, 1) & ": Show/hide"
+    Screen.Put ("'1'-'" & Normal(Nb_Mesure, 1) & "': Show/hide"
               & ",   'S'/'H': Show/hide all"
+              & ",   click on mesure title or square"
               & ",   Esc: Quit");
     -- Axes of scale
     Screen.Set_Foreground (Scale_Color);
@@ -721,11 +722,10 @@ package body Mesu_Gra is
 
     Draw_Layout;
 
-    -- Draw all mesures
-    for I in 1 .. Nb_Mesure loop
-      Mesure_Array(I).Drawn := True;
-      Draw_Mesure (I);
-    end loop;
+    -- Draw last mesure and its Tz
+    Mesure_Array(Nb_Mesure).Drawn := True;
+    Draw_Tz (Nb_Mesure);
+    Draw_Mesure (Nb_Mesure);
 
     -- Enable mouse motion events
     Console.Enable_Motion_Events (True);
