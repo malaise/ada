@@ -617,5 +617,41 @@ package body Directory is
     return Res.Image;
   end To_Bytes;
 
+  -- and reverse
+  function To_Sequence (Str : String) return String is
+    Res : As.U.Asu_Us := As.U.Tus (Str);
+    I : Positive := 1;
+    -- Image of up to 8#777#
+    Val : String (1 .. 6);
+    First : Natural;
+  begin
+    while I < Res.Length loop
+      case Res.Element (I) is
+        when '!' .. '~' =>
+          I := I + 1;
+        when Aski.Lf =>
+          Res.Replace (I, I, "\n");
+          I := I + 2;
+        when Aski.Spc =>
+          Res.Replace (I, I, "\b");
+          I := I + 2;
+        when Aski.Ht =>
+          Res.Replace (I, I, "\t");
+          I := I + 2;
+        when others =>
+          -- Put octal sequence (\xyz)
+          -- Val may have leading spaces, then 8#xy#
+          Int_Io.Put (Val, Character'Pos (Res.Element (I)), 8);
+          First := Str_Util.Locate (Val, "#");
+          if First = 0 then
+            raise Constraint_Error;
+          end if;
+          Res.Replace (I, I, '\' & Val(First + 1 .. Val'Last - 1));
+          I := Val'Last - First - 1;
+      end case;
+    end loop;
+    return Res.Image;
+  end To_Sequence;
+
 end Directory;
 

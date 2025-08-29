@@ -114,6 +114,8 @@ package Directory is
   -- Transform '\' sequences "\n", "\b", "\t", "\\",
   --   \xyz" (octal) into bytes
   function To_Bytes (Str : String) return String;
+  -- and reverse
+  function To_Sequence (Str : String) return String;
 
   -- Exceptions
   Name_Error     : exception renames Sys_Calls.Name_Error;

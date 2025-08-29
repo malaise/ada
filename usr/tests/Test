@@ -1494,6 +1494,29 @@ EOF
   echo "OK"
 fi
 
+# t_octal
+if `match $arg t_octal` ; then
+  title t_octal
+  echo 'Vélo à la maison' | try t_octal
+  cat << EOF >exp
+Vélo à la maison
+V\303\251lo\b\303\240\bla\bmaison
+Vélo à la maison
+EOF
+  comp err nul
+  comp out exp
+
+  echo 'VeloALMaison' | try t_octal
+  cat << EOF >exp
+VeloALMaison
+VeloALMaison
+VeloALMaison
+EOF
+  comp err nul
+  comp out exp
+  echo "OK"
+fi
+
 # t_output_flows
 if `match $arg t_output_flows` ; then
   title t_output_flows
