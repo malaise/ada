@@ -699,6 +699,7 @@ package body Git_If is
       else
         File.File := Line.Uslice (Tab1 + 1, Tab2 - 1);
       end if;
+      Parse_Filename (File.File);
       Files.Insert (File);
       Logger.Log (Debug1, "  Block got: " & File.Status
                       & " " & File.File.Image);
