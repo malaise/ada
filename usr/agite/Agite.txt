@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V42.15
+V42.16
 
 General purpose
 ---------------
@@ -2453,8 +2453,8 @@ branch by calling 'git cherry <target> <reference>',
 * A function cherry picks some commits by calling 'git cherry-pick
 --allow-empty [ --ff | --no-commit ] <HSA1>',
 
-* A function lists the references of a given branch by calling 'git reflog
---no-abbrev-commit --date=iso <branch>',
+* A function lists the references of a given branch by calling 'git log
+-g --no-abbrev-commit --date=iso <branch>',
 
 * A function deletes a given reference by calling 'git reflog delete --rewrite
 <reference>'.
