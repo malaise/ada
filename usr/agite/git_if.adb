@@ -2204,7 +2204,7 @@ Logger.Log (Debug1, "  Block date >" & Line.Slice (9, Line.Length - 6) & "<");
           Logger.Log (Debug1, "Reflog Id " & Ref_Entry.Id.Image);
 
           -- Replace first word of comment by 2 letters
-          -- Co, Ch, Cp, Re, Me, Pu
+          -- Co, Ch, Cp, Re, Me, Pu, Ff, Cl
           Ref_Entry.Comment := Ref_Data(2);
           Use_Log := False;
           I := Ref_Entry.Comment.Locate (":");
@@ -2231,14 +2231,15 @@ Logger.Log (Debug1, "  Block date >" & Line.Slice (9, Line.Length - 6) & "<");
           elsif Ref_Entry.Comment.Slice (1, I) = "clone:" then
             I := I + 1;
             Sub := "Cl";
-          elsif Ref_Entry.Comment.Slice (1, I) = "pull"
-          and then Ref_Entry.Comment.Length > 15
-          and then Ref_Entry.Comment.Slice (Ref_Entry.Comment.Length - 14,
+          elsif Ref_Entry.Comment.Slice (1, 4) = "pull"
+          and then Ref_Entry.Comment.Length > 14
+          and then Ref_Entry.Comment.Slice (Ref_Entry.Comment.Length - 13,
                                             Ref_Entry.Comment.Length)
               = ": Fast-forward" then
             -- "pull" ... ": Fast-forward"
-            I := 0;
+            I := Ref_Entry.Comment.Length;
             Sub := "Ff";
+            Use_Log := True;
           elsif I > 9 and then Ref_Entry.Comment.Slice (1, 7) = "commit " then
             I := 7;
             Sub := "Co";
