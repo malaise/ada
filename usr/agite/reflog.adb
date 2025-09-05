@@ -200,7 +200,7 @@ package body Reflog is
   procedure List_Change (Dummy_Action : in Afpx.List_Change_List;
                          Dummy_Status : in Afpx.List_Status_Rec) is
     Position : Afpx.Line_List_Mng.Ll_Positive;
-    Activate : Boolean;
+    Protect : Boolean;
   begin
     -- Disable action buttons if no Id (Git_If aborted the list)
     if Afpx.Line_List.Is_Empty then
@@ -208,13 +208,13 @@ package body Reflog is
     end if;
     Position := Afpx.Line_List.Get_Position;
     Refs.Move_At (Position);
-    Activate := not Refs.Access_Current.Id.Is_Null;
-    Afpx.Set_Field_Activation (Afpx_Xref.Reflog.Detail, Activate);
-    Afpx.Set_Field_Activation (Afpx_Xref.Reflog.Checkout, Activate);
-    Afpx.Set_Field_Activation (Afpx_Xref.Reflog.Mark, Activate);
-    Afpx.Set_Field_Activation (Afpx_Xref.Reflog.Search, Activate);
-    Afpx.Set_Field_Activation (Afpx_Xref.Reflog.Reset, Activate);
-    Afpx.Set_Field_Activation (Afpx_Xref.Reflog.Delete, Activate);
+    Protect := Refs.Access_Current.Id.Is_Null;
+    Afpx.Utils.Protect_Field (Afpx_Xref.Reflog.Detail, Protect);
+    Afpx.Utils.Protect_Field (Afpx_Xref.Reflog.Checkout, Protect);
+    Afpx.Utils.Protect_Field (Afpx_Xref.Reflog.Mark, Protect);
+    Afpx.Utils.Protect_Field (Afpx_Xref.Reflog.Search, Protect);
+    Afpx.Utils.Protect_Field (Afpx_Xref.Reflog.Reset, Protect);
+    Afpx.Utils.Protect_Field (Afpx_Xref.Reflog.Delete, Protect);
   end List_Change;
 
   -- Handle the reflogs
