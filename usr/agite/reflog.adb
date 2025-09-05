@@ -196,6 +196,27 @@ package body Reflog is
     return Result;
   end Do_Action;
 
+    -- Update the list status
+  procedure List_Change (Dummy_Action : in Afpx.List_Change_List;
+                         Dummy_Status : in Afpx.List_Status_Rec) is
+    Position : Afpx.Line_List_Mng.Ll_Positive;
+    Activate : Boolean;
+  begin
+    -- Disable action buttons if no Id (Git_If aborted the list)
+    if Afpx.Line_List.Is_Empty then
+      return;
+    end if;
+    Position := Afpx.Line_List.Get_Position;
+    Refs.Move_At (Position);
+    Activate := not Refs.Access_Current.Id.Is_Null;
+    Afpx.Set_Field_Activation (Afpx_Xref.Reflog.Detail, Activate);
+    Afpx.Set_Field_Activation (Afpx_Xref.Reflog.Checkout, Activate);
+    Afpx.Set_Field_Activation (Afpx_Xref.Reflog.Mark, Activate);
+    Afpx.Set_Field_Activation (Afpx_Xref.Reflog.Search, Activate);
+    Afpx.Set_Field_Activation (Afpx_Xref.Reflog.Reset, Activate);
+    Afpx.Set_Field_Activation (Afpx_Xref.Reflog.Delete, Activate);
+  end List_Change;
+
   -- Handle the reflogs
   function Handle (Root : String; Branch: String) return Boolean  is
     Ptg_Result : Afpx.Result_Rec;
@@ -219,8 +240,26 @@ package body Reflog is
 
     -- Main loop
     loop
+      -- Deactivate actions if empty list
+      Afpx.Set_Field_Activation (Afpx_Xref.Reflog.Hash,
+                                 not Afpx.Line_List.Is_Empty);
+      Afpx.Set_Field_Activation (Afpx_Xref.Reflog.Detail,
+                                 not Afpx.Line_List.Is_Empty);
+      Afpx.Set_Field_Activation (Afpx_Xref.Reflog.Checkout,
+                                 not Afpx.Line_List.Is_Empty);
+      Afpx.Set_Field_Activation (Afpx_Xref.Reflog.Mark,
+                                 not Afpx.Line_List.Is_Empty);
+      Afpx.Set_Field_Activation (Afpx_Xref.Reflog.Search,
+                                 not Afpx.Line_List.Is_Empty);
+      Afpx.Set_Field_Activation (Afpx_Xref.Reflog.Reset,
+                                 not Afpx.Line_List.Is_Empty);
+      Afpx.Set_Field_Activation (Afpx_Xref.Reflog.Delete,
+                                 not Afpx.Line_List.Is_Empty);
+
+      -- Put then get
       Afpx.Put_Then_Get (Get_Handle, Ptg_Result,
-                         Right_Select => True);
+                         Right_Select => True,
+                         List_Change_Cb => List_Change'Access);
 
       case Ptg_Result.Event is
         when Afpx.Keyboard =>

@@ -319,6 +319,7 @@ package Git_If is
   subtype Reflog_List is Reflog_Mng.List_Type;
 
   -- List the reflog
+  -- A last record with no Id indicates that the listing was aborted there
   procedure List_Reflog (Branch : in String; Reflog : in out Reflog_List);
 
   -- Delete a reference

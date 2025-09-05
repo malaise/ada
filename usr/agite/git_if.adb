@@ -2227,9 +2227,11 @@ package body Git_If is
         Nb_Read := Nb_Read + 1;
       exception
         when others =>
-          -- We stop here
+          -- We cannot continue numbering, so we stop here
           Basic_Proc.Put_Line_Error ("git reflog invalid output: "
                                  & Line.Image);
+          -- Append a specific "empty" record
+          Reflog.Insert ((Comment => As.U.Tus ("<< Aborted >>"), others => <>));
           exit;
       end;
       exit when Done;
