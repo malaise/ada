@@ -104,10 +104,24 @@ package body Utils is
                           "%Y-%m-%d %H:%M:%S");
   end Get_Current_Date;
 
-  -- "YYYY-MM-DD HH:MM:SS" -> "YYMMDD-HH:MM "
+  -- "YYYY-MM-DD HH:MM:SS" -> "YYMMDD-HH:MM"
   function Image (Date : Git_If.Iso_Date) return String is
     (Date(03 .. 04) & Date(06 .. 07) & Date(09 .. 10) & '-'
    & Date(12 .. 13) & Date(15 .. 16));
+
+  -- Scan a date, either "YYYY-MM-DD HH:MM:SS" or "Day Mon i[j] HH:MM:SS YYYY"
+  function Scan (Str : String) return Git_If.Iso_Date is
+    Date : Date_Text.Date_Rec;
+  begin
+    if Str'Length = 19 and then Str(Str'First) in '0' .. '9' then
+      -- Iso format "YYYY-MM-DD HH:MM:SS", keep it
+      return Str;
+    else
+      -- Human format "Day Mon i[j] HH:MM:SS YYYY", skip Day and translate Mon
+      Date := Date_Text.Scan (Str, "%.%.%. %b %D %H:%M:%S %Y");
+      return Date_Text.Put (Date, "%Y-%m-%d %H:%M:%S");
+    end if;
+  end Scan;
 
   package body Chrono is
     -- The Chrono

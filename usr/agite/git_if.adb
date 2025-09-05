@@ -587,11 +587,19 @@ package body Git_If is
     Assert (Line.Slice (1, 8) = "Author: ");
     Logger.Log (Debug1, "  Block skip " & Line.Image);
 
-    -- Date:   YYYY-MM-DD HH:MM:SS ...
+    -- Date:   YYYY-MM-DD HH:MM:SS +ijkl
+    -- or (if not date=iso, for reflog) Date:   Day Mon i[j] HH:MM:SS YYYY +ijkl
     Flow.Read (Line, Moved => Moved);
     Assert (Line.Length >= 27);
     Assert (Line.Slice (1, 8) = "Date:   ");
-    Date := Line.Slice (9, 27);
+    -- Scan date after "Date:   " and before " +ijkl"
+    begin
+Logger.Log (Debug1, "  Block date >" & Line.Slice (9, Line.Length - 6) & "<");
+      Date := Utils.Scan (Line.Slice (9, Line.Length - 6));
+    exception
+      when Constraint_Error =>
+        raise Git_Log_Error;
+    end;
     Logger.Log (Debug1, "  Block got Date: " & Date);
     if not Moved then
       -- No comment and last block
@@ -2145,11 +2153,12 @@ package body Git_If is
   begin
     Reflog.Delete_List;
     -- Git log -g --no-abbrev-commit
+    -- Cannot use "--date=iso" because this leads to the Id to be date
+    --  which cannot be uset for delete
     Cmd.Set ("git");
     Cmd.Cat ("log");
     Cmd.Cat ("-g");
     Cmd.Cat ("--no-abbrev-commit");
-    Cmd.Cat ("--date=iso");
     Cmd.Cat (Branch);
     Execute (Cmd, Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
@@ -2168,7 +2177,7 @@ package body Git_If is
       Ref_Data := (others => As.U.Asu_Null);
       Read_Block (Out_Flow_1.List, False, Ref_Entry.Hash, Log_Entry.Merged,
                   Ref_Entry.Date, Log_Entry.Comment, Ref_Data, null, Done);
-      -- Parse "<Hash> <branch>@{<date time zone>}: <Comment>"
+      -- Parse "<Hash> <branch>@{<Id>}: <Comment>"
       declare
         I, J : Natural;
         Use_Log : Boolean;
@@ -2176,7 +2185,7 @@ package body Git_If is
         Sub : String (1 .. 2);
       begin
         Line := Ref_Data(1);
-        -- "<branch>@{" <date time zone> "}:"
+        -- "<branch>@{" <Id> "}:"
         I := Str_Util.Locate (Line.Image, "@{");
         if I = 0 then
           -- Not a reflog
@@ -2185,12 +2194,12 @@ package body Git_If is
           Ref_Entry.Comment.Set ("--: ");
           Use_Log := True;
         else
-          J := Str_Util.Locate (Line.Image, "}");
+          J := Str_Util.Locate (Line.Image, "}", I + 1);
           if J = 0 then
             raise Constraint_Error;
           end if;
 
-          -- Keep head and extract <branch>@{<full_date>]
+          -- Keep <branch>@{<Id>]
           Ref_Entry.Id := Line.Uslice (1, J);
           Logger.Log (Debug1, "Reflog Id " & Ref_Entry.Id.Image);
 
@@ -2219,6 +2228,17 @@ package body Git_If is
           elsif Ref_Entry.Comment.Slice (1, I) = "merge:" then
             I := I + 1;
             Sub := "Me";
+          elsif Ref_Entry.Comment.Slice (1, I) = "clone:" then
+            I := I + 1;
+            Sub := "Cl";
+          elsif Ref_Entry.Comment.Slice (1, I) = "pull"
+          and then Ref_Entry.Comment.Length > 15
+          and then Ref_Entry.Comment.Slice (Ref_Entry.Comment.Length - 14,
+                                            Ref_Entry.Comment.Length)
+              = ": Fast-forward" then
+            -- "pull" ... ": Fast-forward"
+            I := 0;
+            Sub := "Ff";
           elsif I > 9 and then Ref_Entry.Comment.Slice (1, 7) = "commit " then
             I := 7;
             Sub := "Co";
