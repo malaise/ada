@@ -1,5 +1,5 @@
 with Ada.Exceptions;
-with Environ, Basic_Proc, Many_Strings, Command, Directory, Dir_Mng, Str_Util,
+with Environ, Many_Strings, Command, Directory, Dir_Mng, Str_Util,
      Aski, Images, Long_Longs, Reg_Exp, Afpx, Trace.Loggers;
 with Utils;
 package body Git_If is
@@ -98,14 +98,14 @@ package body Git_If is
     Execute (Cmd, Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
-      Basic_Proc.Put_Line_Error ("git --version: " & Err_Flow_1.Str.Image);
+      Logger.Log_Error ("git --version: " & Err_Flow_1.Str.Image);
       raise No_Git;
     end if;
     -- Remove tailing line feed - Check and remove heading string
     Out_Flow_3.Str.Delete (Out_Flow_3.Str.Length,
                            Out_Flow_3.Str.Length);
     if Out_Flow_3.Str.Slice (1, 12) /= "git version " then
-      Basic_Proc.Put_Line_Error ("git --version: " & Out_Flow_3.Str.Image);
+      Logger.Log_Error ("git --version: " & Out_Flow_3.Str.Image);
       raise No_Git;
     end if;
     Out_Flow_3.Str.Delete (1, 12);
@@ -116,7 +116,7 @@ package body Git_If is
     if D1 <= 1 or else D2 <= D1 + 1
     or else D2 = Out_Flow_3.Str.Length then
       -- Incorrect format
-      Basic_Proc.Put_Line_Error ("git --version: " & Out_Flow_3.Str.Image);
+      Logger.Log_Error ("git --version: " & Out_Flow_3.Str.Image);
       raise No_Git;
     end if;
     if D3 = 0 then
@@ -129,7 +129,7 @@ package body Git_If is
     return Result;
   exception
     when Error:others =>
-      Basic_Proc.Put_Line_Error ("git --version => "
+      Logger.Log_Error ("git --version => "
           & Ada.Exceptions.Exception_Name (Error));
       raise No_Git;
   end Get_Version;
@@ -171,7 +171,7 @@ package body Git_If is
     Root.Append ("/");
     -- Compile regex "commit <Hash>"
     if not Commit_Cmp.Compile ("^" & Commit_Str & Hash_Txt & "$") then
-      Basic_Proc.Put_Line_Error ("Regexp compile ""commit <Hash>"" error");
+      Logger.Log_Error ("Regexp compile ""commit <Hash>"" error");
       raise No_Git;
     end if;
   end Get_Root_And_Path;
@@ -320,7 +320,7 @@ package body Git_If is
     Execute (Cmd, Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
-      Basic_Proc.Put_Line_Error ("git ls-files: " & Err_Flow_1.Str.Image);
+      Logger.Log_Error ("git ls-files: " & Err_Flow_1.Str.Image);
       Init_List;
       return;
     end if;
@@ -505,11 +505,11 @@ package body Git_If is
   end Is_Modified;
 
   -- Assert
-  Log_Error : exception;
+  Git_Log_Error : exception;
   procedure Assert (Cond : in Boolean) is
   begin
     if not Cond then
-      raise Log_Error;
+      raise Git_Log_Error;
     end if;
   end Assert;
 
@@ -549,7 +549,7 @@ package body Git_If is
     Moved : Boolean;
     File : Commit_Entry_Rec;
   begin
-    Logger.Log (Debug1, "  Block length: " & Integer'Image (Flow.List_Length));
+    Logger.Log (Debug1, "  Read Block at: " & Flow.Get_Position'Img);
     Comments := (others => As.U.Asu_Null);
     -- commit <hash> [ (from <hash>) ]
     Flow.Read (Line);
@@ -720,9 +720,11 @@ package body Git_If is
     Logger.Log (Debug1, "  Block done.");
   exception
     when others =>
-      Basic_Proc.Put_Line_Error ("At line "
+      Logger.Log_Error ("Read block at line "
                                & Positive'Image (Flow.Get_Position));
-      raise Log_Error;
+      Logger.Log_Error ("Read block content "
+                               & Line.Image);
+      raise Git_Log_Error;
   end Read_Block;
 
   procedure Set (To : out Log_Entry_Rec; Val : in Log_Entry_Rec) is
@@ -734,7 +736,7 @@ package body Git_If is
   -- Stop at Max if not 0
   -- Set --sparse (when on root) to log full reposit history (including merges)
   -- Returns wether the end of list is reached at or before Max
-  -- May raise anonymous exception Log_Error
+  -- May raise anonymous exception Git_Log_Error
   procedure List_Log (Branch, Path : in String;
                       From_Rev : in String;
                       Max : in Log_Mng.Ll_Natural;
@@ -780,7 +782,7 @@ package body Git_If is
     Execute (Cmd, Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
-      Basic_Proc.Put_Line_Error ("git log: " & Err_Flow_1.Str.Image);
+      Logger.Log_Error ("git log: " & Err_Flow_1.Str.Image);
       return;
     end if;
 
@@ -844,7 +846,7 @@ package body Git_If is
 
     -- Handle error
     if Exit_Code /= 0 then
-      Basic_Proc.Put_Line_Error ("git log tree: " & Err_Flow_1.Str.Image);
+      Logger.Log_Error ("git log tree: " & Err_Flow_1.Str.Image);
       return;
     end if;
 
@@ -912,7 +914,7 @@ package body Git_If is
     Execute (Cmd, Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
-      Basic_Proc.Put_Line_Error ("git log1: " & Err_Flow_1.Str.Image);
+      Logger.Log_Error ("git log1: " & Err_Flow_1.Str.Image);
       return No_Hash;
     end if;
 
@@ -943,7 +945,7 @@ package body Git_If is
     Execute (Cmd, Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
-      Basic_Proc.Put_Line_Error ("git log2: " & Err_Flow_1.Str.Image);
+      Logger.Log_Error ("git log2: " & Err_Flow_1.Str.Image);
       return;
     end if;
 
@@ -995,7 +997,7 @@ package body Git_If is
     Execute (Cmd, Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
-      Basic_Proc.Put_Line_Error ("git log3: " & Err_Flow_1.Str.Image);
+      Logger.Log_Error ("git log3: " & Err_Flow_1.Str.Image);
       return;
     end if;
 
@@ -1023,7 +1025,7 @@ package body Git_If is
     Execute (Cmd, Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
-      Basic_Proc.Put_Line_Error ("git remote: " & Err_Flow_1.Str.Image);
+      Logger.Log_Error ("git remote: " & Err_Flow_1.Str.Image);
       return;
     end if;
 
@@ -1051,7 +1053,7 @@ package body Git_If is
     -- Handle error
     if Exit_Code /= 0 then
       if Log_Error then
-        Basic_Proc.Put_Line_Error ("git show: " & Err_Flow_1.Str.Image);
+        Logger.Log_Error ("git show1: " & Err_Flow_1.Str.Image);
       end if;
       return False;
     end if;
@@ -1114,7 +1116,7 @@ package body Git_If is
     Execute (Cmd, Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
-      Basic_Proc.Put_Line_Error ("git checkout: " & Err_Flow_1.Str.Image);
+      Logger.Log_Error ("git checkout: " & Err_Flow_1.Str.Image);
     end if;
   end Do_Revert;
 
@@ -1201,7 +1203,7 @@ package body Git_If is
     Execute (Cmd, Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
-      Basic_Proc.Put_Line_Error ("git add: " & Err_Flow_1.Str.Image);
+      Logger.Log_Error ("git add: " & Err_Flow_1.Str.Image);
     end if;
   end Do_Add;
 
@@ -1216,7 +1218,7 @@ package body Git_If is
     Execute (Cmd, Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
-      Basic_Proc.Put_Line_Error ("git rm: " & Err_Flow_1.Str.Image);
+      Logger.Log_Error ("git rm: " & Err_Flow_1.Str.Image);
     end if;
   end Do_Rm;
 
@@ -1376,7 +1378,7 @@ package body Git_If is
     Execute (Cmd, Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
-      Basic_Proc.Put_Line_Error ("git branch " & Opt.Image
+      Logger.Log_Error ("git branch " & Opt.Image
                                & ": " & Err_Flow_1.Str.Image);
       return;
     end if;
@@ -1417,7 +1419,7 @@ package body Git_If is
     Execute (Cmd, Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
-      Basic_Proc.Put_Line_Error ("git ls-remote --heads " & Reference
+      Logger.Log_Error ("git ls-remote --heads " & Reference
                                & ": " & Err_Flow_1.Str.Image);
       return;
     end if;
@@ -1547,7 +1549,7 @@ package body Git_If is
     Cmd.Cat ("-vv");
     Execute (Cmd, Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
     if Exit_Code /= 0 then
-      Basic_Proc.Put_Line_Error ("git branch -vv: "
+      Logger.Log_Error ("git branch -vv: "
                                & Err_Flow_1.Str.Image);
       return "";
     end if;
@@ -1561,7 +1563,7 @@ package body Git_If is
     -- * remote is '['<name>[: ahead x]']'
     Crit.Compile (Ok, "^[* ] (\([^)]*\)|[^ ]+) +[0-9a-f]{7,8} (\[[^]]+\])?.*");
     if not Ok  then
-      Basic_Proc.Put_Line_Error ("Remote_Branch regex error");
+      Logger.Log_Error ("Remote_Branch regex error");
       return "";
     end if;
     Out_Flow_1.List.Rewind;
@@ -1625,7 +1627,7 @@ package body Git_If is
     Execute (Cmd, Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
-      Basic_Proc.Put_Line_Error ("git config user.name: " & Err_Flow_1.Str.Image);
+      Logger.Log_Error ("git config user.name: " & Err_Flow_1.Str.Image);
       return "";
     end if;
     -- Read first line
@@ -1642,7 +1644,7 @@ package body Git_If is
     Execute (Cmd, Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
-      Basic_Proc.Put_Line_Error ("git config user.email: "
+      Logger.Log_Error ("git config user.email: "
                                & Err_Flow_1.Str.Image);
       return "";
     end if;
@@ -1678,7 +1680,7 @@ package body Git_If is
     Execute (Cmd, Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
-      Basic_Proc.Put_Line_Error ("git stash list: " & Err_Flow_1.Str.Image);
+      Logger.Log_Error ("git stash list: " & Err_Flow_1.Str.Image);
       return;
     end if;
     -- Read lines
@@ -1725,7 +1727,7 @@ package body Git_If is
         Stashes.Insert (Stash);
       exception
         when Error:others =>
-          Basic_Proc.Put_Line_Error ("Error "
+          Logger.Log_Error ("Error "
               & Ada.Exceptions.Exception_Name (Error)
               & " when parsing stash " & Line.Image);
           Stashes.Delete_List;
@@ -1873,6 +1875,7 @@ package body Git_If is
   end Set;
 
   -- Internal: read tag Tag.Name and fill Tag
+  Read_Tag_Error : exception;
   procedure Read_Tag (Tag : in out Tag_Entry_Rec) is
     Cmd : Many_Strings.Many_String;
     Line : As.U.Asu_Us;
@@ -1900,13 +1903,14 @@ package body Git_If is
     Execute (Cmd, Out_Flow_2'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
-      Basic_Proc.Put_Line_Error ("git show: " & Err_Flow_1.Str.Image);
+      Logger.Log_Error ("git show2: " & Err_Flow_1.Str.Image);
       return;
     end if;
     -- See if tag is annoted : first line of "show " is "tag <name>"
     --  otherwise it is a commit (starts with "commit <hash>")
     if Out_Flow_2.List.Is_Empty then
-      raise Log_Error;
+       -- We catch it
+      raise Read_Tag_Error;
     end if;
     Out_Flow_2.List.Rewind;
     Out_Flow_2.List.Read (Line);
@@ -1935,7 +1939,7 @@ package body Git_If is
       -- Read 1st line of Comment
       Out_Flow_2.List.Read (Tag.Comment);
     else
-      Basic_Proc.Put_Line_Error ("Unrecognized tag " & Tag.Name.Image);
+      Logger.Log_Error ("Unrecognized tag " & Tag.Name.Image);
       return;
     end if;
 
@@ -1946,20 +1950,20 @@ package body Git_If is
     end loop;
     Get_Hash;
   exception
-    when Log_Error =>
+    when Read_Tag_Error =>
       if Out_Flow_2.List.Is_Empty then
-        Basic_Proc.Put_Line_Error ("git show " & Tag.Name.Image
+        Logger.Log_Error ("git show " & Tag.Name.Image
                                  & ": empty flow");
       else
-        Basic_Proc.Put_Line_Error ("git show " & Tag.Name.Image & ": At line "
+        Logger.Log_Error ("git show " & Tag.Name.Image & ": At line "
                               & Positive'Image (Out_Flow_2.List.Get_Position));
       end if;
       raise;
     when Command.Res_Mng.Dyn_List.Not_In_List =>
       -- Commit line not found
-      Basic_Proc.Put_Line_Error ("Unrecognized tag " & Tag.Name.Image);
+      Logger.Log_Error ("Unrecognized tag " & Tag.Name.Image);
     when others =>
-      Basic_Proc.Put_Line_Error ("git show " & Tag.Name.Image);
+      Logger.Log_Error ("git show " & Tag.Name.Image);
       raise;
   end Read_Tag;
 
@@ -1981,7 +1985,7 @@ package body Git_If is
     Execute (Cmd, Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
-      Basic_Proc.Put_Line_Error ("git tag"
+      Logger.Log_Error ("git tag"
         & (if Template /= "" then " -l " & Pt (Template)
            else "")
         & ": " & Err_Flow_1.Str.Image);
@@ -2010,7 +2014,7 @@ package body Git_If is
     Execute (Cmd, Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
-      Basic_Proc.Put_Line_Error ("git tag -d " & Tag
+      Logger.Log_Error ("git tag -d " & Tag
                                  & ": " & Err_Flow_1.Str.Image);
       return;
     end if;
@@ -2060,7 +2064,7 @@ package body Git_If is
     Execute (Cmd, Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
-      Basic_Proc.Put_Line_Error ("git cherry: "
+      Logger.Log_Error ("git cherry: "
                                & Err_Flow_1.Str.Image);
       return;
     end if;
@@ -2075,7 +2079,7 @@ package body Git_If is
         elsif Line.Element (1) = '+' then
           Commit.Merged := False;
         else
-          Basic_Proc.Put_Line_Error ("git cherry unexpected output : "
+          Logger.Log_Error ("git cherry unexpected output: "
                                    & Line.Image);
           Commits.Delete_List;
           return;
@@ -2128,14 +2132,16 @@ package body Git_If is
     To := Val;
   end Set;
 
+  -- List the reflog
+  -- Entries without Reflog (e.g. last of the list) have no Id
+  -- In fact, (because we use "git log -g --date=iso") the Id is the full
+  --  date (e.g 2024-08-13 12:17:15 +0000), used for delete
   procedure List_Reflog (Branch : in String; Reflog : in out Reflog_List) is
     Cmd : Many_Strings.Many_String;
     Log_Entry : Log_Entry_Rec;
     Ref_Data : Comment_2;
     Ref_Entry : Reflog_Entry_Rec;
-    Nb_Read : Natural;
     Done : Boolean;
-    use type As.U.Asu_Us;
   begin
     Reflog.Delete_List;
     -- Git log -g --no-abbrev-commit
@@ -2148,7 +2154,7 @@ package body Git_If is
     Execute (Cmd, Out_Flow_1'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
-      Basic_Proc.Put_Line_Error ("git reflog: " & Err_Flow_1.Str.Image);
+      Logger.Log_Error ("git reflog: " & Err_Flow_1.Str.Image);
       return;
     end if;
     -- Read lines
@@ -2158,14 +2164,13 @@ package body Git_If is
 
     -- Encode entries
     Out_Flow_1.List.Rewind;
-    Nb_Read := 0;
     loop
       Ref_Data := (others => As.U.Asu_Null);
       Read_Block (Out_Flow_1.List, False, Ref_Entry.Hash, Log_Entry.Merged,
                   Ref_Entry.Date, Log_Entry.Comment, Ref_Data, null, Done);
       -- Parse "<Hash> <branch>@{<date time zone>}: <Comment>"
       declare
-        I : Natural;
+        I, J : Natural;
         Use_Log : Boolean;
         Line : As.U.Asu_Us;
         Sub : String (1 .. 2);
@@ -2174,61 +2179,72 @@ package body Git_If is
         -- "<branch>@{" <date time zone> "}:"
         I := Str_Util.Locate (Line.Image, "@{");
         if I = 0 then
-          raise Constraint_Error;
-        end if;
-        -- Keep head and build num
-        Ref_Entry.Id := Line.Uslice (1, I + 1)
-                & Images.Integer_Image (Nb_Read) & "}";
-        Logger.Log (Debug1, "  Reflog Id " & Ref_Entry.Id.Image);
-
-        -- Replace first word of comment by 2 letters
-        -- Co, Ch, Cp, Re, Me, Pu
-        Ref_Entry.Comment := Ref_Data(2);
-        Use_Log := False;
-        I := Ref_Entry.Comment.Locate (":");
-        if I = 0 and then (Ref_Entry.Comment.Image = "update by push"
-                           or else Ref_Entry.Comment.Image = "push") then
-          I := Ref_Entry.Comment.Length;
-          Sub := "Pu";
+          -- Not a reflog
+          Logger.Log (Debug1, "Reflog no Id");
+          Ref_Entry.Id.Set_Null;
+          Ref_Entry.Comment.Set ("--: ");
           Use_Log := True;
-        elsif Ref_Entry.Comment.Slice (1, I) = "commit:" then
-          I := I + 1;
-          Sub := "Co";
-        elsif Ref_Entry.Comment.Slice (1, I) = "checkout:" then
-          I := I + 1;
-          Sub := "Ck";
-        elsif Ref_Entry.Comment.Slice (1, I) = "cherry-pick:" then
-          I := I + 1;
-          Sub := "Cp";
-        elsif Ref_Entry.Comment.Slice (1, I) = "reset:" then
-          I := I + 1;
-          Sub := "Re";
-        elsif Ref_Entry.Comment.Slice (1, I) = "merge:" then
-          I := I + 1;
-          Sub := "Me";
-        elsif I > 9 and then Ref_Entry.Comment.Slice (1, 7) = "commit " then
-          I := 7;
-          Sub := "Co";
-        elsif I > 8 and then Ref_Entry.Comment.Slice (1, 6) = "merge " then
-          I := 6;
-          Sub := "Me";
         else
-           I := 0;
+          J := Str_Util.Locate (Line.Image, "}");
+          if J = 0 then
+            raise Constraint_Error;
+          end if;
+
+          -- Keep head and extract <branch>@{<full_date>]
+          Ref_Entry.Id := Line.Uslice (1, J);
+          Logger.Log (Debug1, "Reflog Id " & Ref_Entry.Id.Image);
+
+          -- Replace first word of comment by 2 letters
+          -- Co, Ch, Cp, Re, Me, Pu
+          Ref_Entry.Comment := Ref_Data(2);
+          Use_Log := False;
+          I := Ref_Entry.Comment.Locate (":");
+          if I = 0 and then (Ref_Entry.Comment.Image = "update by push"
+                             or else Ref_Entry.Comment.Image = "push") then
+            I := Ref_Entry.Comment.Length;
+            Sub := "Pu";
+            Use_Log := True;
+          elsif Ref_Entry.Comment.Slice (1, I) = "commit:" then
+            I := I + 1;
+            Sub := "Co";
+          elsif Ref_Entry.Comment.Slice (1, I) = "checkout:" then
+            I := I + 1;
+            Sub := "Ck";
+          elsif Ref_Entry.Comment.Slice (1, I) = "cherry-pick:" then
+            I := I + 1;
+            Sub := "Cp";
+          elsif Ref_Entry.Comment.Slice (1, I) = "reset:" then
+            I := I + 1;
+            Sub := "Re";
+          elsif Ref_Entry.Comment.Slice (1, I) = "merge:" then
+            I := I + 1;
+            Sub := "Me";
+          elsif I > 9 and then Ref_Entry.Comment.Slice (1, 7) = "commit " then
+            I := 7;
+            Sub := "Co";
+          elsif I > 8 and then Ref_Entry.Comment.Slice (1, 6) = "merge " then
+            I := 6;
+            Sub := "Me";
+          else
+             I := 0;
+          end if;
+          if I /= 0 then
+            Ref_Entry.Comment.Replace (1, I, Sub & ": ");
+          end if;
+         -- reflog or not
         end if;
-        if I /= 0 then
-          Ref_Entry.Comment.Replace (1, I, Sub & ": ");
-        end if;
+
+        -- Append original comment?
         if Use_Log then
           Ref_Entry.Comment.Append (Log_Entry.Comment(1));
         end if;
 
         -- Done
         Reflog.Insert (Ref_Entry);
-        Nb_Read := Nb_Read + 1;
       exception
         when others =>
           -- We cannot continue numbering, so we stop here
-          Basic_Proc.Put_Line_Error ("git reflog invalid output: "
+          Logger.Log_Error ("git reflog invalid output: "
                                  & Line.Image);
           -- Append a specific "empty" record
           Reflog.Insert ((Comment => As.U.Tus ("<< Aborted >>"), others => <>));
@@ -2253,7 +2269,7 @@ package body Git_If is
     Execute (Cmd, Out_Flow_3'Access, Err_Flow_1'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
-      Basic_Proc.Put_Line_Error ("git reflog  delete error : " & Err_Flow_1.Str.Image);
+      Logger.Log_Error ("git reflog delete: " & Err_Flow_1.Str.Image);
     end if;
   end Delete_Ref;
 

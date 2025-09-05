@@ -96,7 +96,7 @@ package Git_If is
   -- Set --sparse (when on root) to log full reposit history (including merges)
   -- Set Extra to the status of last file of the commit
   -- Returns wether the end of list is reached at or before Max
-  -- May raise anonymous exception Log_Error
+  -- May raise anonymous exception Git_Log_Error
   procedure List_Log (Branch, Path : in String;
                       From_Rev : in String;
                       Max : in Log_Mng.Ll_Natural;
@@ -136,7 +136,7 @@ package Git_If is
   subtype Commit_List is Commit_File_Mng.List_Type;
 
   -- List detailed info on a commit
-  -- May raise anonymous exception Log_Error
+  -- May raise anonymous exception GitLog_Error
   procedure List_Commit (Rev_Tag : in String;
                          Hash : out Git_Hash;
                          Merged : out Boolean;
@@ -319,7 +319,9 @@ package Git_If is
   subtype Reflog_List is Reflog_Mng.List_Type;
 
   -- List the reflog
-  -- A last record with no Id indicates that the listing was aborted there
+  -- Entries without Reflog (e.g. last of the list) have no Id
+  -- In fact, (because we use "git log -g --date=iso") the Id is the full
+  --  date (e.g 2024-08-13 12:17:15 +0000), used for delete
   procedure List_Reflog (Branch : in String; Reflog : in out Reflog_List);
 
   -- Delete a reference
