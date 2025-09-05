@@ -35,7 +35,8 @@ begin
         &  (if Strict then " Strict" else ""));
   exception
     when Date_Text.Unknown_Length =>
-      null;
+      Basic_Proc.Put_Line_Output (
+        "Scan: " &  (if Strict then " Strict" else ""));
     when Date_Text.Invalid_Format =>
       Basic_Proc.Put_Line_Error ("ERROR: Invalid scan format: "
                                & Scan_Format.Image & ".");

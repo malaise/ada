@@ -7,7 +7,7 @@ package body Date_Text is
 
   -- Maps fields of Date_Rec from/to indexes
   package Indexes is
-    -- Indexes of fields: 1 is year .. 7 is microseconds,
+    -- Indexes of fields: 1 is year .. 8 is microseconds,
     --  0 raises Constraint_Error
     subtype Any_Index_Range is Natural range 0 .. 8;
     subtype Index_Range is Positive range 1 .. Any_Index_Range'Last;
@@ -106,7 +106,7 @@ package body Date_Text is
   -- A field is either of kind num, enum or char
   type Field_Kind is (Num, Enum, Char);
   -- How many fields are defined for format
-  subtype Field_Range is Positive range 1 .. 11;
+  subtype Field_Range is Positive range 1 .. 12;
   -- A field
   type Field_Rec (Kind : Field_Kind := Num) is record
     -- The character that represents the field in Format (after '%')
@@ -142,17 +142,19 @@ package body Date_Text is
                                            Conv.Num2Long'Access),
     5 => (Num,  'd', 3, As.U.Tus ("2l"), Day_Mng.T_Days'First,
                                          Day_Mng.T_Days'Last),
-    6 => (Num,  'H', 4, As.U.Tus ("2l"), Day_Mng.T_Hours'First,
+    6 => (Num,  'D', 3, As.U.Tus ("l"), Day_Mng.T_Days'First,
+                                        Day_Mng.T_Days'Last),
+    7 => (Num,  'H', 4, As.U.Tus ("2l"), Day_Mng.T_Hours'First,
                                          Day_Mng.T_Hours'Last),
-    7 => (Num,  'M', 5, As.U.Tus ("2l"), Day_Mng.T_Minutes'First,
+    8 => (Num,  'M', 5, As.U.Tus ("2l"), Day_Mng.T_Minutes'First,
                                          Day_Mng.T_Minutes'Last),
-    8 => (Num,  'S', 6, As.U.Tus ("2l"), Day_Mng.T_Seconds'First,
+    9 => (Num,  'S', 6, As.U.Tus ("2l"), Day_Mng.T_Seconds'First,
                                          Day_Mng.T_Seconds'Last),
-    9 => (Num,  's', 7, As.U.Tus ("3l"), Day_Mng.T_Millisecs'First,
+   10 => (Num,  's', 7, As.U.Tus ("3l"), Day_Mng.T_Millisecs'First,
                                          Day_Mng.T_Millisecs'Last),
-   10 => (Num,  'u', 8, As.U.Tus ("3l"), Day_Mng.T_Millisecs'First,
+   11 => (Num,  'u', 8, As.U.Tus ("3l"), Day_Mng.T_Millisecs'First,
                                          Day_Mng.T_Millisecs'Last),
-   11 => (Char, '.', 0, As.U.Tus ("1s"))
+   12 => (Char, '.', 0, As.U.Tus ("1s"))
   );
   type Fields_Array is array (Positive range <>) of Field_Range;
   package Unbounded_Fields_Array_Mng is new Unbounded_Arrays (

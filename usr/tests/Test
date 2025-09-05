@@ -735,6 +735,26 @@ EOF
   comp err nul
   comp out exp
 
+  t_date_text -s '%b %D %H:%M:%S' '%Y-%m-%dT%H:%M:%S:%s' 'Jul 21 10:45:54' >out 2>err
+  cat << EOF >exp
+Lengths:
+Scan:  Strict
+Put:   23
+Input: Jul 21 10:45:54  Dump: 1901-07-21T10:45:54.000  Put: 1901-07-21T10:45:54:000
+EOF
+  comp err nul
+  comp out exp
+
+  t_date_text -s '%b %D %H:%M:%S' '%Y-%m-%dT%H:%M:%S:%s' 'Jul 1 10:45:54' >out 2>err
+  cat << EOF >exp
+Lengths:
+Scan:  Strict
+Put:   23
+Input: Jul 1 10:45:54  Dump: 1901-07-01T10:45:54.000  Put: 1901-07-01T10:45:54:000
+EOF
+  comp err nul
+  comp out exp
+
   t_date_text  "%Y-%m-%dT%H:%M:%S" "%Y%m%d" "2022-08-17T16:53:19Z" >out 2>err
   cat << EOF >exp
 Lengths:
