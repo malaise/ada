@@ -2208,6 +2208,9 @@ Logger.Log (Debug1, "  Block date >" & Line.Slice (9, Line.Length - 6) & "<");
           Ref_Entry.Comment := Ref_Data(2);
           Use_Log := False;
           I := Ref_Entry.Comment.Locate (":");
+          -- From now, Sub will be set to the shortcut
+          -- I will be set to the last char of Entry to replace by the shortcut
+          -- Use_Log if we append the first line of the commit comment
           if I = 0 and then (Ref_Entry.Comment.Image = "update by push"
                              or else Ref_Entry.Comment.Image = "push") then
             I := Ref_Entry.Comment.Length;
@@ -2229,8 +2232,9 @@ Logger.Log (Debug1, "  Block date >" & Line.Slice (9, Line.Length - 6) & "<");
             I := I + 1;
             Sub := "Me";
           elsif Ref_Entry.Comment.Slice (1, I) = "clone:" then
-            I := I + 1;
+            I := Ref_Entry.Comment.Length;
             Sub := "Cl";
+            Use_Log := True;
           elsif Ref_Entry.Comment.Slice (1, 4) = "pull"
           and then Ref_Entry.Comment.Length > 14
           and then Ref_Entry.Comment.Slice (Ref_Entry.Comment.Length - 13,
