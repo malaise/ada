@@ -16,10 +16,20 @@ package body Git_If is
   Err_Flow_1 : aliased Command.Flow_Rec(Command.Str);
   -- Exit code
   Exit_Code : Command.Exit_Code_Range;
+
   -- Syntax of a Hash and "commit <Hash>"
   Hash_Txt : constant String := "[0-9a-h]+";
   Commit_Str : constant String := "commit ";
-  Commit_Cmp : Reg_Exp.Compiled_Pattern;
+  Commit_Reg : Reg_Exp.Compiled_Pattern;
+
+  -- Syntax of a branch (-vv)
+  -- Line is [*]<spaces><branch><spaces><hash>[<space><remote>[:<space><track>]<space><comment>
+  -- * branch may be "(xxx)" containing spaces or a name
+  -- * hash is on 7 or 8 digits
+  -- * remote is '['<name>[: ahead x]|[: gone]']'
+  Branch_Str : constant String
+            := "^[* ] (\([^)]*\)|[^ ]+) +[0-9a-f]{7,8} (\[[^]]+\])?.*";
+  Branch_Reg : Reg_Exp.Compiled_Pattern;
 
   -- Protection of text for shell
   function Pt (Str : String) return String renames Utils.Protect_Text;
@@ -170,8 +180,12 @@ package body Git_If is
     end loop;
     Root.Append ("/");
     -- Compile regex "commit <Hash>"
-    if not Commit_Cmp.Compile ("^" & Commit_Str & Hash_Txt & "$") then
+    if not Commit_Reg.Compile ("^" & Commit_Str & Hash_Txt & "$") then
       Logger.Log_Error ("Regexp compile ""commit <Hash>"" error");
+      raise No_Git;
+    end if;
+    if not Branch_Reg.Compile (Branch_Str) then
+      Logger.Log_Error ("Regex compile Branch error");
       raise No_Git;
     end if;
   end Get_Root_And_Path;
@@ -1547,8 +1561,6 @@ Logger.Log (Debug1, "  Block date >" & Line.Slice (9, Line.Length - 6) & "<");
   function Remote_Branch (Name : in String := "") return String is
     Cmd : Many_Strings.Many_String;
     Line : As.U.Asu_Us;
-    Crit : Reg_Exp.Compiled_Pattern;
-    Ok : Boolean;
     Index : Natural;
   begin
     -- Get first line of status -b
@@ -1565,20 +1577,11 @@ Logger.Log (Debug1, "  Block date >" & Line.Slice (9, Line.Length - 6) & "<");
       return "";
     end if;
     -- Scan
-    -- Line is [*]<space><branch><spaces><hash>[<space><remote>[:<space><track>]<space><comment>
-    -- * branch may be "(xxx)" containing spaces or a name
-    -- * hash is on 7 digits
-    -- * remote is '['<name>[: ahead x]']'
-    Crit.Compile (Ok, "^[* ] (\([^)]*\)|[^ ]+) +[0-9a-f]{7,8} (\[[^]]+\])?.*");
-    if not Ok  then
-      Logger.Log_Error ("Remote_Branch regex error");
-      return "";
-    end if;
     Out_Flow_1.List.Rewind;
     loop
       Out_Flow_1.List.Read (Line, Command.Res_Mng.Dyn_List.Current);
       declare
-        Res : constant Reg_Exp.Match_Array := Crit.Match (Line.Image, 3);
+        Res : constant Reg_Exp.Match_Array := Branch_Reg.Match (Line.Image, 3);
       begin
         -- The line must match and lead to at least a substring
         if Res'Length >= 2
@@ -1890,7 +1893,7 @@ Logger.Log (Debug1, "  Block date >" & Line.Slice (9, Line.Length - 6) & "<");
     procedure Get_Hash is
     begin
       -- " commit <Hash>"
-      Assert (Reg_Exp.Match (Commit_Str & Hash_Txt, Line.Image, True));
+      Assert (Commit_Reg.Match (Line.Image, True));
       Tag.Hash := Line.Uslice (Commit_Str'Length + 1, Line.Length);
     end Get_Hash;
   begin
@@ -1954,7 +1957,7 @@ Logger.Log (Debug1, "  Block date >" & Line.Slice (9, Line.Length - 6) & "<");
     -- Skip other lines of comment, until "commit <hash>
     loop
       Out_Flow_2.List.Read (Line);
-      exit when Reg_Exp.Match (Commit_Cmp, Line.Image, True);
+      exit when Commit_Reg.Match (Line.Image, True);
     end loop;
     Get_Hash;
   exception
