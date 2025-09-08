@@ -36,7 +36,7 @@ package body Git_If is
   Refpush_Reg : Reg_Exp.Compiled_Pattern;
 
   -- Syntax of a pull fast-forward in reflog
-  Refpull_Str : constant String := "^pull.*: Fast-forward$";
+  Refpull_Str : constant String := "^pull.*: [fF]ast-forward$";
   Refpull_Reg : Reg_Exp.Compiled_Pattern;
 
   -- Syntax of a commit in reflog
