@@ -1,6 +1,6 @@
 Agite user guide
 ================
-V42.23
+V42.24
 
 General purpose
 ---------------
@@ -898,7 +898,8 @@ The list shows for each reference:
 ** Re for Reset
 ** Cp for Cherry-Pick
 ** Me for Merge
-** Pu for Push
+** Ps for Push
+** Pl for Pull
 ** Ff for pull Fast-forward
 ** Cl for Clone
 * The comment

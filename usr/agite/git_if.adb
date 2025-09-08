@@ -31,6 +31,22 @@ package body Git_If is
             := "^[* ] (\([^)]*\)|[^ ]+) +[0-9a-f]{7,8} (\[[^]]+\])?.*";
   Branch_Reg : Reg_Exp.Compiled_Pattern;
 
+  -- Syntax of a push in reflog
+  Refpush_Str : constant String := "^(update by )?push$";
+  Refpush_Reg : Reg_Exp.Compiled_Pattern;
+
+  -- Syntax of a pull fast-forward in reflog
+  Refpull_Str : constant String := "^pull.*: Fast-forward$";
+  Refpull_Reg : Reg_Exp.Compiled_Pattern;
+
+  -- Syntax of a commit in reflog
+  Refcomm_Str : constant String := "^commit( \(.*\))?:";
+  Refcomm_Reg : Reg_Exp.Compiled_Pattern;
+
+  -- Syntax of a merge... in reflog
+  Refmerge_Str : constant String := "^merge .*:";
+  Refmerge_Reg : Reg_Exp.Compiled_Pattern;
+
   -- Protection of text for shell
   function Pt (Str : String) return String renames Utils.Protect_Text;
 
@@ -184,8 +200,29 @@ package body Git_If is
       Logger.Log_Error ("Regexp compile ""commit <Hash>"" error");
       raise No_Git;
     end if;
+    -- Compile regex branch info
     if not Branch_Reg.Compile (Branch_Str) then
-      Logger.Log_Error ("Regex compile Branch error");
+      Logger.Log_Error ("Regex compile Branch info error");
+      raise No_Git;
+    end if;
+    -- Compile regx reflog push
+    if not Refpush_Reg.Compile (Refpush_Str) then
+      Logger.Log_Error ("Regex compile Reflog push error");
+      raise No_Git;
+    end if;
+    -- Compile regx reflog pull
+    if not Refpull_Reg.Compile (Refpull_Str) then
+      Logger.Log_Error ("Regex compile Reflog pull error");
+      raise No_Git;
+    end if;
+    -- Compile regx reflog commit
+    if not Refcomm_Reg.Compile (Refcomm_Str) then
+      Logger.Log_Error ("Regex compile Reflog commit error");
+      raise No_Git;
+    end if;
+    -- Compile regx reflog merge
+    if not Refmerge_Reg.Compile (Refmerge_Str) then
+      Logger.Log_Error ("Regex compile Reflog merge error");
       raise No_Git;
     end if;
   end Get_Root_And_Path;
@@ -2152,6 +2189,7 @@ Logger.Log (Debug1, "  Block date >" & Line.Slice (9, Line.Length - 6) & "<");
     Log_Entry : Log_Entry_Rec;
     Ref_Data : Comment_2;
     Ref_Entry : Reflog_Entry_Rec;
+    Matching : Reg_Exp.Match_Cell;
     Done : Boolean;
   begin
     Reflog.Delete_List;
@@ -2214,14 +2252,12 @@ Logger.Log (Debug1, "  Block date >" & Line.Slice (9, Line.Length - 6) & "<");
           -- From now, Sub will be set to the shortcut
           -- I will be set to the last char of Entry to replace by the shortcut
           -- Use_Log if we append the first line of the commit comment
-          if I = 0 and then (Ref_Entry.Comment.Image = "update by push"
-                             or else Ref_Entry.Comment.Image = "push") then
+          if I = 0
+          and then Refpush_Reg.Match (Ref_Entry.Comment.Image, True) then
+            -- (updade by)? push    // no ":"
             I := Ref_Entry.Comment.Length;
-            Sub := "Pu";
+            Sub := "Ps";
             Use_Log := True;
-          elsif Ref_Entry.Comment.Slice (1, I) = "commit:" then
-            I := I + 1;
-            Sub := "Co";
           elsif Ref_Entry.Comment.Slice (1, I) = "checkout:" then
             I := I + 1;
             Sub := "Ck";
@@ -2238,24 +2274,39 @@ Logger.Log (Debug1, "  Block date >" & Line.Slice (9, Line.Length - 6) & "<");
             I := Ref_Entry.Comment.Length;
             Sub := "Cl";
             Use_Log := True;
-          elsif Ref_Entry.Comment.Slice (1, 4) = "pull"
-          and then Ref_Entry.Comment.Length > 14
-          and then Ref_Entry.Comment.Slice (Ref_Entry.Comment.Length - 13,
-                                            Ref_Entry.Comment.Length)
-              = ": Fast-forward" then
-            -- "pull" ... ": Fast-forward"
+          elsif Ref_Entry.Comment.Slice (1, I) = "pull:" then
             I := Ref_Entry.Comment.Length;
-            Sub := "Ff";
+            Sub := "Pl";
             Use_Log := True;
-          elsif I > 9 and then Ref_Entry.Comment.Slice (1, 7) = "commit " then
-            I := 7;
-            Sub := "Co";
           elsif I > 8 and then Ref_Entry.Comment.Slice (1, 6) = "merge " then
             I := 6;
             Sub := "Me";
+          elsif Refpull_Reg.Match (Ref_Entry.Comment.Image, True) then
+            -- pull.*: Fast-forward
+            I := Ref_Entry.Comment.Length;
+            Sub := "Ff";
+            Use_Log := True;
           else
-             I := 0;
+            I := 0;
+            Matching := Refcomm_Reg.Match (Ref_Entry.Comment.Image);
+            -- commit (.*)?:
+            if Reg_Exp.Valid_Match (Matching) then
+              I := Matching.Last_Offset_Stop + 1;
+            Sub := "Co";
+            end if;
+            if I = 0 then
+              Matching := Refmerge_Reg.Match (Ref_Entry.Comment.Image);
+              -- merge .*:.*
+              if Reg_Exp.Valid_Match (Matching) then
+                -- We only keep the name after merge
+                I := Matching.Last_Offset_Stop;
+                Ref_Entry.Comment.Delete (I + 1, Ref_Entry.Comment.Length);
+                I := 6;
+                Sub := "Me";
+              end if;
+            end if;
           end if;
+
           if I /= 0 then
             Ref_Entry.Comment.Replace (1, I, Sub & ": ");
           end if;
