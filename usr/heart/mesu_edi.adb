@@ -154,6 +154,7 @@ package body Mesu_Edi is
     Mesure : Mesu_Def.Mesure_Rec;
     Date_Set : Boolean;
     Prev_Fld : Afpx.Field_Range;
+    Moved : Boolean;
 
     Get_Handle : Afpx.Get_Handle_Rec;
     Ptg_Result : Afpx.Result_Rec;
@@ -742,7 +743,7 @@ package body Mesu_Edi is
               -- Suppress a sample
               Mesure.Samples.Delete_Nb (Positive (Afpx.Line_List.Get_Position),
                                         1);
-              Afpx.Line_List.Delete;
+              Afpx.Line_List.Delete (Moved => Moved);
               Encode_Duration (Mesure);
 
             when Afpx_Xref.Records.Clear_All =>
