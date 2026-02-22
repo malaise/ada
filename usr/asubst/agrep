@@ -45,6 +45,5 @@ export find=$1
 shift
 
 # Invoke asubst
-echo exec asubst -g $opt "$find" \"\" $*
 exec asubst -g $opt "$find" "" $*
 
