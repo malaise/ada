@@ -196,6 +196,9 @@ package body Targets is
 
     -- Put complete result if merge
     if Merge then
+      if not Entries.Is_Empty then
+        Found := True;
+      end if;
       Output.Put (Entries, False, False);
       Entries.Delete_List;
     end if;
