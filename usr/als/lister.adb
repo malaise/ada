@@ -64,11 +64,11 @@ package body Lister is
     if Template = "" then
       return False;
     end if;
-    -- Template must have no path
-    if Directory.Dirname (Template) /= "" then
-      raise Invalid_Template;
-    end if;
     if not Regex then
+      -- Template must have no path
+      if Directory.Dirname (Template) /= "" then
+        raise Invalid_Template;
+      end if;
       -- Check template match does not raise exception
       begin
         Dummy_Result := Directory.File_Match (Dummy_File, Template);
