@@ -1,0 +1,108 @@
+# Two options
+# * <alt>ft <dist>Nm <rate>%  will output the <alt1>ft for this rate
+# * <alt>ft <dist>Nm <alt1>ft will output the <rate>% between these alts
+
+# FUNCIONS
+##########
+# Error handling
+[
+  "Error. Invalid argument " put putl
+  :Expecting "<dist>Nm <alt>ft <rate>%" or "<dist>Nm <alt>ft <alt1>ft": putl
+  1 setexit ssize popn retall
+] Z popr
+
+# Debug: putl ToS
+[
+pop ret
+" ==> " put putl
+] D popr
+
+# Format a real number, rounding at 1 digits
+0 format
+[ 
+dup isneg [ "-" put absv ] ifcall
+10.0 *
+round dup
+1 format 10 / strof "." strcat swap
+# Display frac (1 digits) and unit
+10 % 1 True "0" normal
+strcat
+] F popr
+
+# CONSTANTS
+###########
+# Fts in one meter
+3.28083989 f popr
+# Meters in one Nm
+1852.0 m popr
+
+# CHECK ARGUMENTS
+#################
+# Check 3 args
+ssize 3 /= [ "" Z pushr call ] ifcall 
+
+# Check and store <rate>% or <alt1>ft
+dup isstr ~ [ Z pushr call ] ifcall
+dup strlen l copyr isnull [ Z pushr call ] ifcall
+dup l pushr dup strsub "%" =
+[
+  l pushr 2 < [ Z pushr call ] ifcall
+  dup 1 l pushr 1 - strsub r copyr
+  caninte [ r pushr ".0" strcat r popr ] ifcall
+  r pushr canreal ~ [ Z pushr call ] ifcall
+  pop r pushr strreal r popr
+  "Got rate " r pushr F pushr call strcat "ft" strcat D pushr call
+]
+[
+  l pushr 3 < [ Z pushr call ] ifcall
+  dup l pushr dup 1 - swap strsub "ft" /= [ Z pushr call ] ifcall
+  dup 1 l pushr 2 - strsub b copyr
+  caninte ~ [ Z pushr call ] ifcall
+  pop b pushr strinte b popr 
+  "Got alt1 " b pushr strof strcat "ft" strcat D pushr call
+] ifte call
+
+# Check <dist>Nm
+dup isstr ~ [ Z pushr call ] ifcall
+dup strlen l copyr 3 < [ Z pushr call ] ifcall
+dup l pushr dup 1 - swap strsub "Nm" /= [ Z pushr call ] ifcall
+dup 1 l pushr 2 - strsub n copyr
+caninte [ n pushr ".0" strcat n popr ] ifcall
+n pushr canreal ~ [ Z pushr call ] ifcall
+pop n pushr strreal n popr
+"Got dist " n pushr F pushr call strcat "Nm" strcat D pushr call
+# Convert to ft
+n pushr m pushr * f pushr * d popr
+" dist " d pushr F pushr call strcat "ft" strcat D pushr call
+
+# Check <alt>ft
+dup isstr ~ [ Z pushr call ] ifcall
+dup strlen l copyr 3 < [ Z pushr call ] ifcall
+dup l pushr dup 1 - swap strsub "ft" /= [ Z pushr call ] ifcall
+dup 1 l pushr 2 - strsub a copyr
+caninte ~ [ Z pushr call ] ifcall
+pop a pushr strinte a popr 
+"Got alt " a pushr strof strcat "ft" strcat D pushr call
+
+# COMPUTE AND OUTPUT RESULT
+###########################
+"For airport at " put a pushr put "ft" put
+" and approach of " put n pushr F pushr call put "Nm" putl
+b emptyr
+[
+# Compute Alt1 for a given Rate: Alt + Dist * Rate
+" a rate of " put r pushr F pushr call put "%" put
+" leads to start at " put a pushr d pushr r pushr * 100.0 / round + put
+"ft" putl
+]
+[
+# Compute Rate for a given Alt1: (Alt1 - Alt) / Dist * 100
+" a start at " put b pushr put "ft" put
+" leads to a rate of " put b pushr a pushr - toreal d pushr / dup
+100.0 * F pushr call put "%" put
+# Also put slope angle
+atan pi / 180.0 * " (" put F pushr call put "°)" putl
+]
+ifte call
+
+
