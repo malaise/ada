@@ -1,13 +1,16 @@
-# Two options
-# * <alt>ft <dist>Nm <rate>%  will output the <alt1>ft for this rate
-# * <alt>ft <dist>Nm <alt1>ft will output the <rate>% between these alts
+# Three options
+# * <alt>ft <dist>Nm <rate>%  will output the <alt1>ft and <angle>° for this rate
+# * <alt>ft <dist>Nm <angle>° will output the <alt1>ft and <rate>% for this angle
+# * <alt>ft <dist>Nm <alt1>ft will output the <rate>% and <angle>° between these alts
 
 # FUNCIONS
 ##########
 # Error handling
 [
   "Error. Invalid argument " put putl
-  :Expecting "<dist>Nm <alt>ft <rate>%" or "<dist>Nm <alt>ft <alt1>ft": putl
+  :Expecting "<alt>ft <dist>Nm <rate>%": putl
+  :       or "<alt>ft <dist>Nm <alt1>ft": putl
+  :       or "<alt>ft <dist>Nm <angle>°": putl
   1 setexit ssize popn retall
 ] Z popr
 
@@ -17,16 +20,22 @@ pop ret
 " ==> " put putl
 ] D popr
 
+# Compute angle of a rate
+[
+  atan pi / 180.0 * 
+] A popr
+
 # Format a real number, rounding at 1 digits
 0 format
+2.01 format 
 [ 
-dup isneg [ "-" put absv ] ifcall
-10.0 *
-round dup
-1 format 10 / strof "." strcat swap
-# Display frac (1 digits) and unit
-10 % 1 True "0" normal
-strcat
+  dup isneg [ "-" put absv ] ifcall
+  10.0 *
+  round dup
+  1 format 10 / strof "." strcat swap
+  # Display frac (1 digits) and unit
+  10 % 1 True "0" normal
+  strcat
 ] F popr
 
 # CONSTANTS
@@ -41,26 +50,39 @@ strcat
 # Check 3 args
 ssize 3 /= [ "" Z pushr call ] ifcall 
 
-# Check and store <rate>% or <alt1>ft
+# Check and store <rate>% or <angle>° or <alt1>ft
 dup isstr ~ [ Z pushr call ] ifcall
-dup strlen l copyr isnull [ Z pushr call ] ifcall
+dup strlen l copyr 2 < [ Z pushr call ] ifcall
+0 k popr
 dup l pushr dup strsub "%" =
 [
-  l pushr 2 < [ Z pushr call ] ifcall
+  1 k popr
   dup 1 l pushr 1 - strsub r copyr
   caninte [ r pushr ".0" strcat r popr ] ifcall
   r pushr canreal ~ [ Z pushr call ] ifcall
   pop r pushr strreal r popr
   "Got rate " r pushr F pushr call strcat "ft" strcat D pushr call
-]
+] ifcall
+dup l pushr dup 1 - swap strsub "°" =
 [
+  2 k popr
   l pushr 3 < [ Z pushr call ] ifcall
-  dup l pushr dup 1 - swap strsub "ft" /= [ Z pushr call ] ifcall
+  dup 1 l pushr 2 - strsub g copyr
+  caninte [ g pushr ".0" strcat g popr ] ifcall
+  g pushr canreal ~ [ Z pushr call ] ifcall
+  pop g pushr strreal g popr 
+  "Got angle " g pushr strof strcat "°" strcat D pushr call
+] ifcall
+dup l pushr dup 1 - swap strsub "ft" =
+[
+  3 k popr
+  l pushr 3 < [ Z pushr call ] ifcall
   dup 1 l pushr 2 - strsub b copyr
   caninte ~ [ Z pushr call ] ifcall
   pop b pushr strinte b popr 
   "Got alt1 " b pushr strof strcat "ft" strcat D pushr call
-] ifte call
+] ifcall
+k pushr isnull [ Z pushr call ] ifcall
 
 # Check <dist>Nm
 dup isstr ~ [ Z pushr call ] ifcall
@@ -88,21 +110,27 @@ pop a pushr strinte a popr
 ###########################
 "For airport at " put a pushr put "ft" put
 " and approach of " put n pushr F pushr call put "Nm" putl
-b emptyr
-[
-# Compute Alt1 for a given Rate: Alt + Dist * Rate
-" a rate of " put r pushr F pushr call put "%" put
+k pushr 1 = [
+# Compute Alt1 and Angle for a given Rate: Alt + Dist * Rate
+" a rate at " put r pushr F pushr call put "%" put
 " leads to start at " put a pushr d pushr r pushr * 100.0 / round + put
-"ft" putl
-]
-[
-# Compute Rate for a given Alt1: (Alt1 - Alt) / Dist * 100
+"ft" put
+" and an angle of " put r pushr 100.0 / A pushr call F pushr call put "°" putl
+] ifcall
+k pushr 2 = [
+# Compute Alt1 and Rate for a given Angle: Alt + Dist * Rate
+" an angle of " put g pushr F pushr call put "°" put
+" leads to start at " put a pushr toreal g pushr pi * 180.0 / tan copye
+d pushr * + round put "ft" put
+" and a rate at " put pushle 100.0 * F pushr call put "%" putl
+] ifcall
+k pushr 3 = [
+# Compute Rate and Angle for a given Alt1: (Alt1 - Alt) / Dist * 100
 " a start at " put b pushr put "ft" put
-" leads to a rate of " put b pushr a pushr - toreal d pushr / dup
+" leads to a rate at " put b pushr a pushr - toreal d pushr / dup
 100.0 * F pushr call put "%" put
 # Also put slope angle
-atan pi / 180.0 * " (" put F pushr call put "°)" putl
-]
-ifte call
+" and an angle of " put A pushr call F pushr call put "°" putl
+] ifcall
 
 
