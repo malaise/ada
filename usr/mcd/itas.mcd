@@ -1,0 +1,60 @@
+# Convert True air speed (TAS) to Indicated air speed (IAS) or reverse
+# For a given altitude (flight level) and in standard athmosphere
+# TAS = IAS / (1 + (altitude x 0.00002))
+# IAS = TAS * (1 + (altitude x 0.00002))
+
+# Usage: "itas [ -t | -i ] -t <alt>ft <airspeed>KT"
+
+# FUNCTIONS
+###########
+# Error handling
+[
+  "Error. Invalid argument " put putl
+  :Expecting "[ -t | -i ] FL<level> <airspeed>KT": putl
+  1 setexit ssize popn retall
+] Z popr
+
+# Debug
+[
+# pop ret
+putl
+] D popr
+# CHECK ARGUMENTS
+#################
+1 format
+# Check 3 args
+ssize 3 /= [ "" Z pushr call ] ifcall
+
+# Airspeed <int>KT
+dup strlen 3 < Z pushr ifcall
+dup dup strlen l copyr dup 1 - swap strsub "KT" /= Z pushr ifcall
+dup 1 l pushr 2 - strsub s copyr caninte ~ Z pushr ifcall
+pop s pushr strinte s popr
+"Got speed " s pushr strof strcat "KT" strcat D pushr call
+
+# FL FL<level>
+dup strlen 3 < Z pushr ifcall
+dup 1 2 strsub "FL" /= Z pushr ifcall
+dup dup strlen l copyr 3 swap strsub dup caninte ~ Z pushr ifcall
+strinte f popr pop
+"Got FL" f pushr strof strcat D pushr call
+
+# Mode -i or -t
+dup strlen 2 < Z pushr ifcall
+dup 1 1 strsub "-" /= Z pushr ifcall
+dup 2 2 strsub m copyr
+"i" = m pushr "t" = | ~ Z pushr ifcall
+pop
+"Got mod "  m pushr strcat D pushr call
+
+# COMPUTE RESULT
+################
+s pushr toreal f pushr toreal 0.002 * 1.0 + [ * ] [ / ] m pushr "t" = etfi call 
+round
+
+# OUTPUT RESULT
+###############
+"At FL" put f pushr put ", a " put  "IAS" "TAS" m pushr "t" = etfi put
+" of " put s pushr put "KT leads to a " put "TAS" "IAS" m pushr "t" = etfi put
+" of " put put "KT." putl
+

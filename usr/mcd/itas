@@ -1,0 +1,13 @@
+#!/bin/bash
+# Concat arguments as strings
+export MCD=${HOME}/ada/usr/mcd
+ARGS=""
+while [ -n "$1" ] ; do
+  ARGS="$ARGS :$1:"
+  shift
+done
+
+# Launch
+cd ${MCD}
+mcdt `basename $0`.mcd $ARGS
+
