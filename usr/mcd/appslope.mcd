@@ -71,7 +71,7 @@ dup l pushr dup 1 - swap strsub "°" =
   caninte [ g pushr ".0" strcat g popr ] ifcall
   g pushr canreal ~ [ Z pushr call ] ifcall
   g pushr strreal g popr 
-  "Got angle " g pushr strof strcat "°" strcat D pushr call
+  "Got angle " g pushr F pushr call strcat "°" strcat D pushr call
 ] ifcall
 dup l pushr dup 1 - swap strsub "ft" =
 [
