@@ -60,8 +60,8 @@ dup l pushr dup strsub "%" =
   dup 1 l pushr 1 - strsub r copyr
   caninte [ r pushr ".0" strcat r popr ] ifcall
   r pushr canreal ~ [ Z pushr call ] ifcall
-  pop r pushr strreal r popr
-  "Got rate " r pushr F pushr call strcat "ft" strcat D pushr call
+  r pushr strreal r popr
+  "Got rate " r pushr F pushr call strcat "%" strcat D pushr call
 ] ifcall
 dup l pushr dup 1 - swap strsub "°" =
 [
@@ -70,7 +70,7 @@ dup l pushr dup 1 - swap strsub "°" =
   dup 1 l pushr 2 - strsub g copyr
   caninte [ g pushr ".0" strcat g popr ] ifcall
   g pushr canreal ~ [ Z pushr call ] ifcall
-  pop g pushr strreal g popr 
+  g pushr strreal g popr 
   "Got angle " g pushr strof strcat "°" strcat D pushr call
 ] ifcall
 dup l pushr dup 1 - swap strsub "ft" =
@@ -79,10 +79,11 @@ dup l pushr dup 1 - swap strsub "ft" =
   l pushr 3 < [ Z pushr call ] ifcall
   dup 1 l pushr 2 - strsub b copyr
   caninte ~ [ Z pushr call ] ifcall
-  pop b pushr strinte b popr 
+  b pushr strinte b popr 
   "Got alt1 " b pushr strof strcat "ft" strcat D pushr call
 ] ifcall
 k pushr isnull [ Z pushr call ] ifcall
+pop
 
 # Check <dist>Nm
 dup isstr ~ [ Z pushr call ] ifcall
