@@ -1,0 +1,103 @@
+# Compute descent rate (ft/min) for a given speed (KT) and a given slope
+#  (% or °)
+
+# FUNCIONS
+##########
+# Error handling
+[
+  "Error. Invalid argument " put putl
+  :Expecting "<speed>KT <slope>%  or  <speed>KT <slope>°": putl
+  1 setexit ssize popn retall
+] Z popr
+
+# Debug: putl ToS
+[
+pop ret
+" ==> " put putl
+] D popr
+
+# Format a real number, rounding at 1 digits
+0 format
+2.01 format 
+[ 
+  dup isneg [ "-" put absv ] ifcall
+  10.0 *
+  round dup
+  1 format 10 / strof "." strcat swap
+  # Display frac (1 digits) and unit
+  10 % 1 True "0" normal
+  strcat
+] F popr
+
+# CONSTANTS
+###########
+# Fts in one meter
+3.28083989 f popr
+# Meters in one Nm
+1852.0 m popr
+
+# CHECK ARGUMENTS
+#################
+# Check 2 args
+ssize 2 /= [ "" Z pushr call ] ifcall 
+
+# Check <rate>% or <angle>°, store rate
+dup isstr ~ [ Z pushr call ] ifcall
+dup strlen l copyr 2 < [ Z pushr call ] ifcall
+0 k popr
+dup l pushr dup strsub "%" =
+[
+  1 k popr
+  dup 1 l pushr 1 - strsub r copyr
+  caninte [ r pushr ".0" strcat r popr ] ifcall
+  r pushr canreal ~ [ Z pushr call ] ifcall
+  r pushr strreal r popr
+  "Got rate " r pushr F pushr call strcat "%" strcat D pushr call
+  # Real rate( not %)
+  r pushr 100.0 / t popr
+] ifcall
+dup l pushr dup 1 - swap strsub "°" =
+[
+  2 k popr
+  l pushr 3 < [ Z pushr call ] ifcall
+  dup 1 l pushr 2 - strsub g copyr
+  caninte [ g pushr ".0" strcat g popr ] ifcall
+  g pushr canreal ~ [ Z pushr call ] ifcall
+  g pushr strreal g popr 
+  "Got angle " g pushr F pushr call strcat "°" strcat D pushr call
+  g pushr pi * 180.0 / tan t popr
+  # Real rate( not %)
+] ifcall
+k pushr isnull [ Z pushr call ] ifcall
+pop
+
+# Check <speed>KT
+dup isstr ~ [ Z pushr call ] ifcall
+dup strlen l copyr 3 < [ Z pushr call ] ifcall
+dup l pushr dup 1 - swap strsub "KT" /= [ Z pushr call ] ifcall
+dup 1 l pushr 2 - strsub s copyr
+caninte [ s pushr ".0" strcat s popr ] ifcall
+s pushr canreal ~ [ Z pushr call ] ifcall
+s pushr strreal s popr
+"Got speed " s pushr F pushr call strcat "KT" strcat D pushr call
+# Convert to ft/min
+s pushr m pushr * f pushr * 60.0 / d popr
+" speed " d pushr F pushr call strcat "ft/min" strcat D pushr call
+pop
+
+# COMPUTE AND OUTPUT RESULT
+###########################
+k pushr 1 = [
+"For a descent at rate " put "% (angle " put
+t pushr atan 180.0 * pi / F pushr call put ")" put
+] ifcall
+k pushr 2 = [
+"For a descent at angle " put g pushr F pushr call put "° (" put
+t pushr 100.0 * F pushr call put "%)" put
+] ifcall
+" a speed of " put s pushr F pushr call put "KT" putl
+
+" leads to a descent at " put d pushr t pushr * F pushr call put
+"ft/min" putl
+
+
