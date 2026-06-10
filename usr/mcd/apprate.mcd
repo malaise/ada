@@ -1,12 +1,12 @@
-# Compute descent rate (ft/min) for a given speed (KT) and a given slope
-#  (% or °)
+# Compute descent rate (ft/min) for a given slope (% or °)
+#  and a given speed (KT)
 
 # FUNCIONS
 ##########
 # Error handling
 [
   "Error. Invalid argument " put putl
-  :Expecting "<speed>KT <slope>%  or  <speed>KT <slope>°": putl
+  :Expecting "<rate>% <speed>KT  or  <angle>° speed>KT": putl
   1 setexit ssize popn retall
 ] Z popr
 
@@ -41,6 +41,21 @@ pop ret
 # Check 2 args
 ssize 2 /= [ "" Z pushr call ] ifcall 
 
+
+# Check <speed>KT
+dup isstr ~ [ Z pushr call ] ifcall
+dup strlen l copyr 3 < [ Z pushr call ] ifcall
+dup l pushr dup 1 - swap strsub "KT" /= [ Z pushr call ] ifcall
+dup 1 l pushr 2 - strsub s copyr
+caninte [ s pushr ".0" strcat s popr ] ifcall
+s pushr canreal ~ [ Z pushr call ] ifcall
+s pushr strreal s popr
+"Got speed " s pushr F pushr call strcat "KT" strcat D pushr call
+# Convert to ft/min
+s pushr m pushr * f pushr * 60.0 / d popr
+" speed " d pushr F pushr call strcat "ft/min" strcat D pushr call
+pop
+
 # Check <rate>% or <angle>°, store rate
 dup isstr ~ [ Z pushr call ] ifcall
 dup strlen l copyr 2 < [ Z pushr call ] ifcall
@@ -71,20 +86,6 @@ dup l pushr dup 1 - swap strsub "°" =
 k pushr isnull [ Z pushr call ] ifcall
 pop
 
-# Check <speed>KT
-dup isstr ~ [ Z pushr call ] ifcall
-dup strlen l copyr 3 < [ Z pushr call ] ifcall
-dup l pushr dup 1 - swap strsub "KT" /= [ Z pushr call ] ifcall
-dup 1 l pushr 2 - strsub s copyr
-caninte [ s pushr ".0" strcat s popr ] ifcall
-s pushr canreal ~ [ Z pushr call ] ifcall
-s pushr strreal s popr
-"Got speed " s pushr F pushr call strcat "KT" strcat D pushr call
-# Convert to ft/min
-s pushr m pushr * f pushr * 60.0 / d popr
-" speed " d pushr F pushr call strcat "ft/min" strcat D pushr call
-pop
-
 # COMPUTE AND OUTPUT RESULT
 ###########################
 k pushr 1 = [
@@ -99,5 +100,4 @@ t pushr 100.0 * F pushr call put "%)" put
 
 " leads to a descent at " put d pushr t pushr * F pushr call put
 "ft/min" putl
-
 
