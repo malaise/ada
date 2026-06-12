@@ -1,3 +1,4 @@
+with Upper_Str;
 with Database;
 package body Analist is
 
@@ -83,6 +84,7 @@ package body Analist is
     Prev, Curr : As.U.Asu_Us;
     Moved : Boolean;
     use type As.U.Asu_Us;
+
   begin
     Anagrams.Set_Null;
     if Letters'Length > Max_Len then
@@ -105,13 +107,16 @@ package body Analist is
     -- Copy List to array, Remove duplicates
     if not Dlist.Is_Empty then
       Dlist.Rewind;
-      Dlist.Read (Prev, Moved => Moved);
-      Anagrams.Append (Prev);
+      Moved := True;
       if Moved then
         loop
           Dlist.Read (Curr, Moved => Moved);
           if Curr /= Prev then
-            Anagrams.Append (Curr);
+            if In_Nouns then
+              Anagrams.Append (As.U.Tus (Upper_Str (Curr.Image)));
+            else
+              Anagrams.Append (Curr);
+            end if;
             Prev := Curr;
           end if;
           exit when not Moved;

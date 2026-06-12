@@ -61,7 +61,7 @@ click on the 'Anagrams' button.
 
 By default, the Xwords shows anagrams of the common words database. But you can
 tick the 'Nouns' button before searching 'Anagrams', and you will get
-anagrams of the nouns database instead.
+anagrams (in upper case) of the nouns database instead.
 
 The list shows the various words (sorted by decreasing length) that are
 anagrams of the letters that you entered in the 'get' field.
