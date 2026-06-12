@@ -1,6 +1,6 @@
 Xwords
 ======
-V2.1
+V2.2
 
 Xwords is a graphical program that searches in a databse for words that match a
 pattern. Tje database consists of a file of words and a fil of nouns.
@@ -60,12 +60,13 @@ In this mode, you can enter letters (not pattern) in the 'get' field, then
 click on the 'Anagrams' button.
 
 By default, the Xwords shows anagrams of the common words database. But you can
-tick the 'Nouns' button before searching 'Anagrams', and you get anagrams
-of the nouns database.
+tick the 'Nouns' button before searching 'Anagrams', and you will get
+anagrams of the nouns database instead.
 
 The list shows the various words (sorted by decreasing length) that are
 anagrams of the letters that you entered in the 'get' field.
 
 You can then enter a pattern and search (or ReSearch) for words within these
-anagrams.
+anagrams. You can then search another pattern or reload the list of anagrams,
+or switch back to normal mode.
 

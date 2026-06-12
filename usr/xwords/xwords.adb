@@ -28,6 +28,7 @@ procedure Xwords is
   Topof_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Topof;
   Percent_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Percent;
   Anamode_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Anamode;
+  Reload_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Reload;
   Anagrams_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Anagrams;
   Ananouns_Title_Fld : constant Afpx.Field_Range
                      := Afpx_Xref.Main.Ananouns_Title;
@@ -234,49 +235,53 @@ procedure Xwords is
   procedure Switch_To_Anagrams (To_Anagrams : in Boolean);
 
   -- List anagrams of word
-  procedure Do_Anagrams is
+  procedure Do_Anagrams (Switch : in Boolean) is
     Word : As.U.Asu_Us;
     Char : Character;
     Length : Natural;
   begin
-    if In_Anagrams then
-      -- Quit Anagrams mode
-      Switch_To_Anagrams (False);
+    if Switch then
+      if In_Anagrams then
+        -- Quit Anagrams mode
+        Switch_To_Anagrams (False);
+        Afpx.Line_List.Delete_List (Deallocate => False);
+        return;
+      end if;
+      -- Clear result
+      Status := Ok;
       Afpx.Line_List.Delete_List (Deallocate => False);
-      return;
-    end if;
-    -- Clear result
-    Status := Ok;
-    Afpx.Line_List.Delete_List (Deallocate => False);
-    -- Get word and check it
-    Word := As.U.Tus (Strip (Afpx.Decode_Field (Get_Fld, 0, False)));
+      -- Get word and check it
+      Word := As.U.Tus (Strip (Afpx.Decode_Field (Get_Fld, 0, False)));
 
-    -- Check pattern
-    if Word.Is_Null then
-      Afpx.Line_List.Insert (Us2Afpx (
-          As.U.Tus ("ERROR: Missing letter.")));
-      List_Content := Error;
-      Status := Error;
-      return;
-    end if;
-    for I in 1 .. Word.Length loop
-      Char := Word.Element (I);
-      if Char < 'a' or else Char > 'z' then
+      -- Check pattern
+      if Word.Is_Null then
         Afpx.Line_List.Insert (Us2Afpx (
-            As.U.Tus ("ERROR: Invalid letter.")));
+            As.U.Tus ("ERROR: Missing letter.")));
         List_Content := Error;
         Status := Error;
         return;
       end if;
-    end loop;
+      for I in 1 .. Word.Length loop
+        Char := Word.Element (I);
+        if Char < 'a' or else Char > 'z' then
+          Afpx.Line_List.Insert (Us2Afpx (
+              As.U.Tus ("ERROR: Invalid letter.")));
+          List_Content := Error;
+          Status := Error;
+          return;
+        end if;
+      end loop;
 
-    -- Get list
-    Analist.List (Strip (Afpx.Decode_Field (Get_Fld, 0, False)),
-                  Ananouns_Set,
-                  Anagrams_List);
-    History_List.Insert (Word);
+      -- Get list
+      Analist.List (Word.Image,
+                    Ananouns_Set,
+                    Anagrams_List);
+      History_List.Insert (Word);
+    else
+      Word := Prev_Word;
+    end if;
 
-    -- Copy in Afpx list
+    -- Switch to anagrams or reload: Copy in Afpx list
     Afpx.Line_List.Delete_List (Deallocate => False);
     Length := 0;
     for I in 1 .. Anagrams_List.Length loop
@@ -557,11 +562,13 @@ procedure Xwords is
       Afpx.Clear_Field (Get_Fld);
       Afpx.Encode_Field (Ananame_Fld, (0, 0), Prev_Word.Image);
       Afpx.Clear_Field (Anagrams_Fld);
-      Afpx.Utils.Center_Field ("Reset", Anagrams_Fld, 0);
+      Afpx.Utils.Center_Field ("Back", Anagrams_Fld, 0);
       -- Color of the Reset (Anagrams) button when in Anagrams
       Afpx.Set_Field_Colors (Anagrams_Fld, Con_Io.Color_Of ("Blue"));
       Afpx.Set_Field_Activation (Ananouns_Title_Fld, Ananouns_Set);
       Afpx.Set_Field_Activation (Ananouns_Fld, False);
+      -- Activate Reload
+      Afpx.Set_Field_Activation (Reload_Fld, True);
       In_Anagrams := True;
     else
       Afpx.Clear_Field (Anamode_Fld);
@@ -571,6 +578,7 @@ procedure Xwords is
       Afpx.Set_Field_Activation (Ananouns_Title_Fld, Database_Ok);
       In_Anagrams := False;
       Afpx.Set_Field_Activation (Ananouns_Fld, Database_Ok);
+      Afpx.Set_Field_Activation (Reload_Fld, False);
     end if;
   end Switch_To_Anagrams;
 
@@ -750,11 +758,16 @@ begin
           when Nouns_Fld =>
             Move_To_Nouns;
 
-          -- Search anagrams
+          -- Search anagrams or reset
           when Anagrams_Fld =>
-            Do_Anagrams;
+            Do_Anagrams (True);
+
+         -- Reload anagrams
+          when Reload_Fld =>
+            Do_Anagrams (False);
+
           when Ananouns_Fld =>
-            -- Flip flop
+            -- Flip flop anagram nouns
             Afpx.Encode_Field (Ananouns_Fld, (0, 0),
               (if Ananouns_Set then " " else "X"));
 
