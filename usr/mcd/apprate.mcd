@@ -89,8 +89,8 @@ pop
 # COMPUTE AND OUTPUT RESULT
 ###########################
 k pushr 1 = [
-"For a descent at rate " put "% (angle " put
-t pushr atan 180.0 * pi / F pushr call put ")" put
+"For a descent at rate " put r pushr F pushr call put "% (angle " put
+t pushr atan 180.0 * pi / F pushr call put "°)" put
 ] ifcall
 k pushr 2 = [
 "For a descent at angle " put g pushr F pushr call put "° (" put
@@ -98,6 +98,6 @@ t pushr 100.0 * F pushr call put "%)" put
 ] ifcall
 " a speed of " put s pushr F pushr call put "KT" putl
 
-" leads to a descent at " put d pushr t pushr * F pushr call put
+" leads to a descent at " put d pushr t pushr * 2 roundat round put
 "ft/min" putl
 
